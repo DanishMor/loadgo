@@ -1,0 +1,1766 @@
+import 'dart:async';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/material.dart';
+
+import 'firebase_options.dart';
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
+  runApp(const LoadGoApp());
+}
+
+class LoadGoApp extends StatelessWidget {
+  const LoadGoApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'LoadGo',
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        useMaterial3: true,
+        fontFamily: 'Roboto',
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFF1565C0),
+          brightness: Brightness.light,
+        ),
+        inputDecorationTheme: InputDecorationTheme(
+          filled: true,
+          fillColor: const Color(0xFFF8FAFC),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: const BorderSide(
+              color: Color(0xFFE4E7EC),
+            ),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: const BorderSide(
+              color: Color(0xFFE4E7EC),
+            ),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: const BorderSide(
+              color: Color(0xFF1565C0),
+              width: 1.5,
+            ),
+          ),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 16,
+          ),
+        ),
+      ),
+      home: const SplashScreen(),
+    );
+  }
+}
+
+// ============================================================
+// SPLASH SCREEN
+// ============================================================
+
+class SplashScreen extends StatefulWidget {
+  const SplashScreen({super.key});
+
+  @override
+  State<SplashScreen> createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends State<SplashScreen> {
+  @override
+  void initState() {
+    super.initState();
+
+    Timer(const Duration(seconds: 2), () {
+      if (!mounted) return;
+
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => const RoleSelectionScreen(),
+        ),
+      );
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Container(
+        width: double.infinity,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0xFF0D47A1),
+              Color(0xFF1976D2),
+            ],
+          ),
+        ),
+        child: SafeArea(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 120,
+                height: 120,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(30),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.15),
+                      blurRadius: 25,
+                      offset: const Offset(0, 12),
+                    ),
+                  ],
+                ),
+                child: const Icon(
+                  Icons.local_shipping_rounded,
+                  size: 70,
+                  color: Color(0xFF1565C0),
+                ),
+              ),
+              const SizedBox(height: 28),
+              const Text(
+                'LoadGo',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 42,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 0.5,
+                ),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Truck & Cargo Booking',
+                style: TextStyle(
+                  color: Colors.white70,
+                  fontSize: 17,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 50),
+              const SizedBox(
+                width: 28,
+                height: 28,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2.5,
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ============================================================
+// ROLE SELECTION
+// ============================================================
+
+class RoleSelectionScreen extends StatelessWidget {
+  const RoleSelectionScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF6F8FC),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(20, 24, 20, 30),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 12),
+              const Text(
+                'Welcome to LoadGo',
+                style: TextStyle(
+                  fontSize: 30,
+                  fontWeight: FontWeight.w800,
+                  color: Color(0xFF111827),
+                ),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Choose how you want to use LoadGo',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Color(0xFF667085),
+                ),
+              ),
+              const SizedBox(height: 32),
+
+              // CUSTOMER
+              _RoleCard(
+                icon: Icons.business_center_rounded,
+                title: 'Book a Truck',
+                subtitle:
+                    'For traders, factories, shops, importers & exporters',
+                buttonText: 'Continue as Customer',
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const CustomerLoginScreen(),
+                    ),
+                  );
+                },
+              ),
+
+              const SizedBox(height: 18),
+
+              // DRIVER
+              _RoleCard(
+                icon: Icons.local_shipping_rounded,
+                title: 'Get Loads',
+                subtitle: 'For truck owners and drivers',
+                buttonText: 'Continue as Driver',
+                onPressed: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                        'Driver login next development step me banega.',
+                      ),
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                },
+              ),
+
+              const SizedBox(height: 28),
+
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(18),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(
+                    color: const Color(0xFFE4E7EC),
+                  ),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(
+                      Icons.language_rounded,
+                      color: Color(0xFF1565C0),
+                      size: 25,
+                    ),
+                    SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        'English / हिंदी',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    Icon(
+                      Icons.chevron_right_rounded,
+                      color: Color(0xFF667085),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              Center(
+                child: Text(
+                  'Domestic • Import • Export • Pan India',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Colors.grey.shade600,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ============================================================
+// ROLE CARD
+// ============================================================
+
+class _RoleCard extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final String buttonText;
+  final VoidCallback onPressed;
+
+  const _RoleCard({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.buttonText,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(22),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 58,
+            height: 58,
+            decoration: BoxDecoration(
+              color: const Color(0xFFE8F1FF),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Icon(
+              icon,
+              color: const Color(0xFF1565C0),
+              size: 32,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.w800,
+              color: Color(0xFF111827),
+            ),
+          ),
+          const SizedBox(height: 7),
+          Text(
+            subtitle,
+            style: const TextStyle(
+              fontSize: 14,
+              height: 1.45,
+              color: Color(0xFF667085),
+            ),
+          ),
+          const SizedBox(height: 18),
+          SizedBox(
+            width: double.infinity,
+            height: 50,
+            child: ElevatedButton(
+              onPressed: onPressed,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF1565C0),
+                foregroundColor: Colors.white,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+              ),
+              child: Text(
+                buttonText,
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ============================================================
+// CUSTOMER LOGIN SCREEN
+// ============================================================
+
+class CustomerLoginScreen extends StatefulWidget {
+  const CustomerLoginScreen({super.key});
+
+  @override
+  State<CustomerLoginScreen> createState() => _CustomerLoginScreenState();
+}
+
+class _CustomerLoginScreenState extends State<CustomerLoginScreen> {
+  final _formKey = GlobalKey<FormState>();
+
+  final TextEditingController _phoneController = TextEditingController();
+
+  bool _isLoading = false;
+
+  @override
+  void dispose() {
+    _phoneController.dispose();
+    super.dispose();
+  }
+Future<void> _continueWithPhone() async {
+  if (!_formKey.currentState!.validate()) {
+    return;
+  }
+
+  final phoneNumber = '+91${_phoneController.text.trim()}';
+
+  setState(() {
+    _isLoading = true;
+  });
+
+  try {
+    await FirebaseAuth.instance.verifyPhoneNumber(
+      phoneNumber: phoneNumber,
+
+      verificationCompleted: (PhoneAuthCredential credential) async {
+        try {
+          await FirebaseAuth.instance.signInWithCredential(credential);
+
+          if (!mounted) return;
+
+          setState(() {
+            _isLoading = false;
+          });
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Phone verified successfully!'),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        } catch (e) {
+          if (!mounted) return;
+
+          setState(() {
+            _isLoading = false;
+          });
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Verification failed: $e'),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      },
+
+      verificationFailed: (FirebaseAuthException e) {
+        if (!mounted) return;
+
+        setState(() {
+          _isLoading = false;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              e.message ?? 'OTP send nahi ho saka.',
+            ),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      },
+
+      codeSent: (String verificationId, int? resendToken) {
+        if (!mounted) return;
+
+        setState(() {
+          _isLoading = false;
+        });
+
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => OtpVerificationScreen(
+              phoneNumber: _phoneController.text.trim(),
+              verificationId: verificationId,
+            ),
+          ),
+        );
+      },
+
+      codeAutoRetrievalTimeout: (String verificationId) {
+        // OTP auto retrieval timeout.
+      },
+
+      timeout: const Duration(seconds: 60),
+    );
+  } catch (e) {
+    if (!mounted) return;
+
+    setState(() {
+      _isLoading = false;
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Something went wrong: $e'),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+}
+
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF6F8FC),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFFF6F8FC),
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_rounded),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        title: const Text(
+          'Customer Login',
+          style: TextStyle(
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 30),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 20),
+
+                Center(
+                  child: Container(
+                    width: 82,
+                    height: 82,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE8F1FF),
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                    child: const Icon(
+                      Icons.person_rounded,
+                      size: 45,
+                      color: Color(0xFF1565C0),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 28),
+
+                const Center(
+                  child: Text(
+                    'Welcome to LoadGo',
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFF111827),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 8),
+
+                const Center(
+                  child: Text(
+                    'Login or create your customer account',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 15,
+                      color: Color(0xFF667085),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 40),
+
+                const Text(
+                  'Mobile Number',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF344054),
+                  ),
+                ),
+
+                const SizedBox(height: 8),
+
+                TextFormField(
+                  controller: _phoneController,
+                  keyboardType: TextInputType.phone,
+                  maxLength: 10,
+                  decoration: const InputDecoration(
+                    counterText: '',
+                    prefixIcon: Padding(
+                      padding: EdgeInsets.only(left: 16, right: 8),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            '🇮🇳',
+                            style: TextStyle(fontSize: 20),
+                          ),
+                          SizedBox(width: 8),
+                          Text(
+                            '+91',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    hintText: 'Enter mobile number',
+                  ),
+                  validator: (value) {
+                    final phone = value?.trim() ?? '';
+
+                    if (phone.isEmpty) {
+                      return 'Mobile number enter karein';
+                    }
+
+                    if (!RegExp(r'^[6-9]\d{9}$').hasMatch(phone)) {
+                      return 'Valid 10-digit mobile number enter karein';
+                    }
+
+                    return null;
+                  },
+                ),
+
+                const SizedBox(height: 24),
+
+                SizedBox(
+                  width: double.infinity,
+                  height: 54,
+                  child: ElevatedButton(
+                    onPressed: _isLoading ? null : _continueWithPhone,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF1565C0),
+                      foregroundColor: Colors.white,
+                      disabledBackgroundColor: const Color(0xFF9DBCE5),
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
+                    child: _isLoading
+                        ? const SizedBox(
+                            width: 23,
+                            height: 23,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2.5,
+                              valueColor:
+                                  AlwaysStoppedAnimation<Color>(Colors.white),
+                            ),
+                          )
+                        : const Text(
+                            'Continue with Mobile',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+
+                Row(
+                  children: [
+                    Expanded(
+                      child: Divider(
+                        color: Colors.grey.shade300,
+                      ),
+                    ),
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 12),
+                      child: Text(
+                        'OR',
+                        style: TextStyle(
+                          color: Color(0xFF98A2B3),
+                          fontWeight: FontWeight.w600,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: Divider(
+                        color: Colors.grey.shade300,
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 24),
+
+                SizedBox(
+                  width: double.infinity,
+                  height: 52,
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            'Google login next authentication step me add hoga.',
+                          ),
+                          behavior: SnackBarBehavior.floating,
+                        ),
+                      );
+                    },
+                    icon: const Icon(
+                      Icons.g_mobiledata_rounded,
+                      size: 30,
+                    ),
+                    label: const Text(
+                      'Continue with Google',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: const Color(0xFF344054),
+                      side: const BorderSide(
+                        color: Color(0xFFD0D5DD),
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 28),
+
+                const Center(
+                  child: Text(
+                    'By continuing, you agree to LoadGo Terms & Privacy Policy.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 12,
+                      height: 1.4,
+                      color: Color(0xFF98A2B3),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ============================================================
+// OTP VERIFICATION SCREEN
+// ============================================================
+class OtpVerificationScreen extends StatefulWidget {
+  final String phoneNumber;
+  final String verificationId;
+
+  const OtpVerificationScreen({
+    super.key,
+    required this.phoneNumber,
+    required this.verificationId,
+  });
+
+  @override
+  State<OtpVerificationScreen> createState() =>
+      _OtpVerificationScreenState();
+}
+
+class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
+  final _otpController = TextEditingController();
+
+  bool _isLoading = false;
+
+  @override
+  void dispose() {
+    _otpController.dispose();
+    super.dispose();
+  }
+
+Future<void> _verifyOtp() async {
+  final otp = _otpController.text.trim();
+
+  if (otp.length != 6) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('6-digit OTP enter karein.'),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+    return;
+  }
+
+  setState(() {
+    _isLoading = true;
+  });
+
+  try {
+    final credential = PhoneAuthProvider.credential(
+      verificationId: widget.verificationId,
+      smsCode: otp,
+    );
+
+    await FirebaseAuth.instance.signInWithCredential(credential);
+
+    if (!mounted) return;
+
+    setState(() {
+      _isLoading = false;
+    });
+    Navigator.of(context).pushAndRemoveUntil(
+    MaterialPageRoute(
+    builder: (_) => const CustomerHomeScreen(),
+    ),
+   (route) => false,
+    );
+
+  } on FirebaseAuthException catch (e) {
+    if (!mounted) return;
+
+    setState(() {
+      _isLoading = false;
+    });
+
+    String message = 'OTP verification failed.';
+
+    if (e.code == 'invalid-verification-code') {
+      message = 'Invalid OTP. Please check the code.';
+    } else if (e.code == 'session-expired') {
+      message = 'OTP expired. Please request a new OTP.';
+    } else if (e.message != null) {
+      message = e.message!;
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  } catch (e) {
+    if (!mounted) return;
+
+    setState(() {
+      _isLoading = false;
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Something went wrong: $e'),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+}
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF6F8FC),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFFF6F8FC),
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_rounded),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        title: const Text(
+          'Verify Mobile',
+          style: TextStyle(
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(20, 35, 20, 30),
+          child: Column(
+            children: [
+              Container(
+                width: 82,
+                height: 82,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE8F1FF),
+                  borderRadius: BorderRadius.circular(24),
+                ),
+                child: const Icon(
+                  Icons.sms_rounded,
+                  size: 42,
+                  color: Color(0xFF1565C0),
+                ),
+              ),
+
+              const SizedBox(height: 28),
+
+              const Text(
+                'Verify your number',
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.w800,
+                  color: Color(0xFF111827),
+                ),
+              ),
+
+              const SizedBox(height: 10),
+
+              Text(
+                'Enter the 6-digit OTP sent to\n+91 ${widget.phoneNumber}',
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 15,
+                  height: 1.5,
+                  color: Color(0xFF667085),
+                ),
+              ),
+
+              const SizedBox(height: 35),
+
+              TextField(
+                controller: _otpController,
+                keyboardType: TextInputType.number,
+                maxLength: 6,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 26,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 10,
+                ),
+                decoration: const InputDecoration(
+                  counterText: '',
+                  hintText: '••••••',
+                ),
+              ),
+
+              const SizedBox(height: 24),
+
+              SizedBox(
+                width: double.infinity,
+                height: 54,
+                child: ElevatedButton(
+                  onPressed: _isLoading ? null : _verifyOtp,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF1565C0),
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                  child: _isLoading
+                      ? const SizedBox(
+                          width: 23,
+                          height: 23,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.5,
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(Colors.white),
+                          ),
+                        )
+                      : const Text(
+                          'Verify OTP',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              TextButton(
+                onPressed: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('OTP resend next authentication step me.'),
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                },
+                child: const Text(
+                  'Resend OTP',
+                  style: TextStyle(
+                    color: Color(0xFF1565C0),
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+// ============================================================
+// CUSTOMER HOME DASHBOARD
+// ============================================================
+
+class CustomerHomeScreen extends StatefulWidget {
+  const CustomerHomeScreen({super.key});
+
+  @override
+  State<CustomerHomeScreen> createState() => _CustomerHomeScreenState();
+}
+
+class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
+  int _currentIndex = 0;
+
+  final List<Widget> _pages = const [
+    _CustomerHomeContent(),
+    _BookingsPlaceholder(),
+    _LoadsPlaceholder(),
+    _CustomerProfilePlaceholder(),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF6F8FC),
+      body: IndexedStack(
+        index: _currentIndex,
+        children: _pages,
+      ),
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: _currentIndex,
+        onDestinationSelected: (index) {
+          setState(() {
+            _currentIndex = index;
+          });
+        },
+        backgroundColor: Colors.white,
+        indicatorColor: const Color(0xFFE8F1FF),
+        destinations: const [
+          NavigationDestination(
+            icon: Icon(Icons.home_outlined),
+            selectedIcon: Icon(Icons.home_rounded),
+            label: 'Home',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.receipt_long_outlined),
+            selectedIcon: Icon(Icons.receipt_long_rounded),
+            label: 'Bookings',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.inventory_2_outlined),
+            selectedIcon: Icon(Icons.inventory_2_rounded),
+            label: 'Loads',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.person_outline_rounded),
+            selectedIcon: Icon(Icons.person_rounded),
+            label: 'Profile',
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ============================================================
+// CUSTOMER HOME CONTENT
+// ============================================================
+
+class _CustomerHomeContent extends StatelessWidget {
+  const _CustomerHomeContent();
+
+  @override
+  Widget build(BuildContext context) {
+    final user = FirebaseAuth.instance.currentUser;
+
+    final phone = user?.phoneNumber ?? '';
+    final displayPhone = phone.isNotEmpty ? phone : 'Customer';
+
+    return SafeArea(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(20, 18, 20, 30),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // --------------------------------------------------
+            // HEADER
+            // --------------------------------------------------
+
+            Row(
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE8F1FF),
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  child: const Icon(
+                    Icons.person_rounded,
+                    color: Color(0xFF1565C0),
+                    size: 27,
+                  ),
+                ),
+
+                const SizedBox(width: 12),
+
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Welcome back 👋',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Color(0xFF667085),
+                        ),
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        displayPhone,
+                        style: const TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xFF111827),
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+
+                Container(
+                  width: 46,
+                  height: 46,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(15),
+                    border: Border.all(
+                      color: const Color(0xFFE4E7EC),
+                    ),
+                  ),
+                  child: IconButton(
+                    onPressed: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            'Notifications coming soon.',
+                          ),
+                          behavior: SnackBarBehavior.floating,
+                        ),
+                      );
+                    },
+                    icon: const Icon(
+                      Icons.notifications_none_rounded,
+                    ),
+                    color: const Color(0xFF344054),
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 25),
+
+            // --------------------------------------------------
+            // SEARCH
+            // --------------------------------------------------
+
+            Container(
+              height: 54,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: const Color(0xFFE4E7EC),
+                ),
+              ),
+              child: const TextField(
+                decoration: InputDecoration(
+                  border: InputBorder.none,
+                  prefixIcon: Icon(
+                    Icons.search_rounded,
+                    color: Color(0xFF667085),
+                  ),
+                  hintText: 'Search trucks, loads, bookings...',
+                  hintStyle: TextStyle(
+                    color: Color(0xFF98A2B3),
+                    fontSize: 14,
+                  ),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 25),
+
+            // --------------------------------------------------
+            // HERO
+            // --------------------------------------------------
+
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(22),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [
+                    Color(0xFF0D47A1),
+                    Color(0xFF1976D2),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(24),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Move your goods\nwith confidence.',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 26,
+                      height: 1.15,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  const Text(
+                    'Book reliable trucks for domestic,\nimport & export transportation.',
+                    style: TextStyle(
+                      color: Colors.white70,
+                      fontSize: 14,
+                      height: 1.45,
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  SizedBox(
+                    height: 46,
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              'Truck booking module next step me banega.',
+                            ),
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                      },
+                      icon: const Icon(
+                        Icons.local_shipping_rounded,
+                        size: 20,
+                      ),
+                      label: const Text(
+                        'Book a Truck',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        foregroundColor: const Color(0xFF1565C0),
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(13),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 28),
+
+            // --------------------------------------------------
+            // QUICK ACTIONS
+            // --------------------------------------------------
+
+            const Text(
+              'Quick Actions',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w800,
+                color: Color(0xFF111827),
+              ),
+            ),
+
+            const SizedBox(height: 14),
+
+            Row(
+              children: [
+                Expanded(
+                  child: _QuickActionCard(
+                    icon: Icons.local_shipping_rounded,
+                    title: 'Book Truck',
+                    subtitle: 'Find a vehicle',
+                    onTap: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            'Truck booking coming soon.',
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _QuickActionCard(
+                    icon: Icons.add_box_rounded,
+                    title: 'Post Load',
+                    subtitle: 'Find a transporter',
+                    onTap: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            'Post load module coming soon.',
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 12),
+
+            Row(
+              children: [
+                Expanded(
+                  child: _QuickActionCard(
+                    icon: Icons.location_on_rounded,
+                    title: 'Track',
+                    subtitle: 'Track shipment',
+                    onTap: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            'Shipment tracking coming soon.',
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _QuickActionCard(
+                    icon: Icons.receipt_long_rounded,
+                    title: 'Bookings',
+                    subtitle: 'View bookings',
+                    onTap: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            'Bookings section coming soon.',
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 28),
+
+            // --------------------------------------------------
+            // POPULAR SERVICES
+            // --------------------------------------------------
+
+            const Text(
+              'Transportation Services',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w800,
+                color: Color(0xFF111827),
+              ),
+            ),
+
+            const SizedBox(height: 14),
+
+            SizedBox(
+              height: 128,
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                children: [
+                  _ServiceCard(
+                    icon: Icons.fire_truck_rounded,
+                    title: 'Full Truck',
+                    subtitle: 'FTL',
+                  ),
+                  _ServiceCard(
+                    icon: Icons.local_shipping_rounded,
+                    title: 'Container',
+                    subtitle: 'Import / Export',
+                  ),
+                  _ServiceCard(
+                    icon: Icons.agriculture_rounded,
+                    title: 'Agri Load',
+                    subtitle: 'Agricultural',
+                  ),
+                  _ServiceCard(
+                    icon: Icons.inventory_2_rounded,
+                    title: 'General Cargo',
+                    subtitle: 'All cargo',
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 28),
+
+            // --------------------------------------------------
+            // RECENT ACTIVITY
+            // --------------------------------------------------
+
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Recent Activity',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                    color: Color(0xFF111827),
+                  ),
+                ),
+                TextButton(
+                  onPressed: () {},
+                  child: const Text(
+                    'View All',
+                    style: TextStyle(
+                      color: Color(0xFF1565C0),
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 8),
+
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(22),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(
+                  color: const Color(0xFFE4E7EC),
+                ),
+              ),
+              child: Column(
+                children: [
+                  Container(
+                    width: 58,
+                    height: 58,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF2F4F7),
+                      borderRadius: BorderRadius.circular(18),
+                    ),
+                    child: const Icon(
+                      Icons.inbox_outlined,
+                      size: 30,
+                      color: Color(0xFF667085),
+                    ),
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  const Text(
+                    'No recent activity',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF344054),
+                    ),
+                  ),
+
+                  const SizedBox(height: 5),
+
+                  const Text(
+                    'Your bookings and loads will appear here.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Color(0xFF98A2B3),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ============================================================
+// QUICK ACTION CARD
+// ============================================================
+
+class _QuickActionCard extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+
+  const _QuickActionCard({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(18),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(
+            color: const Color(0xFFE4E7EC),
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 46,
+              height: 46,
+              decoration: BoxDecoration(
+                color: const Color(0xFFE8F1FF),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Icon(
+                icon,
+                color: const Color(0xFF1565C0),
+                size: 25,
+              ),
+            ),
+
+            const SizedBox(height: 12),
+
+            Text(
+              title,
+              style: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w800,
+                color: Color(0xFF111827),
+              ),
+            ),
+
+            const SizedBox(height: 3),
+
+            Text(
+              subtitle,
+              style: const TextStyle(
+                fontSize: 11,
+                color: Color(0xFF667085),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ============================================================
+// SERVICE CARD
+// ============================================================
+
+class _ServiceCard extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+
+  const _ServiceCard({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 145,
+      margin: const EdgeInsets.only(right: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: const Color(0xFFE4E7EC),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(
+            icon,
+            color: const Color(0xFF1565C0),
+            size: 32,
+          ),
+
+          const Spacer(),
+
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w800,
+              color: Color(0xFF111827),
+            ),
+          ),
+
+          const SizedBox(height: 3),
+
+          Text(
+            subtitle,
+            style: const TextStyle(
+              fontSize: 11,
+              color: Color(0xFF667085),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ============================================================
+// PLACEHOLDER SCREENS
+// ============================================================
+
+class _BookingsPlaceholder extends StatelessWidget {
+  const _BookingsPlaceholder();
+
+  @override
+  Widget build(BuildContext context) {
+    return const _PlaceholderPage(
+      icon: Icons.receipt_long_rounded,
+      title: 'My Bookings',
+      subtitle: 'Your truck bookings will appear here.',
+    );
+  }
+}
+
+class _LoadsPlaceholder extends StatelessWidget {
+  const _LoadsPlaceholder();
+
+  @override
+  Widget build(BuildContext context) {
+    return const _PlaceholderPage(
+      icon: Icons.inventory_2_rounded,
+      title: 'My Loads',
+      subtitle: 'Your posted loads will appear here.',
+    );
+  }
+}
+
+class _CustomerProfilePlaceholder extends StatelessWidget {
+  const _CustomerProfilePlaceholder();
+
+  @override
+  Widget build(BuildContext context) {
+    return const _PlaceholderPage(
+      icon: Icons.person_rounded,
+      title: 'My Profile',
+      subtitle: 'Customer profile settings will appear here.',
+    );
+  }
+}
+
+class _PlaceholderPage extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+
+  const _PlaceholderPage({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(30),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 82,
+                height: 82,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE8F1FF),
+                  borderRadius: BorderRadius.circular(24),
+                ),
+                child: Icon(
+                  icon,
+                  size: 42,
+                  color: const Color(0xFF1565C0),
+                ),
+              ),
+
+              const SizedBox(height: 22),
+
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 25,
+                  fontWeight: FontWeight.w800,
+                  color: Color(0xFF111827),
+                ),
+              ),
+
+              const SizedBox(height: 8),
+
+              Text(
+                subtitle,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: Color(0xFF667085),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

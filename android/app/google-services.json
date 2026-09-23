@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "50010549629",
+    "project_id": "loadgo-defc2",
+    "storage_bucket": "loadgo-defc2.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:50010549629:android:5626866547a4a72cbb7014",
+        "android_client_info": {
+          "package_name": "com.example.transport_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAphUamFEzb94QGtzL4rVmxgsUTaEyvtQk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
