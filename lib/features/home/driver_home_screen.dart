@@ -1,0 +1,215 @@
+import 'package:flutter/material.dart';
+
+import '../../core/services/user_service.dart';
+import '../../main.dart';
+
+class DriverHomeScreen extends StatefulWidget {
+  const DriverHomeScreen({super.key});
+
+  @override
+  State<DriverHomeScreen> createState() => _DriverHomeScreenState();
+}
+
+class _DriverHomeScreenState extends State<DriverHomeScreen> {
+  int _index = 0;
+  bool _isOnline = false;
+
+  void _snack(String msg) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(msg), behavior: SnackBarBehavior.floating),
+    );
+  }
+
+  Future<void> _logout() async {
+    await UserService.logout();
+    if (!mounted) return;
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const RoleSelectionScreen()),
+      (route) => false,
+    );
+  }
+
+  String _greeting() {
+    final h = DateTime.now().hour;
+    if (h < 12) return tr(context, 'goodMorning');
+    if (h < 17) return tr(context, 'goodAfternoon');
+    return tr(context, 'goodEvening');
+  }
+
+  Widget _title(String text) => Text(text, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: Color(0xFF111827)));
+
+  Widget _emptyCard(IconData icon, String text) => Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(18), border: Border.all(color: const Color(0xFFE4E7EC))),
+        child: Row(
+          children: [
+            Icon(icon, color: const Color(0xFF98A2B3)),
+            const SizedBox(width: 12),
+            Expanded(child: Text(text, style: const TextStyle(color: Color(0xFF667085)))),
+          ],
+        ),
+      );
+
+  Widget _tile(IconData icon, String label) => Expanded(
+        child: InkWell(
+          borderRadius: BorderRadius.circular(18),
+          onTap: () => _snack(tr(context, 'comingSoon')),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(18), border: Border.all(color: const Color(0xFFE4E7EC))),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(icon, color: const Color(0xFF1565C0), size: 28),
+                const SizedBox(height: 10),
+                Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800)),
+              ],
+            ),
+          ),
+        ),
+      );
+
+  Widget _sampleLoadCard() => Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(18), border: Border.all(color: const Color(0xFFE4E7EC))),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Delhi → Mumbai', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
+            const SizedBox(height: 6),
+            const Text('20 Ton • Container • ₹ --', style: TextStyle(color: Color(0xFF667085))),
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              height: 44,
+              child: OutlinedButton(onPressed: () => _snack(tr(context, 'comingSoon')), child: Text(tr(context, 'viewLoad'))),
+            ),
+          ],
+        ),
+      );
+
+  Widget _homeTab() {
+    return SafeArea(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(20, 18, 20, 30),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(_greeting(), style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800)),
+                      const SizedBox(height: 2),
+                      Text(tr(context, 'driver'), style: const TextStyle(color: Color(0xFF667085))),
+                    ],
+                  ),
+                ),
+                IconButton(onPressed: () => showLanguageSelector(context), icon: const Icon(Icons.language_rounded), color: const Color(0xFF1565C0)),
+              ],
+            ),
+            const SizedBox(height: 18),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+              decoration: BoxDecoration(color: _isOnline ? const Color(0xFFE7F8EF) : const Color(0xFFF2F4F7), borderRadius: BorderRadius.circular(18)),
+              child: Row(
+                children: [
+                  Icon(Icons.circle, size: 14, color: _isOnline ? const Color(0xFF12B76A) : const Color(0xFF98A2B3)),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(_isOnline ? tr(context, 'online') : tr(context, 'offline'), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+                  ),
+                  Switch(value: _isOnline, onChanged: (v) => setState(() => _isOnline = v)),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(gradient: const LinearGradient(colors: [Color(0xFF0D47A1), Color(0xFF1976D2)]), borderRadius: BorderRadius.circular(20)),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(tr(context, 'todayEarnings'), style: const TextStyle(color: Colors.white70)),
+                  const SizedBox(height: 6),
+                  const Text('₹ 0', style: TextStyle(color: Colors.white, fontSize: 34, fontWeight: FontWeight.w800)),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+            _title(tr(context, 'activeTrip')),
+            const SizedBox(height: 12),
+            _emptyCard(Icons.route_rounded, tr(context, 'noActiveTrip')),
+            const SizedBox(height: 24),
+            _title(tr(context, 'availableLoads')),
+            const SizedBox(height: 12),
+            _isOnline ? _sampleLoadCard() : _emptyCard(Icons.wifi_off_rounded, tr(context, 'goOnlineToSee')),
+            const SizedBox(height: 24),
+            Row(
+              children: [
+                _tile(Icons.local_shipping_rounded, tr(context, 'myTruck')),
+                const SizedBox(width: 12),
+                _tile(Icons.verified_user_rounded, tr(context, 'documentsKyc')),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _placeholder(IconData icon, String title, {bool withLogout = false}) {
+    return SafeArea(
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 48, color: const Color(0xFF1565C0)),
+            const SizedBox(height: 12),
+            Text(title, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800)),
+            const SizedBox(height: 6),
+            Text(tr(context, 'comingSoon'), style: const TextStyle(color: Color(0xFF1565C0))),
+            if (withLogout) ...[
+              const SizedBox(height: 20),
+              OutlinedButton.icon(onPressed: _logout, icon: const Icon(Icons.logout_rounded), label: Text(tr(context, 'logout'))),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final pages = [
+      _homeTab(),
+      _placeholder(Icons.inventory_2_rounded, tr(context, 'loads')),
+      _placeholder(Icons.route_rounded, tr(context, 'trips')),
+      _placeholder(Icons.account_balance_wallet_rounded, tr(context, 'earnings')),
+      _placeholder(Icons.person_rounded, tr(context, 'profile'), withLogout: true),
+    ];
+
+    return Scaffold(
+      backgroundColor: const Color(0xFFF6F8FC),
+      body: IndexedStack(index: _index, children: pages),
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: _index,
+        onDestinationSelected: (i) => setState(() => _index = i),
+        backgroundColor: Colors.white,
+        indicatorColor: const Color(0xFFE8F1FF),
+        destinations: [
+          NavigationDestination(icon: const Icon(Icons.home_outlined), selectedIcon: const Icon(Icons.home_rounded), label: tr(context, 'home')),
+          NavigationDestination(icon: const Icon(Icons.inventory_2_outlined), selectedIcon: const Icon(Icons.inventory_2_rounded), label: tr(context, 'loads')),
+          NavigationDestination(icon: const Icon(Icons.route_outlined), selectedIcon: const Icon(Icons.route_rounded), label: tr(context, 'trips')),
+          NavigationDestination(icon: const Icon(Icons.account_balance_wallet_outlined), selectedIcon: const Icon(Icons.account_balance_wallet_rounded), label: tr(context, 'earnings')),
+          NavigationDestination(icon: const Icon(Icons.person_outline_rounded), selectedIcon: const Icon(Icons.person_rounded), label: tr(context, 'profile')),
+        ],
+      ),
+    );
+  }
+}

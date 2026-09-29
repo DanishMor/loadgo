@@ -1,18 +1,22 @@
+import 'core/services/user_service.dart';
+import 'features/auth/driver_login_screen.dart';
+import 'features/home/driver_home_screen.dart';
+import 'features/pending/driver_pending_screen.dart';
+import 'features/profile/customer_profile_setup_screen.dart';
+import 'features/profile/driver_profile_setup_screen.dart';
+
 import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 import 'firebase_options.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(const LoadGoApp());
 }
 
@@ -35,13 +39,13 @@ enum AppLanguage {
   urdu,
 }
 
-final ValueNotifier<AppLanguage> languageNotifier =
-    ValueNotifier<AppLanguage>(AppLanguage.english);
+final ValueNotifier<AppLanguage> languageNotifier = ValueNotifier<AppLanguage>(
+  AppLanguage.english,
+);
 
 class LanguageInfo {
   final String nativeName;
   final String englishName;
-
   const LanguageInfo(this.nativeName, this.englishName);
 }
 
@@ -68,8 +72,7 @@ class LanguageScope extends InheritedNotifier<ValueNotifier<AppLanguage>> {
   });
 
   static AppLanguage of(BuildContext context) {
-    final scope =
-        context.dependOnInheritedWidgetOfExactType<LanguageScope>();
+    final scope = context.dependOnInheritedWidgetOfExactType<LanguageScope>();
     return scope?.notifier?.value ?? AppLanguage.english;
   }
 }
@@ -107,26 +110,16 @@ class T {
     'chooseRole': {
       AppLanguage.english: 'Choose how you want to use LoadGo',
       AppLanguage.hindi: 'चुनें कि आप LoadGo का उपयोग कैसे करना चाहते हैं',
-      AppLanguage.hinglish:
-          'Choose karo ki aap LoadGo kaise use karna chahte hain',
-      AppLanguage.kannada:
-          'ನೀವು LoadGo ಅನ್ನು ಹೇಗೆ ಬಳಸಲು ಬಯಸುತ್ತೀರಿ ಆಯ್ಕೆಮಾಡಿ',
-      AppLanguage.tamil:
-          'LoadGo-வை எப்படி பயன்படுத்த விரும்புகிறீர்கள் என்பதைத் தேர்வு செய்யவும்',
-      AppLanguage.telugu:
-          'మీరు LoadGo ను ఎలా ఉపయోగించాలనుకుంటున్నారో ఎంచుకోండి',
-      AppLanguage.marathi:
-          'तुम्हाला LoadGo कसे वापरायचे आहे ते निवडा',
-      AppLanguage.gujarati:
-          'તમે LoadGo કેવી રીતે વાપરવા માંગો છો તે પસંદ કરો',
-      AppLanguage.bengali:
-          'আপনি LoadGo কীভাবে ব্যবহার করতে চান তা বেছে নিন',
-      AppLanguage.punjabi:
-          'ਚੁਣੋ ਕਿ ਤੁਸੀਂ LoadGo ਨੂੰ ਕਿਵੇਂ ਵਰਤਣਾ ਚਾਹੁੰਦੇ ਹੋ',
-      AppLanguage.kashmiri:
-          'چُنیِو زِ توہہِ LoadGo کِتھ پٲٹھۍ کَرِو استعمال',
-      AppLanguage.urdu:
-          'منتخب کریں کہ آپ LoadGo کو کیسے استعمال کرنا چاہتے ہیں',
+      AppLanguage.hinglish: 'Choose karo ki aap LoadGo kaise use karna chahte hain',
+      AppLanguage.kannada: 'ನೀವು LoadGo ಅನ್ನು ಹೇಗೆ ಬಳಸಲು ಬಯಸುತ್ತೀರಿ ಆಯ್ಕೆಮಾಡಿ',
+      AppLanguage.tamil: 'LoadGo-வை எப்படி பயன்படுத்த விரும்புகிறீர்கள் என்பதைத் தேர்வு செய்யவும்',
+      AppLanguage.telugu: 'మీరు LoadGo ను ఎలా ఉపయోగించాలనుకుంటున్నారో ఎంచుకోండి',
+      AppLanguage.marathi: 'तुम्हाला LoadGo कसे वापरायचे आहे ते निवडा',
+      AppLanguage.gujarati: 'તમે LoadGo કેવી રીતે વાપરવા માંગો છો તે પસંદ કરો',
+      AppLanguage.bengali: 'আপনি LoadGo কীভাবে ব্যবহার করতে চান তা বেছে নিন',
+      AppLanguage.punjabi: 'ਚੁਣੋ ਕਿ ਤੁਸੀਂ LoadGo ਨੂੰ ਕਿਵੇਂ ਵਰਤਣਾ ਚਾਹੁੰਦੇ ਹੋ',
+      AppLanguage.kashmiri: 'چُنیِو زِ توہہِ LoadGo کِتھ پٲٹھۍ کَرِو استعمال',
+      AppLanguage.urdu: 'منتخب کریں کہ آپ LoadGo کو کیسے استعمال کرنا چاہتے ہیں',
     },
     'customer': {
       AppLanguage.english: 'Customer',
@@ -143,30 +136,18 @@ class T {
       AppLanguage.urdu: 'صارف',
     },
     'customerDesc': {
-      AppLanguage.english:
-          'For traders, factories, shops, importers & exporters',
-      AppLanguage.hindi:
-          'व्यापारी, फैक्ट्री, दुकान, आयातक और निर्यातक के लिए',
-      AppLanguage.hinglish:
-          'Traders, factories, shops, importers & exporters ke liye',
-      AppLanguage.kannada:
-          'ವ್ಯಾಪಾರಿಗಳು, ಕಾರ್ಖಾನೆಗಳು, ಅಂಗಡಿಗಳು, ಆಮದುದಾರರು ಮತ್ತು ರಫ್ತುದಾರರಿಗೆ',
-      AppLanguage.tamil:
-          'வணிகர்கள், தொழிற்சாலைகள், கடைகள், இறக்குமதியாளர்கள் மற்றும் ஏற்றுமதியாளர்களுக்கு',
-      AppLanguage.telugu:
-          'వ్యాపారులు, ఫ్యాక్టరీలు, షాపులు, దిగుమతిదారులు మరియు ఎగుమతిదారుల కోసం',
-      AppLanguage.marathi:
-          'व्यापारी, कारखाने, दुकाने, आयातदार आणि निर्यातदारांसाठी',
-      AppLanguage.gujarati:
-          'વેપારીઓ, ફેક્ટરીઓ, દુકાનો, આયાતકારો અને નિકાસકારો માટે',
-      AppLanguage.bengali:
-          'ব্যবসায়ী, কারখানা, দোকান, আমদানিকারক ও রপ্তানিকারকদের জন্য',
-      AppLanguage.punjabi:
-          'ਵਪਾਰੀਆਂ, ਫੈਕਟਰੀਆਂ, ਦੁਕਾਨਾਂ, ਆਯਾਤਕਾਰਾਂ ਅਤੇ ਨਿਰਯਾਤਕਾਰਾਂ ਲਈ',
-      AppLanguage.kashmiri:
-          'تاجٕر، فیکٹری، دُکان، امپورٹر تہٕ ایکسپورٹر خٲطرٕ',
-      AppLanguage.urdu:
-          'تاجروں، فیکٹریوں، دکانوں، درآمد کنندگان اور برآمد کنندگان کے لیے',
+      AppLanguage.english: 'For traders, factories, shops, importers & exporters',
+      AppLanguage.hindi: 'व्यापारी, फैक्ट्री, दुकान, आयातक और निर्यातक के लिए',
+      AppLanguage.hinglish: 'Traders, factories, shops, importers & exporters ke liye',
+      AppLanguage.kannada: 'ವ್ಯಾಪಾರಿಗಳು, ಕಾರ್ಖಾನೆಗಳು, ಅಂಗಡಿಗಳು, ಆಮದುದಾರರು ಮತ್ತು ರಫ್ತುದಾರರಿಗೆ',
+      AppLanguage.tamil: 'வணிகர்கள், தொழிற்சாலைகள், கடைகள், இறக்குமதியாளர்கள் மற்றும் ஏற்றுமதியாளர்களுக்கு',
+      AppLanguage.telugu: 'వ్యాపారులు, ఫ్యాక్టరీలు, షాపులు, దిగుమతిదారులు మరియు ఎగుమతిదారుల కోసం',
+      AppLanguage.marathi: 'व्यापारी, कारखाने, दुकाने, आयातदार आणि निर्यातदारांसाठी',
+      AppLanguage.gujarati: 'વેપારીઓ, ફેક્ટરીઓ, દુકાનો, આયાતકારો અને નિકાસકારો માટે',
+      AppLanguage.bengali: 'ব্যবসায়ী, কারখানা, দোকান, আমদানিকারক ও রপ্তানিকারকদের জন্য',
+      AppLanguage.punjabi: 'ਵਪਾਰੀਆਂ, ਫੈਕਟਰੀਆਂ, ਦੁਕਾਨਾਂ, ਆਯਾਤਕਾਰਾਂ ਅਤੇ ਨਿਰਯਾਤਕਾਰਾਂ ਲਈ',
+      AppLanguage.kashmiri: 'تاجٕر، فیکٹری، دُکان، امپورٹر تہٕ ایکسپورٹر خٲطرٕ',
+      AppLanguage.urdu: 'تاجروں، فیکٹریوں، دکانوں، درآمد کنندگان اور برآمد کنندگان کے لیے',
     },
     'bookTruck': {
       AppLanguage.english: 'Book a Truck',
@@ -252,32 +233,6 @@ class T {
       AppLanguage.kashmiri: 'ڈرایِور طوٗر جاری تھاو',
       AppLanguage.urdu: 'ڈرائیور کے طور پر جاری رکھیں',
     },
-    'driverSoon': {
-      AppLanguage.english:
-          'Driver login next development step me banega.',
-      AppLanguage.hindi:
-          'ड्राइवर लॉगिन अगले डेवलपमेंट स्टेप में बनेगा।',
-      AppLanguage.hinglish:
-          'Driver login next development step mein banega.',
-      AppLanguage.kannada:
-          'ಡ್ರೈವರ್ ಲಾಗಿನ್ ಮುಂದಿನ ಅಭಿವೃದ್ಧಿ ಹಂತದಲ್ಲಿ ಬರಲಿದೆ.',
-      AppLanguage.tamil:
-          'டிரைவர் உள்நுழைவு அடுத்த மேம்பாட்டு கட்டத்தில் வரும்.',
-      AppLanguage.telugu:
-          'డ్రైవర్ లాగిన్ తదుపరి డెవలప్‌మెంట్ దశలో వస్తుంది.',
-      AppLanguage.marathi:
-          'ड्रायव्हर लॉगिन पुढील डेव्हलपमेंट स्टेपमध्ये येईल.',
-      AppLanguage.gujarati:
-          'ડ્રાઇવર લૉગિન આગામી ડેવલપમેન્ટ સ્ટેપમાં આવશે.',
-      AppLanguage.bengali:
-          'ড্রাইভার লগইন পরবর্তী ডেভেলপমেন্ট ধাপে আসবে।',
-      AppLanguage.punjabi:
-          'ਡਰਾਈਵਰ ਲੌਗਇਨ ਅਗਲੇ ਡਿਵੈਲਪਮੈਂਟ ਸਟੈਪ ਵਿੱਚ ਆਵੇਗਾ।',
-      AppLanguage.kashmiri:
-          'ڈرایِور لاگ اِن اگلے ڈیولپمنٹ مرحلس منز یِوان۔',
-      AppLanguage.urdu:
-          'ڈرائیور لاگ اِن اگلے ڈیولپمنٹ مرحلے میں آئے گا۔',
-    },
     'login': {
       AppLanguage.english: 'Customer Login',
       AppLanguage.hindi: 'ग्राहक लॉगिन',
@@ -294,28 +249,17 @@ class T {
     },
     'loginSub': {
       AppLanguage.english: 'Login or create your customer account',
-      AppLanguage.hindi:
-          'लॉगिन करें या अपना ग्राहक अकाउंट बनाएं',
-      AppLanguage.hinglish:
-          'Login karo ya apna customer account banao',
-      AppLanguage.kannada:
-          'ಲಾಗಿನ್ ಮಾಡಿ ಅಥವಾ ನಿಮ್ಮ ಗ್ರಾಹಕ ಖಾತೆಯನ್ನು ರಚಿಸಿ',
-      AppLanguage.tamil:
-          'உள்நுழையவும் அல்லது உங்கள் வாடிக்கையாளர் கணக்கை உருவாக்கவும்',
-      AppLanguage.telugu:
-          'లాగిన్ చేయండి లేదా మీ కస్టమర్ ఖాతాను సృష్టించండి',
-      AppLanguage.marathi:
-          'लॉगिन करा किंवा तुमचे ग्राहक खाते तयार करा',
-      AppLanguage.gujarati:
-          'લૉગિન કરો અથવા તમારું ગ્રાહક ખાતું બનાવો',
-      AppLanguage.bengali:
-          'লগইন করুন অথবা আপনার গ্রাহক অ্যাকাউন্ট তৈরি করুন',
-      AppLanguage.punjabi:
-          'ਲੌਗਇਨ ਕਰੋ ਜਾਂ ਆਪਣਾ ਗਾਹਕ ਖਾਤਾ ਬਣਾਓ',
-      AppLanguage.kashmiri:
-          'لاگ اِن کٔرِو یا پنُن گراہک اکاؤنٹ بناو',
-      AppLanguage.urdu:
-          'لاگ اِن کریں یا اپنا صارف اکاؤنٹ بنائیں',
+      AppLanguage.hindi: 'लॉगिन करें या अपना ग्राहक अकाउंट बनाएं',
+      AppLanguage.hinglish: 'Login karo ya apna customer account banao',
+      AppLanguage.kannada: 'ಲಾಗಿನ್ ಮಾಡಿ ಅಥವಾ ನಿಮ್ಮ ಗ್ರಾಹಕ ಖಾತೆಯನ್ನು ರಚಿಸಿ',
+      AppLanguage.tamil: 'உள்நுழையவும் அல்லது உங்கள் வாடிக்கையாளர் கணக்கை உருவாக்கவும்',
+      AppLanguage.telugu: 'లాగిన్ చేయండి లేదా మీ కస్టమర్ ఖాతాను సృష్టించండి',
+      AppLanguage.marathi: 'लॉगिन करा किंवा तुमचे ग्राहक खाते तयार करा',
+      AppLanguage.gujarati: 'લૉગિન કરો અથવા તમારું ગ્રાહક ખાતું બનાવો',
+      AppLanguage.bengali: 'লগইন করুন অথবা আপনার গ্রাহক অ্যাকাউন্ট তৈরি করুন',
+      AppLanguage.punjabi: 'ਲੌਗਇਨ ਕਰੋ ਜਾਂ ਆਪਣਾ ਗਾਹਕ ਖਾਤਾ ਬਣਾਓ',
+      AppLanguage.kashmiri: 'لاگ اِن کٔرِو یا پنُن گراہک اکاؤنٹ بناو',
+      AppLanguage.urdu: 'لاگ اِن کریں یا اپنا صارف اکاؤنٹ بنائیں',
     },
     'mobile': {
       AppLanguage.english: 'Mobile Number',
@@ -430,30 +374,18 @@ class T {
       AppLanguage.urdu: 'Google لاگ اِن اگلے تصدیقی مرحلے میں شامل ہوگا۔',
     },
     'terms': {
-      AppLanguage.english:
-          'By continuing, you agree to LoadGo Terms & Privacy Policy.',
-      AppLanguage.hindi:
-          'जारी रखकर आप LoadGo की Terms और Privacy Policy से सहमत होते हैं।',
-      AppLanguage.hinglish:
-          'Continue karke aap LoadGo Terms aur Privacy Policy se agree karte hain.',
-      AppLanguage.kannada:
-          'ಮುಂದುವರಿಸುವ ಮೂಲಕ ನೀವು LoadGo ನಿಯಮಗಳು ಮತ್ತು ಗೌಪ್ಯತಾ ನೀತಿಯನ್ನು ಒಪ್ಪುತ್ತೀರಿ.',
-      AppLanguage.tamil:
-          'தொடர்வதன் மூலம் LoadGo விதிமுறைகள் மற்றும் தனியுரிமைக் கொள்கையை ஏற்கிறீர்கள்.',
-      AppLanguage.telugu:
-          'కొనసాగించడం ద్వారా LoadGo నిబంధనలు మరియు గోప్యతా విధానాన్ని అంగీకరిస్తారు.',
-      AppLanguage.marathi:
-          'पुढे जाऊन तुम्ही LoadGo च्या Terms आणि Privacy Policy शी सहमत आहात.',
-      AppLanguage.gujarati:
-          'ચાલુ રાખીને તમે LoadGo ની Terms અને Privacy Policy સાથે સહમત થાઓ છો.',
-      AppLanguage.bengali:
-          'চালিয়ে গেলে আপনি LoadGo-এর Terms ও Privacy Policy-তে সম্মতি দেন।',
-      AppLanguage.punjabi:
-          'ਜਾਰੀ ਰੱਖਣ ਨਾਲ ਤੁਸੀਂ LoadGo ਦੀਆਂ Terms ਅਤੇ Privacy Policy ਨਾਲ ਸਹਿਮਤ ਹੋ।',
-      AppLanguage.kashmiri:
-          'جاری تھاونس سۭتۍ توہہِ LoadGo ہُند Terms تہٕ Privacy Policy مَنٛز راضی گژھان۔',
-      AppLanguage.urdu:
-          'جاری رکھنے سے آپ LoadGo کی Terms اور Privacy Policy سے اتفاق کرتے ہیں۔',
+      AppLanguage.english: 'By continuing, you agree to LoadGo Terms & Privacy Policy.',
+      AppLanguage.hindi: 'जारी रखकर आप LoadGo की Terms और Privacy Policy से सहमत होते हैं।',
+      AppLanguage.hinglish: 'Continue karke aap LoadGo Terms aur Privacy Policy se agree karte hain.',
+      AppLanguage.kannada: 'ಮುಂದುವರಿಸುವ ಮೂಲಕ ನೀವು LoadGo ನಿಯಮಗಳು ಮತ್ತು ಗೌಪ್ಯತಾ ನೀತಿಯನ್ನು ಒಪ್ಪುತ್ತೀರಿ.',
+      AppLanguage.tamil: 'தொடர்வதன் மூலம் LoadGo விதிமுறைகள் மற்றும் தனியுரிமைக் கொள்கையை ஏற்கிறீர்கள்.',
+      AppLanguage.telugu: 'కొనసాగించడం ద్వారా LoadGo నిబంధనలు మరియు గోప్యతా విధానాన్ని అంగీకరిస్తారు.',
+      AppLanguage.marathi: 'पुढे जाऊन तुम्ही LoadGo च्या Terms आणि Privacy Policy शी सहमत आहात.',
+      AppLanguage.gujarati: 'ચાલુ રાખીને તમે LoadGo ની Terms અને Privacy Policy સાથે સહમત થાઓ છો.',
+      AppLanguage.bengali: 'চালিয়ে গেলে আপনি LoadGo-এর Terms ও Privacy Policy-তে সম্মতি দেন।',
+      AppLanguage.punjabi: 'ਜਾਰੀ ਰੱਖਣ ਨਾਲ ਤੁਸੀਂ LoadGo ਦੀਆਂ Terms ਅਤੇ Privacy Policy ਨਾਲ ਸਹਿਮਤ ਹੋ।',
+      AppLanguage.kashmiri: 'جاری تھاونس سۭتۍ توہہِ LoadGo ہُند Terms تہٕ Privacy Policy مَنٛز راضی گژھان۔',
+      AppLanguage.urdu: 'جاری رکھنے سے آپ LoadGo کی Terms اور Privacy Policy سے اتفاق کرتے ہیں۔',
     },
     'phoneVerified': {
       AppLanguage.english: 'Phone verified successfully!',
@@ -694,30 +626,18 @@ class T {
       AppLanguage.urdu: 'اپنا سامان\nاعتماد کے ساتھ بھیجیں۔',
     },
     'heroSub': {
-      AppLanguage.english:
-          'Book reliable trucks for domestic,\nimport & export transportation.',
-      AppLanguage.hindi:
-          'घरेलू, आयात और निर्यात परिवहन के लिए\nभरोसेमंद ट्रक बुक करें।',
-      AppLanguage.hinglish:
-          'Domestic, import & export transportation ke liye\nreliable trucks book karo.',
-      AppLanguage.kannada:
-          'ದೇಶೀಯ, ಆಮದು ಮತ್ತು ರಫ್ತು ಸಾಗಣೆಗಾಗಿ\nವಿಶ್ವಾಸಾರ್ಹ ಟ್ರಕ್‌ಗಳನ್ನು ಬುಕ್ ಮಾಡಿ.',
-      AppLanguage.tamil:
-          'உள்நாட்டு, இறக்குமதி மற்றும் ஏற்றுமதி போக்குவரத்திற்காக\nநம்பகமான டிரக்குகளை முன்பதிவு செய்யுங்கள்.',
-      AppLanguage.telugu:
-          'దేశీయ, దిగుమతి మరియు ఎగుమతి రవాణా కోసం\nనమ్మకమైన ట్రక్కులను బుక్ చేయండి.',
-      AppLanguage.marathi:
-          'देशांतर्गत, आयात आणि निर्यात वाहतुकीसाठी\nविश्वासार्ह ट्रक बुक करा.',
-      AppLanguage.gujarati:
-          'સ્થાનિક, આયાત અને નિકાસ પરિવહન માટે\nવિશ્વસનીય ટ્રક બુક કરો.',
-      AppLanguage.bengali:
-          'দেশীয়, আমদানি ও রপ্তানি পরিবহনের জন্য\nবিশ্বস্ত ট্রাক বুক করুন।',
-      AppLanguage.punjabi:
-          'ਘਰੇਲੂ, ਆਯਾਤ ਅਤੇ ਨਿਰਯਾਤ ਆਵਾਜਾਈ ਲਈ\nਭਰੋਸੇਯੋਗ ਟਰੱਕ ਬੁੱਕ ਕਰੋ।',
-      AppLanguage.kashmiri:
-          'ملکی، امپورٹ تہٕ ایکسپورٹ ٹرانسپورٹ خٲطرٕ\nمٕضبوط ٹرٛک بُک کٔرِو۔',
-      AppLanguage.urdu:
-          'ملکی، درآمد اور برآمدی نقل و حمل کے لیے\nقابلِ اعتماد ٹرک بک کریں۔',
+      AppLanguage.english: 'Book reliable trucks for domestic,\nimport & export transportation.',
+      AppLanguage.hindi: 'घरेलू, आयात और निर्यात परिवहन के लिए\nभरोसेमंद ट्रक बुक करें।',
+      AppLanguage.hinglish: 'Domestic, import & export transportation ke liye\nreliable trucks book karo.',
+      AppLanguage.kannada: 'ದೇಶೀಯ, ಆಮದು ಮತ್ತು ರಫ್ತು ಸಾಗಣೆಗಾಗಿ\nವಿಶ್ವಾಸಾರ್ಹ ಟ್ರಕ್‌ಗಳನ್ನು ಬುಕ್ ಮಾಡಿ.',
+      AppLanguage.tamil: 'உள்நாட்டு, இறக்குமதி மற்றும் ஏற்றுமதி போக்குவரத்திற்காக\nநம்பகமான டிரக்குகளை முன்பதிவு செய்யுங்கள்.',
+      AppLanguage.telugu: 'దేశీయ, దిగుమతి మరియు ఎగుమతి రవాణా కోసం\nనమ్మకమైన ట్రక్కులను బుక్ చేయండి.',
+      AppLanguage.marathi: 'देशांतर्गत, आयात आणि निर्यात वाहतुकीसाठी\nविश्वासार्ह ट्रक बुक करा.',
+      AppLanguage.gujarati: 'સ્થાનિક, આયાત અને નિકાસ પરિવહન માટે\nવિશ્વસનીય ટ્રક બુક કરો.',
+      AppLanguage.bengali: 'দেশীয়, আমদানি ও রপ্তানি পরিবহনের জন্য\nবিশ্বস্ত ট্রাক বুক করুন।',
+      AppLanguage.punjabi: 'ਘਰੇਲੂ, ਆਯਾਤ ਅਤੇ ਨਿਰਯਾਤ ਆਵਾਜਾਈ ਲਈ\nਭਰੋਸੇਯੋਗ ਟਰੱਕ ਬੁੱਕ ਕਰੋ।',
+      AppLanguage.kashmiri: 'ملکی، امپورٹ تہٕ ایکسپورٹ ٹرانسپورٹ خٲطرٕ\nمٕضبوط ٹرٛک بُک کٔرِو۔',
+      AppLanguage.urdu: 'ملکی، درآمد اور برآمدی نقل و حمل کے لیے\nقابلِ اعتماد ٹرک بک کریں۔',
     },
     'quickActions': {
       AppLanguage.english: 'Quick Actions',
@@ -1044,7 +964,7 @@ class T {
     'loadsSub': {
       AppLanguage.english: 'Your posted loads will appear here.',
       AppLanguage.hindi: 'आपके पोस्ट किए गए लोड यहां दिखाई देंगे।',
-      AppLanguage.hinglish: 'Aapke posted loads yahan dikhेंगे.',
+      AppLanguage.hinglish: 'Aapke posted loads yahan dikhenge.',
       AppLanguage.kannada: 'ನೀವು ಪೋಸ್ಟ್ ಮಾಡಿದ ಲೋಡ್‌ಗಳು ಇಲ್ಲಿ ಕಾಣಿಸುತ್ತವೆ.',
       AppLanguage.tamil: 'நீங்கள் பதிவு செய்த சரக்குகள் இங்கே தோன்றும்.',
       AppLanguage.telugu: 'మీరు పోస్ట్ చేసిన లోడ్లు ఇక్కడ కనిపిస్తాయి.',
@@ -1153,6 +1073,186 @@ class T {
       AppLanguage.kashmiri: 'نوٹیفیکیشنز چھِ جلد یِوان۔',
       AppLanguage.urdu: 'نوٹیفکیشنز جلد آئیں گے۔',
     },
+    'goodMorning': {
+      AppLanguage.english: 'Good Morning',
+      AppLanguage.hindi: 'सुप्रभात',
+      AppLanguage.hinglish: 'Good Morning',
+    },
+    'goodAfternoon': {
+      AppLanguage.english: 'Good Afternoon',
+      AppLanguage.hindi: 'नमस्कार',
+      AppLanguage.hinglish: 'Good Afternoon',
+    },
+    'goodEvening': {
+      AppLanguage.english: 'Good Evening',
+      AppLanguage.hindi: 'शुभ संध्या',
+      AppLanguage.hinglish: 'Good Evening',
+    },
+    'fullName': {
+      AppLanguage.english: 'Full Name',
+      AppLanguage.hindi: 'पूरा नाम',
+      AppLanguage.hinglish: 'Full Name',
+    },
+    'nameRequired': {
+      AppLanguage.english: 'Please enter your full name',
+      AppLanguage.hindi: 'कृपया अपना पूरा नाम दर्ज करें',
+      AppLanguage.hinglish: 'Please apna full name enter karo',
+    },
+    'companyNameOptional': {
+      AppLanguage.english: 'Business / Company Name (optional)',
+      AppLanguage.hindi: 'बिज़नेस / कंपनी का नाम (वैकल्पिक)',
+      AppLanguage.hinglish: 'Business / Company Name (optional)',
+    },
+    'emailOptional': {
+      AppLanguage.english: 'Email (optional)',
+      AppLanguage.hindi: 'ईमेल (वैकल्पिक)',
+      AppLanguage.hinglish: 'Email (optional)',
+    },
+    'invalidEmail': {
+      AppLanguage.english: 'Please enter a valid email',
+      AppLanguage.hindi: 'कृपया सही ईमेल दर्ज करें',
+      AppLanguage.hinglish: 'Please valid email enter karo',
+    },
+    'saveContinue': {
+      AppLanguage.english: 'Save & Continue',
+      AppLanguage.hindi: 'सेव करें और आगे बढ़ें',
+      AppLanguage.hinglish: 'Save karo aur Continue karo',
+    },
+    'profileSetupTitle': {
+      AppLanguage.english: 'Complete your profile',
+      AppLanguage.hindi: 'अपनी प्रोफाइल पूरी करें',
+      AppLanguage.hinglish: 'Apni profile complete karo',
+    },
+    'profileSetupSub': {
+      AppLanguage.english: 'Tell us a little about you to get started',
+      AppLanguage.hindi: 'शुरू करने के लिए अपने बारे में थोड़ा बताएं',
+      AppLanguage.hinglish: 'Shuru karne ke liye apne baare mein batao',
+    },
+    'somethingWrong': {
+      AppLanguage.english: 'Something went wrong. Please try again.',
+      AppLanguage.hindi: 'कुछ गलत हुआ। कृपया दोबारा कोशिश करें।',
+      AppLanguage.hinglish: 'Kuch galat hua. Please dobara try karo.',
+    },
+    'logout': {
+      AppLanguage.english: 'Logout',
+      AppLanguage.hindi: 'लॉगआउट',
+      AppLanguage.hinglish: 'Logout',
+    },
+    'driverLoginTitle': {
+      AppLanguage.english: 'Driver Login',
+      AppLanguage.hindi: 'ड्राइवर लॉगिन',
+      AppLanguage.hinglish: 'Driver Login',
+    },
+    'driverLoginSub': {
+      AppLanguage.english: 'Login or create your driver account',
+      AppLanguage.hindi: 'लॉगिन करें या अपना ड्राइवर अकाउंट बनाएं',
+      AppLanguage.hinglish: 'Login karo ya apna driver account banao',
+    },
+    'driverProfileTitle': {
+      AppLanguage.english: 'Set up your driver profile',
+      AppLanguage.hindi: 'अपनी ड्राइवर प्रोफाइल सेट करें',
+      AppLanguage.hinglish: 'Apni driver profile set karo',
+    },
+    'driverProfileSub': {
+      AppLanguage.english: 'We need a few details before you can go online',
+      AppLanguage.hindi: 'ऑनलाइन होने से पहले हमें कुछ जानकारी चाहिए',
+      AppLanguage.hinglish: 'Online hone se pehle thodi details chahiye',
+    },
+    'vehicleNumber': {
+      AppLanguage.english: 'Vehicle Number',
+      AppLanguage.hindi: 'वाहन नंबर',
+      AppLanguage.hinglish: 'Vehicle Number',
+    },
+    'vehicleNumberHint': {
+      AppLanguage.english: 'e.g. DL01AB1234',
+      AppLanguage.hindi: 'जैसे DL01AB1234',
+      AppLanguage.hinglish: 'Jaise DL01AB1234',
+    },
+    'vehicleNumberRequired': {
+      AppLanguage.english: 'Please enter your vehicle number',
+      AppLanguage.hindi: 'कृपया वाहन नंबर दर्ज करें',
+      AppLanguage.hinglish: 'Please vehicle number enter karo',
+    },
+    'vehicleType': {
+      AppLanguage.english: 'Vehicle Type',
+      AppLanguage.hindi: 'वाहन प्रकार',
+      AppLanguage.hinglish: 'Vehicle Type',
+    },
+    'pendingTitle': {
+      AppLanguage.english: 'Verification in progress',
+      AppLanguage.hindi: 'सत्यापन जारी है',
+      AppLanguage.hinglish: 'Verification chal rahi hai',
+    },
+    'pendingSub': {
+      AppLanguage.english: 'Our team is reviewing your details. This usually takes a short while.',
+      AppLanguage.hindi: 'हमारी टीम आपकी जानकारी की समीक्षा कर रही है। इसमें थोड़ा समय लग सकता है।',
+      AppLanguage.hinglish: 'Hamari team aapki details check kar rahi hai. Thoda time lag sakta hai.',
+    },
+    'refreshStatus': {
+      AppLanguage.english: 'Check Status',
+      AppLanguage.hindi: 'स्टेटस देखें',
+      AppLanguage.hinglish: 'Status Check Karo',
+    },
+    'online': {
+      AppLanguage.english: 'ONLINE',
+      AppLanguage.hindi: 'ऑनलाइन',
+      AppLanguage.hinglish: 'ONLINE',
+    },
+    'offline': {
+      AppLanguage.english: 'OFFLINE',
+      AppLanguage.hindi: 'ऑफलाइन',
+      AppLanguage.hinglish: 'OFFLINE',
+    },
+    'todayEarnings': {
+      AppLanguage.english: "Today's Earnings",
+      AppLanguage.hindi: 'आज की कमाई',
+      AppLanguage.hinglish: 'Aaj ki Kamai',
+    },
+    'activeTrip': {
+      AppLanguage.english: 'Active Trip',
+      AppLanguage.hindi: 'चालू ट्रिप',
+      AppLanguage.hinglish: 'Active Trip',
+    },
+    'noActiveTrip': {
+      AppLanguage.english: 'No active trip',
+      AppLanguage.hindi: 'कोई चालू ट्रिप नहीं',
+      AppLanguage.hinglish: 'Abhi koi active trip nahi hai',
+    },
+    'availableLoads': {
+      AppLanguage.english: 'Available Loads',
+      AppLanguage.hindi: 'उपलब्ध लोड',
+      AppLanguage.hinglish: 'Available Loads',
+    },
+    'goOnlineToSee': {
+      AppLanguage.english: 'Go online to see available loads',
+      AppLanguage.hindi: 'लोड देखने के लिए ऑनलाइन हों',
+      AppLanguage.hinglish: 'Loads dekhne ke liye online ho jao',
+    },
+    'viewLoad': {
+      AppLanguage.english: 'View Load',
+      AppLanguage.hindi: 'लोड देखें',
+      AppLanguage.hinglish: 'Load Dekho',
+    },
+    'myTruck': {
+      AppLanguage.english: 'My Truck',
+      AppLanguage.hindi: 'मेरा ट्रक',
+      AppLanguage.hinglish: 'Mera Truck',
+    },
+    'documentsKyc': {
+      AppLanguage.english: 'Documents / KYC',
+      AppLanguage.hindi: 'दस्तावेज़ / KYC',
+      AppLanguage.hinglish: 'Documents / KYC',
+    },
+    'trips': {
+      AppLanguage.english: 'Trips',
+      AppLanguage.hindi: 'ट्रिप',
+      AppLanguage.hinglish: 'Trips',
+    },
+    'earnings': {
+      AppLanguage.english: 'Earnings',
+      AppLanguage.hindi: 'कमाई',
+      AppLanguage.hinglish: 'Earnings',
+    },
   };
 
   static String get(String key, AppLanguage language) {
@@ -1165,6 +1265,52 @@ String tr(BuildContext context, String key) =>
 
 String trLanguageName(AppLanguage language) =>
     languageInfo[language]?.nativeName ?? 'English';
+
+// ============================================================
+// ROLE RESOLVERS
+// ============================================================
+
+Future<Widget> resolveCustomerStart() async {
+  final user = FirebaseAuth.instance.currentUser;
+  if (user == null) return const RoleSelectionScreen();
+
+  final doc =
+      await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+
+  if (!doc.exists) {
+    return CustomerProfileSetupScreen(phoneNumber: user.phoneNumber ?? '');
+  }
+
+  final data = doc.data() ?? {};
+
+  if (data['profileComplete'] != true) {
+    return CustomerProfileSetupScreen(
+      phoneNumber: user.phoneNumber ?? '',
+      existingName: data['name']?.toString() ?? '',
+    );
+  }
+
+  return const CustomerHomeScreen();
+}
+
+Future<Widget> resolveDriverStart() async {
+  final data = await UserService.getUser();
+
+  final roles = ((data?['roles'] as List?) ?? const [])
+      .map((e) => e.toString())
+      .toList();
+  final profileComplete = data?['driverProfileComplete'] == true;
+  final verified = data?['verified'] == true ||
+      data?['verificationStatus'] == 'approved';
+
+  if (!roles.contains('driver') || !profileComplete) {
+    return const DriverProfileSetupScreen();
+  }
+  if (!verified) {
+    return const DriverPendingScreen();
+  }
+  return const DriverHomeScreen();
+}
 
 // ============================================================
 // APP
@@ -1200,15 +1346,10 @@ class LoadGoApp extends StatelessWidget {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
-              borderSide: const BorderSide(
-                color: Color(0xFF1565C0),
-                width: 1.5,
-              ),
+              borderSide: const BorderSide(color: Color(0xFF1565C0), width: 1.5),
             ),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 16,
-            ),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           ),
         ),
         home: const SplashScreen(),
@@ -1235,18 +1376,12 @@ void showLanguageSelector(BuildContext context) {
                 children: [
                   Text(
                     tr(context, 'language'),
-                    style: const TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w800,
-                    ),
+                    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
                   ),
                   const SizedBox(height: 6),
                   Text(
                     tr(context, 'languageCount'),
-                    style: TextStyle(
-                      color: Colors.grey.shade600,
-                      fontSize: 13,
-                    ),
+                    style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
                   ),
                   const SizedBox(height: 14),
                   Flexible(
@@ -1261,35 +1396,27 @@ void showLanguageSelector(BuildContext context) {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14),
                           ),
-                          tileColor: isSelected
-                              ? const Color(0xFFE8F1FF)
-                              : Colors.transparent,
+                          tileColor:
+                              isSelected ? const Color(0xFFE8F1FF) : Colors.transparent,
                           leading: CircleAvatar(
                             backgroundColor: isSelected
                                 ? const Color(0xFF1565C0)
                                 : const Color(0xFFF2F4F7),
                             child: Icon(
                               Icons.language_rounded,
-                              color: isSelected
-                                  ? Colors.white
-                                  : const Color(0xFF667085),
+                              color: isSelected ? Colors.white : const Color(0xFF667085),
                             ),
                           ),
                           title: Text(
                             languageInfo[lang]!.nativeName,
                             style: TextStyle(
-                              fontWeight: isSelected
-                                  ? FontWeight.w800
-                                  : FontWeight.w600,
+                              fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
                               color: const Color(0xFF111827),
                             ),
                           ),
                           subtitle: Text(languageInfo[lang]!.englishName),
                           trailing: isSelected
-                              ? const Icon(
-                                  Icons.check_circle_rounded,
-                                  color: Color(0xFF1565C0),
-                                )
+                              ? const Icon(Icons.check_circle_rounded, color: Color(0xFF1565C0))
                               : null,
                           onTap: () {
                             languageNotifier.value = lang;
@@ -1337,16 +1464,30 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
+    _start();
+  }
 
-    Timer(const Duration(seconds: 2), () {
-      if (!mounted) return;
+  Future<void> _start() async {
+    await Future.delayed(const Duration(seconds: 2));
+    if (!mounted) return;
 
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (_) => const RoleSelectionScreen(),
-        ),
-      );
-    });
+    Widget next = const RoleSelectionScreen();
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user != null) {
+      try {
+        final data = await UserService.getUser();
+        final selectedRole = data?['selectedRole'] as String?;
+        next = selectedRole == 'driver'
+            ? await resolveDriverStart()
+            : await resolveCustomerStart();
+      } catch (_) {
+        next = const RoleSelectionScreen();
+      }
+    }
+
+    if (!mounted) return;
+    Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => next));
   }
 
   @override
@@ -1379,11 +1520,7 @@ class _SplashScreenState extends State<SplashScreen> {
                     ),
                   ],
                 ),
-                child: const Icon(
-                  Icons.local_shipping_rounded,
-                  size: 70,
-                  color: Color(0xFF1565C0),
-                ),
+                child: const Icon(Icons.local_shipping_rounded, size: 70, color: Color(0xFF1565C0)),
               ),
               const SizedBox(height: 28),
               const Text(
@@ -1398,11 +1535,7 @@ class _SplashScreenState extends State<SplashScreen> {
               const SizedBox(height: 8),
               Text(
                 tr(context, 'tagline'),
-                style: const TextStyle(
-                  color: Colors.white70,
-                  fontSize: 17,
-                  fontWeight: FontWeight.w500,
-                ),
+                style: const TextStyle(color: Colors.white70, fontSize: 17, fontWeight: FontWeight.w500),
               ),
               const SizedBox(height: 50),
               const SizedBox(
@@ -1443,41 +1576,26 @@ class RoleSelectionScreen extends StatelessWidget {
                 child: OutlinedButton.icon(
                   onPressed: () => showLanguageSelector(context),
                   icon: const Icon(Icons.language_rounded, size: 19),
-                  label: Text(
-                    trLanguageName(LanguageScope.of(context)),
-                  ),
+                  label: Text(trLanguageName(LanguageScope.of(context))),
                   style: OutlinedButton.styleFrom(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                   ),
                 ),
               ),
               const SizedBox(height: 20),
               const Text(
                 'LoadGo',
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFF1565C0),
-                ),
+                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Color(0xFF1565C0)),
               ),
               const SizedBox(height: 12),
               Text(
                 tr(context, 'welcome'),
-                style: const TextStyle(
-                  fontSize: 30,
-                  fontWeight: FontWeight.w800,
-                  color: Color(0xFF111827),
-                ),
+                style: const TextStyle(fontSize: 30, fontWeight: FontWeight.w800, color: Color(0xFF111827)),
               ),
               const SizedBox(height: 8),
               Text(
                 tr(context, 'chooseRole'),
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey.shade600,
-                ),
+                style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
               ),
               const SizedBox(height: 32),
               _RoleCard(
@@ -1487,9 +1605,7 @@ class RoleSelectionScreen extends StatelessWidget {
                 buttonText: tr(context, 'continueCustomer'),
                 onPressed: () {
                   Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => const CustomerLoginScreen(),
-                    ),
+                    MaterialPageRoute(builder: (_) => const CustomerLoginScreen()),
                   );
                 },
               ),
@@ -1500,11 +1616,8 @@ class RoleSelectionScreen extends StatelessWidget {
                 subtitle: tr(context, 'driverDesc'),
                 buttonText: tr(context, 'continueDriver'),
                 onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(tr(context, 'driverSoon')),
-                      behavior: SnackBarBehavior.floating,
-                    ),
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const DriverLoginScreen()),
                   );
                 },
               ),
@@ -1518,17 +1631,11 @@ class RoleSelectionScreen extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(18),
-                    border: Border.all(
-                      color: const Color(0xFFE4E7EC),
-                    ),
+                    border: Border.all(color: const Color(0xFFE4E7EC)),
                   ),
                   child: Row(
                     children: [
-                      const Icon(
-                        Icons.language_rounded,
-                        color: Color(0xFF1565C0),
-                        size: 25,
-                      ),
+                      const Icon(Icons.language_rounded, color: Color(0xFF1565C0), size: 25),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Column(
@@ -1536,26 +1643,17 @@ class RoleSelectionScreen extends StatelessWidget {
                           children: [
                             Text(
                               tr(context, 'language'),
-                              style: const TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w700,
-                              ),
+                              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
                             ),
                             const SizedBox(height: 3),
                             Text(
                               trLanguageName(LanguageScope.of(context)),
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: Colors.grey.shade600,
-                              ),
+                              style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
                             ),
                           ],
                         ),
                       ),
-                      const Icon(
-                        Icons.chevron_right_rounded,
-                        color: Color(0xFF667085),
-                      ),
+                      const Icon(Icons.chevron_right_rounded, color: Color(0xFF667085)),
                     ],
                   ),
                 ),
@@ -1565,11 +1663,7 @@ class RoleSelectionScreen extends StatelessWidget {
                 child: Text(
                   tr(context, 'footer'),
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: Colors.grey.shade600,
-                    fontWeight: FontWeight.w500,
-                  ),
+                  style: TextStyle(fontSize: 13, color: Colors.grey.shade600, fontWeight: FontWeight.w500),
                 ),
               ),
             ],
@@ -1604,11 +1698,7 @@ class _RoleCard extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(22),
         boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 18,
-            offset: const Offset(0, 8),
-          ),
+          BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 18, offset: const Offset(0, 8)),
         ],
       ),
       child: Column(
@@ -1617,34 +1707,13 @@ class _RoleCard extends StatelessWidget {
           Container(
             width: 58,
             height: 58,
-            decoration: BoxDecoration(
-              color: const Color(0xFFE8F1FF),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Icon(
-              icon,
-              color: const Color(0xFF1565C0),
-              size: 32,
-            ),
+            decoration: BoxDecoration(color: const Color(0xFFE8F1FF), borderRadius: BorderRadius.circular(16)),
+            child: Icon(icon, color: const Color(0xFF1565C0), size: 32),
           ),
           const SizedBox(height: 16),
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.w800,
-              color: Color(0xFF111827),
-            ),
-          ),
+          Text(title, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: Color(0xFF111827))),
           const SizedBox(height: 7),
-          Text(
-            subtitle,
-            style: const TextStyle(
-              fontSize: 14,
-              height: 1.45,
-              color: Color(0xFF667085),
-            ),
-          ),
+          Text(subtitle, style: const TextStyle(fontSize: 14, height: 1.45, color: Color(0xFF667085))),
           const SizedBox(height: 18),
           SizedBox(
             width: double.infinity,
@@ -1655,17 +1724,12 @@ class _RoleCard extends StatelessWidget {
                 backgroundColor: const Color(0xFF1565C0),
                 foregroundColor: Colors.white,
                 elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
               ),
               child: Text(
                 buttonText,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                ),
+                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
               ),
             ),
           ),
@@ -1689,7 +1753,6 @@ class CustomerLoginScreen extends StatefulWidget {
 class _CustomerLoginScreenState extends State<CustomerLoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _phoneController = TextEditingController();
-
   bool _isLoading = false;
 
   @override
@@ -1699,15 +1762,10 @@ class _CustomerLoginScreenState extends State<CustomerLoginScreen> {
   }
 
   Future<void> _continueWithPhone() async {
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
+    if (!_formKey.currentState!.validate()) return;
 
     final phoneNumber = '+91${_phoneController.text.trim()}';
-
-    setState(() {
-      _isLoading = true;
-    });
+    setState(() => _isLoading = true);
 
     try {
       await FirebaseAuth.instance.verifyPhoneNumber(
@@ -1715,62 +1773,45 @@ class _CustomerLoginScreenState extends State<CustomerLoginScreen> {
         verificationCompleted: (PhoneAuthCredential credential) async {
           try {
             await FirebaseAuth.instance.signInWithCredential(credential);
-
             if (!mounted) return;
 
-            setState(() {
-              _isLoading = false;
-            });
-
+            setState(() => _isLoading = false);
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(tr(context, 'phoneVerified')),
-                behavior: SnackBarBehavior.floating,
-              ),
+              SnackBar(content: Text(tr(context, 'phoneVerified')), behavior: SnackBarBehavior.floating),
             );
 
+            await UserService.markRoleSelected('customer');
+            final next = await resolveCustomerStart();
+
+            if (!mounted) return;
             Navigator.of(context).pushAndRemoveUntil(
-              MaterialPageRoute(
-                builder: (_) => const CustomerHomeScreen(),
-              ),
+              MaterialPageRoute(builder: (_) => next),
               (route) => false,
             );
-          } catch (e) {
+          } on FirebaseAuthException catch (e) {
             if (!mounted) return;
-
-            setState(() {
-              _isLoading = false;
-            });
-
+            setState(() => _isLoading = false);
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(tr(context, 'otpFailed')),
-                behavior: SnackBarBehavior.floating,
-              ),
+              SnackBar(content: Text(e.message ?? tr(context, 'otpFailed')), behavior: SnackBarBehavior.floating),
+            );
+          } catch (_) {
+            if (!mounted) return;
+            setState(() => _isLoading = false);
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(tr(context, 'otpFailed')), behavior: SnackBarBehavior.floating),
             );
           }
         },
         verificationFailed: (FirebaseAuthException e) {
           if (!mounted) return;
-
-          setState(() {
-            _isLoading = false;
-          });
-
+          setState(() => _isLoading = false);
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(e.message ?? tr(context, 'otpFailed')),
-              behavior: SnackBarBehavior.floating,
-            ),
+            SnackBar(content: Text(e.message ?? tr(context, 'otpFailed')), behavior: SnackBarBehavior.floating),
           );
         },
         codeSent: (String verificationId, int? resendToken) {
           if (!mounted) return;
-
-          setState(() {
-            _isLoading = false;
-          });
-
+          setState(() => _isLoading = false);
           Navigator.of(context).push(
             MaterialPageRoute(
               builder: (_) => OtpVerificationScreen(
@@ -1785,16 +1826,9 @@ class _CustomerLoginScreenState extends State<CustomerLoginScreen> {
       );
     } catch (e) {
       if (!mounted) return;
-
-      setState(() {
-        _isLoading = false;
-      });
-
+      setState(() => _isLoading = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(tr(context, 'otpFailed')),
-          behavior: SnackBarBehavior.floating,
-        ),
+        SnackBar(content: Text(tr(context, 'otpFailed')), behavior: SnackBarBehavior.floating),
       );
     }
   }
@@ -1811,10 +1845,7 @@ class _CustomerLoginScreenState extends State<CustomerLoginScreen> {
           icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: Text(
-          tr(context, 'login'),
-          style: const TextStyle(fontWeight: FontWeight.w700),
-        ),
+        title: Text(tr(context, 'login'), style: const TextStyle(fontWeight: FontWeight.w700)),
         actions: const [LanguageButton()],
       ),
       body: SafeArea(
@@ -1830,15 +1861,8 @@ class _CustomerLoginScreenState extends State<CustomerLoginScreen> {
                   child: Container(
                     width: 82,
                     height: 82,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFE8F1FF),
-                      borderRadius: BorderRadius.circular(24),
-                    ),
-                    child: const Icon(
-                      Icons.person_rounded,
-                      size: 45,
-                      color: Color(0xFF1565C0),
-                    ),
+                    decoration: BoxDecoration(color: const Color(0xFFE8F1FF), borderRadius: BorderRadius.circular(24)),
+                    child: const Icon(Icons.person_rounded, size: 45, color: Color(0xFF1565C0)),
                   ),
                 ),
                 const SizedBox(height: 28),
@@ -1846,11 +1870,7 @@ class _CustomerLoginScreenState extends State<CustomerLoginScreen> {
                   child: Text(
                     tr(context, 'welcome'),
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.w800,
-                      color: Color(0xFF111827),
-                    ),
+                    style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: Color(0xFF111827)),
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -1858,20 +1878,13 @@ class _CustomerLoginScreenState extends State<CustomerLoginScreen> {
                   child: Text(
                     tr(context, 'loginSub'),
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 15,
-                      color: Color(0xFF667085),
-                    ),
+                    style: const TextStyle(fontSize: 15, color: Color(0xFF667085)),
                   ),
                 ),
                 const SizedBox(height: 40),
                 Text(
                   tr(context, 'mobile'),
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF344054),
-                  ),
+                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: Color(0xFF344054)),
                 ),
                 const SizedBox(height: 8),
                 TextFormField(
@@ -1887,10 +1900,7 @@ class _CustomerLoginScreenState extends State<CustomerLoginScreen> {
                         children: [
                           Text('🇮🇳', style: TextStyle(fontSize: 20)),
                           SizedBox(width: 8),
-                          Text(
-                            '+91',
-                            style: TextStyle(fontWeight: FontWeight.w600),
-                          ),
+                          Text('+91', style: TextStyle(fontWeight: FontWeight.w600)),
                         ],
                       ),
                     ),
@@ -1898,15 +1908,8 @@ class _CustomerLoginScreenState extends State<CustomerLoginScreen> {
                   ),
                   validator: (value) {
                     final phone = value?.trim() ?? '';
-
-                    if (phone.isEmpty) {
-                      return tr(context, 'required');
-                    }
-
-                    if (!RegExp(r'^[6-9]\d{9}$').hasMatch(phone)) {
-                      return tr(context, 'invalidMobile');
-                    }
-
+                    if (phone.isEmpty) return tr(context, 'required');
+                    if (!RegExp(r'^[6-9]\d{9}$').hasMatch(phone)) return tr(context, 'invalidMobile');
                     return null;
                   },
                 ),
@@ -1921,9 +1924,7 @@ class _CustomerLoginScreenState extends State<CustomerLoginScreen> {
                       foregroundColor: Colors.white,
                       disabledBackgroundColor: const Color(0xFF9DBCE5),
                       elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                     ),
                     child: _isLoading
                         ? const SizedBox(
@@ -1931,17 +1932,13 @@ class _CustomerLoginScreenState extends State<CustomerLoginScreen> {
                             height: 23,
                             child: CircularProgressIndicator(
                               strokeWidth: 2.5,
-                              valueColor:
-                                  AlwaysStoppedAnimation<Color>(Colors.white),
+                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                             ),
                           )
                         : Text(
                             tr(context, 'continueMobile'),
                             textAlign: TextAlign.center,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                            ),
+                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
                           ),
                   ),
                 ),
@@ -1953,11 +1950,7 @@ class _CustomerLoginScreenState extends State<CustomerLoginScreen> {
                       padding: const EdgeInsets.symmetric(horizontal: 12),
                       child: Text(
                         tr(context, 'or'),
-                        style: const TextStyle(
-                          color: Color(0xFF98A2B3),
-                          fontWeight: FontWeight.w600,
-                          fontSize: 12,
-                        ),
+                        style: const TextStyle(color: Color(0xFF98A2B3), fontWeight: FontWeight.w600, fontSize: 12),
                       ),
                     ),
                     Expanded(child: Divider(color: Colors.grey.shade300)),
@@ -1970,26 +1963,15 @@ class _CustomerLoginScreenState extends State<CustomerLoginScreen> {
                   child: OutlinedButton.icon(
                     onPressed: () {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(tr(context, 'googleSoon')),
-                          behavior: SnackBarBehavior.floating,
-                        ),
+                        SnackBar(content: Text(tr(context, 'googleSoon')), behavior: SnackBarBehavior.floating),
                       );
                     },
                     icon: const Icon(Icons.g_mobiledata_rounded, size: 30),
-                    label: Text(
-                      tr(context, 'google'),
-                      style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
+                    label: Text(tr(context, 'google'), style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: const Color(0xFF344054),
                       side: const BorderSide(color: Color(0xFFD0D5DD)),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                     ),
                   ),
                 ),
@@ -1998,11 +1980,7 @@ class _CustomerLoginScreenState extends State<CustomerLoginScreen> {
                   child: Text(
                     tr(context, 'terms'),
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      height: 1.4,
-                      color: Color(0xFF98A2B3),
-                    ),
+                    style: const TextStyle(fontSize: 12, height: 1.4, color: Color(0xFF98A2B3)),
                   ),
                 ),
               ],
@@ -2015,22 +1993,23 @@ class _CustomerLoginScreenState extends State<CustomerLoginScreen> {
 }
 
 // ============================================================
-// OTP
+// OTP (shared by Customer + Driver)
 // ============================================================
 
 class OtpVerificationScreen extends StatefulWidget {
   final String phoneNumber;
   final String verificationId;
+  final bool isDriver;
 
   const OtpVerificationScreen({
     super.key,
     required this.phoneNumber,
     required this.verificationId,
+    this.isDriver = false,
   });
 
   @override
-  State<OtpVerificationScreen> createState() =>
-      _OtpVerificationScreenState();
+  State<OtpVerificationScreen> createState() => _OtpVerificationScreenState();
 }
 
 class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
@@ -2048,17 +2027,12 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
 
     if (otp.length != 6) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(tr(context, 'invalidOtp')),
-          behavior: SnackBarBehavior.floating,
-        ),
+        SnackBar(content: Text(tr(context, 'invalidOtp')), behavior: SnackBarBehavior.floating),
       );
       return;
     }
 
-    setState(() {
-      _isLoading = true;
-    });
+    setState(() => _isLoading = true);
 
     try {
       final credential = PhoneAuthProvider.credential(
@@ -2067,28 +2041,29 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
       );
 
       await FirebaseAuth.instance.signInWithCredential(credential);
-
       if (!mounted) return;
 
-      setState(() {
-        _isLoading = false;
-      });
+      Widget next;
+      if (widget.isDriver) {
+        await UserService.markRoleSelected('driver');
+        next = await resolveDriverStart();
+      } else {
+        await UserService.markRoleSelected('customer');
+        next = await resolveCustomerStart();
+      }
+
+      if (!mounted) return;
+      setState(() => _isLoading = false);
 
       Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(
-          builder: (_) => const CustomerHomeScreen(),
-        ),
+        MaterialPageRoute(builder: (_) => next),
         (route) => false,
       );
     } on FirebaseAuthException catch (e) {
       if (!mounted) return;
-
-      setState(() {
-        _isLoading = false;
-      });
+      setState(() => _isLoading = false);
 
       String message = tr(context, 'otpFailed');
-
       if (e.code == 'invalid-verification-code') {
         message = tr(context, 'invalidOtp');
       } else if (e.code == 'session-expired') {
@@ -2096,23 +2071,13 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
       }
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(message),
-          behavior: SnackBarBehavior.floating,
-        ),
+        SnackBar(content: Text(message), behavior: SnackBarBehavior.floating),
       );
     } catch (_) {
       if (!mounted) return;
-
-      setState(() {
-        _isLoading = false;
-      });
-
+      setState(() => _isLoading = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(tr(context, 'otpFailed')),
-          behavior: SnackBarBehavior.floating,
-        ),
+        SnackBar(content: Text(tr(context, 'otpFailed')), behavior: SnackBarBehavior.floating),
       );
     }
   }
@@ -2129,10 +2094,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
           icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: Text(
-          tr(context, 'verifyMobile'),
-          style: const TextStyle(fontWeight: FontWeight.w700),
-        ),
+        title: Text(tr(context, 'verifyMobile'), style: const TextStyle(fontWeight: FontWeight.w700)),
         actions: const [LanguageButton()],
       ),
       body: SafeArea(
@@ -2143,35 +2105,20 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
               Container(
                 width: 82,
                 height: 82,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFE8F1FF),
-                  borderRadius: BorderRadius.circular(24),
-                ),
-                child: const Icon(
-                  Icons.sms_rounded,
-                  size: 42,
-                  color: Color(0xFF1565C0),
-                ),
+                decoration: BoxDecoration(color: const Color(0xFFE8F1FF), borderRadius: BorderRadius.circular(24)),
+                child: const Icon(Icons.sms_rounded, size: 42, color: Color(0xFF1565C0)),
               ),
               const SizedBox(height: 28),
               Text(
                 tr(context, 'verifyTitle'),
                 textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.w800,
-                  color: Color(0xFF111827),
-                ),
+                style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: Color(0xFF111827)),
               ),
               const SizedBox(height: 10),
               Text(
                 '${tr(context, 'otpText')}\n+91 ${widget.phoneNumber}',
                 textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 15,
-                  height: 1.5,
-                  color: Color(0xFF667085),
-                ),
+                style: const TextStyle(fontSize: 15, height: 1.5, color: Color(0xFF667085)),
               ),
               const SizedBox(height: 35),
               TextField(
@@ -2179,15 +2126,8 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                 keyboardType: TextInputType.number,
                 maxLength: 6,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 26,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 10,
-                ),
-                decoration: const InputDecoration(
-                  counterText: '',
-                  hintText: '••••••',
-                ),
+                style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w700, letterSpacing: 10),
+                decoration: const InputDecoration(counterText: '', hintText: '••••••'),
               ),
               const SizedBox(height: 24),
               SizedBox(
@@ -2199,9 +2139,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                     backgroundColor: const Color(0xFF1565C0),
                     foregroundColor: Colors.white,
                     elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                   ),
                   child: _isLoading
                       ? const SizedBox(
@@ -2209,17 +2147,13 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                           height: 23,
                           child: CircularProgressIndicator(
                             strokeWidth: 2.5,
-                            valueColor:
-                                AlwaysStoppedAnimation<Color>(Colors.white),
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                           ),
                         )
                       : Text(
                           tr(context, 'verifyOtp'),
                           textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                          ),
+                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
                         ),
                 ),
               ),
@@ -2227,18 +2161,12 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
               TextButton(
                 onPressed: () {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(tr(context, 'otpResendSoon')),
-                      behavior: SnackBarBehavior.floating,
-                    ),
+                    SnackBar(content: Text(tr(context, 'otpResendSoon')), behavior: SnackBarBehavior.floating),
                   );
                 },
                 child: Text(
                   tr(context, 'resendOtp'),
-                  style: const TextStyle(
-                    color: Color(0xFF1565C0),
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: const TextStyle(color: Color(0xFF1565C0), fontWeight: FontWeight.w700),
                 ),
               ),
             ],
@@ -2274,40 +2202,29 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F8FC),
-      body: IndexedStack(
-        index: _currentIndex,
-        children: _pages,
-      ),
+      body: IndexedStack(index: _currentIndex, children: _pages),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _currentIndex,
-        onDestinationSelected: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
+        onDestinationSelected: (index) => setState(() => _currentIndex = index),
         backgroundColor: Colors.white,
         indicatorColor: const Color(0xFFE8F1FF),
         destinations: [
           NavigationDestination(
-            icon: const Icon(Icons.home_outlined),
-            selectedIcon: const Icon(Icons.home_rounded),
-            label: tr(context, 'home'),
-          ),
+              icon: const Icon(Icons.home_outlined),
+              selectedIcon: const Icon(Icons.home_rounded),
+              label: tr(context, 'home')),
           NavigationDestination(
-            icon: const Icon(Icons.receipt_long_outlined),
-            selectedIcon: const Icon(Icons.receipt_long_rounded),
-            label: tr(context, 'bookings'),
-          ),
+              icon: const Icon(Icons.receipt_long_outlined),
+              selectedIcon: const Icon(Icons.receipt_long_rounded),
+              label: tr(context, 'bookings')),
           NavigationDestination(
-            icon: const Icon(Icons.inventory_2_outlined),
-            selectedIcon: const Icon(Icons.inventory_2_rounded),
-            label: tr(context, 'loads'),
-          ),
+              icon: const Icon(Icons.inventory_2_outlined),
+              selectedIcon: const Icon(Icons.inventory_2_rounded),
+              label: tr(context, 'loads')),
           NavigationDestination(
-            icon: const Icon(Icons.person_outline_rounded),
-            selectedIcon: const Icon(Icons.person_rounded),
-            label: tr(context, 'profile'),
-          ),
+              icon: const Icon(Icons.person_outline_rounded),
+              selectedIcon: const Icon(Icons.person_rounded),
+              label: tr(context, 'profile')),
         ],
       ),
     );
@@ -2323,10 +2240,7 @@ class _CustomerHomeContent extends StatelessWidget {
 
   void _soon(BuildContext context) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(tr(context, 'comingSoon')),
-        behavior: SnackBarBehavior.floating,
-      ),
+      SnackBar(content: Text(tr(context, 'comingSoon')), behavior: SnackBarBehavior.floating),
     );
   }
 
@@ -2347,36 +2261,19 @@ class _CustomerHomeContent extends StatelessWidget {
                 Container(
                   width: 48,
                   height: 48,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFE8F1FF),
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                  child: const Icon(
-                    Icons.person_rounded,
-                    color: Color(0xFF1565C0),
-                    size: 27,
-                  ),
+                  decoration: BoxDecoration(color: const Color(0xFFE8F1FF), borderRadius: BorderRadius.circular(15)),
+                  child: const Icon(Icons.person_rounded, color: Color(0xFF1565C0), size: 27),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        tr(context, 'welcomeBack'),
-                        style: const TextStyle(
-                          fontSize: 13,
-                          color: Color(0xFF667085),
-                        ),
-                      ),
+                      Text(tr(context, 'welcomeBack'), style: const TextStyle(fontSize: 13, color: Color(0xFF667085))),
                       const SizedBox(height: 3),
                       Text(
                         displayPhone,
-                        style: const TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.w800,
-                          color: Color(0xFF111827),
-                        ),
+                        style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: Color(0xFF111827)),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ],
@@ -2408,10 +2305,7 @@ class _CustomerHomeContent extends StatelessWidget {
                   child: IconButton(
                     onPressed: () {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(tr(context, 'notifications')),
-                          behavior: SnackBarBehavior.floating,
-                        ),
+                        SnackBar(content: Text(tr(context, 'notifications')), behavior: SnackBarBehavior.floating),
                       );
                     },
                     icon: const Icon(Icons.notifications_none_rounded),
@@ -2431,15 +2325,9 @@ class _CustomerHomeContent extends StatelessWidget {
               child: TextField(
                 decoration: InputDecoration(
                   border: InputBorder.none,
-                  prefixIcon: const Icon(
-                    Icons.search_rounded,
-                    color: Color(0xFF667085),
-                  ),
+                  prefixIcon: const Icon(Icons.search_rounded, color: Color(0xFF667085)),
                   hintText: tr(context, 'search'),
-                  hintStyle: const TextStyle(
-                    color: Color(0xFF98A2B3),
-                    fontSize: 14,
-                  ),
+                  hintStyle: const TextStyle(color: Color(0xFF98A2B3), fontSize: 14),
                 ),
               ),
             ),
@@ -2460,21 +2348,12 @@ class _CustomerHomeContent extends StatelessWidget {
                 children: [
                   Text(
                     tr(context, 'heroTitle'),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 26,
-                      height: 1.15,
-                      fontWeight: FontWeight.w800,
-                    ),
+                    style: const TextStyle(color: Colors.white, fontSize: 26, height: 1.15, fontWeight: FontWeight.w800),
                   ),
                   const SizedBox(height: 10),
                   Text(
                     tr(context, 'heroSub'),
-                    style: const TextStyle(
-                      color: Colors.white70,
-                      fontSize: 14,
-                      height: 1.45,
-                    ),
+                    style: const TextStyle(color: Colors.white70, fontSize: 14, height: 1.45),
                   ),
                   const SizedBox(height: 20),
                   SizedBox(
@@ -2482,18 +2361,12 @@ class _CustomerHomeContent extends StatelessWidget {
                     child: ElevatedButton.icon(
                       onPressed: () => _soon(context),
                       icon: const Icon(Icons.local_shipping_rounded, size: 20),
-                      label: Text(
-                        tr(context, 'bookTruck'),
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(fontWeight: FontWeight.w700),
-                      ),
+                      label: Text(tr(context, 'bookTruck'), textAlign: TextAlign.center, style: const TextStyle(fontWeight: FontWeight.w700)),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.white,
                         foregroundColor: const Color(0xFF1565C0),
                         elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(13),
-                        ),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(13)),
                       ),
                     ),
                   ),
@@ -2501,14 +2374,7 @@ class _CustomerHomeContent extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 28),
-            Text(
-              tr(context, 'quickActions'),
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w800,
-                color: Color(0xFF111827),
-              ),
-            ),
+            Text(tr(context, 'quickActions'), style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: Color(0xFF111827))),
             const SizedBox(height: 14),
             Row(
               children: [
@@ -2554,40 +2420,17 @@ class _CustomerHomeContent extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 28),
-            Text(
-              tr(context, 'services'),
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w800,
-                color: Color(0xFF111827),
-              ),
-            ),
+            Text(tr(context, 'services'), style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: Color(0xFF111827))),
             const SizedBox(height: 14),
             SizedBox(
               height: 128,
               child: ListView(
                 scrollDirection: Axis.horizontal,
                 children: [
-                  _ServiceCard(
-                    icon: Icons.fire_truck_rounded,
-                    title: tr(context, 'fullTruck'),
-                    subtitle: tr(context, 'ftl'),
-                  ),
-                  _ServiceCard(
-                    icon: Icons.local_shipping_rounded,
-                    title: tr(context, 'container'),
-                    subtitle: tr(context, 'importExport'),
-                  ),
-                  _ServiceCard(
-                    icon: Icons.agriculture_rounded,
-                    title: tr(context, 'agriLoad'),
-                    subtitle: tr(context, 'agricultural'),
-                  ),
-                  _ServiceCard(
-                    icon: Icons.inventory_2_rounded,
-                    title: tr(context, 'generalCargo'),
-                    subtitle: tr(context, 'allCargo'),
-                  ),
+                  _ServiceCard(icon: Icons.fire_truck_rounded, title: tr(context, 'fullTruck'), subtitle: tr(context, 'ftl')),
+                  _ServiceCard(icon: Icons.local_shipping_rounded, title: tr(context, 'container'), subtitle: tr(context, 'importExport')),
+                  _ServiceCard(icon: Icons.agriculture_rounded, title: tr(context, 'agriLoad'), subtitle: tr(context, 'agricultural')),
+                  _ServiceCard(icon: Icons.inventory_2_rounded, title: tr(context, 'generalCargo'), subtitle: tr(context, 'allCargo')),
                 ],
               ),
             ),
@@ -2595,23 +2438,10 @@ class _CustomerHomeContent extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  tr(context, 'recent'),
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w800,
-                    color: Color(0xFF111827),
-                  ),
-                ),
+                Text(tr(context, 'recent'), style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: Color(0xFF111827))),
                 TextButton(
                   onPressed: () {},
-                  child: Text(
-                    tr(context, 'viewAll'),
-                    style: const TextStyle(
-                      color: Color(0xFF1565C0),
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
+                  child: Text(tr(context, 'viewAll'), style: const TextStyle(color: Color(0xFF1565C0), fontWeight: FontWeight.w700)),
                 ),
               ],
             ),
@@ -2629,33 +2459,16 @@ class _CustomerHomeContent extends StatelessWidget {
                   Container(
                     width: 58,
                     height: 58,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF2F4F7),
-                      borderRadius: BorderRadius.circular(18),
-                    ),
-                    child: const Icon(
-                      Icons.inbox_outlined,
-                      size: 30,
-                      color: Color(0xFF667085),
-                    ),
+                    decoration: BoxDecoration(color: const Color(0xFFF2F4F7), borderRadius: BorderRadius.circular(18)),
+                    child: const Icon(Icons.inbox_outlined, size: 30, color: Color(0xFF667085)),
                   ),
                   const SizedBox(height: 12),
-                  Text(
-                    tr(context, 'noActivity'),
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFF344054),
-                    ),
-                  ),
+                  Text(tr(context, 'noActivity'), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xFF344054))),
                   const SizedBox(height: 5),
                   Text(
                     tr(context, 'activitySub'),
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 13,
-                      color: Color(0xFF98A2B3),
-                    ),
+                    style: const TextStyle(fontSize: 13, color: Color(0xFF98A2B3)),
                   ),
                 ],
               ),
@@ -2677,12 +2490,7 @@ class _QuickActionCard extends StatelessWidget {
   final String subtitle;
   final VoidCallback onTap;
 
-  const _QuickActionCard({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.onTap,
-  });
+  const _QuickActionCard({required this.icon, required this.title, required this.subtitle, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -2702,37 +2510,13 @@ class _QuickActionCard extends StatelessWidget {
             Container(
               width: 46,
               height: 46,
-              decoration: BoxDecoration(
-                color: const Color(0xFFE8F1FF),
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: Icon(
-                icon,
-                color: const Color(0xFF1565C0),
-                size: 25,
-              ),
+              decoration: BoxDecoration(color: const Color(0xFFE8F1FF), borderRadius: BorderRadius.circular(14)),
+              child: Icon(icon, color: const Color(0xFF1565C0), size: 25),
             ),
             const SizedBox(height: 12),
-            Text(
-              title,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w800,
-                color: Color(0xFF111827),
-              ),
-            ),
+            Text(title, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: Color(0xFF111827))),
             const SizedBox(height: 3),
-            Text(
-              subtitle,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontSize: 11,
-                color: Color(0xFF667085),
-              ),
-            ),
+            Text(subtitle, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 11, color: Color(0xFF667085))),
           ],
         ),
       ),
@@ -2749,11 +2533,7 @@ class _ServiceCard extends StatelessWidget {
   final String title;
   final String subtitle;
 
-  const _ServiceCard({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-  });
+  const _ServiceCard({required this.icon, required this.title, required this.subtitle});
 
   @override
   Widget build(BuildContext context) {
@@ -2769,32 +2549,11 @@ class _ServiceCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            icon,
-            color: const Color(0xFF1565C0),
-            size: 32,
-          ),
+          Icon(icon, color: const Color(0xFF1565C0), size: 32),
           const Spacer(),
-          Text(
-            title,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w800,
-              color: Color(0xFF111827),
-            ),
-          ),
+          Text(title, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: Color(0xFF111827))),
           const SizedBox(height: 3),
-          Text(
-            subtitle,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              fontSize: 11,
-              color: Color(0xFF667085),
-            ),
-          ),
+          Text(subtitle, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 11, color: Color(0xFF667085))),
         ],
       ),
     );
@@ -2807,41 +2566,32 @@ class _ServiceCard extends StatelessWidget {
 
 class _BookingsPlaceholder extends StatelessWidget {
   const _BookingsPlaceholder();
-
   @override
-  Widget build(BuildContext context) {
-    return _PlaceholderPage(
-      icon: Icons.receipt_long_rounded,
-      title: tr(context, 'bookingsTitle'),
-      subtitle: tr(context, 'bookingsSub'),
-    );
-  }
+  Widget build(BuildContext context) => _PlaceholderPage(
+        icon: Icons.receipt_long_rounded,
+        title: tr(context, 'bookingsTitle'),
+        subtitle: tr(context, 'bookingsSub'),
+      );
 }
 
 class _LoadsPlaceholder extends StatelessWidget {
   const _LoadsPlaceholder();
-
   @override
-  Widget build(BuildContext context) {
-    return _PlaceholderPage(
-      icon: Icons.inventory_2_rounded,
-      title: tr(context, 'loadsTitle'),
-      subtitle: tr(context, 'loadsSub'),
-    );
-  }
+  Widget build(BuildContext context) => _PlaceholderPage(
+        icon: Icons.inventory_2_rounded,
+        title: tr(context, 'loadsTitle'),
+        subtitle: tr(context, 'loadsSub'),
+      );
 }
 
 class _CustomerProfilePlaceholder extends StatelessWidget {
   const _CustomerProfilePlaceholder();
-
   @override
-  Widget build(BuildContext context) {
-    return _PlaceholderPage(
-      icon: Icons.person_rounded,
-      title: tr(context, 'profileTitle'),
-      subtitle: tr(context, 'profileSub'),
-    );
-  }
+  Widget build(BuildContext context) => _PlaceholderPage(
+        icon: Icons.person_rounded,
+        title: tr(context, 'profileTitle'),
+        subtitle: tr(context, 'profileSub'),
+      );
 }
 
 class _PlaceholderPage extends StatelessWidget {
@@ -2849,11 +2599,7 @@ class _PlaceholderPage extends StatelessWidget {
   final String title;
   final String subtitle;
 
-  const _PlaceholderPage({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-  });
+  const _PlaceholderPage({required this.icon, required this.title, required this.subtitle});
 
   @override
   Widget build(BuildContext context) {
@@ -2867,43 +2613,15 @@ class _PlaceholderPage extends StatelessWidget {
               Container(
                 width: 82,
                 height: 82,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFE8F1FF),
-                  borderRadius: BorderRadius.circular(24),
-                ),
-                child: Icon(
-                  icon,
-                  size: 42,
-                  color: const Color(0xFF1565C0),
-                ),
+                decoration: BoxDecoration(color: const Color(0xFFE8F1FF), borderRadius: BorderRadius.circular(24)),
+                child: Icon(icon, size: 42, color: const Color(0xFF1565C0)),
               ),
               const SizedBox(height: 22),
-              Text(
-                title,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 25,
-                  fontWeight: FontWeight.w800,
-                  color: Color(0xFF111827),
-                ),
-              ),
+              Text(title, textAlign: TextAlign.center, style: const TextStyle(fontSize: 25, fontWeight: FontWeight.w800, color: Color(0xFF111827))),
               const SizedBox(height: 8),
-              Text(
-                subtitle,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 14,
-                  color: Color(0xFF667085),
-                ),
-              ),
+              Text(subtitle, textAlign: TextAlign.center, style: const TextStyle(fontSize: 14, color: Color(0xFF667085))),
               const SizedBox(height: 18),
-              Text(
-                tr(context, 'comingSoon'),
-                style: const TextStyle(
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFF1565C0),
-                ),
-              ),
+              Text(tr(context, 'comingSoon'), style: const TextStyle(fontWeight: FontWeight.w700, color: Color(0xFF1565C0))),
             ],
           ),
         ),
