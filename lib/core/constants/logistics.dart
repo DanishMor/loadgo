@@ -44,6 +44,9 @@ class BookingStatus {
   static const inTransit = 'in_transit';
   static const delivered = 'delivered';
 
+  /// Driver backed out before pickup; the load reopens. Not part of [flow].
+  static const cancelled = 'cancelled';
+
   /// Ordered lifecycle of a booking. Must stay in sync with firestore.rules.
   static const flow = [accepted, pickedUp, inTransit, delivered];
 

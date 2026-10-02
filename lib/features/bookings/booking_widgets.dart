@@ -11,12 +11,14 @@ String bookingStatusLabel(BuildContext context, String status) => switch (status
       BookingStatus.pickedUp => tr(context, 'statusPickedUp'),
       BookingStatus.inTransit => tr(context, 'statusInTransit'),
       BookingStatus.delivered => tr(context, 'statusDelivered'),
+      BookingStatus.cancelled => tr(context, 'statusCancelled'),
       _ => status,
     };
 
 Color bookingStatusColor(String status) => switch (status) {
       BookingStatus.accepted => AppColors.primary,
       BookingStatus.pickedUp || BookingStatus.inTransit => AppColors.warning,
+      BookingStatus.cancelled => Colors.redAccent,
       _ => AppColors.success,
     };
 
@@ -113,16 +115,20 @@ class BookingTimeline extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final currentIndex = BookingStatus.flow.indexOf(booking.status);
+    // A cancelled booking only ever got as far as "accepted".
+    final steps = booking.status == BookingStatus.cancelled
+        ? const [BookingStatus.accepted, BookingStatus.cancelled]
+        : BookingStatus.flow;
+    final currentIndex = steps.indexOf(booking.status);
     return AppCard(
       child: Column(
         children: [
-          for (var i = 0; i < BookingStatus.flow.length; i++)
+          for (var i = 0; i < steps.length; i++)
             _step(
               context,
-              status: BookingStatus.flow[i],
+              status: steps[i],
               done: i <= currentIndex,
-              isLast: i == BookingStatus.flow.length - 1,
+              isLast: i == steps.length - 1,
             ),
         ],
       ),
@@ -131,14 +137,19 @@ class BookingTimeline extends StatelessWidget {
 
   Widget _step(BuildContext context, {required String status, required bool done, required bool isLast}) {
     final time = booking.timeline[status];
-    final color = done ? AppColors.success : AppColors.border;
+    final isCancel = status == BookingStatus.cancelled;
+    final color = !done ? AppColors.border : (isCancel ? Colors.redAccent : AppColors.success);
     return IntrinsicHeight(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Column(
             children: [
-              Icon(done ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded, color: color, size: 24),
+              Icon(
+                !done ? Icons.radio_button_unchecked_rounded : (isCancel ? Icons.cancel_rounded : Icons.check_circle_rounded),
+                color: color,
+                size: 24,
+              ),
               if (!isLast) Expanded(child: Container(width: 2, color: color)),
             ],
           ),

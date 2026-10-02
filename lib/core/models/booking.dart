@@ -2,8 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../constants/logistics.dart';
 
-/// A driver's acceptance of a load. The document id equals the load id, which
-/// guarantees at most one booking per load.
+/// A driver's acceptance of a load. A load has at most one live booking at a
+/// time (its `bookingId`); cancelled bookings stay as history.
 class Booking {
   final String id;
   final String loadId;
@@ -52,7 +52,10 @@ class Booking {
     this.createdAt,
   });
 
-  bool get isActive => status != BookingStatus.delivered;
+  bool get isActive => status != BookingStatus.delivered && status != BookingStatus.cancelled;
+
+  /// Drivers may back out only until pickup.
+  bool get canDriverCancel => status == BookingStatus.accepted;
   String? get nextStatus => BookingStatus.next(status);
 
   factory Booking.fromDoc(DocumentSnapshot<Map<String, dynamic>> doc) {

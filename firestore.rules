@@ -95,18 +95,21 @@ service cloud.firestore {
           && validLoad(request.resource.data);
     }
 
-    // Driver accepts: open -> matched, in the same batch that creates
-    // bookings/{loadId} for this driver.
+    // Driver accepts: open -> matched, in the same batch that creates the
+    // booking (request.resource.data.bookingId) for this driver.
     function driverMatch(loadId) {
-      let booking = getAfter(docPath('bookings', loadId));
+      let bookingId = request.resource.data.bookingId;
+      let booking = getAfter(docPath('bookings', bookingId));
       return resource.data.status == 'open'
           && resource.data.shipperId != request.auth.uid
           && request.resource.data.status == 'matched'
           && request.resource.data.driverId == request.auth.uid
-          && request.resource.data.bookingId == loadId
-          && changedKeys().hasOnly(['status', 'driverId', 'bookingId', 'matchedAt'])
-          && existsAfter(docPath('bookings', loadId))
-          && booking.data.driverId == request.auth.uid;
+          && bookingId is string
+          && changedKeys().hasOnly(['status', 'driverId', 'bookingId', 'matchedAt', 'reopenedAt'])
+          && existsAfter(docPath('bookings', bookingId))
+          && booking.data.driverId == request.auth.uid
+          && booking.data.loadId == loadId
+          && booking.data.status == 'accepted';
     }
 
     // Driver delivers: matched -> closed, together with booking -> delivered.
@@ -115,7 +118,19 @@ service cloud.firestore {
           && resource.data.driverId == request.auth.uid
           && request.resource.data.status == 'closed'
           && changedKeys().hasOnly(['status', 'closedAt'])
-          && getAfter(docPath('bookings', loadId)).data.status == 'delivered';
+          && getAfter(docPath('bookings', resource.data.bookingId)).data.status == 'delivered';
+    }
+
+    // Driver backs out before pickup: matched -> open, clearing the match,
+    // together with booking -> cancelled.
+    function driverReopen(loadId) {
+      return resource.data.status == 'matched'
+          && resource.data.driverId == request.auth.uid
+          && request.resource.data.status == 'open'
+          && !('driverId' in request.resource.data)
+          && !('bookingId' in request.resource.data)
+          && changedKeys().hasOnly(['status', 'driverId', 'bookingId', 'matchedAt', 'reopenedAt'])
+          && getAfter(docPath('bookings', resource.data.bookingId)).data.status == 'cancelled';
     }
 
     match /loads/{loadId} {
@@ -129,16 +144,17 @@ service cloud.firestore {
           && !request.resource.data.keys().hasAny(['driverId', 'bookingId'])
           && validLoad(request.resource.data);
       allow update: if signedIn()
-          && (shipperEdit(loadId) || driverMatch(loadId) || driverClose(loadId));
+          && (shipperEdit(loadId) || driverMatch(loadId) || driverClose(loadId) || driverReopen(loadId));
       allow delete: if signedIn()
           && resource.data.shipperId == request.auth.uid
           && resource.data.status == 'open';
     }
 
     // ------------------------------------------------------------------
-    // bookings/{loadId}: only the involved driver and customer can read.
+    // bookings/{bookingId}: only the involved driver and customer can read.
     // Only the driver writes: create when accepting an open load (with their
-    // own vehicle), then advance status one step at a time.
+    // own vehicle), advance status one step at a time, or cancel before
+    // pickup (which must reopen the load).
     // ------------------------------------------------------------------
     function nextBookingStatus(s) {
       return {'accepted': 'picked_up', 'picked_up': 'in_transit', 'in_transit': 'delivered'}.get(s, 'none');
@@ -146,10 +162,9 @@ service cloud.firestore {
 
     function validBookingCreate(bookingId) {
       let b = request.resource.data;
-      let load = get(docPath('loads', bookingId)).data;
-      let loadAfter = getAfter(docPath('loads', bookingId)).data;
+      let load = get(docPath('loads', b.loadId)).data;
+      let loadAfter = getAfter(docPath('loads', b.loadId)).data;
       return b.driverId == request.auth.uid
-          && b.loadId == bookingId
           && b.status == 'accepted'
           && load.status == 'open'
           && load.shipperId != request.auth.uid
@@ -161,6 +176,7 @@ service cloud.firestore {
           && b.get('budget', null) == load.get('budget', null)
           && loadAfter.status == 'matched'
           && loadAfter.driverId == request.auth.uid
+          && loadAfter.bookingId == bookingId
           && get(docPath('vehicles', b.vehicleId)).data.ownerId == request.auth.uid;
     }
 
@@ -171,8 +187,11 @@ service cloud.firestore {
       allow create: if signedIn() && validBookingCreate(bookingId);
       allow update: if signedIn()
           && resource.data.driverId == request.auth.uid
-          && request.resource.data.status == nextBookingStatus(resource.data.status)
-          && changedKeys().hasOnly(['status', 'timeline', 'updatedAt']);
+          && changedKeys().hasOnly(['status', 'timeline', 'updatedAt'])
+          && (request.resource.data.status == nextBookingStatus(resource.data.status)
+              || (resource.data.status == 'accepted'
+                  && request.resource.data.status == 'cancelled'
+                  && getAfter(docPath('loads', resource.data.loadId)).data.status == 'open'));
       allow delete: if false;
     }
 

@@ -11,7 +11,7 @@ import 'load_card.dart';
 class MyLoadsView extends StatefulWidget {
   final VoidCallback onPostLoad;
 
-  /// Opens the booking for a matched/closed load (booking id == load id).
+  /// Opens the load's current booking.
   final ValueChanged<String> onOpenBooking;
 
   const MyLoadsView({super.key, required this.onPostLoad, required this.onOpenBooking});

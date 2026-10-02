@@ -66,17 +66,18 @@ void main() {
 
   test('driver advances accepted -> picked_up -> in_transit -> delivered', () async {
     final id = await createBooking();
+    final loadId = (await db.collection('bookings').doc(id).get())['loadId'] as String;
 
     expect(await BookingService.advance(id), BookingStatus.pickedUp);
     expect(await BookingService.advance(id), BookingStatus.inTransit);
-    expect((await db.collection('loads').doc(id).get())['status'], LoadStatus.matched);
+    expect((await db.collection('loads').doc(loadId).get())['status'], LoadStatus.matched);
     expect(await BookingService.advance(id), BookingStatus.delivered);
 
     final booking = Booking.fromDoc(await db.collection('bookings').doc(id).get());
     expect(booking.status, BookingStatus.delivered);
     expect(booking.timeline.keys, containsAll(BookingStatus.flow));
     expect(booking.isActive, isFalse);
-    expect((await db.collection('loads').doc(id).get())['status'], LoadStatus.closed);
+    expect((await db.collection('loads').doc(loadId).get())['status'], LoadStatus.closed);
 
     expect(() => BookingService.advance(id), throwsStateError);
   });

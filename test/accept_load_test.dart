@@ -55,7 +55,7 @@ void main() {
     expect((await LoadService.watchOpen().first).map((l) => l.id), [loadId]);
 
     final bookingId = await BookingService.accept(loadId: loadId, vehicle: vehicle);
-    expect(bookingId, loadId);
+    expect(bookingId, isNot(loadId));
 
     final booking = (await db.collection('bookings').doc(bookingId).get()).data()!;
     expect(booking['loadId'], loadId);
@@ -70,6 +70,7 @@ void main() {
     final load = (await db.collection('loads').doc(loadId).get()).data()!;
     expect(load['status'], LoadStatus.matched);
     expect(load['driverId'], 'driver1');
+    expect(load['bookingId'], bookingId);
 
     // Another driver no longer sees it and cannot accept it.
     final other = await addVehicleAs('driver2');
@@ -79,7 +80,7 @@ void main() {
     // Customer sees the status change and the booking.
     uid = 'customer1';
     expect((await LoadService.watchMine().first).single.status, LoadStatus.matched);
-    expect((await BookingService.watchForCustomer().first).single.id, loadId);
+    expect((await BookingService.watchForCustomer().first).single.id, bookingId);
   });
 
   test('a user cannot accept their own load and missing loads are unavailable', () async {

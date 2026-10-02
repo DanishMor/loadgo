@@ -22,13 +22,14 @@ class BookingService {
 
   /// Atomically books an open load for the signed-in driver.
   ///
-  /// The booking id equals the load id, so a load can only ever have one
-  /// booking. Returns the booking id.
+  /// The load's open -> matched transition (checked in the transaction and by
+  /// the rules) guarantees only one live booking per load. Returns the
+  /// booking id.
   static Future<String> accept({required String loadId, required Vehicle vehicle}) async {
     final uid = Backend.requireUid();
     final profile = (await Backend.db.collection('users').doc(uid).get()).data() ?? const {};
     final loadRef = Backend.db.collection('loads').doc(loadId);
-    final bookingRef = _col.doc(loadId);
+    final bookingRef = _col.doc();
 
     try {
       await Backend.db.runTransaction((tx) async {
@@ -120,6 +121,41 @@ class BookingService {
         status: next,
       );
       return next;
+    });
+  }
+
+  /// Driver backs out of an accepted (not yet picked up) booking: the booking
+  /// becomes cancelled, the load reopens for other drivers and the customer
+  /// is notified.
+  static Future<void> cancelByDriver(String bookingId) async {
+    final uid = Backend.requireUid();
+    final ref = _col.doc(bookingId);
+    await Backend.db.runTransaction((tx) async {
+      final snap = await tx.get(ref);
+      if (!snap.exists) throw StateError('Booking not found');
+      final booking = Booking.fromDoc(snap);
+      if (booking.driverId != uid) throw StateError('Only the assigned driver can cancel');
+      if (!booking.canDriverCancel) throw StateError('Booking can no longer be cancelled');
+
+      tx.update(ref, {
+        'status': BookingStatus.cancelled,
+        'timeline.${BookingStatus.cancelled}': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+      tx.update(Backend.db.collection('loads').doc(booking.loadId), {
+        'status': LoadStatus.open,
+        'driverId': FieldValue.delete(),
+        'bookingId': FieldValue.delete(),
+        'matchedAt': FieldValue.delete(),
+        'reopenedAt': FieldValue.serverTimestamp(),
+      });
+      NotificationService.addInTransaction(
+        tx,
+        userId: booking.customerId,
+        type: NotificationType.bookingCancelled,
+        message: '${booking.pickup} → ${booking.drop}',
+        relatedId: booking.id,
+      );
     });
   }
 

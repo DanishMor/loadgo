@@ -1619,6 +1619,31 @@ class T {
       AppLanguage.hindi: 'सब पढ़ा हुआ करें',
       AppLanguage.hinglish: 'Sab read karo',
     },
+    'cancelBooking': {
+      AppLanguage.english: 'Cancel booking',
+      AppLanguage.hindi: 'बुकिंग रद्द करें',
+      AppLanguage.hinglish: 'Booking cancel karo',
+    },
+    'cancelBookingConfirm': {
+      AppLanguage.english: 'Cancel this booking? The load will be offered to other drivers.',
+      AppLanguage.hindi: 'यह बुकिंग रद्द करें? लोड दूसरे ड्राइवरों को दिखाया जाएगा।',
+      AppLanguage.hinglish: 'Ye booking cancel karein? Load doosre drivers ko dikhega.',
+    },
+    'keepBooking': {
+      AppLanguage.english: 'Keep booking',
+      AppLanguage.hindi: 'बुकिंग रखें',
+      AppLanguage.hinglish: 'Booking rakho',
+    },
+    'bookingCancelledByYou': {
+      AppLanguage.english: 'Booking cancelled',
+      AppLanguage.hindi: 'बुकिंग रद्द हो गई',
+      AppLanguage.hinglish: 'Booking cancel ho gayi',
+    },
+    'bookingCancelledChip': {
+      AppLanguage.english: 'Booking cancelled',
+      AppLanguage.hindi: 'बुकिंग रद्द',
+      AppLanguage.hinglish: 'Booking cancelled',
+    },
     // ---------------- Bookings ----------------
     'statusAccepted': {
       AppLanguage.english: 'Accepted',

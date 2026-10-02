@@ -2,7 +2,7 @@
 import { readFileSync } from 'node:fs';
 import { after, before, beforeEach, describe, test } from 'node:test';
 import { assertFails, assertSucceeds, initializeTestEnvironment } from '@firebase/rules-unit-testing';
-import { Timestamp, addDoc, doc, getDoc, getDocs, collection, query, where, setDoc, updateDoc, deleteDoc, writeBatch, serverTimestamp } from 'firebase/firestore';
+import { Timestamp, addDoc, deleteField, doc, getDoc, getDocs, collection, query, where, setDoc, updateDoc, deleteDoc, writeBatch, serverTimestamp } from 'firebase/firestore';
 
 let env;
 
@@ -297,5 +297,50 @@ describe('notifications', () => {
     b.update(doc(db, 'loads', 'L1'), { status: 'matched', driverId: 'driver1', bookingId: 'L1', matchedAt: serverTimestamp() });
     b.set(doc(db, 'notifications', 'n2'), notif('customer1', { type: 'load_accepted', status: null }));
     await assertSucceeds(b.commit());
+  });
+});
+
+describe('driver cancels before pickup', () => {
+  /** Same writes as BookingService.cancelByDriver. */
+  function cancelBatch(db, bookingId = 'L1') {
+    const b = writeBatch(db);
+    b.update(doc(db, 'bookings', bookingId), { status: 'cancelled', 'timeline.cancelled': serverTimestamp(), updatedAt: serverTimestamp() });
+    b.update(doc(db, 'loads', 'L1'), { status: 'open', driverId: deleteField(), bookingId: deleteField(), matchedAt: deleteField(), reopenedAt: serverTimestamp() });
+    return b.commit();
+  }
+
+  test('cancel reopens the load and another driver can accept with a new booking', async () => {
+    await seedBooking();
+    await assertSucceeds(cancelBatch(as('driver1')));
+    await assertSucceeds(getDoc(doc(as('driver2'), 'loads', 'L1')));
+    // New booking id for the second driver.
+    const db = as('driver2');
+    const b = writeBatch(db);
+    b.set(doc(db, 'bookings', 'B2'), bookingFor('L1', { driverId: 'driver2', vehicleId: 'v2' }));
+    b.update(doc(db, 'loads', 'L1'), { status: 'matched', driverId: 'driver2', bookingId: 'B2', matchedAt: serverTimestamp() });
+    await assertSucceeds(b.commit());
+    // The old driver can no longer touch the load or the old booking.
+    await assertFails(getDoc(doc(as('driver1'), 'loads', 'L1')));
+    await assertFails(updateDoc(doc(as('driver1'), 'bookings', 'L1'), { status: 'picked_up' }));
+  });
+
+  test('cannot cancel after pickup, as someone else, or without reopening', async () => {
+    await seedBooking();
+    await assertFails(cancelBatch(as('driver2')));
+    await assertFails(cancelBatch(as('customer1')));
+    await assertFails(updateDoc(doc(as('driver1'), 'bookings', 'L1'), { status: 'cancelled', updatedAt: serverTimestamp() }));
+    await assertFails(updateDoc(doc(as('driver1'), 'loads', 'L1'), { status: 'open', driverId: deleteField(), bookingId: deleteField() }));
+    await seedBooking('picked_up');
+    await assertFails(cancelBatch(as('driver1')));
+  });
+
+  test('cannot point a load at a booking for a different load', async () => {
+    await seedOpenLoad();
+    await seed((db) => setDoc(doc(db, 'loads', 'L2'), LOAD));
+    const db = as('driver1');
+    const b = writeBatch(db);
+    b.set(doc(db, 'bookings', 'B9'), bookingFor('L2'));
+    b.update(doc(db, 'loads', 'L1'), { status: 'matched', driverId: 'driver1', bookingId: 'B9' });
+    await assertFails(b.commit());
   });
 });
