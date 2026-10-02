@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 
+import '../../core/models/vehicle.dart';
 import '../../core/services/user_service.dart';
+import '../../core/services/vehicle_service.dart';
+import '../../core/widgets/common.dart';
 import '../../main.dart';
+import '../vehicle/my_vehicles_screen.dart';
 
 class DriverHomeScreen extends StatefulWidget {
   const DriverHomeScreen({super.key});
@@ -13,6 +17,7 @@ class DriverHomeScreen extends StatefulWidget {
 class _DriverHomeScreenState extends State<DriverHomeScreen> {
   int _index = 0;
   bool _isOnline = false;
+  final Stream<List<Vehicle>> _vehicles = VehicleService.watchMine();
 
   void _snack(String msg) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -51,10 +56,10 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
         ),
       );
 
-  Widget _tile(IconData icon, String label) => Expanded(
+  Widget _tile(IconData icon, String label, {VoidCallback? onTap}) => Expanded(
         child: InkWell(
           borderRadius: BorderRadius.circular(18),
-          onTap: () => _snack(tr(context, 'comingSoon')),
+          onTap: onTap ?? () => _snack(tr(context, 'comingSoon')),
           child: Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(18), border: Border.all(color: const Color(0xFFE4E7EC))),
@@ -89,6 +94,41 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
           ],
         ),
       );
+
+  /// Nudges drivers without any vehicle to add one; hidden otherwise.
+  Widget _noVehiclePrompt() {
+    return StreamBuilder<List<Vehicle>>(
+      stream: _vehicles,
+      builder: (context, snap) {
+        if (!snap.hasData || snap.data!.isNotEmpty) return const SizedBox.shrink();
+        return Padding(
+          padding: const EdgeInsets.only(top: 16),
+          child: AppCard(
+            child: Row(
+              children: [
+                const Icon(Icons.local_shipping_rounded, color: AppColors.warning, size: 30),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(tr(context, 'noVehicleTitle'), style: const TextStyle(fontWeight: FontWeight.w800, color: AppColors.title)),
+                      const SizedBox(height: 2),
+                      Text(tr(context, 'noVehicleSub'), style: const TextStyle(fontSize: 12, color: AppColors.muted)),
+                    ],
+                  ),
+                ),
+                TextButton(
+                  onPressed: () => openAddVehicle(context, prefillFromProfile: true),
+                  child: Text(tr(context, 'addVehicle')),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
 
   Widget _homeTab() {
     return SafeArea(
@@ -127,6 +167,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                 ],
               ),
             ),
+            _noVehiclePrompt(),
             const SizedBox(height: 16),
             Container(
               width: double.infinity,
@@ -152,7 +193,11 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
             const SizedBox(height: 24),
             Row(
               children: [
-                _tile(Icons.local_shipping_rounded, tr(context, 'myTruck')),
+                _tile(
+                  Icons.local_shipping_rounded,
+                  tr(context, 'myTruck'),
+                  onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const MyVehiclesScreen())),
+                ),
                 const SizedBox(width: 12),
                 _tile(Icons.verified_user_rounded, tr(context, 'documentsKyc')),
               ],

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/constants/logistics.dart';
 import '../../core/services/user_service.dart';
 import '../../main.dart';
 
@@ -16,8 +17,6 @@ class _DriverProfileSetupScreenState extends State<DriverProfileSetupScreen> {
   final _vehicleNumCtrl = TextEditingController();
   String _vehicleType = 'Mini';
   bool _saving = false;
-
-  static const _vehicleTypes = ['Bike', '3-Wheeler', 'Mini', '14 ft', 'Container', 'Trailer'];
 
   @override
   void dispose() {
@@ -116,7 +115,7 @@ class _DriverProfileSetupScreenState extends State<DriverProfileSetupScreen> {
                   Wrap(
                     spacing: 8,
                     runSpacing: 8,
-                    children: _vehicleTypes.map((t) {
+                    children: vehicleTypes.map((t) {
                       final selected = t == _vehicleType;
                       return ChoiceChip(
                         label: Text(t),

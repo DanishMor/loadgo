@@ -1253,6 +1253,292 @@ class T {
       AppLanguage.hindi: 'कमाई',
       AppLanguage.hinglish: 'Earnings',
     },
+
+    // ---------------- Vehicles ----------------
+    'fieldRequired': {
+      AppLanguage.english: 'This field is required',
+      AppLanguage.hindi: 'यह जानकारी ज़रूरी है',
+      AppLanguage.hinglish: 'Ye field zaroori hai',
+    },
+    'myVehicles': {
+      AppLanguage.english: 'My Vehicles',
+      AppLanguage.hindi: 'मेरे वाहन',
+      AppLanguage.hinglish: 'Meri Gaadiyan',
+    },
+    'addVehicle': {
+      AppLanguage.english: 'Add Vehicle',
+      AppLanguage.hindi: 'वाहन जोड़ें',
+      AppLanguage.hinglish: 'Vehicle Add Karo',
+    },
+    'capacityTons': {
+      AppLanguage.english: 'Capacity (tons)',
+      AppLanguage.hindi: 'क्षमता (टन)',
+      AppLanguage.hinglish: 'Capacity (ton)',
+    },
+    'rcNumber': {
+      AppLanguage.english: 'RC Number',
+      AppLanguage.hindi: 'RC नंबर',
+      AppLanguage.hinglish: 'RC Number',
+    },
+    'invalidVehicleNumber': {
+      AppLanguage.english: 'Enter a valid vehicle number',
+      AppLanguage.hindi: 'सही वाहन नंबर डालें',
+      AppLanguage.hinglish: 'Sahi vehicle number daalo',
+    },
+    'invalidNumber': {
+      AppLanguage.english: 'Enter a valid number',
+      AppLanguage.hindi: 'सही संख्या डालें',
+      AppLanguage.hinglish: 'Sahi number daalo',
+    },
+    'noVehicleTitle': {
+      AppLanguage.english: 'No vehicle added yet',
+      AppLanguage.hindi: 'अभी कोई वाहन नहीं जोड़ा गया',
+      AppLanguage.hinglish: 'Abhi koi vehicle add nahi kiya',
+    },
+    'noVehicleSub': {
+      AppLanguage.english: 'Add your truck to start accepting loads.',
+      AppLanguage.hindi: 'लोड स्वीकार करने के लिए अपना ट्रक जोड़ें।',
+      AppLanguage.hinglish: 'Loads accept karne ke liye apna truck add karo.',
+    },
+    'vehicleAdded': {
+      AppLanguage.english: 'Vehicle added',
+      AppLanguage.hindi: 'वाहन जोड़ दिया गया',
+      AppLanguage.hinglish: 'Vehicle add ho gaya',
+    },
+    'active': {
+      AppLanguage.english: 'Active',
+      AppLanguage.hindi: 'सक्रिय',
+      AppLanguage.hinglish: 'Active',
+    },
+    'inactive': {
+      AppLanguage.english: 'Inactive',
+      AppLanguage.hindi: 'निष्क्रिय',
+      AppLanguage.hinglish: 'Inactive',
+    },
+    'save': {
+      AppLanguage.english: 'Save',
+      AppLanguage.hindi: 'सेव करें',
+      AppLanguage.hinglish: 'Save Karo',
+    },
+    'cancel': {
+      AppLanguage.english: 'Cancel',
+      AppLanguage.hindi: 'रद्द करें',
+      AppLanguage.hinglish: 'Cancel',
+    },
+
+    // ---------------- Loads ----------------
+    'pickupLocation': {
+      AppLanguage.english: 'Pickup location',
+      AppLanguage.hindi: 'पिकअप स्थान',
+      AppLanguage.hinglish: 'Pickup location',
+    },
+    'dropLocation': {
+      AppLanguage.english: 'Drop location',
+      AppLanguage.hindi: 'ड्रॉप स्थान',
+      AppLanguage.hinglish: 'Drop location',
+    },
+    'cargoType': {
+      AppLanguage.english: 'Cargo type',
+      AppLanguage.hindi: 'माल का प्रकार',
+      AppLanguage.hinglish: 'Cargo type',
+    },
+    'weightTons': {
+      AppLanguage.english: 'Weight (tons)',
+      AppLanguage.hindi: 'वज़न (टन)',
+      AppLanguage.hinglish: 'Weight (ton)',
+    },
+    'vehicleTypeNeeded': {
+      AppLanguage.english: 'Vehicle type needed',
+      AppLanguage.hindi: 'ज़रूरी वाहन का प्रकार',
+      AppLanguage.hinglish: 'Kaunsi gaadi chahiye',
+    },
+    'budgetOptional': {
+      AppLanguage.english: 'Budget ₹ (optional)',
+      AppLanguage.hindi: 'बजट ₹ (वैकल्पिक)',
+      AppLanguage.hinglish: 'Budget ₹ (optional)',
+    },
+    'pickupDate': {
+      AppLanguage.english: 'Pickup date',
+      AppLanguage.hindi: 'पिकअप तारीख',
+      AppLanguage.hinglish: 'Pickup date',
+    },
+    'notesOptional': {
+      AppLanguage.english: 'Notes (optional)',
+      AppLanguage.hindi: 'नोट्स (वैकल्पिक)',
+      AppLanguage.hinglish: 'Notes (optional)',
+    },
+    'loadPosted': {
+      AppLanguage.english: 'Load posted',
+      AppLanguage.hindi: 'लोड पोस्ट हो गया',
+      AppLanguage.hinglish: 'Load post ho gaya',
+    },
+    'myLoads': {
+      AppLanguage.english: 'My Loads',
+      AppLanguage.hindi: 'मेरे लोड',
+      AppLanguage.hinglish: 'Mere Loads',
+    },
+    'noLoadsTitle': {
+      AppLanguage.english: 'No loads posted yet',
+      AppLanguage.hindi: 'अभी कोई लोड पोस्ट नहीं किया',
+      AppLanguage.hinglish: 'Abhi koi load post nahi kiya',
+    },
+    'noLoadsSub': {
+      AppLanguage.english: 'Post a load and nearby truckers will accept it.',
+      AppLanguage.hindi: 'लोड पोस्ट करें, ट्रक वाले उसे स्वीकार करेंगे।',
+      AppLanguage.hinglish: 'Load post karo, truck wale accept karenge.',
+    },
+    'noAvailableLoads': {
+      AppLanguage.english: 'No open loads right now',
+      AppLanguage.hindi: 'अभी कोई खुला लोड नहीं है',
+      AppLanguage.hinglish: 'Abhi koi open load nahi hai',
+    },
+    'budgetNegotiable': {
+      AppLanguage.english: 'Negotiable',
+      AppLanguage.hindi: 'मोलभाव योग्य',
+      AppLanguage.hinglish: 'Negotiable',
+    },
+    'accept': {
+      AppLanguage.english: 'Accept',
+      AppLanguage.hindi: 'स्वीकार करें',
+      AppLanguage.hinglish: 'Accept Karo',
+    },
+    'loadAccepted': {
+      AppLanguage.english: 'Load accepted',
+      AppLanguage.hindi: 'लोड स्वीकार हो गया',
+      AppLanguage.hinglish: 'Load accept ho gaya',
+    },
+    'loadUnavailable': {
+      AppLanguage.english: 'This load is no longer available',
+      AppLanguage.hindi: 'यह लोड अब उपलब्ध नहीं है',
+      AppLanguage.hinglish: 'Ye load ab available nahi hai',
+    },
+    'needVehicleFirst': {
+      AppLanguage.english: 'Add an active vehicle before accepting loads',
+      AppLanguage.hindi: 'लोड स्वीकार करने से पहले एक सक्रिय वाहन जोड़ें',
+      AppLanguage.hinglish: 'Load accept karne se pehle ek active vehicle add karo',
+    },
+    'chooseVehicle': {
+      AppLanguage.english: 'Choose vehicle',
+      AppLanguage.hindi: 'वाहन चुनें',
+      AppLanguage.hinglish: 'Vehicle choose karo',
+    },
+    'viewBooking': {
+      AppLanguage.english: 'View booking',
+      AppLanguage.hindi: 'बुकिंग देखें',
+      AppLanguage.hinglish: 'Booking dekho',
+    },
+    'statusOpen': {
+      AppLanguage.english: 'Open',
+      AppLanguage.hindi: 'खुला',
+      AppLanguage.hinglish: 'Open',
+    },
+    'statusMatched': {
+      AppLanguage.english: 'Matched',
+      AppLanguage.hindi: 'मैच हुआ',
+      AppLanguage.hinglish: 'Matched',
+    },
+    'statusClosed': {
+      AppLanguage.english: 'Closed',
+      AppLanguage.hindi: 'बंद',
+      AppLanguage.hinglish: 'Closed',
+    },
+
+    // ---------------- Bookings ----------------
+    'statusAccepted': {
+      AppLanguage.english: 'Accepted',
+      AppLanguage.hindi: 'स्वीकृत',
+      AppLanguage.hinglish: 'Accepted',
+    },
+    'statusPickedUp': {
+      AppLanguage.english: 'Picked up',
+      AppLanguage.hindi: 'पिकअप हो गया',
+      AppLanguage.hinglish: 'Pickup ho gaya',
+    },
+    'statusInTransit': {
+      AppLanguage.english: 'In transit',
+      AppLanguage.hindi: 'रास्ते में',
+      AppLanguage.hinglish: 'Raaste mein',
+    },
+    'statusDelivered': {
+      AppLanguage.english: 'Delivered',
+      AppLanguage.hindi: 'डिलीवर हो गया',
+      AppLanguage.hinglish: 'Deliver ho gaya',
+    },
+    'markPickedUp': {
+      AppLanguage.english: 'Mark Picked Up',
+      AppLanguage.hindi: 'पिकअप हुआ मार्क करें',
+      AppLanguage.hinglish: 'Picked Up Mark Karo',
+    },
+    'markInTransit': {
+      AppLanguage.english: 'Start Trip (In Transit)',
+      AppLanguage.hindi: 'यात्रा शुरू करें',
+      AppLanguage.hinglish: 'Trip Start Karo',
+    },
+    'markDelivered': {
+      AppLanguage.english: 'Mark Delivered',
+      AppLanguage.hindi: 'डिलीवर हुआ मार्क करें',
+      AppLanguage.hinglish: 'Delivered Mark Karo',
+    },
+    'statusUpdated': {
+      AppLanguage.english: 'Status updated',
+      AppLanguage.hindi: 'स्थिति अपडेट हो गई',
+      AppLanguage.hinglish: 'Status update ho gaya',
+    },
+    'tripDetails': {
+      AppLanguage.english: 'Trip Details',
+      AppLanguage.hindi: 'यात्रा विवरण',
+      AppLanguage.hinglish: 'Trip Details',
+    },
+    'trackBooking': {
+      AppLanguage.english: 'Track Booking',
+      AppLanguage.hindi: 'बुकिंग ट्रैक करें',
+      AppLanguage.hinglish: 'Booking Track Karo',
+    },
+    'tripCompleted': {
+      AppLanguage.english: 'Trip completed',
+      AppLanguage.hindi: 'यात्रा पूरी हुई',
+      AppLanguage.hinglish: 'Trip complete ho gayi',
+    },
+    'noBookingsTitle': {
+      AppLanguage.english: 'No bookings yet',
+      AppLanguage.hindi: 'अभी कोई बुकिंग नहीं',
+      AppLanguage.hinglish: 'Abhi koi booking nahi',
+    },
+    'noBookingsSub': {
+      AppLanguage.english: 'When a driver accepts your load, it will appear here.',
+      AppLanguage.hindi: 'जब कोई ड्राइवर आपका लोड स्वीकार करेगा, यहाँ दिखेगा।',
+      AppLanguage.hinglish: 'Jab driver aapka load accept karega, yahan dikhega.',
+    },
+    'noTrips': {
+      AppLanguage.english: 'No trips yet. Accept a load to start.',
+      AppLanguage.hindi: 'अभी कोई यात्रा नहीं। शुरू करने के लिए लोड स्वीकार करें।',
+      AppLanguage.hinglish: 'Abhi koi trip nahi. Shuru karne ke liye load accept karo.',
+    },
+    'bookingNotFound': {
+      AppLanguage.english: 'Booking not found',
+      AppLanguage.hindi: 'बुकिंग नहीं मिली',
+      AppLanguage.hinglish: 'Booking nahi mili',
+    },
+    'vehicle': {
+      AppLanguage.english: 'Vehicle',
+      AppLanguage.hindi: 'वाहन',
+      AppLanguage.hinglish: 'Vehicle',
+    },
+    'cargo': {
+      AppLanguage.english: 'Cargo',
+      AppLanguage.hindi: 'माल',
+      AppLanguage.hinglish: 'Cargo',
+    },
+    'budget': {
+      AppLanguage.english: 'Budget',
+      AppLanguage.hindi: 'बजट',
+      AppLanguage.hinglish: 'Budget',
+    },
+    'notes': {
+      AppLanguage.english: 'Notes',
+      AppLanguage.hindi: 'नोट्स',
+      AppLanguage.hinglish: 'Notes',
+    },
   };
 
   static String get(String key, AppLanguage language) {
