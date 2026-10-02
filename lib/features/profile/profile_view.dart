@@ -7,6 +7,7 @@ import '../../core/services/user_service.dart';
 import '../../core/widgets/common.dart';
 import '../../main.dart';
 import '../ratings/rating_widgets.dart';
+import 'edit_profile_screen.dart';
 
 /// Profile tab for both roles: identity, contact details, average rating and
 /// logout. [isDriver] picks which name field and label to show.
@@ -74,8 +75,23 @@ class _ProfileViewState extends State<ProfileView> {
           return ListView(
             padding: const EdgeInsets.fromLTRB(20, 18, 20, 30),
             children: [
-              Text(tr(context, 'profile'),
-                  style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: AppColors.title)),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(tr(context, 'profile'),
+                        style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: AppColors.title)),
+                  ),
+                  TextButton.icon(
+                    onPressed: snap.hasData
+                        ? () => Navigator.of(context).push(MaterialPageRoute(
+                              builder: (_) => EditProfileScreen(isDriver: widget.isDriver, profile: data),
+                            ))
+                        : null,
+                    icon: const Icon(Icons.edit_outlined),
+                    label: Text(tr(context, 'editProfile')),
+                  ),
+                ],
+              ),
               const SizedBox(height: 18),
               AppCard(
                 child: Column(

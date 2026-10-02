@@ -1764,6 +1764,16 @@ class T {
       AppLanguage.hindi: 'आपके फ़िल्टर से कोई लोड नहीं मिला',
       AppLanguage.hinglish: 'Aapke filters se koi load nahi mila',
     },
+    'editProfile': {
+      AppLanguage.english: 'Edit profile',
+      AppLanguage.hindi: 'प्रोफ़ाइल बदलें',
+      AppLanguage.hinglish: 'Profile edit karo',
+    },
+    'profileUpdated': {
+      AppLanguage.english: 'Profile updated',
+      AppLanguage.hindi: 'प्रोफ़ाइल अपडेट हो गई',
+      AppLanguage.hinglish: 'Profile update ho gayi',
+    },
     // ---------------- Bookings ----------------
     'statusAccepted': {
       AppLanguage.english: 'Accepted',

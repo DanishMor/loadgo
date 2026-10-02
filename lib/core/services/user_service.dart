@@ -97,5 +97,24 @@ class UserService {
     await ref.set(data, SetOptions(merge: true));
   }
 
+  /// Edits the signed-in user's profile after setup. Drivers keep their
+  /// name in `driverName`, customers in `name`; blank optional fields are
+  /// removed.
+  static Future<void> updateProfile({
+    required bool isDriver,
+    required String name,
+    required String email,
+    required String companyName,
+  }) async {
+    final uid = Backend.requireUid();
+    String? clean(String v) => v.trim().isEmpty ? null : v.trim();
+    await _db.collection('users').doc(uid).update({
+      isDriver ? 'driverName' : 'name': name.trim(),
+      'email': clean(email) ?? FieldValue.delete(),
+      'companyName': clean(companyName) ?? FieldValue.delete(),
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+  }
+
   static Future<void> logout() => FirebaseAuth.instance.signOut();
 }
