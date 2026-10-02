@@ -1724,6 +1724,46 @@ class T {
       AppLanguage.hindi: 'किराया लोड पर तय बजट है। यह यात्रा सारांश है, टैक्स बिल नहीं।',
       AppLanguage.hinglish: 'Fare load par tay budget hai. Ye trip summary hai, tax invoice nahi.',
     },
+    'searchPickup': {
+      AppLanguage.english: 'Search pickup city',
+      AppLanguage.hindi: 'पिकअप शहर खोजें',
+      AppLanguage.hinglish: 'Pickup city search karo',
+    },
+    'filters': {
+      AppLanguage.english: 'Filters',
+      AppLanguage.hindi: 'फ़िल्टर',
+      AppLanguage.hinglish: 'Filters',
+    },
+    'allTypes': {
+      AppLanguage.english: 'All types',
+      AppLanguage.hindi: 'सभी प्रकार',
+      AppLanguage.hinglish: 'Sab types',
+    },
+    'minBudget': {
+      AppLanguage.english: 'Minimum budget ₹',
+      AppLanguage.hindi: 'न्यूनतम बजट ₹',
+      AppLanguage.hinglish: 'Minimum budget ₹',
+    },
+    'anyBudget': {
+      AppLanguage.english: 'Any',
+      AppLanguage.hindi: 'कोई भी',
+      AppLanguage.hinglish: 'Koi bhi',
+    },
+    'applyFilters': {
+      AppLanguage.english: 'Apply',
+      AppLanguage.hindi: 'लागू करें',
+      AppLanguage.hinglish: 'Apply karo',
+    },
+    'clearFilters': {
+      AppLanguage.english: 'Clear filters',
+      AppLanguage.hindi: 'फ़िल्टर हटाएं',
+      AppLanguage.hinglish: 'Filters hatao',
+    },
+    'noLoadsMatch': {
+      AppLanguage.english: 'No loads match your filters',
+      AppLanguage.hindi: 'आपके फ़िल्टर से कोई लोड नहीं मिला',
+      AppLanguage.hinglish: 'Aapke filters se koi load nahi mila',
+    },
     // ---------------- Bookings ----------------
     'statusAccepted': {
       AppLanguage.english: 'Accepted',
