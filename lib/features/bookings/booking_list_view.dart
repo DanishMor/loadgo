@@ -2,13 +2,14 @@ import 'package:flutter/material.dart';
 
 import '../../core/models/booking.dart';
 import '../../core/widgets/common.dart';
+import '../shared/live_stream.dart';
 import 'booking_widgets.dart';
 
 /// Titled live list of bookings; used for the driver Trips tab and the
 /// customer Bookings tab.
 class BookingListView extends StatelessWidget {
   final String title;
-  final Stream<List<Booking>> bookings;
+  final StreamFactory<List<Booking>> bookings;
   final String emptyTitle;
   final String? emptySubtitle;
   final ValueChanged<String> onOpen;
@@ -33,12 +34,9 @@ class BookingListView extends StatelessWidget {
             child: Text(title, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: AppColors.title)),
           ),
           Expanded(
-            child: StreamBuilder<List<Booking>>(
+            child: LiveStream<List<Booking>>(
               stream: bookings,
-              builder: (context, snap) {
-                if (snap.hasError) return StreamErrorText(snap.error);
-                if (!snap.hasData) return const Center(child: CircularProgressIndicator());
-                final list = snap.data!;
+              builder: (context, list) {
                 if (list.isEmpty) {
                   return EmptyState(icon: Icons.receipt_long_rounded, title: emptyTitle, subtitle: emptySubtitle);
                 }
@@ -59,7 +57,7 @@ class BookingListView extends StatelessWidget {
 
 /// Small card on Driver Home showing the current (undelivered) trip.
 class ActiveTripCard extends StatelessWidget {
-  final Stream<List<Booking>> bookings;
+  final StreamFactory<List<Booking>> bookings;
   final ValueChanged<String> onOpen;
   final Widget empty;
 
@@ -67,10 +65,11 @@ class ActiveTripCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<List<Booking>>(
+    return LiveStream<List<Booking>>(
       stream: bookings,
-      builder: (context, snap) {
-        final active = (snap.data ?? const <Booking>[]).where((b) => b.isActive).toList();
+      compact: true,
+      builder: (context, all) {
+        final active = all.where((b) => b.isActive).toList();
         if (active.isEmpty) return empty;
         return Column(
           children: [

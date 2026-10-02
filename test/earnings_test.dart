@@ -61,7 +61,7 @@ void main() {
     });
     String? opened;
     await tester.pumpWidget(MaterialApp(
-      home: Scaffold(body: EarningsView(bookings: Stream.value(list), onOpenTrip: (id) => opened = id, now: () => now)),
+      home: Scaffold(body: EarningsView(bookings: () => Stream.value(list), onOpenTrip: (id) => opened = id, now: () => now)),
     ));
     await settle(tester);
     expect(find.text('₹ 17000'), findsOneWidget);
@@ -73,7 +73,7 @@ void main() {
 
   testWidgets('empty state when nothing delivered', (tester) async {
     await tester.pumpWidget(MaterialApp(
-      home: Scaffold(body: EarningsView(bookings: Stream.value(const []), onOpenTrip: (_) {}, now: () => now)),
+      home: Scaffold(body: EarningsView(bookings: () => Stream.value(const <Booking>[]), onOpenTrip: (_) {}, now: () => now)),
     ));
     await tester.pumpAndSettle();
     expect(find.text('No completed trips yet'), findsOneWidget);

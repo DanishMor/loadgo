@@ -4,10 +4,11 @@ import '../../core/models/booking.dart';
 import '../../core/models/earnings.dart';
 import '../../core/widgets/common.dart';
 import '../../main.dart';
+import '../shared/live_stream.dart';
 
 /// Driver "Earnings" tab: totals from delivered trips plus recent payouts.
 class EarningsView extends StatelessWidget {
-  final Stream<List<Booking>> bookings;
+  final StreamFactory<List<Booking>> bookings;
   final ValueChanged<String> onOpenTrip;
 
   /// Injectable clock for tests.
@@ -33,12 +34,10 @@ class EarningsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-      child: StreamBuilder<List<Booking>>(
+      child: LiveStream<List<Booking>>(
         stream: bookings,
-        builder: (context, snap) {
-          if (snap.hasError) return StreamErrorText(snap.error);
-          if (!snap.hasData) return const Center(child: CircularProgressIndicator());
-          final e = EarningsSummary.from(snap.data!, now());
+        builder: (context, bookings) {
+          final e = EarningsSummary.from(bookings, now());
           return ListView(
             padding: const EdgeInsets.fromLTRB(20, 18, 20, 30),
             children: [

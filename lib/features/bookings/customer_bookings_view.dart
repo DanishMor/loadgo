@@ -4,12 +4,13 @@ import '../../core/constants/logistics.dart';
 import '../../core/models/booking.dart';
 import '../../core/widgets/common.dart';
 import '../../main.dart';
+import '../shared/live_stream.dart';
 import 'booking_widgets.dart';
 
 /// Customer "Bookings" tab split into active and past (delivered/cancelled).
 /// Delivered bookings open their invoice; everything else opens tracking.
 class CustomerBookingsView extends StatefulWidget {
-  final Stream<List<Booking>> bookings;
+  final StreamFactory<List<Booking>> bookings;
   final ValueChanged<String> onOpenTracking;
   final ValueChanged<String> onOpenInvoice;
 
@@ -51,12 +52,10 @@ class _CustomerBookingsViewState extends State<CustomerBookingsView> {
           ),
           const SizedBox(height: 8),
           Expanded(
-            child: StreamBuilder<List<Booking>>(
+            child: LiveStream<List<Booking>>(
               stream: widget.bookings,
-              builder: (context, snap) {
-                if (snap.hasError) return StreamErrorText(snap.error);
-                if (!snap.hasData) return const Center(child: CircularProgressIndicator());
-                final list = snap.data!.where((b) => b.isActive != _showPast).toList();
+              builder: (context, all) {
+                final list = all.where((b) => b.isActive != _showPast).toList();
                 if (list.isEmpty) {
                   return EmptyState(
                     icon: _showPast ? Icons.history_rounded : Icons.receipt_long_rounded,

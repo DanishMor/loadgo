@@ -4,6 +4,7 @@ import '../../core/models/app_notification.dart';
 import '../../core/services/notification_service.dart';
 import '../../core/widgets/common.dart';
 import '../../main.dart';
+import '../shared/live_stream.dart';
 import '../bookings/booking_widgets.dart';
 
 /// Title for a notification in the current language.
@@ -71,7 +72,6 @@ class NotificationsScreen extends StatefulWidget {
 }
 
 class _NotificationsScreenState extends State<NotificationsScreen> {
-  final Stream<List<AppNotification>> _items = NotificationService.watchMine();
   List<AppNotification> _latest = const [];
 
   Future<void> _open(AppNotification n) async {
@@ -98,12 +98,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         ],
       ),
       body: SafeArea(
-        child: StreamBuilder<List<AppNotification>>(
-          stream: _items,
-          builder: (context, snap) {
-            if (snap.hasError) return StreamErrorText(snap.error);
-            if (!snap.hasData) return const Center(child: CircularProgressIndicator());
-            final items = _latest = snap.data!;
+        child: LiveStream<List<AppNotification>>(
+          stream: NotificationService.watchMine,
+          builder: (context, items) {
+            _latest = items;
             if (items.isEmpty) {
               return EmptyState(icon: Icons.notifications_none_rounded, title: tr(context, 'noNotifications'));
             }

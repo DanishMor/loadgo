@@ -45,7 +45,7 @@ void main() {
     await tester.pumpWidget(MaterialApp(
       home: Scaffold(
         body: CustomerBookingsView(
-          bookings: BookingService.watchForCustomer(),
+          bookings: BookingService.watchForCustomer,
           onOpenTracking: (id) => tracking = id,
           onOpenInvoice: (id) => invoice = id,
         ),
@@ -73,7 +73,7 @@ void main() {
     await tester.pumpWidget(MaterialApp(
       home: Scaffold(
         body: CustomerBookingsView(
-            bookings: BookingService.watchForCustomer(), onOpenTracking: (_) {}, onOpenInvoice: (_) {}),
+            bookings: BookingService.watchForCustomer, onOpenTracking: (_) {}, onOpenInvoice: (_) {}),
       ),
     ));
     await settle(tester);

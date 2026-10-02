@@ -5,6 +5,7 @@ import '../../core/models/load.dart';
 import '../../core/services/load_service.dart';
 import '../../core/widgets/common.dart';
 import '../../main.dart';
+import '../shared/live_stream.dart';
 import 'load_card.dart';
 
 /// Customer "My Loads" tab: live list of the customer's posted loads.
@@ -21,8 +22,6 @@ class MyLoadsView extends StatefulWidget {
 }
 
 class _MyLoadsViewState extends State<MyLoadsView> {
-  final Stream<List<Load>> _loads = LoadService.watchMine();
-
   Widget? _actionsFor(Load load) {
     final viewBooking = load.bookingId == null
         ? null
@@ -70,12 +69,9 @@ class _MyLoadsViewState extends State<MyLoadsView> {
             ),
           ),
           Expanded(
-            child: StreamBuilder<List<Load>>(
-              stream: _loads,
-              builder: (context, snap) {
-                if (snap.hasError) return StreamErrorText(snap.error);
-                if (!snap.hasData) return const Center(child: CircularProgressIndicator());
-                final loads = snap.data!;
+            child: LiveStream<List<Load>>(
+              stream: LoadService.watchMine,
+              builder: (context, loads) {
                 if (loads.isEmpty) {
                   return EmptyState(
                     icon: Icons.inventory_2_rounded,

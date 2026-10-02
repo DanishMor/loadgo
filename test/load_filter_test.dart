@@ -60,7 +60,7 @@ void main() {
     late List<Load> loads;
     await tester.runAsync(() async => loads = await sampleLoads(db));
 
-    await tester.pumpWidget(MaterialApp(home: Scaffold(body: AvailableLoadsView(loads: Stream.value(loads)))));
+    await tester.pumpWidget(MaterialApp(home: Scaffold(body: AvailableLoadsView(loads: () => Stream.value(loads)))));
     await settle(tester);
     expect(find.textContaining('→ Jaipur'), findsNWidgets(4));
 

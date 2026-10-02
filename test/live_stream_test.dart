@@ -1,0 +1,108 @@
+import 'dart:async';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:transport_app/core/models/booking.dart';
+import 'package:transport_app/core/models/load.dart';
+import 'package:transport_app/features/bookings/booking_list_view.dart';
+import 'package:transport_app/features/bookings/customer_bookings_view.dart';
+import 'package:transport_app/features/loads/available_loads_view.dart';
+import 'package:transport_app/features/shared/live_stream.dart';
+
+Widget host(Widget child) => MaterialApp(home: Scaffold(body: child));
+
+void main() {
+  test('loadErrorKey maps errors to friendly messages', () {
+    expect(loadErrorKey(FirebaseException(plugin: 'firestore', code: 'unavailable')), 'errorNetwork');
+    expect(loadErrorKey(FirebaseException(plugin: 'firestore', code: 'permission-denied')), 'errorNoAccess');
+    expect(loadErrorKey(FirebaseException(plugin: 'firestore', code: 'internal')), 'errorGeneric');
+    expect(loadErrorKey(TimeoutException('x')), 'errorNetwork');
+    expect(loadErrorKey(StateError('x')), 'errorGeneric');
+  });
+
+  testWidgets('error shows a friendly message and Retry re-subscribes', (tester) async {
+    var calls = 0;
+    Stream<List<int>> factory() {
+      calls++;
+      return calls == 1
+          ? Stream.error(FirebaseException(plugin: 'firestore', code: 'unavailable', message: 'raw internal text'))
+          : Stream.value([1, 2, 3]);
+    }
+
+    await tester.pumpWidget(host(LiveStream<List<int>>(stream: factory, builder: (_, d) => Text('items ${d.length}'))));
+    await tester.pumpAndSettle();
+    expect(find.text("Couldn't connect. Check your internet and try again."), findsOneWidget);
+    expect(find.textContaining('raw internal text'), findsNothing);
+
+    await tester.tap(find.text('Retry'));
+    await tester.pumpAndSettle();
+    expect(calls, 2);
+    expect(find.text('items 3'), findsOneWidget);
+  });
+
+  testWidgets('a stream that never emits shows the slow hint instead of spinning forever', (tester) async {
+    final never = StreamController<int>();
+    addTearDown(never.close);
+    await tester.pumpWidget(host(LiveStream<int>(stream: () => never.stream, builder: (_, d) => Text('$d'))));
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+
+    await tester.pump(const Duration(seconds: 16));
+    expect(find.text('This is taking longer than usual.'), findsOneWidget);
+    expect(find.text('Retry'), findsOneWidget);
+
+    // Late data still replaces the hint.
+    never.add(7);
+    await tester.pump();
+    expect(find.text('7'), findsOneWidget);
+  });
+
+  testWidgets('compact variant renders an inline retry card', (tester) async {
+    await tester.pumpWidget(host(LiveStream<int>(
+      stream: () => Stream.error(StateError('boom')),
+      compact: true,
+      builder: (_, d) => Text('$d'),
+    )));
+    await tester.pumpAndSettle();
+    expect(find.text('Something went wrong while loading.'), findsOneWidget);
+    expect(find.text('Retry'), findsOneWidget);
+  });
+
+  group('list screens: empty and error states', () {
+    final failing = FirebaseException(plugin: 'firestore', code: 'unavailable');
+
+    testWidgets('Available Loads', (tester) async {
+      await tester.pumpWidget(host(AvailableLoadsView(loads: () => Stream.value(const <Load>[]))));
+      await tester.pumpAndSettle();
+      expect(find.text('No open loads right now'), findsOneWidget);
+
+      await tester.pumpWidget(host(AvailableLoadsView(key: UniqueKey(), loads: () => Stream.error(failing))));
+      await tester.pumpAndSettle();
+      expect(find.text('Retry'), findsOneWidget);
+    });
+
+    testWidgets('Trips (driver)', (tester) async {
+      await tester.pumpWidget(host(BookingListView(
+          title: 'Trips', bookings: () => Stream.value(const <Booking>[]), emptyTitle: 'No trips', onOpen: (_) {})));
+      await tester.pumpAndSettle();
+      expect(find.text('No trips'), findsOneWidget);
+
+      await tester.pumpWidget(host(BookingListView(
+          key: UniqueKey(), title: 'Trips', bookings: () => Stream.error(failing), emptyTitle: 'No trips', onOpen: (_) {})));
+      await tester.pumpAndSettle();
+      expect(find.text('Retry'), findsOneWidget);
+    });
+
+    testWidgets('Bookings (customer)', (tester) async {
+      await tester.pumpWidget(host(CustomerBookingsView(
+          bookings: () => Stream.value(const <Booking>[]), onOpenTracking: (_) {}, onOpenInvoice: (_) {})));
+      await tester.pumpAndSettle();
+      expect(find.text('No bookings yet'), findsOneWidget);
+
+      await tester.pumpWidget(host(CustomerBookingsView(
+          key: UniqueKey(), bookings: () => Stream.error(failing), onOpenTracking: (_) {}, onOpenInvoice: (_) {})));
+      await tester.pumpAndSettle();
+      expect(find.text('Retry'), findsOneWidget);
+    });
+  });
+}

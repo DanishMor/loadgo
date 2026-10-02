@@ -1,7 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-import '../../core/models/booking.dart';
 import '../../core/services/booking_service.dart';
 import '../../main.dart';
 import '../bookings/booking_tracking_screen.dart';
@@ -28,7 +27,6 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
   static const _loadsTab = 2;
 
   int _currentIndex = 0;
-  final Stream<List<Booking>> _bookings = BookingService.watchForCustomer();
 
   Future<void> _postLoad() async {
     final posted = await Navigator.of(context).push<bool>(
@@ -45,7 +43,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
   late final List<Widget> _pages = [
     _CustomerHomeContent(onPostLoad: _postLoad, onOpenTab: _openTab),
     CustomerBookingsView(
-      bookings: _bookings,
+      bookings: BookingService.watchForCustomer,
       onOpenTracking: _openBooking,
       onOpenInvoice: (id) => openInvoice(context, id),
     ),

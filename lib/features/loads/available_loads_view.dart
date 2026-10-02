@@ -5,6 +5,7 @@ import '../../core/models/load.dart';
 import '../../core/models/load_filter.dart';
 import '../../core/widgets/common.dart';
 import '../../main.dart';
+import '../shared/live_stream.dart';
 import 'accept_load.dart';
 import 'load_card.dart';
 
@@ -56,7 +57,7 @@ class _AcceptLoadButtonState extends State<AcceptLoadButton> {
 /// Driver "Loads" tab: live list of open loads with pickup search and
 /// vehicle type / minimum budget filters.
 class AvailableLoadsView extends StatefulWidget {
-  final Stream<List<Load>> loads;
+  final StreamFactory<List<Load>> loads;
   final ValueChanged<String>? onAccepted;
 
   const AvailableLoadsView({super.key, required this.loads, this.onAccepted});
@@ -155,12 +156,9 @@ class _AvailableLoadsViewState extends State<AvailableLoadsView> {
           _activeChips(),
           const SizedBox(height: 8),
           Expanded(
-            child: StreamBuilder<List<Load>>(
+            child: LiveStream<List<Load>>(
               stream: widget.loads,
-              builder: (context, snap) {
-                if (snap.hasError) return StreamErrorText(snap.error);
-                if (!snap.hasData) return const Center(child: CircularProgressIndicator());
-                final all = snap.data!;
+              builder: (context, all) {
                 final list = _filter.apply(all);
                 if (all.isEmpty) {
                   return EmptyState(icon: Icons.inventory_2_rounded, title: tr(context, 'noAvailableLoads'));

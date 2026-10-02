@@ -5,6 +5,7 @@ import '../../core/models/booking.dart';
 import '../../core/services/booking_service.dart';
 import '../../core/widgets/common.dart';
 import '../../main.dart';
+import '../shared/live_stream.dart';
 
 String bookingStatusLabel(BuildContext context, String status) => switch (status) {
       BookingStatus.accepted => tr(context, 'statusAccepted'),
@@ -200,31 +201,21 @@ class BookingDetailScaffold extends StatelessWidget {
   }
 }
 
-class _BookingStreamBody extends StatefulWidget {
+class _BookingStreamBody extends StatelessWidget {
   final String bookingId;
   final Widget Function(BuildContext context, Booking booking) builder;
 
   const _BookingStreamBody({required this.bookingId, required this.builder});
 
   @override
-  State<_BookingStreamBody> createState() => _BookingStreamBodyState();
-}
-
-class _BookingStreamBodyState extends State<_BookingStreamBody> {
-  late final Stream<Booking?> _stream = BookingService.watch(widget.bookingId);
-
-  @override
   Widget build(BuildContext context) {
-    return StreamBuilder<Booking?>(
-      stream: _stream,
-      builder: (context, snap) {
-        if (snap.hasError) return StreamErrorText(snap.error);
-        if (snap.connectionState == ConnectionState.waiting && !snap.hasData) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        final booking = snap.data;
+    // Wrapped in a record so "booking doesn't exist" (null) counts as data.
+    return LiveStream<(Booking?,)>(
+      stream: () => BookingService.watch(bookingId).map((b) => (b,)),
+      builder: (context, data) {
+        final booking = data.$1;
         if (booking == null) return EmptyState(icon: Icons.search_off_rounded, title: tr(context, 'bookingNotFound'));
-        return widget.builder(context, booking);
+        return builder(context, booking);
       },
     );
   }

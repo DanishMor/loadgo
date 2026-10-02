@@ -15,6 +15,7 @@ import '../loads/available_loads_view.dart';
 import '../loads/load_card.dart';
 import '../notifications/notifications_screen.dart';
 import '../profile/profile_view.dart';
+import '../shared/live_stream.dart';
 import '../vehicle/my_vehicles_screen.dart';
 
 class DriverHomeScreen extends StatefulWidget {
@@ -30,11 +31,6 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
   int _index = 0;
   bool _isOnline = false;
   final Stream<List<Vehicle>> _vehicles = VehicleService.watchMine();
-  final Stream<List<Load>> _homeOpenLoads = LoadService.watchOpen();
-  final Stream<List<Load>> _tabOpenLoads = LoadService.watchOpen();
-  final Stream<List<Booking>> _homeTrips = BookingService.watchForDriver();
-  final Stream<List<Booking>> _tabTrips = BookingService.watchForDriver();
-  final Stream<List<Booking>> _earningsTrips = BookingService.watchForDriver();
   final Stream<List<Booking>> _todayTrips = BookingService.watchForDriver();
 
   void _snack(String msg) {
@@ -86,12 +82,10 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
 
   /// Up to three open loads on the home tab; the Loads tab shows the rest.
   Widget _homeLoads() {
-    return StreamBuilder<List<Load>>(
-      stream: _homeOpenLoads,
-      builder: (context, snap) {
-        if (snap.hasError) return StreamErrorText(snap.error);
-        if (!snap.hasData) return const Center(child: CircularProgressIndicator());
-        final loads = snap.data!;
+    return LiveStream<List<Load>>(
+      stream: LoadService.watchOpen,
+      compact: true,
+      builder: (context, loads) {
         if (loads.isEmpty) return _emptyCard(Icons.inventory_2_outlined, tr(context, 'noAvailableLoads'));
         return Column(
           children: [
@@ -201,7 +195,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
             _title(tr(context, 'activeTrip')),
             const SizedBox(height: 12),
             ActiveTripCard(
-              bookings: _homeTrips,
+              bookings: BookingService.watchForDriver,
               onOpen: (id) => openDriverTrip(context, id),
               empty: _emptyCard(Icons.route_rounded, tr(context, 'noActiveTrip')),
             ),
@@ -231,14 +225,14 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
   Widget build(BuildContext context) {
     final pages = [
       _homeTab(),
-      AvailableLoadsView(loads: _tabOpenLoads, onAccepted: _onAccepted),
+      AvailableLoadsView(loads: LoadService.watchOpen, onAccepted: _onAccepted),
       BookingListView(
         title: tr(context, 'trips'),
-        bookings: _tabTrips,
+        bookings: BookingService.watchForDriver,
         emptyTitle: tr(context, 'noTrips'),
         onOpen: (id) => openDriverTrip(context, id),
       ),
-      EarningsView(bookings: _earningsTrips, onOpenTrip: (id) => openDriverTrip(context, id)),
+      EarningsView(bookings: BookingService.watchForDriver, onOpenTrip: (id) => openDriverTrip(context, id)),
       const ProfileView(isDriver: true),
     ];
 

@@ -4,6 +4,7 @@ import '../../core/models/vehicle.dart';
 import '../../core/services/vehicle_service.dart';
 import '../../core/widgets/common.dart';
 import '../../main.dart';
+import '../shared/live_stream.dart';
 import 'add_vehicle_screen.dart';
 
 void openEditVehicle(BuildContext context, Vehicle vehicle) {
@@ -23,64 +24,55 @@ class MyVehiclesScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<List<Vehicle>>(
-      stream: VehicleService.watchMine(),
-      builder: (context, snap) {
-        final vehicles = snap.data ?? const <Vehicle>[];
-        final Widget body;
-        if (snap.hasError) {
-          body = StreamErrorText(snap.error);
-        } else if (!snap.hasData) {
-          body = const Center(child: CircularProgressIndicator());
-        } else if (vehicles.isEmpty) {
-          body = EmptyState(
-            icon: Icons.local_shipping_rounded,
-            title: tr(context, 'noVehicleTitle'),
-            subtitle: tr(context, 'noVehicleSub'),
-            action: SizedBox(
-              width: 220,
-              child: PrimaryButton(
-                label: tr(context, 'addVehicle'),
-                icon: Icons.add_rounded,
-                onPressed: () => openAddVehicle(context, prefillFromProfile: true),
-              ),
-            ),
-          );
-        } else {
-          body = ListView.separated(
-            padding: const EdgeInsets.fromLTRB(20, 10, 20, 100),
-            itemCount: vehicles.length,
-            separatorBuilder: (_, _) => const SizedBox(height: 12),
-            itemBuilder: (context, i) => _VehicleCard(vehicle: vehicles[i]),
-          );
-        }
-
-        return Scaffold(
-          backgroundColor: AppColors.background,
-          appBar: AppBar(
-            backgroundColor: AppColors.background,
-            scrolledUnderElevation: 0,
-            title: Text(tr(context, 'myVehicles'), style: const TextStyle(fontWeight: FontWeight.w700)),
-          ),
-          floatingActionButton: vehicles.isEmpty
-              ? null
-              : FloatingActionButton.extended(
-                  onPressed: () => openAddVehicle(context),
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.white,
-                  icon: const Icon(Icons.add_rounded),
-                  label: Text(tr(context, 'addVehicle')),
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        backgroundColor: AppColors.background,
+        scrolledUnderElevation: 0,
+        title: Text(tr(context, 'myVehicles'), style: const TextStyle(fontWeight: FontWeight.w700)),
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => openAddVehicle(context),
+        backgroundColor: AppColors.primary,
+        foregroundColor: Colors.white,
+        icon: const Icon(Icons.add_rounded),
+        label: Text(tr(context, 'addVehicle')),
+      ),
+      body: SafeArea(
+        child: LiveStream<List<Vehicle>>(
+          stream: VehicleService.watchMine,
+          builder: (context, vehicles) {
+            if (vehicles.isEmpty) {
+              return EmptyState(
+                icon: Icons.local_shipping_rounded,
+                title: tr(context, 'noVehicleTitle'),
+                subtitle: tr(context, 'noVehicleSub'),
+                action: SizedBox(
+                  width: 220,
+                  child: PrimaryButton(
+                    label: tr(context, 'addVehicle'),
+                    icon: Icons.add_rounded,
+                    onPressed: () => openAddVehicle(context, prefillFromProfile: true),
+                  ),
                 ),
-          body: SafeArea(child: body),
-        );
-      },
+              );
+            }
+            return ListView.separated(
+              padding: const EdgeInsets.fromLTRB(20, 10, 20, 100),
+              itemCount: vehicles.length,
+              separatorBuilder: (_, _) => const SizedBox(height: 12),
+              itemBuilder: (context, i) => _VehicleCard(key: ValueKey(vehicles[i].id), vehicle: vehicles[i]),
+            );
+          },
+        ),
+      ),
     );
   }
 }
 
 class _VehicleCard extends StatefulWidget {
   final Vehicle vehicle;
-  const _VehicleCard({required this.vehicle});
+  const _VehicleCard({super.key, required this.vehicle});
 
   @override
   State<_VehicleCard> createState() => _VehicleCardState();

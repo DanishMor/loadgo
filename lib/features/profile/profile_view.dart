@@ -7,6 +7,7 @@ import '../../core/services/user_service.dart';
 import '../../core/widgets/common.dart';
 import '../../main.dart';
 import '../ratings/rating_widgets.dart';
+import '../shared/live_stream.dart';
 import 'edit_profile_screen.dart';
 
 /// Profile tab for both roles: identity, contact details, average rating and
@@ -21,7 +22,6 @@ class ProfileView extends StatefulWidget {
 }
 
 class _ProfileViewState extends State<ProfileView> {
-  late final Stream<Map<String, dynamic>> _user = UserService.watchUser();
   late final Stream<RatingSummary> _rating = RatingService.watchSummary(Backend.uid ?? '');
 
   Future<void> _logout() async {
@@ -67,10 +67,9 @@ class _ProfileViewState extends State<ProfileView> {
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-      child: StreamBuilder<Map<String, dynamic>>(
-        stream: _user,
-        builder: (context, snap) {
-          final data = snap.data ?? const <String, dynamic>{};
+      child: LiveStream<Map<String, dynamic>>(
+        stream: UserService.watchUser,
+        builder: (context, data) {
           final name = (widget.isDriver ? data['driverName'] : (data['name'] ?? data['fullName'])) as String?;
           return ListView(
             padding: const EdgeInsets.fromLTRB(20, 18, 20, 30),
@@ -82,11 +81,9 @@ class _ProfileViewState extends State<ProfileView> {
                         style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: AppColors.title)),
                   ),
                   TextButton.icon(
-                    onPressed: snap.hasData
-                        ? () => Navigator.of(context).push(MaterialPageRoute(
-                              builder: (_) => EditProfileScreen(isDriver: widget.isDriver, profile: data),
-                            ))
-                        : null,
+                    onPressed: () => Navigator.of(context).push(MaterialPageRoute(
+                      builder: (_) => EditProfileScreen(isDriver: widget.isDriver, profile: data),
+                    )),
                     icon: const Icon(Icons.edit_outlined),
                     label: Text(tr(context, 'editProfile')),
                   ),

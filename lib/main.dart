@@ -7,6 +7,7 @@ import 'features/profile/customer_profile_setup_screen.dart';
 import 'features/profile/driver_profile_setup_screen.dart';
 
 import 'dart:async';
+import 'dart:ui' show PlatformDispatcher;
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -17,6 +18,12 @@ import 'firebase_options.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // Log uncaught async errors (e.g. a dropped network call) instead of
+  // letting them take the app down; screens show their own retry UI.
+  PlatformDispatcher.instance.onError = (error, stack) {
+    debugPrint('Uncaught error: $error\n$stack');
+    return true;
+  };
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(const LoadGoApp());
 }
@@ -1773,6 +1780,31 @@ class T {
       AppLanguage.english: 'Profile updated',
       AppLanguage.hindi: 'प्रोफ़ाइल अपडेट हो गई',
       AppLanguage.hinglish: 'Profile update ho gayi',
+    },
+    'retry': {
+      AppLanguage.english: 'Retry',
+      AppLanguage.hindi: 'फिर से कोशिश करें',
+      AppLanguage.hinglish: 'Retry karo',
+    },
+    'errorNetwork': {
+      AppLanguage.english: 'Couldn\'t connect. Check your internet and try again.',
+      AppLanguage.hindi: 'कनेक्ट नहीं हो सका। इंटरनेट जांचें और फिर कोशिश करें।',
+      AppLanguage.hinglish: 'Connect nahi ho paaya. Internet check karke dobara try karo.',
+    },
+    'errorNoAccess': {
+      AppLanguage.english: 'You don\'t have access to this. Try logging in again.',
+      AppLanguage.hindi: 'आपको इसकी अनुमति नहीं है। फिर से लॉगिन करें।',
+      AppLanguage.hinglish: 'Iska access nahi hai. Dobara login karke dekho.',
+    },
+    'errorGeneric': {
+      AppLanguage.english: 'Something went wrong while loading.',
+      AppLanguage.hindi: 'लोड करते समय कुछ गलत हुआ।',
+      AppLanguage.hinglish: 'Load karte waqt kuch gadbad ho gayi.',
+    },
+    'errorSlow': {
+      AppLanguage.english: 'This is taking longer than usual.',
+      AppLanguage.hindi: 'इसमें सामान्य से ज़्यादा समय लग रहा है।',
+      AppLanguage.hinglish: 'Isme normal se zyada time lag raha hai.',
     },
     // ---------------- Bookings ----------------
     'statusAccepted': {

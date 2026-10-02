@@ -187,15 +187,3 @@ class FieldLabel extends StatelessWidget {
         child: Text(text, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.body)),
       );
 }
-
-/// Shows a friendly message for stream errors (e.g. permission-denied).
-class StreamErrorText extends StatelessWidget {
-  final Object? error;
-  const StreamErrorText(this.error, {super.key});
-
-  @override
-  Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.all(20),
-        child: Text('$error', textAlign: TextAlign.center, style: const TextStyle(color: Colors.redAccent)),
-      );
-}
