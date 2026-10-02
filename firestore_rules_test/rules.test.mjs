@@ -2,7 +2,7 @@
 import { readFileSync } from 'node:fs';
 import { after, before, beforeEach, describe, test } from 'node:test';
 import { assertFails, assertSucceeds, initializeTestEnvironment } from '@firebase/rules-unit-testing';
-import { Timestamp, doc, getDoc, getDocs, collection, query, where, setDoc, updateDoc, deleteDoc, writeBatch, serverTimestamp } from 'firebase/firestore';
+import { Timestamp, addDoc, doc, getDoc, getDocs, collection, query, where, setDoc, updateDoc, deleteDoc, writeBatch, serverTimestamp } from 'firebase/firestore';
 
 let env;
 
@@ -256,5 +256,46 @@ describe('ratings', () => {
     await assertFails(setDoc(doc(as('customer1'), 'ratings', 'L1_customer1'), rating('customer1', 'driver1', { stars: 6 })));
     await assertFails(setDoc(doc(as('customer1'), 'ratings', 'L1_customer1'), rating('customer1', 'driver1', { stars: 4.5 })));
     await assertFails(setDoc(doc(as('customer1'), 'ratings', 'L1_customer1'), rating('customer1', 'driver1', { comment: 'x'.repeat(501) })));
+  });
+});
+
+describe('notifications', () => {
+  const notif = (userId, extra = {}) => ({ userId, type: 'status_changed', message: 'Delhi → Mumbai', relatedId: 'L1', status: 'picked_up', read: false, createdAt: serverTimestamp(), ...extra });
+
+  test('a booking party notifies the other party', async () => {
+    await seedBooking();
+    await assertSucceeds(addDoc(collection(as('driver1'), 'notifications'), notif('customer1')));
+    await assertSucceeds(addDoc(collection(as('customer1'), 'notifications'), notif('driver1', { type: 'rating_received', status: null })));
+  });
+
+  test('outsiders, self-notifications and bad data are rejected', async () => {
+    await seedBooking();
+    await assertFails(addDoc(collection(as('driver2'), 'notifications'), notif('customer1')));
+    await assertFails(addDoc(collection(as('driver1'), 'notifications'), notif('driver2')));
+    await assertFails(addDoc(collection(as('driver1'), 'notifications'), notif('driver1')));
+    await assertFails(addDoc(collection(as('driver1'), 'notifications'), notif('customer1', { read: true })));
+    await assertFails(addDoc(collection(as('driver1'), 'notifications'), notif('customer1', { type: 'spam' })));
+    await assertFails(addDoc(collection(as('driver1'), 'notifications'), notif('customer1', { relatedId: 'nope' })));
+  });
+
+  test('only the recipient reads and marks read', async () => {
+    await seedBooking();
+    await seed((db) => setDoc(doc(db, 'notifications', 'n1'), notif('customer1')));
+    await assertSucceeds(getDoc(doc(as('customer1'), 'notifications', 'n1')));
+    await assertSucceeds(getDocs(query(collection(as('customer1'), 'notifications'), where('userId', '==', 'customer1'))));
+    await assertFails(getDoc(doc(as('driver1'), 'notifications', 'n1')));
+    await assertFails(updateDoc(doc(as('customer1'), 'notifications', 'n1'), { message: 'changed' }));
+    await assertFails(updateDoc(doc(as('driver1'), 'notifications', 'n1'), { read: true }));
+    await assertSucceeds(updateDoc(doc(as('customer1'), 'notifications', 'n1'), { read: true }));
+  });
+
+  test('accept transaction can include the customer notification', async () => {
+    await seedOpenLoad();
+    const db = as('driver1');
+    const b = writeBatch(db);
+    b.set(doc(db, 'bookings', 'L1'), bookingFor('L1'));
+    b.update(doc(db, 'loads', 'L1'), { status: 'matched', driverId: 'driver1', bookingId: 'L1', matchedAt: serverTimestamp() });
+    b.set(doc(db, 'notifications', 'n2'), notif('customer1', { type: 'load_accepted', status: null }));
+    await assertSucceeds(b.commit());
   });
 });

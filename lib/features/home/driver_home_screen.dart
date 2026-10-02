@@ -13,6 +13,7 @@ import '../bookings/booking_list_view.dart';
 import '../bookings/driver_trip_screen.dart';
 import '../loads/available_loads_view.dart';
 import '../loads/load_card.dart';
+import '../notifications/notifications_screen.dart';
 import '../profile/profile_view.dart';
 import '../vehicle/my_vehicles_screen.dart';
 
@@ -170,6 +171,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                   ),
                 ),
                 IconButton(onPressed: () => showLanguageSelector(context), icon: const Icon(Icons.language_rounded), color: const Color(0xFF1565C0)),
+                NotificationBell(onOpenBooking: (id) => openDriverTrip(context, id)),
               ],
             ),
             const SizedBox(height: 18),

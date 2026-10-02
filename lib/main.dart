@@ -1589,6 +1589,36 @@ class T {
       AppLanguage.hindi: 'कंपनी',
       AppLanguage.hinglish: 'Company',
     },
+    'notifLoadAccepted': {
+      AppLanguage.english: 'A driver accepted your load',
+      AppLanguage.hindi: 'एक ड्राइवर ने आपका लोड स्वीकार किया',
+      AppLanguage.hinglish: 'Driver ne aapka load accept kiya',
+    },
+    'notifStatusChanged': {
+      AppLanguage.english: 'Trip update',
+      AppLanguage.hindi: 'ट्रिप अपडेट',
+      AppLanguage.hinglish: 'Trip update',
+    },
+    'notifRatingReceived': {
+      AppLanguage.english: 'You received a new rating',
+      AppLanguage.hindi: 'आपको नई रेटिंग मिली',
+      AppLanguage.hinglish: 'Aapko nayi rating mili',
+    },
+    'notifBookingCancelled': {
+      AppLanguage.english: 'The driver cancelled your booking. Your load is open again.',
+      AppLanguage.hindi: 'ड्राइवर ने बुकिंग रद्द की। आपका लोड फिर से खुला है।',
+      AppLanguage.hinglish: 'Driver ne booking cancel ki. Aapka load phir se open hai.',
+    },
+    'noNotifications': {
+      AppLanguage.english: 'No notifications yet',
+      AppLanguage.hindi: 'अभी कोई सूचना नहीं',
+      AppLanguage.hinglish: 'Abhi koi notification nahi',
+    },
+    'markAllRead': {
+      AppLanguage.english: 'Mark all read',
+      AppLanguage.hindi: 'सब पढ़ा हुआ करें',
+      AppLanguage.hinglish: 'Sab read karo',
+    },
     // ---------------- Bookings ----------------
     'statusAccepted': {
       AppLanguage.english: 'Accepted',

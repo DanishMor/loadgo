@@ -1,9 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../constants/logistics.dart';
+import '../models/app_notification.dart';
 import '../models/booking.dart';
 import '../models/rating.dart';
 import 'backend.dart';
+import 'notification_service.dart';
 
 class AlreadyRatedException implements Exception {
   @override
@@ -45,6 +47,13 @@ class RatingService {
           'comment': comment.trim(),
           'createdAt': FieldValue.serverTimestamp(),
         });
+        NotificationService.addInTransaction(
+          tx,
+          userId: ratedId,
+          type: NotificationType.ratingReceived,
+          message: '$stars★ · ${booking.pickup} → ${booking.drop}',
+          relatedId: booking.id,
+        );
       });
     } on FirebaseException catch (e) {
       // Rules deny overwriting an existing rating.

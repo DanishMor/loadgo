@@ -198,5 +198,32 @@ service cloud.firestore {
       allow create: if signedIn() && validRating(ratingId);
       allow update, delete: if false;
     }
+
+    // ------------------------------------------------------------------
+    // notifications: in-app messages between the two parties of a booking.
+    // Created by one party for the other (same transaction as the event);
+    // only the recipient reads them and may only mark them read.
+    // ------------------------------------------------------------------
+    function validNotification() {
+      let n = request.resource.data;
+      let b = getAfter(docPath('bookings', n.relatedId)).data;
+      return n.keys().hasOnly(['userId', 'type', 'message', 'relatedId', 'status', 'read', 'createdAt'])
+          && n.type in ['load_accepted', 'status_changed', 'rating_received', 'booking_cancelled']
+          && n.message is string && n.message.size() <= 200
+          && n.read == false
+          && n.userId != request.auth.uid
+          && request.auth.uid in [b.driverId, b.customerId]
+          && n.userId in [b.driverId, b.customerId];
+    }
+
+    match /notifications/{notificationId} {
+      allow read: if signedIn() && resource.data.userId == request.auth.uid;
+      allow create: if signedIn() && validNotification();
+      allow update: if signedIn()
+          && resource.data.userId == request.auth.uid
+          && changedKeys().hasOnly(['read'])
+          && request.resource.data.read == true;
+      allow delete: if signedIn() && resource.data.userId == request.auth.uid;
+    }
   }
 }

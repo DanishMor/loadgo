@@ -3,8 +3,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../constants/logistics.dart';
 import '../models/booking.dart';
 import '../models/load.dart';
+import '../models/app_notification.dart';
 import '../models/vehicle.dart';
 import 'backend.dart';
+import 'notification_service.dart';
 
 /// Thrown when a load was taken by another driver, closed, or never existed.
 class LoadUnavailableException implements Exception {
@@ -62,6 +64,13 @@ class BookingService {
           'bookingId': bookingRef.id,
           'matchedAt': FieldValue.serverTimestamp(),
         });
+        NotificationService.addInTransaction(
+          tx,
+          userId: load.shipperId,
+          type: NotificationType.loadAccepted,
+          message: '${load.pickup} → ${load.drop}',
+          relatedId: bookingRef.id,
+        );
       });
     } on FirebaseException catch (e) {
       // Rules hide loads matched by other drivers, so a lost race surfaces as
@@ -102,6 +111,14 @@ class BookingService {
           'closedAt': FieldValue.serverTimestamp(),
         });
       }
+      NotificationService.addInTransaction(
+        tx,
+        userId: booking.customerId,
+        type: NotificationType.statusChanged,
+        message: '${booking.pickup} → ${booking.drop}',
+        relatedId: booking.id,
+        status: next,
+      );
       return next;
     });
   }

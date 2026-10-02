@@ -7,6 +7,7 @@ import '../../main.dart';
 import '../bookings/booking_list_view.dart';
 import '../bookings/booking_tracking_screen.dart';
 import '../loads/my_loads_view.dart';
+import '../notifications/notifications_screen.dart';
 import '../loads/post_load_screen.dart';
 import '../profile/profile_view.dart';
 
@@ -156,15 +157,7 @@ class _CustomerHomeContent extends StatelessWidget {
                     borderRadius: BorderRadius.circular(15),
                     border: Border.all(color: const Color(0xFFE4E7EC)),
                   ),
-                  child: IconButton(
-                    onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(tr(context, 'notifications')), behavior: SnackBarBehavior.floating),
-                      );
-                    },
-                    icon: const Icon(Icons.notifications_none_rounded),
-                    color: const Color(0xFF344054),
-                  ),
+                  child: NotificationBell(onOpenBooking: (id) => openBookingTracking(context, id)),
                 ),
               ],
             ),
