@@ -4,8 +4,9 @@ import 'package:flutter/material.dart';
 import '../../core/models/booking.dart';
 import '../../core/services/booking_service.dart';
 import '../../main.dart';
-import '../bookings/booking_list_view.dart';
 import '../bookings/booking_tracking_screen.dart';
+import '../bookings/customer_bookings_view.dart';
+import '../bookings/invoice_screen.dart';
 import '../loads/my_loads_view.dart';
 import '../notifications/notifications_screen.dart';
 import '../loads/post_load_screen.dart';
@@ -43,14 +44,10 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
 
   late final List<Widget> _pages = [
     _CustomerHomeContent(onPostLoad: _postLoad, onOpenTab: _openTab),
-    Builder(
-      builder: (context) => BookingListView(
-        title: tr(context, 'bookings'),
-        bookings: _bookings,
-        emptyTitle: tr(context, 'noBookingsTitle'),
-        emptySubtitle: tr(context, 'noBookingsSub'),
-        onOpen: _openBooking,
-      ),
+    CustomerBookingsView(
+      bookings: _bookings,
+      onOpenTracking: _openBooking,
+      onOpenInvoice: (id) => openInvoice(context, id),
     ),
     MyLoadsView(onPostLoad: _postLoad, onOpenBooking: _openBooking),
     const ProfileView(isDriver: false),

@@ -1674,6 +1674,56 @@ class T {
       AppLanguage.hindi: 'डिलीवर हुई यात्राओं के लोड बजट पर आधारित।',
       AppLanguage.hinglish: 'Deliver hui trips ke load budget par based.',
     },
+    'activeBookings': {
+      AppLanguage.english: 'Active',
+      AppLanguage.hindi: 'चालू',
+      AppLanguage.hinglish: 'Active',
+    },
+    'pastBookings': {
+      AppLanguage.english: 'Past',
+      AppLanguage.hindi: 'पुरानी',
+      AppLanguage.hinglish: 'Past',
+    },
+    'noPastBookings': {
+      AppLanguage.english: 'No past bookings yet',
+      AppLanguage.hindi: 'अभी कोई पुरानी बुकिंग नहीं',
+      AppLanguage.hinglish: 'Abhi koi past booking nahi',
+    },
+    'invoice': {
+      AppLanguage.english: 'Invoice',
+      AppLanguage.hindi: 'बिल',
+      AppLanguage.hinglish: 'Invoice',
+    },
+    'viewInvoice': {
+      AppLanguage.english: 'View invoice',
+      AppLanguage.hindi: 'बिल देखें',
+      AppLanguage.hinglish: 'Invoice dekho',
+    },
+    'invoiceAfterDelivery': {
+      AppLanguage.english: 'The invoice is available after delivery',
+      AppLanguage.hindi: 'डिलीवरी के बाद बिल उपलब्ध होगा',
+      AppLanguage.hinglish: 'Delivery ke baad invoice milega',
+    },
+    'fare': {
+      AppLanguage.english: 'Fare',
+      AppLanguage.hindi: 'किराया',
+      AppLanguage.hinglish: 'Fare',
+    },
+    'date': {
+      AppLanguage.english: 'Date',
+      AppLanguage.hindi: 'तारीख',
+      AppLanguage.hinglish: 'Date',
+    },
+    'viewTrip': {
+      AppLanguage.english: 'View trip timeline',
+      AppLanguage.hindi: 'यात्रा टाइमलाइन देखें',
+      AppLanguage.hinglish: 'Trip timeline dekho',
+    },
+    'invoiceNote': {
+      AppLanguage.english: 'Fare is the budget agreed on the load. This is a trip summary, not a tax invoice.',
+      AppLanguage.hindi: 'किराया लोड पर तय बजट है। यह यात्रा सारांश है, टैक्स बिल नहीं।',
+      AppLanguage.hinglish: 'Fare load par tay budget hai. Ye trip summary hai, tax invoice nahi.',
+    },
     // ---------------- Bookings ----------------
     'statusAccepted': {
       AppLanguage.english: 'Accepted',
