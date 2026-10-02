@@ -13,6 +13,7 @@ import '../bookings/booking_list_view.dart';
 import '../bookings/driver_trip_screen.dart';
 import '../loads/available_loads_view.dart';
 import '../loads/load_card.dart';
+import '../profile/profile_view.dart';
 import '../vehicle/my_vehicles_screen.dart';
 
 class DriverHomeScreen extends StatefulWidget {
@@ -264,7 +265,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
         onOpen: (id) => openDriverTrip(context, id),
       ),
       _placeholder(Icons.account_balance_wallet_rounded, tr(context, 'earnings')),
-      _placeholder(Icons.person_rounded, tr(context, 'profile'), withLogout: true),
+      const ProfileView(isDriver: true),
     ];
 
     return Scaffold(

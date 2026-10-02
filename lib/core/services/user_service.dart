@@ -1,16 +1,25 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+import 'backend.dart';
+
 class UserService {
   UserService._();
 
-  static final _db = FirebaseFirestore.instance;
+  static FirebaseFirestore get _db => Backend.db;
 
   static Future<Map<String, dynamic>?> getUser() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return null;
-    final snap = await _db.collection('users').doc(user.uid).get();
+    final uid = Backend.uid;
+    if (uid == null) return null;
+    final snap = await _db.collection('users').doc(uid).get();
     return snap.data();
+  }
+
+  /// Live profile of the signed-in user (empty map if not created yet).
+  static Stream<Map<String, dynamic>> watchUser() {
+    final uid = Backend.uid;
+    if (uid == null) return Stream.value(const {});
+    return _db.collection('users').doc(uid).snapshots().map((s) => s.data() ?? const {});
   }
 
   /// OTP verify hote hi call karo — role aur session record karta hai.

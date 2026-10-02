@@ -5,6 +5,7 @@ import '../../core/models/booking.dart';
 import '../../core/services/booking_service.dart';
 import '../../core/widgets/common.dart';
 import '../../main.dart';
+import '../ratings/rating_widgets.dart';
 import 'booking_widgets.dart';
 
 void openDriverTrip(BuildContext context, String bookingId) {
@@ -31,6 +32,10 @@ class DriverTripScreen extends StatelessWidget {
           BookingTimeline(booking: booking),
           const SizedBox(height: 20),
           _NextStatusButton(booking: booking),
+          if (booking.status == BookingStatus.delivered) ...[
+            const SizedBox(height: 14),
+            RatingPrompt(booking: booking, titleKey: 'rateCustomer'),
+          ],
         ],
       ),
     );

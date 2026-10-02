@@ -1529,6 +1529,66 @@ class T {
       AppLanguage.hindi: 'सपोर्ट चैट जल्द आ रहा है।',
       AppLanguage.hinglish: 'Support chat jald aa raha hai.',
     },
+    'rateDriver': {
+      AppLanguage.english: 'Rate your driver',
+      AppLanguage.hindi: 'अपने ड्राइवर को रेटिंग दें',
+      AppLanguage.hinglish: 'Driver ko rating do',
+    },
+    'rateCustomer': {
+      AppLanguage.english: 'Rate the customer',
+      AppLanguage.hindi: 'ग्राहक को रेटिंग दें',
+      AppLanguage.hinglish: 'Customer ko rating do',
+    },
+    'yourRating': {
+      AppLanguage.english: 'Your rating',
+      AppLanguage.hindi: 'आपकी रेटिंग',
+      AppLanguage.hinglish: 'Aapki rating',
+    },
+    'commentOptional': {
+      AppLanguage.english: 'Comment (optional)',
+      AppLanguage.hindi: 'टिप्पणी (वैकल्पिक)',
+      AppLanguage.hinglish: 'Comment (optional)',
+    },
+    'submitRating': {
+      AppLanguage.english: 'Submit rating',
+      AppLanguage.hindi: 'रेटिंग भेजें',
+      AppLanguage.hinglish: 'Rating bhejo',
+    },
+    'thanksForRating': {
+      AppLanguage.english: 'Thanks for your rating!',
+      AppLanguage.hindi: 'रेटिंग के लिए धन्यवाद!',
+      AppLanguage.hinglish: 'Rating ke liye shukriya!',
+    },
+    'alreadyRated': {
+      AppLanguage.english: 'You have already rated this trip',
+      AppLanguage.hindi: 'आप इस ट्रिप को पहले ही रेट कर चुके हैं',
+      AppLanguage.hinglish: 'Aap is trip ko pehle hi rate kar chuke ho',
+    },
+    'ratings': {
+      AppLanguage.english: 'ratings',
+      AppLanguage.hindi: 'रेटिंग',
+      AppLanguage.hinglish: 'ratings',
+    },
+    'noRatingsYet': {
+      AppLanguage.english: 'No ratings yet',
+      AppLanguage.hindi: 'अभी कोई रेटिंग नहीं',
+      AppLanguage.hinglish: 'Abhi koi rating nahi',
+    },
+    'phone': {
+      AppLanguage.english: 'Phone',
+      AppLanguage.hindi: 'फ़ोन',
+      AppLanguage.hinglish: 'Phone',
+    },
+    'email': {
+      AppLanguage.english: 'Email',
+      AppLanguage.hindi: 'ईमेल',
+      AppLanguage.hinglish: 'Email',
+    },
+    'company': {
+      AppLanguage.english: 'Company',
+      AppLanguage.hindi: 'कंपनी',
+      AppLanguage.hinglish: 'Company',
+    },
     // ---------------- Bookings ----------------
     'statusAccepted': {
       AppLanguage.english: 'Accepted',

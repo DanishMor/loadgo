@@ -8,6 +8,7 @@ import '../bookings/booking_list_view.dart';
 import '../bookings/booking_tracking_screen.dart';
 import '../loads/my_loads_view.dart';
 import '../loads/post_load_screen.dart';
+import '../profile/profile_view.dart';
 
 // ============================================================
 // CUSTOMER HOME DASHBOARD
@@ -51,7 +52,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
       ),
     ),
     MyLoadsView(onPostLoad: _postLoad, onOpenBooking: _openBooking),
-    const _CustomerProfilePlaceholder(),
+    const ProfileView(isDriver: false),
   ];
 
   @override
@@ -408,56 +409,6 @@ class _ServiceCard extends StatelessWidget {
           const SizedBox(height: 3),
           Text(subtitle, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 11, color: Color(0xFF667085))),
         ],
-      ),
-    );
-  }
-}
-
-// ============================================================
-// PLACEHOLDER SCREENS
-// ============================================================
-
-class _CustomerProfilePlaceholder extends StatelessWidget {
-  const _CustomerProfilePlaceholder();
-  @override
-  Widget build(BuildContext context) => _PlaceholderPage(
-        icon: Icons.person_rounded,
-        title: tr(context, 'profileTitle'),
-        subtitle: tr(context, 'profileSub'),
-      );
-}
-
-class _PlaceholderPage extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String subtitle;
-
-  const _PlaceholderPage({required this.icon, required this.title, required this.subtitle});
-
-  @override
-  Widget build(BuildContext context) {
-    return SafeArea(
-      child: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(30),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                width: 82,
-                height: 82,
-                decoration: BoxDecoration(color: const Color(0xFFE8F1FF), borderRadius: BorderRadius.circular(24)),
-                child: Icon(icon, size: 42, color: const Color(0xFF1565C0)),
-              ),
-              const SizedBox(height: 22),
-              Text(title, textAlign: TextAlign.center, style: const TextStyle(fontSize: 25, fontWeight: FontWeight.w800, color: Color(0xFF111827))),
-              const SizedBox(height: 8),
-              Text(subtitle, textAlign: TextAlign.center, style: const TextStyle(fontSize: 14, color: Color(0xFF667085))),
-              const SizedBox(height: 18),
-              Text(tr(context, 'comingSoon'), style: const TextStyle(fontWeight: FontWeight.w700, color: Color(0xFF1565C0))),
-            ],
-          ),
-        ),
       ),
     );
   }

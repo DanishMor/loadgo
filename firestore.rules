@@ -175,5 +175,28 @@ service cloud.firestore {
           && changedKeys().hasOnly(['status', 'timeline', 'updatedAt']);
       allow delete: if false;
     }
+
+    // ------------------------------------------------------------------
+    // ratings/{bookingId}_{raterUid}: after delivery, each party rates the
+    // other exactly once. Readable by any signed-in user (profile averages).
+    // ------------------------------------------------------------------
+    function validRating(ratingId) {
+      let r = request.resource.data;
+      let b = get(docPath('bookings', r.bookingId)).data;
+      return ratingId == r.bookingId + '_' + request.auth.uid
+          && r.raterId == request.auth.uid
+          && b.status == 'delivered'
+          && ((b.driverId == request.auth.uid && r.ratedId == b.customerId)
+              || (b.customerId == request.auth.uid && r.ratedId == b.driverId))
+          && r.stars is int && r.stars >= 1 && r.stars <= 5
+          && r.get('comment', '') is string && r.get('comment', '').size() <= 500
+          && r.keys().hasOnly(['bookingId', 'raterId', 'ratedId', 'stars', 'comment', 'createdAt']);
+    }
+
+    match /ratings/{ratingId} {
+      allow read: if signedIn();
+      allow create: if signedIn() && validRating(ratingId);
+      allow update, delete: if false;
+    }
   }
 }
