@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 
+import '../../core/models/load.dart';
 import '../../core/models/vehicle.dart';
+import '../../core/services/load_service.dart';
 import '../../core/services/user_service.dart';
 import '../../core/services/vehicle_service.dart';
 import '../../core/widgets/common.dart';
 import '../../main.dart';
+import '../loads/available_loads_view.dart';
+import '../loads/load_card.dart';
 import '../vehicle/my_vehicles_screen.dart';
 
 class DriverHomeScreen extends StatefulWidget {
@@ -15,9 +19,13 @@ class DriverHomeScreen extends StatefulWidget {
 }
 
 class _DriverHomeScreenState extends State<DriverHomeScreen> {
+  static const _loadsTab = 1;
+
   int _index = 0;
   bool _isOnline = false;
   final Stream<List<Vehicle>> _vehicles = VehicleService.watchMine();
+  final Stream<List<Load>> _homeOpenLoads = LoadService.watchOpen();
+  final Stream<List<Load>> _tabOpenLoads = LoadService.watchOpen();
 
   void _snack(String msg) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -75,25 +83,30 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
         ),
       );
 
-  Widget _sampleLoadCard() => Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(18), border: Border.all(color: const Color(0xFFE4E7EC))),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+  /// Up to three open loads on the home tab; the Loads tab shows the rest.
+  Widget _homeLoads() {
+    return StreamBuilder<List<Load>>(
+      stream: _homeOpenLoads,
+      builder: (context, snap) {
+        if (snap.hasError) return StreamErrorText(snap.error);
+        if (!snap.hasData) return const Center(child: CircularProgressIndicator());
+        final loads = snap.data!;
+        if (loads.isEmpty) return _emptyCard(Icons.inventory_2_outlined, tr(context, 'noAvailableLoads'));
+        return Column(
           children: [
-            const Text('Delhi → Mumbai', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
-            const SizedBox(height: 6),
-            const Text('20 Ton • Container • ₹ --', style: TextStyle(color: Color(0xFF667085))),
-            const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              height: 44,
-              child: OutlinedButton(onPressed: () => _snack(tr(context, 'comingSoon')), child: Text(tr(context, 'viewLoad'))),
-            ),
+            for (final load in loads.take(3)) ...[
+              LoadCard(key: ValueKey(load.id), load: load, action: AcceptLoadButton(load: load, onAccepted: _onAccepted)),
+              const SizedBox(height: 12),
+            ],
+            if (loads.length > 3)
+              TextButton(onPressed: () => setState(() => _index = _loadsTab), child: Text(tr(context, 'viewAll'))),
           ],
-        ),
-      );
+        );
+      },
+    );
+  }
+
+  void _onAccepted(String bookingId) {}
 
   /// Nudges drivers without any vehicle to add one; hidden otherwise.
   Widget _noVehiclePrompt() {
@@ -189,7 +202,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
             const SizedBox(height: 24),
             _title(tr(context, 'availableLoads')),
             const SizedBox(height: 12),
-            _isOnline ? _sampleLoadCard() : _emptyCard(Icons.wifi_off_rounded, tr(context, 'goOnlineToSee')),
+            _isOnline ? _homeLoads() : _emptyCard(Icons.wifi_off_rounded, tr(context, 'goOnlineToSee')),
             const SizedBox(height: 24),
             Row(
               children: [
@@ -233,7 +246,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
   Widget build(BuildContext context) {
     final pages = [
       _homeTab(),
-      _placeholder(Icons.inventory_2_rounded, tr(context, 'loads')),
+      AvailableLoadsView(loads: _tabOpenLoads, onAccepted: _onAccepted),
       _placeholder(Icons.route_rounded, tr(context, 'trips')),
       _placeholder(Icons.account_balance_wallet_rounded, tr(context, 'earnings')),
       _placeholder(Icons.person_rounded, tr(context, 'profile'), withLogout: true),

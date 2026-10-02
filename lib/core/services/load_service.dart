@@ -44,6 +44,15 @@ class LoadService {
     return _col.where('shipperId', isEqualTo: uid).snapshots().map(_sorted);
   }
 
+  /// Open loads for drivers, excluding loads the signed-in user posted.
+  static Stream<List<Load>> watchOpen() {
+    final uid = Backend.uid;
+    return _col
+        .where('status', isEqualTo: LoadStatus.open)
+        .snapshots()
+        .map((snap) => _sorted(snap).where((l) => l.shipperId != uid).toList());
+  }
+
   static List<Load> _sorted(QuerySnapshot<Map<String, dynamic>> snap) {
     final list = snap.docs.map(Load.fromDoc).toList();
     list.sort((a, b) => newestFirst(a.createdAt, b.createdAt));
