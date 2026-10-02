@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/services/user_service.dart';
 import '../../main.dart';
+import '../home/customer_home_screen.dart';
 
 class CustomerProfileSetupScreen extends StatefulWidget {
   final String phoneNumber;
