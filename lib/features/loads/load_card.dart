@@ -5,14 +5,16 @@ import '../../core/models/load.dart';
 import '../../core/widgets/common.dart';
 import '../../main.dart';
 
-String loadStatusLabel(BuildContext context, String status) => switch (status) {
+String loadStatusLabel(BuildContext context, String status, {bool cancelled = false}) => switch (status) {
+      LoadStatus.closed when cancelled => tr(context, 'statusCancelled'),
       LoadStatus.open => tr(context, 'statusOpen'),
       LoadStatus.matched => tr(context, 'statusMatched'),
       LoadStatus.closed => tr(context, 'statusClosed'),
       _ => status,
     };
 
-Color loadStatusColor(String status) => switch (status) {
+Color loadStatusColor(String status, {bool cancelled = false}) => switch (status) {
+      LoadStatus.closed when cancelled => AppColors.faint,
       LoadStatus.open => AppColors.primary,
       LoadStatus.matched => AppColors.warning,
       _ => AppColors.success,
@@ -48,7 +50,10 @@ class LoadCard extends StatelessWidget {
               Expanded(child: RouteText(pickup: load.pickup, drop: load.drop)),
               if (showStatus) ...[
                 const SizedBox(width: 8),
-                StatusChip(label: loadStatusLabel(context, load.status), color: loadStatusColor(load.status)),
+                StatusChip(
+                  label: loadStatusLabel(context, load.status, cancelled: load.cancelled),
+                  color: loadStatusColor(load.status, cancelled: load.cancelled),
+                ),
               ],
             ],
           ),

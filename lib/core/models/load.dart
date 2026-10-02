@@ -14,6 +14,9 @@ class Load {
   final DateTime? pickupDate;
   final String notes;
   final String status;
+
+  /// True when the shipper cancelled the load (status is then `closed`).
+  final bool cancelled;
   final String? driverId;
   final String? bookingId;
   final Timestamp? createdAt;
@@ -30,6 +33,7 @@ class Load {
     required this.pickupDate,
     required this.notes,
     required this.status,
+    this.cancelled = false,
     this.driverId,
     this.bookingId,
     this.createdAt,
@@ -51,6 +55,7 @@ class Load {
       pickupDate: (d['pickupDate'] as Timestamp?)?.toDate(),
       notes: d['notes'] as String? ?? '',
       status: d['status'] as String? ?? LoadStatus.open,
+      cancelled: d['cancelled'] == true,
       driverId: d['driverId'] as String?,
       bookingId: d['bookingId'] as String?,
       createdAt: d['createdAt'] as Timestamp?,

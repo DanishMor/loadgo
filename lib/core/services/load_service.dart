@@ -4,6 +4,11 @@ import '../constants/logistics.dart';
 import '../models/load.dart';
 import 'backend.dart';
 
+class LoadNotCancellableException implements Exception {
+  @override
+  String toString() => 'LoadNotCancellableException';
+}
+
 class LoadService {
   LoadService._();
 
@@ -35,6 +40,30 @@ class LoadService {
       'createdAt': FieldValue.serverTimestamp(),
     });
     return ref.id;
+  }
+
+  /// Cancels the shipper's own load while it is still open.
+  ///
+  /// Throws [LoadNotCancellableException] when a driver has already accepted
+  /// it (the rules reject the write once the load is no longer open).
+  static Future<void> cancel(String loadId) async {
+    final ref = _col.doc(loadId);
+    try {
+      await Backend.db.runTransaction((tx) async {
+        final snap = await tx.get(ref);
+        final load = Load.fromDoc(snap);
+        if (!snap.exists || load.shipperId != Backend.requireUid()) throw StateError('Not your load');
+        if (!load.isOpen) throw LoadNotCancellableException();
+        tx.update(ref, {
+          'status': LoadStatus.closed,
+          'cancelled': true,
+          'cancelledAt': FieldValue.serverTimestamp(),
+        });
+      });
+    } on FirebaseException catch (e) {
+      if (e.code == 'permission-denied') throw LoadNotCancellableException();
+      rethrow;
+    }
   }
 
   /// Loads posted by the signed-in customer, newest first.

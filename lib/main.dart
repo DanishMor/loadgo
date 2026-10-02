@@ -1489,6 +1489,46 @@ class T {
       AppLanguage.hinglish: 'Closed',
     },
 
+    'statusCancelled': {
+      AppLanguage.english: 'Cancelled',
+      AppLanguage.hindi: 'रद्द',
+      AppLanguage.hinglish: 'Cancelled',
+    },
+    'cancelLoad': {
+      AppLanguage.english: 'Cancel load',
+      AppLanguage.hindi: 'लोड रद्द करें',
+      AppLanguage.hinglish: 'Load cancel karo',
+    },
+    'cancelLoadConfirm': {
+      AppLanguage.english: 'Cancel this load? Drivers will no longer see it.',
+      AppLanguage.hindi: 'यह लोड रद्द करें? ड्राइवर इसे अब नहीं देख पाएंगे।',
+      AppLanguage.hinglish: 'Ye load cancel karein? Drivers ko ab nahi dikhega.',
+    },
+    'loadCancelled': {
+      AppLanguage.english: 'Load cancelled',
+      AppLanguage.hindi: 'लोड रद्द हो गया',
+      AppLanguage.hinglish: 'Load cancel ho gaya',
+    },
+    'keepLoad': {
+      AppLanguage.english: 'Keep load',
+      AppLanguage.hindi: 'लोड रखें',
+      AppLanguage.hinglish: 'Load rakho',
+    },
+    'cannotCancelMatched': {
+      AppLanguage.english: 'A driver has accepted this load. To cancel, please contact support.',
+      AppLanguage.hindi: 'ड्राइवर ने यह लोड स्वीकार कर लिया है। रद्द करने के लिए सपोर्ट से संपर्क करें।',
+      AppLanguage.hinglish: 'Driver ne ye load accept kar liya hai. Cancel karne ke liye support se contact karo.',
+    },
+    'contactSupport': {
+      AppLanguage.english: 'Contact support',
+      AppLanguage.hindi: 'सपोर्ट से संपर्क करें',
+      AppLanguage.hinglish: 'Support se contact karo',
+    },
+    'supportSoon': {
+      AppLanguage.english: 'Support chat is coming soon.',
+      AppLanguage.hindi: 'सपोर्ट चैट जल्द आ रहा है।',
+      AppLanguage.hinglish: 'Support chat jald aa raha hai.',
+    },
     // ---------------- Bookings ----------------
     'statusAccepted': {
       AppLanguage.english: 'Accepted',

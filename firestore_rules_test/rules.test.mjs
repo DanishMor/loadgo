@@ -151,7 +151,17 @@ describe('loads', () => {
     await assertSucceeds(updateDoc(doc(as('customer1'), 'loads', 'L1'), { notes: 'fragile' }));
     await assertFails(updateDoc(doc(as('driver1'), 'loads', 'L1'), { budget: 1 }));
     await assertFails(updateDoc(doc(as('customer1'), 'loads', 'L1'), { status: 'matched' }));
-    await assertSucceeds(updateDoc(doc(as('customer1'), 'loads', 'L1'), { status: 'closed' }));
+    await assertFails(updateDoc(doc(as('customer1'), 'loads', 'L1'), { cancelled: true }));
+    await assertFails(updateDoc(doc(as('customer1'), 'loads', 'L1'), { status: 'closed' }));
+    await assertSucceeds(updateDoc(doc(as('customer1'), 'loads', 'L1'), { status: 'closed', cancelled: true, cancelledAt: serverTimestamp() }));
+    // Once cancelled it cannot be reopened.
+    await assertFails(updateDoc(doc(as('customer1'), 'loads', 'L1'), { status: 'open', cancelled: false }));
+  });
+
+  test('shipper cannot cancel a matched load', async () => {
+    await seedOpenLoad();
+    await assertSucceeds(acceptBatch(as('driver1'), 'L1'));
+    await assertFails(updateDoc(doc(as('customer1'), 'loads', 'L1'), { status: 'closed', cancelled: true }));
   });
 });
 
