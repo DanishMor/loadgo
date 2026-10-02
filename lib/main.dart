@@ -1644,6 +1644,36 @@ class T {
       AppLanguage.hindi: 'बुकिंग रद्द',
       AppLanguage.hinglish: 'Booking cancelled',
     },
+    'totalEarnings': {
+      AppLanguage.english: 'Total earnings',
+      AppLanguage.hindi: 'कुल कमाई',
+      AppLanguage.hinglish: 'Total kamai',
+    },
+    'thisWeek': {
+      AppLanguage.english: 'This week',
+      AppLanguage.hindi: 'इस हफ्ते',
+      AppLanguage.hinglish: 'Is hafte',
+    },
+    'tripsCompleted': {
+      AppLanguage.english: 'Trips completed',
+      AppLanguage.hindi: 'पूरी यात्राएं',
+      AppLanguage.hinglish: 'Trips complete',
+    },
+    'recentTrips': {
+      AppLanguage.english: 'Completed trips',
+      AppLanguage.hindi: 'पूरी हुई यात्राएं',
+      AppLanguage.hinglish: 'Complete trips',
+    },
+    'noEarningsYet': {
+      AppLanguage.english: 'No completed trips yet',
+      AppLanguage.hindi: 'अभी कोई यात्रा पूरी नहीं हुई',
+      AppLanguage.hinglish: 'Abhi koi trip complete nahi hui',
+    },
+    'earningsNote': {
+      AppLanguage.english: 'Based on the load budget of delivered trips.',
+      AppLanguage.hindi: 'डिलीवर हुई यात्राओं के लोड बजट पर आधारित।',
+      AppLanguage.hinglish: 'Deliver hui trips ke load budget par based.',
+    },
     // ---------------- Bookings ----------------
     'statusAccepted': {
       AppLanguage.english: 'Accepted',

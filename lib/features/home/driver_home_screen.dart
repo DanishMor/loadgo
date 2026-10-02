@@ -5,12 +5,12 @@ import '../../core/models/load.dart';
 import '../../core/services/booking_service.dart';
 import '../../core/models/vehicle.dart';
 import '../../core/services/load_service.dart';
-import '../../core/services/user_service.dart';
 import '../../core/services/vehicle_service.dart';
 import '../../core/widgets/common.dart';
 import '../../main.dart';
 import '../bookings/booking_list_view.dart';
 import '../bookings/driver_trip_screen.dart';
+import '../earnings/earnings_view.dart';
 import '../loads/available_loads_view.dart';
 import '../loads/load_card.dart';
 import '../notifications/notifications_screen.dart';
@@ -34,19 +34,12 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
   final Stream<List<Load>> _tabOpenLoads = LoadService.watchOpen();
   final Stream<List<Booking>> _homeTrips = BookingService.watchForDriver();
   final Stream<List<Booking>> _tabTrips = BookingService.watchForDriver();
+  final Stream<List<Booking>> _earningsTrips = BookingService.watchForDriver();
+  final Stream<List<Booking>> _todayTrips = BookingService.watchForDriver();
 
   void _snack(String msg) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(msg), behavior: SnackBarBehavior.floating),
-    );
-  }
-
-  Future<void> _logout() async {
-    await UserService.logout();
-    if (!mounted) return;
-    Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (_) => const RoleSelectionScreen()),
-      (route) => false,
     );
   }
 
@@ -200,7 +193,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                 children: [
                   Text(tr(context, 'todayEarnings'), style: const TextStyle(color: Colors.white70)),
                   const SizedBox(height: 6),
-                  const Text('₹ 0', style: TextStyle(color: Colors.white, fontSize: 34, fontWeight: FontWeight.w800)),
+                  TodayEarningsText(bookings: _todayTrips),
                 ],
               ),
             ),
@@ -234,27 +227,6 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
     );
   }
 
-  Widget _placeholder(IconData icon, String title, {bool withLogout = false}) {
-    return SafeArea(
-      child: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 48, color: const Color(0xFF1565C0)),
-            const SizedBox(height: 12),
-            Text(title, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800)),
-            const SizedBox(height: 6),
-            Text(tr(context, 'comingSoon'), style: const TextStyle(color: Color(0xFF1565C0))),
-            if (withLogout) ...[
-              const SizedBox(height: 20),
-              OutlinedButton.icon(onPressed: _logout, icon: const Icon(Icons.logout_rounded), label: Text(tr(context, 'logout'))),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final pages = [
@@ -266,7 +238,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
         emptyTitle: tr(context, 'noTrips'),
         onOpen: (id) => openDriverTrip(context, id),
       ),
-      _placeholder(Icons.account_balance_wallet_rounded, tr(context, 'earnings')),
+      EarningsView(bookings: _earningsTrips, onOpenTrip: (id) => openDriverTrip(context, id)),
       const ProfileView(isDriver: true),
     ];
 
