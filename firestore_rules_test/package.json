@@ -1,0 +1,15 @@
+{
+  "name": "loadgo-firestore-rules-test",
+  "version": "1.0.0",
+  "description": "Firestore security rules tests for LoadGo (run against the emulator)",
+  "scripts": {
+    "test": "firebase emulators:exec --config ../firebase.json --only firestore --project loadgo-rules-test \"node --test rules.test.mjs\""
+  },
+  "type": "module",
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "^5.0.2",
+    "firebase": "^12.19.0",
+    "firebase-tools": "^15.32.1"
+  },
+  "private": true
+}

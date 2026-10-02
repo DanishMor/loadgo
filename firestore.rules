@@ -1,0 +1,174 @@
+rules_version = '2';
+
+// LoadGo Firestore security rules.
+// Tests: firestore_rules_test/ (run against the emulator, see README there).
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isUser(id) {
+      return signedIn() && request.auth.uid == id;
+    }
+
+    function changedKeys() {
+      return request.resource.data.diff(resource.data).affectedKeys();
+    }
+
+    function docPath(collection, id) {
+      return /databases/$(database)/documents/$(collection)/$(id);
+    }
+
+    // ------------------------------------------------------------------
+    // users/{uid}: only the owner can read/write their own profile.
+    // Drivers cannot approve themselves: verification fields may only be
+    // initialised to pending/false; admins change them via Console/Admin SDK.
+    // ------------------------------------------------------------------
+    function verificationInitOk(d) {
+      return d.get('verified', false) == false
+          && d.get('verificationStatus', 'pending') == 'pending';
+    }
+
+    match /users/{userId} {
+      allow read: if isUser(userId);
+      allow create: if isUser(userId) && verificationInitOk(request.resource.data);
+      allow update: if isUser(userId)
+          && (!changedKeys().hasAny(['verified', 'verificationStatus'])
+              || (resource.data.get('verificationStatus', null) == null
+                  && verificationInitOk(request.resource.data)));
+      allow delete: if false;
+    }
+
+    // ------------------------------------------------------------------
+    // vehicles: any signed-in user can read (load matching); only the owner
+    // can write.
+    // ------------------------------------------------------------------
+    function validVehicle(d) {
+      return d.keys().hasAll(['ownerId', 'number', 'type', 'capacity', 'status'])
+          && d.number is string && d.number.size() >= 6 && d.number.size() <= 12
+          && d.type is string
+          && d.capacity is number && d.capacity > 0
+          && d.status in ['active', 'inactive'];
+    }
+
+    match /vehicles/{vehicleId} {
+      allow read: if signedIn();
+      allow create: if signedIn()
+          && request.resource.data.ownerId == request.auth.uid
+          && validVehicle(request.resource.data);
+      allow update: if signedIn()
+          && resource.data.ownerId == request.auth.uid
+          && request.resource.data.ownerId == request.auth.uid
+          && validVehicle(request.resource.data);
+      allow delete: if signedIn() && resource.data.ownerId == request.auth.uid;
+    }
+
+    // ------------------------------------------------------------------
+    // loads: open loads are visible to every signed-in user; the shipper and
+    // the matched driver can always see theirs. The shipper owns writes while
+    // the load is open; drivers can only match (with a booking) and close
+    // (after delivery).
+    // ------------------------------------------------------------------
+    function validLoad(d) {
+      return d.pickup is string && d.pickup.size() > 1
+          && d.drop is string && d.drop.size() > 1
+          && d.cargoType is string
+          && d.weight is number && d.weight > 0
+          && d.vehicleType is string
+          && (d.get('budget', null) == null || (d.budget is number && d.budget > 0))
+          && d.pickupDate is timestamp;
+    }
+
+    // Shipper edits/cancels a load that nobody has accepted yet.
+    function shipperEdit(loadId) {
+      return resource.data.shipperId == request.auth.uid
+          && resource.data.status == 'open'
+          && request.resource.data.status in ['open', 'closed']
+          && !changedKeys().hasAny(['shipperId', 'driverId', 'bookingId', 'createdAt'])
+          && validLoad(request.resource.data);
+    }
+
+    // Driver accepts: open -> matched, in the same batch that creates
+    // bookings/{loadId} for this driver.
+    function driverMatch(loadId) {
+      let booking = getAfter(docPath('bookings', loadId));
+      return resource.data.status == 'open'
+          && resource.data.shipperId != request.auth.uid
+          && request.resource.data.status == 'matched'
+          && request.resource.data.driverId == request.auth.uid
+          && request.resource.data.bookingId == loadId
+          && changedKeys().hasOnly(['status', 'driverId', 'bookingId', 'matchedAt'])
+          && existsAfter(docPath('bookings', loadId))
+          && booking.data.driverId == request.auth.uid;
+    }
+
+    // Driver delivers: matched -> closed, together with booking -> delivered.
+    function driverClose(loadId) {
+      return resource.data.status == 'matched'
+          && resource.data.driverId == request.auth.uid
+          && request.resource.data.status == 'closed'
+          && changedKeys().hasOnly(['status', 'closedAt'])
+          && getAfter(docPath('bookings', loadId)).data.status == 'delivered';
+    }
+
+    match /loads/{loadId} {
+      allow read: if signedIn()
+          && (resource.data.status == 'open'
+              || resource.data.shipperId == request.auth.uid
+              || resource.data.get('driverId', null) == request.auth.uid);
+      allow create: if signedIn()
+          && request.resource.data.shipperId == request.auth.uid
+          && request.resource.data.status == 'open'
+          && !request.resource.data.keys().hasAny(['driverId', 'bookingId'])
+          && validLoad(request.resource.data);
+      allow update: if signedIn()
+          && (shipperEdit(loadId) || driverMatch(loadId) || driverClose(loadId));
+      allow delete: if signedIn()
+          && resource.data.shipperId == request.auth.uid
+          && resource.data.status == 'open';
+    }
+
+    // ------------------------------------------------------------------
+    // bookings/{loadId}: only the involved driver and customer can read.
+    // Only the driver writes: create when accepting an open load (with their
+    // own vehicle), then advance status one step at a time.
+    // ------------------------------------------------------------------
+    function nextBookingStatus(s) {
+      return {'accepted': 'picked_up', 'picked_up': 'in_transit', 'in_transit': 'delivered'}.get(s, 'none');
+    }
+
+    function validBookingCreate(bookingId) {
+      let b = request.resource.data;
+      let load = get(docPath('loads', bookingId)).data;
+      let loadAfter = getAfter(docPath('loads', bookingId)).data;
+      return b.driverId == request.auth.uid
+          && b.loadId == bookingId
+          && b.status == 'accepted'
+          && load.status == 'open'
+          && load.shipperId != request.auth.uid
+          && b.customerId == load.shipperId
+          // Denormalized copy must match the load the customer posted.
+          && b.pickup == load.pickup
+          && b.drop == load.drop
+          && b.weight == load.weight
+          && b.get('budget', null) == load.get('budget', null)
+          && loadAfter.status == 'matched'
+          && loadAfter.driverId == request.auth.uid
+          && get(docPath('vehicles', b.vehicleId)).data.ownerId == request.auth.uid;
+    }
+
+    match /bookings/{bookingId} {
+      allow read: if signedIn()
+          && (resource.data.driverId == request.auth.uid
+              || resource.data.customerId == request.auth.uid);
+      allow create: if signedIn() && validBookingCreate(bookingId);
+      allow update: if signedIn()
+          && resource.data.driverId == request.auth.uid
+          && request.resource.data.status == nextBookingStatus(resource.data.status)
+          && changedKeys().hasOnly(['status', 'timeline', 'updatedAt']);
+      allow delete: if false;
+    }
+  }
+}
