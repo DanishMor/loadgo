@@ -50,7 +50,10 @@ service cloud.firestore {
           && d.number is string && d.number.size() >= 6 && d.number.size() <= 12
           && d.type is string
           && d.capacity is number && d.capacity > 0
-          && d.status in ['active', 'inactive'];
+          && d.status in ['active', 'inactive']
+          // RC photo must point at Firebase Storage when present.
+          && (!('rcImageUrl' in d) || (d.rcImageUrl is string
+              && d.rcImageUrl.matches('https://firebasestorage[.]googleapis[.]com/.*|http://(127[.]0[.]0[.]1|localhost|10[.]0[.]2[.]2):9199/.*')));
     }
 
     match /vehicles/{vehicleId} {

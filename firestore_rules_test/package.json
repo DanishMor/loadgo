@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Firestore security rules tests for LoadGo (run against the emulator)",
   "scripts": {
-    "test": "firebase emulators:exec --config ../firebase.json --only firestore --project loadgo-rules-test \"node --test rules.test.mjs\""
+    "test": "firebase emulators:exec --config ../firebase.json --only firestore,storage --project loadgo-rules-test \"node --test\""
   },
   "type": "module",
   "devDependencies": {

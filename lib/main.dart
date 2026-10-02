@@ -1327,6 +1327,51 @@ class T {
       AppLanguage.hinglish: 'Cancel',
     },
 
+    'editVehicle': {
+      AppLanguage.english: 'Edit Vehicle',
+      AppLanguage.hindi: 'वाहन बदलें',
+      AppLanguage.hinglish: 'Vehicle Edit Karo',
+    },
+    'vehicleUpdated': {
+      AppLanguage.english: 'Vehicle updated',
+      AppLanguage.hindi: 'वाहन अपडेट हो गया',
+      AppLanguage.hinglish: 'Vehicle update ho gaya',
+    },
+    'uploadRc': {
+      AppLanguage.english: 'Upload RC photo',
+      AppLanguage.hindi: 'RC फोटो अपलोड करें',
+      AppLanguage.hinglish: 'RC photo upload karo',
+    },
+    'changeRc': {
+      AppLanguage.english: 'Change photo',
+      AppLanguage.hindi: 'फोटो बदलें',
+      AppLanguage.hinglish: 'Photo badlo',
+    },
+    'rcPhotoOptional': {
+      AppLanguage.english: 'RC document photo (optional)',
+      AppLanguage.hindi: 'RC दस्तावेज़ फोटो (वैकल्पिक)',
+      AppLanguage.hinglish: 'RC document photo (optional)',
+    },
+    'rcUploaded': {
+      AppLanguage.english: 'RC uploaded',
+      AppLanguage.hindi: 'RC अपलोड हुआ',
+      AppLanguage.hinglish: 'RC upload ho gaya',
+    },
+    'rcMissing': {
+      AppLanguage.english: 'RC photo pending',
+      AppLanguage.hindi: 'RC फोटो बाकी है',
+      AppLanguage.hinglish: 'RC photo baaki hai',
+    },
+    'camera': {
+      AppLanguage.english: 'Camera',
+      AppLanguage.hindi: 'कैमरा',
+      AppLanguage.hinglish: 'Camera',
+    },
+    'gallery': {
+      AppLanguage.english: 'Gallery',
+      AppLanguage.hindi: 'गैलरी',
+      AppLanguage.hinglish: 'Gallery',
+    },
     // ---------------- Loads ----------------
     'pickupLocation': {
       AppLanguage.english: 'Pickup location',

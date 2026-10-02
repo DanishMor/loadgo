@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 
 import '../constants/logistics.dart';
 import '../models/vehicle.dart';
@@ -33,23 +34,57 @@ class VehicleService {
     return snap.docs.map(Vehicle.fromDoc).where((v) => v.isActive).toList();
   }
 
+  /// Storage path for a vehicle's RC image; the owner uid in the path is what
+  /// storage.rules checks.
+  static String rcImagePath(String ownerId, String vehicleId) => 'vehicles/$ownerId/$vehicleId/rc.jpg';
+
+  static Future<String> _uploadRc(String uid, String vehicleId, Uint8List bytes) =>
+      Backend.upload(rcImagePath(uid, vehicleId), bytes, 'image/jpeg');
+
+  /// Creates a vehicle; uploads [rcImage] first (if given) so the document is
+  /// written once with its `rcImageUrl`.
   static Future<String> add({
     required String number,
     required String type,
     required num capacity,
     required String rcNumber,
+    Uint8List? rcImage,
   }) async {
     final uid = Backend.requireUid();
-    final ref = await _col.add({
+    final ref = _col.doc();
+    final rcImageUrl = rcImage == null ? null : await _uploadRc(uid, ref.id, rcImage);
+    await ref.set({
       'ownerId': uid,
       'number': normalizeNumber(number),
       'type': type,
       'capacity': capacity,
       'rcNumber': rcNumber.trim().toUpperCase(),
       'status': VehicleStatus.active,
+      'rcImageUrl': ?rcImageUrl,
       'createdAt': FieldValue.serverTimestamp(),
     });
     return ref.id;
+  }
+
+  /// Edits an existing vehicle. A new [rcImage] replaces the stored one.
+  static Future<void> update({
+    required String vehicleId,
+    required String number,
+    required String type,
+    required num capacity,
+    required String rcNumber,
+    Uint8List? rcImage,
+  }) async {
+    final uid = Backend.requireUid();
+    final rcImageUrl = rcImage == null ? null : await _uploadRc(uid, vehicleId, rcImage);
+    await _col.doc(vehicleId).update({
+      'number': normalizeNumber(number),
+      'type': type,
+      'capacity': capacity,
+      'rcNumber': rcNumber.trim().toUpperCase(),
+      'rcImageUrl': ?rcImageUrl,
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
   }
 
   static Future<void> setActive(String vehicleId, bool active) {

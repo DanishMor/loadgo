@@ -1,6 +1,6 @@
 # Firestore rules tests
 
-Tests for `../firestore.rules`, run against the local Firestore emulator (needs Java).
+Tests for `../firestore.rules` and `../storage.rules`, run against the local Firestore + Storage emulators (needs Java).
 
 ```bash
 cd firestore_rules_test
@@ -14,5 +14,5 @@ Either paste `firestore.rules` into Firebase Console → Firestore Database → 
 
 ```bash
 npx --prefix firestore_rules_test firebase login
-npx --prefix firestore_rules_test firebase deploy --only firestore:rules --project loadgo-defc2
+npx --prefix firestore_rules_test firebase deploy --only firestore:rules,storage --project loadgo-defc2
 ```

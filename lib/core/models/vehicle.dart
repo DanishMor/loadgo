@@ -10,6 +10,7 @@ class Vehicle {
   final num capacity;
   final String rcNumber;
   final String status;
+  final String? rcImageUrl;
   final Timestamp? createdAt;
 
   const Vehicle({
@@ -20,6 +21,7 @@ class Vehicle {
     required this.capacity,
     required this.rcNumber,
     required this.status,
+    this.rcImageUrl,
     this.createdAt,
   });
 
@@ -35,6 +37,7 @@ class Vehicle {
       capacity: d['capacity'] as num? ?? 0,
       rcNumber: d['rcNumber'] as String? ?? '',
       status: d['status'] as String? ?? VehicleStatus.inactive,
+      rcImageUrl: d['rcImageUrl'] as String?,
       createdAt: d['createdAt'] as Timestamp?,
     );
   }

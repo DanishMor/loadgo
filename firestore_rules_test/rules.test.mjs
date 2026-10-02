@@ -113,6 +113,14 @@ describe('vehicles', () => {
     await assertFails(deleteDoc(doc(as('driver2'), 'vehicles', 'v1')));
   });
 
+  test('rcImageUrl must point at Firebase Storage', async () => {
+    await assertSucceeds(setDoc(doc(as('driver1'), 'vehicles', 'v1'), {
+      ...VEHICLE,
+      rcImageUrl: 'https://firebasestorage.googleapis.com/v0/b/loadgo-defc2.appspot.com/o/vehicles%2Fdriver1%2Fv1%2Frc.jpg',
+    }));
+    await assertFails(updateDoc(doc(as('driver1'), 'vehicles', 'v1'), { rcImageUrl: 'https://evil.example.com/x.jpg' }));
+  });
+
   test('cannot create for someone else or with invalid data', async () => {
     await assertFails(setDoc(doc(as('driver2'), 'vehicles', 'v9'), VEHICLE));
     await assertFails(setDoc(doc(as('driver1'), 'vehicles', 'v9'), { ...VEHICLE, status: 'flying' }));

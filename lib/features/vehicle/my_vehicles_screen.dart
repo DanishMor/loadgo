@@ -6,6 +6,10 @@ import '../../core/widgets/common.dart';
 import '../../main.dart';
 import 'add_vehicle_screen.dart';
 
+void openEditVehicle(BuildContext context, Vehicle vehicle) {
+  Navigator.of(context).push<bool>(MaterialPageRoute(builder: (_) => AddVehicleScreen(vehicle: vehicle)));
+}
+
 /// Opens the add-vehicle form; returns true when a vehicle was saved.
 Future<bool> openAddVehicle(BuildContext context, {bool prefillFromProfile = false}) async {
   final added = await Navigator.of(context).push<bool>(
@@ -100,6 +104,7 @@ class _VehicleCardState extends State<_VehicleCard> {
   Widget build(BuildContext context) {
     final v = widget.vehicle;
     return AppCard(
+      onTap: () => openEditVehicle(context, v),
       child: Row(
         children: [
           Container(
@@ -118,9 +123,19 @@ class _VehicleCardState extends State<_VehicleCard> {
                 Text('${v.type} • ${formatNum(v.capacity)} T • RC ${v.rcNumber}',
                     style: const TextStyle(color: AppColors.muted, fontSize: 13)),
                 const SizedBox(height: 8),
-                StatusChip(
-                  label: tr(context, v.isActive ? 'active' : 'inactive'),
-                  color: v.isActive ? AppColors.success : AppColors.faint,
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
+                  children: [
+                    StatusChip(
+                      label: tr(context, v.isActive ? 'active' : 'inactive'),
+                      color: v.isActive ? AppColors.success : AppColors.faint,
+                    ),
+                    StatusChip(
+                      label: tr(context, v.rcImageUrl != null ? 'rcUploaded' : 'rcMissing'),
+                      color: v.rcImageUrl != null ? AppColors.success : AppColors.warning,
+                    ),
+                  ],
                 ),
               ],
             ),
