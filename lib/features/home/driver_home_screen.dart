@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 
+import '../../core/models/booking.dart';
 import '../../core/models/load.dart';
+import '../../core/services/booking_service.dart';
 import '../../core/models/vehicle.dart';
 import '../../core/services/load_service.dart';
 import '../../core/services/user_service.dart';
 import '../../core/services/vehicle_service.dart';
 import '../../core/widgets/common.dart';
 import '../../main.dart';
+import '../bookings/booking_list_view.dart';
+import '../bookings/driver_trip_screen.dart';
 import '../loads/available_loads_view.dart';
 import '../loads/load_card.dart';
 import '../vehicle/my_vehicles_screen.dart';
@@ -26,6 +30,8 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
   final Stream<List<Vehicle>> _vehicles = VehicleService.watchMine();
   final Stream<List<Load>> _homeOpenLoads = LoadService.watchOpen();
   final Stream<List<Load>> _tabOpenLoads = LoadService.watchOpen();
+  final Stream<List<Booking>> _homeTrips = BookingService.watchForDriver();
+  final Stream<List<Booking>> _tabTrips = BookingService.watchForDriver();
 
   void _snack(String msg) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -106,7 +112,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
     );
   }
 
-  void _onAccepted(String bookingId) {}
+  void _onAccepted(String bookingId) => openDriverTrip(context, bookingId);
 
   /// Nudges drivers without any vehicle to add one; hidden otherwise.
   Widget _noVehiclePrompt() {
@@ -198,7 +204,11 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
             const SizedBox(height: 24),
             _title(tr(context, 'activeTrip')),
             const SizedBox(height: 12),
-            _emptyCard(Icons.route_rounded, tr(context, 'noActiveTrip')),
+            ActiveTripCard(
+              bookings: _homeTrips,
+              onOpen: (id) => openDriverTrip(context, id),
+              empty: _emptyCard(Icons.route_rounded, tr(context, 'noActiveTrip')),
+            ),
             const SizedBox(height: 24),
             _title(tr(context, 'availableLoads')),
             const SizedBox(height: 12),
@@ -247,7 +257,12 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
     final pages = [
       _homeTab(),
       AvailableLoadsView(loads: _tabOpenLoads, onAccepted: _onAccepted),
-      _placeholder(Icons.route_rounded, tr(context, 'trips')),
+      BookingListView(
+        title: tr(context, 'trips'),
+        bookings: _tabTrips,
+        emptyTitle: tr(context, 'noTrips'),
+        onOpen: (id) => openDriverTrip(context, id),
+      ),
       _placeholder(Icons.account_balance_wallet_rounded, tr(context, 'earnings')),
       _placeholder(Icons.person_rounded, tr(context, 'profile'), withLogout: true),
     ];

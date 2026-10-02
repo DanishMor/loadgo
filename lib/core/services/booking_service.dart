@@ -74,6 +74,38 @@ class BookingService {
     return bookingRef.id;
   }
 
+  /// Live single booking; emits null if it doesn't exist.
+  static Stream<Booking?> watch(String bookingId) =>
+      _col.doc(bookingId).snapshots().map((s) => s.exists ? Booking.fromDoc(s) : null);
+
+  /// Moves the driver's booking to the next status in [BookingStatus.flow].
+  /// Delivering also closes the load. Returns the new status.
+  static Future<String> advance(String bookingId) async {
+    final uid = Backend.requireUid();
+    final ref = _col.doc(bookingId);
+    return Backend.db.runTransaction((tx) async {
+      final snap = await tx.get(ref);
+      if (!snap.exists) throw StateError('Booking not found');
+      final booking = Booking.fromDoc(snap);
+      if (booking.driverId != uid) throw StateError('Only the assigned driver can update this booking');
+      final next = booking.nextStatus;
+      if (next == null) throw StateError('Booking already delivered');
+
+      tx.update(ref, {
+        'status': next,
+        'timeline.$next': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+      if (next == BookingStatus.delivered) {
+        tx.update(Backend.db.collection('loads').doc(booking.loadId), {
+          'status': LoadStatus.closed,
+          'closedAt': FieldValue.serverTimestamp(),
+        });
+      }
+      return next;
+    });
+  }
+
   static Stream<List<Booking>> watchForDriver() => _watchWhere('driverId');
 
   static Stream<List<Booking>> watchForCustomer() => _watchWhere('customerId');

@@ -1,7 +1,11 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import '../../core/models/booking.dart';
+import '../../core/services/booking_service.dart';
 import '../../main.dart';
+import '../bookings/booking_list_view.dart';
+import '../bookings/booking_tracking_screen.dart';
 import '../loads/my_loads_view.dart';
 import '../loads/post_load_screen.dart';
 
@@ -21,6 +25,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
   static const _loadsTab = 2;
 
   int _currentIndex = 0;
+  final Stream<List<Booking>> _bookings = BookingService.watchForCustomer();
 
   Future<void> _postLoad() async {
     final posted = await Navigator.of(context).push<bool>(
@@ -32,11 +37,19 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
 
   void _openTab(int index) => setState(() => _currentIndex = index);
 
-  void _openBooking(String bookingId) => _openTab(_bookingsTab);
+  void _openBooking(String bookingId) => openBookingTracking(context, bookingId);
 
   late final List<Widget> _pages = [
     _CustomerHomeContent(onPostLoad: _postLoad, onOpenTab: _openTab),
-    const _BookingsPlaceholder(),
+    Builder(
+      builder: (context) => BookingListView(
+        title: tr(context, 'bookings'),
+        bookings: _bookings,
+        emptyTitle: tr(context, 'noBookingsTitle'),
+        emptySubtitle: tr(context, 'noBookingsSub'),
+        onOpen: _openBooking,
+      ),
+    ),
     MyLoadsView(onPostLoad: _postLoad, onOpenBooking: _openBooking),
     const _CustomerProfilePlaceholder(),
   ];
@@ -403,16 +416,6 @@ class _ServiceCard extends StatelessWidget {
 // ============================================================
 // PLACEHOLDER SCREENS
 // ============================================================
-
-class _BookingsPlaceholder extends StatelessWidget {
-  const _BookingsPlaceholder();
-  @override
-  Widget build(BuildContext context) => _PlaceholderPage(
-        icon: Icons.receipt_long_rounded,
-        title: tr(context, 'bookingsTitle'),
-        subtitle: tr(context, 'bookingsSub'),
-      );
-}
 
 class _CustomerProfilePlaceholder extends StatelessWidget {
   const _CustomerProfilePlaceholder();
