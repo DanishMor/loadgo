@@ -7,6 +7,7 @@ import '../../core/widgets/common.dart';
 import '../../main.dart';
 import '../ratings/rating_widgets.dart';
 import 'booking_widgets.dart';
+import 'location_widgets.dart';
 
 void openDriverTrip(BuildContext context, String bookingId) {
   Navigator.of(context).push(MaterialPageRoute(builder: (_) => DriverTripScreen(bookingId: bookingId)));
@@ -28,6 +29,10 @@ class DriverTripScreen extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(20, 10, 20, 100),
         children: [
           BookingSummary(booking: booking),
+          if (booking.isInTransit) ...[
+            const SizedBox(height: 14),
+            LocationSharingCard(booking: booking),
+          ],
           const SizedBox(height: 14),
           BookingTimeline(booking: booking),
           const SizedBox(height: 20),

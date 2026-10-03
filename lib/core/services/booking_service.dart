@@ -124,6 +124,20 @@ class BookingService {
     });
   }
 
+  /// Driver shares their current position on an in-transit booking.
+  static Future<void> updateLocation(String bookingId, double lat, double lng) async {
+    final uid = Backend.requireUid();
+    final ref = _col.doc(bookingId);
+    final snap = await ref.get();
+    if (!snap.exists) throw StateError('Booking not found');
+    final booking = Booking.fromDoc(snap);
+    if (booking.driverId != uid || !booking.isInTransit) return;
+    await ref.update({
+      'lastKnownLocation': GeoPoint(lat, lng),
+      'locationUpdatedAt': FieldValue.serverTimestamp(),
+    });
+  }
+
   /// Driver backs out of an accepted (not yet picked up) booking: the booking
   /// becomes cancelled, the load reopens for other drivers and the customer
   /// is notified.

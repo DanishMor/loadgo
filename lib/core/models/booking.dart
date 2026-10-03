@@ -30,6 +30,10 @@ class Booking {
   final Map<String, DateTime> timeline;
   final Timestamp? createdAt;
 
+  /// Driver's last shared position while the trip is in transit.
+  final GeoPoint? lastKnownLocation;
+  final DateTime? locationUpdatedAt;
+
   const Booking({
     required this.id,
     required this.loadId,
@@ -50,7 +54,11 @@ class Booking {
     required this.driverPhone,
     required this.timeline,
     this.createdAt,
+    this.lastKnownLocation,
+    this.locationUpdatedAt,
   });
+
+  bool get isInTransit => status == BookingStatus.inTransit;
 
   bool get isActive => status != BookingStatus.delivered && status != BookingStatus.cancelled;
 
@@ -84,6 +92,8 @@ class Booking {
           if (e.value is Timestamp) e.key.toString(): (e.value as Timestamp).toDate(),
       },
       createdAt: d['createdAt'] as Timestamp?,
+      lastKnownLocation: d['lastKnownLocation'] as GeoPoint?,
+      locationUpdatedAt: (d['locationUpdatedAt'] as Timestamp?)?.toDate(),
     );
   }
 }

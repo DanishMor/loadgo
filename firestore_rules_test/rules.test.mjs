@@ -2,7 +2,7 @@
 import { readFileSync } from 'node:fs';
 import { after, before, beforeEach, describe, test } from 'node:test';
 import { assertFails, assertSucceeds, initializeTestEnvironment } from '@firebase/rules-unit-testing';
-import { Timestamp, addDoc, deleteField, doc, getDoc, getDocs, collection, query, where, setDoc, updateDoc, deleteDoc, writeBatch, serverTimestamp } from 'firebase/firestore';
+import { GeoPoint, Timestamp, addDoc, deleteField, doc, getDoc, getDocs, collection, query, where, setDoc, updateDoc, deleteDoc, writeBatch, serverTimestamp } from 'firebase/firestore';
 
 let env;
 
@@ -219,6 +219,18 @@ describe('bookings', () => {
     await assertSucceeds(step(as('driver1'), 'in_transit'));
     await assertFails(updateDoc(doc(as('driver1'), 'bookings', 'L1'), { budget: 1 }));
     await assertFails(deleteDoc(doc(as('driver1'), 'bookings', 'L1')));
+  });
+
+  test('driver shares live location only while in transit', async () => {
+    const loc = () => ({ lastKnownLocation: new GeoPoint(28.6, 77.2), locationUpdatedAt: serverTimestamp() });
+    await seedBooking('picked_up');
+    await assertFails(updateDoc(doc(as('driver1'), 'bookings', 'L1'), loc()));
+    await seed((db) => updateDoc(doc(db, 'bookings', 'L1'), { status: 'in_transit' }));
+    await assertSucceeds(updateDoc(doc(as('driver1'), 'bookings', 'L1'), loc()));
+    await assertFails(updateDoc(doc(as('customer1'), 'bookings', 'L1'), loc()));
+    await assertFails(updateDoc(doc(as('driver2'), 'bookings', 'L1'), loc()));
+    await assertFails(updateDoc(doc(as('driver1'), 'bookings', 'L1'), { ...loc(), budget: 1 }));
+    await assertFails(updateDoc(doc(as('driver1'), 'bookings', 'L1'), { lastKnownLocation: 'x', locationUpdatedAt: serverTimestamp() }));
   });
 
   test('delivering closes the load; closing early fails', async () => {

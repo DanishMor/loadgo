@@ -180,6 +180,15 @@ service cloud.firestore {
           && get(docPath('vehicles', b.vehicleId)).data.ownerId == request.auth.uid;
     }
 
+    // Live location: the driver may refresh their position only while the
+    // trip is in transit, without touching anything else.
+    function driverLocationUpdate() {
+      return resource.data.status == 'in_transit'
+          && request.resource.data.status == 'in_transit'
+          && changedKeys().hasOnly(['lastKnownLocation', 'locationUpdatedAt'])
+          && request.resource.data.lastKnownLocation is latlng;
+    }
+
     match /bookings/{bookingId} {
       allow read: if signedIn()
           && (resource.data.driverId == request.auth.uid
@@ -187,11 +196,11 @@ service cloud.firestore {
       allow create: if signedIn() && validBookingCreate(bookingId);
       allow update: if signedIn()
           && resource.data.driverId == request.auth.uid
-          && changedKeys().hasOnly(['status', 'timeline', 'updatedAt'])
+          && (driverLocationUpdate() || (changedKeys().hasOnly(['status', 'timeline', 'updatedAt'])
           && (request.resource.data.status == nextBookingStatus(resource.data.status)
               || (resource.data.status == 'accepted'
                   && request.resource.data.status == 'cancelled'
-                  && getAfter(docPath('loads', resource.data.loadId)).data.status == 'open'));
+                  && getAfter(docPath('loads', resource.data.loadId)).data.status == 'open'))));
       allow delete: if false;
     }
 

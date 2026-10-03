@@ -2,6 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>LoadGo shares your live location with the customer while a trip is in transit.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>LoadGo needs photo access to upload your vehicle RC document.</string>
 	<key>NSCameraUsageDescription</key>

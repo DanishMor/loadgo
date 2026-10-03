@@ -1852,6 +1852,31 @@ class T {
       AppLanguage.hindi: 'यात्रा विवरण',
       AppLanguage.hinglish: 'Trip Details',
     },
+    'locationSharingOn': {
+      AppLanguage.english: 'Sharing your live location with the customer',
+      AppLanguage.hindi: 'ग्राहक के साथ आपकी लाइव लोकेशन शेयर हो रही है',
+      AppLanguage.hinglish: 'Customer ke saath aapki live location share ho rahi hai',
+    },
+    'locationSharingOff': {
+      AppLanguage.english: 'Location unavailable. Turn on location and allow access to share it.',
+      AppLanguage.hindi: 'लोकेशन उपलब्ध नहीं। शेयर करने के लिए लोकेशन चालू करें और अनुमति दें।',
+      AppLanguage.hinglish: 'Location available nahi hai. Share karne ke liye location on karo aur permission do.',
+    },
+    'driverLocation': {
+      AppLanguage.english: 'Driver location',
+      AppLanguage.hindi: 'ड्राइवर की लोकेशन',
+      AppLanguage.hinglish: 'Driver ki location',
+    },
+    'locationNotShared': {
+      AppLanguage.english: 'Not shared yet',
+      AppLanguage.hindi: 'अभी शेयर नहीं हुई',
+      AppLanguage.hinglish: 'Abhi share nahi hui',
+    },
+    'updatedAt': {
+      AppLanguage.english: 'Updated',
+      AppLanguage.hindi: 'अपडेट',
+      AppLanguage.hinglish: 'Update',
+    },
     'trackBooking': {
       AppLanguage.english: 'Track Booking',
       AppLanguage.hindi: 'बुकिंग ट्रैक करें',
