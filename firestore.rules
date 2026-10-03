@@ -31,13 +31,27 @@ service cloud.firestore {
           && d.get('verificationStatus', 'pending') == 'pending';
     }
 
+    // Admins carry the custom claim `admin: true` (set with the Admin SDK;
+    // nobody has it by default). They may read profiles and decide driver
+    // verification, nothing else.
+    function isAdmin() {
+      return signedIn() && request.auth.token.get('admin', false) == true;
+    }
+
+    function adminVerificationUpdate() {
+      return isAdmin()
+          && changedKeys().hasOnly(['verified', 'verificationStatus', 'updatedAt'])
+          && request.resource.data.verificationStatus in ['pending', 'approved', 'rejected']
+          && request.resource.data.verified == (request.resource.data.verificationStatus == 'approved');
+    }
+
     match /users/{userId} {
-      allow read: if isUser(userId);
+      allow read: if isUser(userId) || isAdmin();
       allow create: if isUser(userId) && verificationInitOk(request.resource.data);
-      allow update: if isUser(userId)
+      allow update: if adminVerificationUpdate() || (isUser(userId)
           && (!changedKeys().hasAny(['verified', 'verificationStatus'])
               || (resource.data.get('verificationStatus', null) == null
-                  && verificationInitOk(request.resource.data)));
+                  && verificationInitOk(request.resource.data))));
       allow delete: if false;
     }
 

@@ -19,3 +19,6 @@ Manual steps:
 2. `cd functions && npm install`, then `firebase deploy --only functions`.
 3. iOS only: upload an APNs auth key in Firebase Console -> Project settings -> Cloud Messaging, and enable Push Notifications + Background Modes (Remote notifications) in Xcode.
 Until the function is deployed, notifications stay in-app only.
+
+## Admin panel (Task 4)
+`AdminVerificationScreen` (lib/features/admin) is intentionally not linked from the app. Firestore rules let only users with the custom claim `admin: true` read drivers and change `verified`/`verificationStatus`. Grant it with the Admin SDK, e.g. `getAuth().setCustomUserClaims(uid, { admin: true })`. TODO before exposing: gate the screen on that claim and add admin login. Rules need to be deployed.

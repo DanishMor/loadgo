@@ -1882,6 +1882,41 @@ class T {
       AppLanguage.hindi: 'अपडेट',
       AppLanguage.hinglish: 'Update',
     },
+    'driverVerification': {
+      AppLanguage.english: 'Driver verification',
+      AppLanguage.hindi: 'ड्राइवर सत्यापन',
+      AppLanguage.hinglish: 'Driver verification',
+    },
+    'adminPending': {
+      AppLanguage.english: 'Pending',
+      AppLanguage.hindi: 'लंबित',
+      AppLanguage.hinglish: 'Pending',
+    },
+    'adminApproved': {
+      AppLanguage.english: 'Approved',
+      AppLanguage.hindi: 'स्वीकृत',
+      AppLanguage.hinglish: 'Approved',
+    },
+    'adminRejected': {
+      AppLanguage.english: 'Rejected',
+      AppLanguage.hindi: 'अस्वीकृत',
+      AppLanguage.hinglish: 'Rejected',
+    },
+    'approve': {
+      AppLanguage.english: 'Approve',
+      AppLanguage.hindi: 'स्वीकृत करें',
+      AppLanguage.hinglish: 'Approve karo',
+    },
+    'reject': {
+      AppLanguage.english: 'Reject',
+      AppLanguage.hindi: 'अस्वीकार करें',
+      AppLanguage.hinglish: 'Reject karo',
+    },
+    'noDriversHere': {
+      AppLanguage.english: 'No drivers in this list',
+      AppLanguage.hindi: 'इस सूची में कोई ड्राइवर नहीं',
+      AppLanguage.hinglish: 'Is list mein koi driver nahi',
+    },
     'trackBooking': {
       AppLanguage.english: 'Track Booking',
       AppLanguage.hindi: 'बुकिंग ट्रैक करें',

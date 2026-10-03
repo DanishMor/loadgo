@@ -16,6 +16,7 @@ after(() => env.cleanup());
 beforeEach(() => env.clearFirestore());
 
 const as = (uid) => env.authenticatedContext(uid).firestore();
+const asAdmin = () => env.authenticatedContext('admin1', { admin: true }).firestore();
 const anon = () => env.unauthenticatedContext().firestore();
 const seed = (fn) => env.withSecurityRulesDisabled((ctx) => fn(ctx.firestore()));
 
@@ -99,6 +100,26 @@ describe('users', () => {
     await assertFails(updateDoc(doc(as('d1'), 'users', 'd1'), { verificationStatus: 'approved' }));
     await assertFails(updateDoc(doc(as('d1'), 'users', 'd1'), { verified: true }));
     await assertSucceeds(updateDoc(doc(as('d1'), 'users', 'd1'), { driverName: 'Ramesh' }));
+  });
+});
+
+describe('admin verification', () => {
+  const seedDriver = () => seed((db) => setDoc(doc(db, 'users', 'd1'), { driverName: 'R', verified: false, verificationStatus: 'pending' }));
+
+  test('admin reads drivers and approves/rejects; others cannot', async () => {
+    await seedDriver();
+    await assertSucceeds(getDocs(query(collection(asAdmin(), 'users'), where('verificationStatus', '==', 'pending'))));
+    await assertFails(getDocs(query(collection(as('u2'), 'users'), where('verificationStatus', '==', 'pending'))));
+    await assertSucceeds(updateDoc(doc(asAdmin(), 'users', 'd1'), { verified: true, verificationStatus: 'approved', updatedAt: serverTimestamp() }));
+    await assertSucceeds(updateDoc(doc(asAdmin(), 'users', 'd1'), { verified: false, verificationStatus: 'rejected', updatedAt: serverTimestamp() }));
+    await assertFails(updateDoc(doc(as('u2'), 'users', 'd1'), { verified: true, verificationStatus: 'approved' }));
+  });
+
+  test('admin can only touch verification fields, consistently', async () => {
+    await seedDriver();
+    await assertFails(updateDoc(doc(asAdmin(), 'users', 'd1'), { driverName: 'X' }));
+    await assertFails(updateDoc(doc(asAdmin(), 'users', 'd1'), { verified: true, verificationStatus: 'rejected' }));
+    await assertFails(updateDoc(doc(asAdmin(), 'users', 'd1'), { verified: true, verificationStatus: 'bogus' }));
   });
 });
 
