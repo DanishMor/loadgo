@@ -33,12 +33,17 @@ class LiveStream<D> extends StatefulWidget {
   final bool compact;
   final Duration slowAfter;
 
+  /// When this changes the stream is re-created (e.g. a larger page limit).
+  /// The previous data stays on screen until the new stream delivers.
+  final Object? resubscribeKey;
+
   const LiveStream({
     super.key,
     required this.stream,
     required this.builder,
     this.compact = false,
     this.slowAfter = const Duration(seconds: 15),
+    this.resubscribeKey,
   });
 
   @override
@@ -49,11 +54,22 @@ class _LiveStreamState<D> extends State<LiveStream<D>> {
   late Stream<D> _stream;
   Timer? _slowTimer;
   bool _slow = false;
+  D? _last;
+  bool _keepLast = false;
 
   @override
   void initState() {
     super.initState();
     _subscribe();
+  }
+
+  @override
+  void didUpdateWidget(LiveStream<D> old) {
+    super.didUpdateWidget(old);
+    if (old.resubscribeKey != widget.resubscribeKey) {
+      _keepLast = _last != null;
+      _subscribe();
+    }
   }
 
   void _subscribe() {
@@ -84,8 +100,11 @@ class _LiveStreamState<D> extends State<LiveStream<D>> {
         }
         if (snap.hasData) {
           _slowTimer?.cancel();
-          return widget.builder(context, snap.data as D);
+          _last = snap.data as D;
+          _keepLast = false;
+          return widget.builder(context, _last as D);
         }
+        if (_keepLast && _last != null) return widget.builder(context, _last as D);
         if (_slow) return ErrorRetry(messageKey: 'errorSlow', onRetry: _retry, compact: widget.compact);
         return widget.compact
             ? const Padding(

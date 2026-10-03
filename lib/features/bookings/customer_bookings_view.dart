@@ -4,13 +4,13 @@ import '../../core/constants/logistics.dart';
 import '../../core/models/booking.dart';
 import '../../core/widgets/common.dart';
 import '../../main.dart';
-import '../shared/live_stream.dart';
+import '../shared/paged_live_stream.dart';
 import 'booking_widgets.dart';
 
 /// Customer "Bookings" tab split into active and past (delivered/cancelled).
 /// Delivered bookings open their invoice; everything else opens tracking.
 class CustomerBookingsView extends StatefulWidget {
-  final StreamFactory<List<Booking>> bookings;
+  final PagedStreamFactory<Booking> bookings;
   final ValueChanged<String> onOpenTracking;
   final ValueChanged<String> onOpenInvoice;
 
@@ -52,22 +52,24 @@ class _CustomerBookingsViewState extends State<CustomerBookingsView> {
           ),
           const SizedBox(height: 8),
           Expanded(
-            child: LiveStream<List<Booking>>(
+            child: PagedLiveStream<Booking>(
               stream: widget.bookings,
-              builder: (context, all) {
+              builder: (context, all, loadMore) {
                 final list = all.where((b) => b.isActive != _showPast).toList();
                 if (list.isEmpty) {
                   return EmptyState(
                     icon: _showPast ? Icons.history_rounded : Icons.receipt_long_rounded,
                     title: tr(context, _showPast ? 'noPastBookings' : 'noBookingsTitle'),
                     subtitle: _showPast ? null : tr(context, 'noBookingsSub'),
+                    action: loadMore,
                   );
                 }
                 return ListView.separated(
                   padding: const EdgeInsets.fromLTRB(20, 4, 20, 30),
-                  itemCount: list.length,
+                  itemCount: list.length + (loadMore == null ? 0 : 1),
                   separatorBuilder: (_, _) => const SizedBox(height: 12),
                   itemBuilder: (context, i) {
+                    if (i == list.length) return loadMore!;
                     final b = list[i];
                     final delivered = b.status == BookingStatus.delivered;
                     return Column(

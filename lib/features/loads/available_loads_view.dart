@@ -5,7 +5,7 @@ import '../../core/models/load.dart';
 import '../../core/models/load_filter.dart';
 import '../../core/widgets/common.dart';
 import '../../main.dart';
-import '../shared/live_stream.dart';
+import '../shared/paged_live_stream.dart';
 import 'accept_load.dart';
 import 'load_card.dart';
 
@@ -57,7 +57,7 @@ class _AcceptLoadButtonState extends State<AcceptLoadButton> {
 /// Driver "Loads" tab: live list of open loads with pickup search and
 /// vehicle type / minimum budget filters.
 class AvailableLoadsView extends StatefulWidget {
-  final StreamFactory<List<Load>> loads;
+  final PagedStreamFactory<Load> loads;
   final ValueChanged<String>? onAccepted;
 
   const AvailableLoadsView({super.key, required this.loads, this.onAccepted});
@@ -156,9 +156,9 @@ class _AvailableLoadsViewState extends State<AvailableLoadsView> {
           _activeChips(),
           const SizedBox(height: 8),
           Expanded(
-            child: LiveStream<List<Load>>(
+            child: PagedLiveStream<Load>(
               stream: widget.loads,
-              builder: (context, all) {
+              builder: (context, all, loadMore) {
                 final list = _filter.apply(all);
                 if (all.isEmpty) {
                   return EmptyState(icon: Icons.inventory_2_rounded, title: tr(context, 'noAvailableLoads'));
@@ -167,18 +167,26 @@ class _AvailableLoadsViewState extends State<AvailableLoadsView> {
                   return EmptyState(
                     icon: Icons.filter_alt_off_rounded,
                     title: tr(context, 'noLoadsMatch'),
-                    action: OutlinedButton(onPressed: _clearAll, child: Text(tr(context, 'clearFilters'))),
+                    action: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        OutlinedButton(onPressed: _clearAll, child: Text(tr(context, 'clearFilters'))),
+                        ?loadMore,
+                      ],
+                    ),
                   );
                 }
                 return ListView.separated(
                   padding: const EdgeInsets.fromLTRB(20, 4, 20, 30),
-                  itemCount: list.length,
+                  itemCount: list.length + (loadMore == null ? 0 : 1),
                   separatorBuilder: (_, _) => const SizedBox(height: 12),
-                  itemBuilder: (context, i) => LoadCard(
-                    key: ValueKey(list[i].id),
-                    load: list[i],
-                    action: AcceptLoadButton(load: list[i], onAccepted: widget.onAccepted),
-                  ),
+                  itemBuilder: (context, i) => i == list.length
+                      ? loadMore!
+                      : LoadCard(
+                          key: ValueKey(list[i].id),
+                          load: list[i],
+                          action: AcceptLoadButton(load: list[i], onAccepted: widget.onAccepted),
+                        ),
                 );
               },
             ),

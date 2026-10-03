@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../constants/logistics.dart';
 import '../models/booking.dart';
 import '../models/load.dart';
+import '../models/paged.dart';
 import '../models/app_notification.dart';
 import '../models/vehicle.dart';
 import 'backend.dart';
@@ -176,6 +177,20 @@ class BookingService {
   static Stream<List<Booking>> watchForDriver() => _watchWhere('driverId');
 
   static Stream<List<Booking>> watchForCustomer() => _watchWhere('customerId');
+
+  static Stream<Paged<Booking>> watchForDriverPage(int limit) => _watchPage('driverId', limit);
+
+  static Stream<Paged<Booking>> watchForCustomerPage(int limit) => _watchPage('customerId', limit);
+
+  static Stream<Paged<Booking>> _watchPage(String field, int limit) {
+    final uid = Backend.uid;
+    if (uid == null) return Stream.value(const Paged.all([]));
+    return newestPage(_col.where(field, isEqualTo: uid), limit).map((snap) {
+      final list = snap.docs.map(Booking.fromDoc).toList();
+      list.sort((a, b) => newestFirst(a.createdAt, b.createdAt));
+      return Paged(list, hasMore: snap.docs.length >= limit);
+    });
+  }
 
   static Stream<List<Booking>> _watchWhere(String field) {
     final uid = Backend.uid;

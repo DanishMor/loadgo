@@ -5,7 +5,7 @@ import '../../core/models/load.dart';
 import '../../core/services/load_service.dart';
 import '../../core/widgets/common.dart';
 import '../../main.dart';
-import '../shared/live_stream.dart';
+import '../shared/paged_live_stream.dart';
 import 'load_card.dart';
 
 /// Customer "My Loads" tab: live list of the customer's posted loads.
@@ -69,9 +69,9 @@ class _MyLoadsViewState extends State<MyLoadsView> {
             ),
           ),
           Expanded(
-            child: LiveStream<List<Load>>(
-              stream: LoadService.watchMine,
-              builder: (context, loads) {
+            child: PagedLiveStream<Load>(
+              stream: LoadService.watchMinePage,
+              builder: (context, loads, loadMore) {
                 if (loads.isEmpty) {
                   return EmptyState(
                     icon: Icons.inventory_2_rounded,
@@ -85,9 +85,10 @@ class _MyLoadsViewState extends State<MyLoadsView> {
                 }
                 return ListView.separated(
                   padding: const EdgeInsets.fromLTRB(20, 4, 20, 30),
-                  itemCount: loads.length,
+                  itemCount: loads.length + (loadMore == null ? 0 : 1),
                   separatorBuilder: (_, _) => const SizedBox(height: 12),
                   itemBuilder: (context, i) {
+                    if (i == loads.length) return loadMore!;
                     final load = loads[i];
                     return LoadCard(key: ValueKey(load.id), load: load, showStatus: true, action: _actionsFor(load));
                   },

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:transport_app/core/models/booking.dart';
 import 'package:transport_app/core/models/load.dart';
+import 'package:transport_app/core/models/paged.dart';
 import 'package:transport_app/features/bookings/booking_list_view.dart';
 import 'package:transport_app/features/bookings/customer_bookings_view.dart';
 import 'package:transport_app/features/loads/available_loads_view.dart';
@@ -72,35 +73,35 @@ void main() {
     final failing = FirebaseException(plugin: 'firestore', code: 'unavailable');
 
     testWidgets('Available Loads', (tester) async {
-      await tester.pumpWidget(host(AvailableLoadsView(loads: () => Stream.value(const <Load>[]))));
+      await tester.pumpWidget(host(AvailableLoadsView(loads: (_) => Stream.value(const Paged<Load>.all([])))));
       await tester.pumpAndSettle();
       expect(find.text('No open loads right now'), findsOneWidget);
 
-      await tester.pumpWidget(host(AvailableLoadsView(key: UniqueKey(), loads: () => Stream.error(failing))));
+      await tester.pumpWidget(host(AvailableLoadsView(key: UniqueKey(), loads: (_) => Stream.error(failing))));
       await tester.pumpAndSettle();
       expect(find.text('Retry'), findsOneWidget);
     });
 
     testWidgets('Trips (driver)', (tester) async {
       await tester.pumpWidget(host(BookingListView(
-          title: 'Trips', bookings: () => Stream.value(const <Booking>[]), emptyTitle: 'No trips', onOpen: (_) {})));
+          title: 'Trips', bookings: (_) => Stream.value(const Paged<Booking>.all([])), emptyTitle: 'No trips', onOpen: (_) {})));
       await tester.pumpAndSettle();
       expect(find.text('No trips'), findsOneWidget);
 
       await tester.pumpWidget(host(BookingListView(
-          key: UniqueKey(), title: 'Trips', bookings: () => Stream.error(failing), emptyTitle: 'No trips', onOpen: (_) {})));
+          key: UniqueKey(), title: 'Trips', bookings: (_) => Stream.error(failing), emptyTitle: 'No trips', onOpen: (_) {})));
       await tester.pumpAndSettle();
       expect(find.text('Retry'), findsOneWidget);
     });
 
     testWidgets('Bookings (customer)', (tester) async {
       await tester.pumpWidget(host(CustomerBookingsView(
-          bookings: () => Stream.value(const <Booking>[]), onOpenTracking: (_) {}, onOpenInvoice: (_) {})));
+          bookings: (_) => Stream.value(const Paged<Booking>.all([])), onOpenTracking: (_) {}, onOpenInvoice: (_) {})));
       await tester.pumpAndSettle();
       expect(find.text('No bookings yet'), findsOneWidget);
 
       await tester.pumpWidget(host(CustomerBookingsView(
-          key: UniqueKey(), bookings: () => Stream.error(failing), onOpenTracking: (_) {}, onOpenInvoice: (_) {})));
+          key: UniqueKey(), bookings: (_) => Stream.error(failing), onOpenTracking: (_) {}, onOpenInvoice: (_) {})));
       await tester.pumpAndSettle();
       expect(find.text('Retry'), findsOneWidget);
     });

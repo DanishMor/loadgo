@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../constants/logistics.dart';
 import '../models/load.dart';
+import '../models/paged.dart';
 import 'backend.dart';
 
 class LoadNotCancellableException implements Exception {
@@ -80,6 +81,24 @@ class LoadService {
         .where('status', isEqualTo: LoadStatus.open)
         .snapshots()
         .map((snap) => _sorted(snap).where((l) => l.shipperId != uid).toList());
+  }
+
+  /// Paged "My Loads": the newest [limit] loads the customer posted.
+  static Stream<Paged<Load>> watchMinePage(int limit) {
+    final uid = Backend.uid;
+    if (uid == null) return Stream.value(const Paged.all([]));
+    return newestPage(_col.where('shipperId', isEqualTo: uid), limit)
+        .map((snap) => Paged(_sorted(snap), hasMore: snap.docs.length >= limit));
+  }
+
+  /// Paged open loads for drivers (own loads hidden); [Paged.hasMore] reflects
+  /// the server page, not the filtered list.
+  static Stream<Paged<Load>> watchOpenPage(int limit) {
+    final uid = Backend.uid;
+    return newestPage(_col.where('status', isEqualTo: LoadStatus.open), limit).map((snap) => Paged(
+          _sorted(snap).where((l) => l.shipperId != uid).toList(),
+          hasMore: snap.docs.length >= limit,
+        ));
   }
 
   static List<Load> _sorted(QuerySnapshot<Map<String, dynamic>> snap) {

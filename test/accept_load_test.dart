@@ -99,7 +99,7 @@ void main() {
 
     String? accepted;
     await tester.pumpWidget(MaterialApp(
-      home: Scaffold(body: AvailableLoadsView(loads: LoadService.watchOpen, onAccepted: (id) => accepted = id)),
+      home: Scaffold(body: AvailableLoadsView(loads: LoadService.watchOpenPage, onAccepted: (id) => accepted = id)),
     ));
     await tester.pumpAndSettle();
     expect(find.text('Delhi → Mumbai'), findsOneWidget);
@@ -121,7 +121,7 @@ void main() {
     uid = 'driver1';
 
     await tester.pumpWidget(MaterialApp(
-      home: Scaffold(body: AvailableLoadsView(loads: LoadService.watchOpen)),
+      home: Scaffold(body: AvailableLoadsView(loads: LoadService.watchOpenPage)),
     ));
     await tester.pumpAndSettle();
     await tester.tap(find.byType(AcceptLoadButton));

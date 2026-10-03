@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:transport_app/core/models/load.dart';
 import 'package:transport_app/core/models/load_filter.dart';
+import 'package:transport_app/core/models/paged.dart';
 import 'package:transport_app/core/services/backend.dart';
 import 'package:transport_app/features/loads/available_loads_view.dart';
 
@@ -60,7 +61,7 @@ void main() {
     late List<Load> loads;
     await tester.runAsync(() async => loads = await sampleLoads(db));
 
-    await tester.pumpWidget(MaterialApp(home: Scaffold(body: AvailableLoadsView(loads: () => Stream.value(loads)))));
+    await tester.pumpWidget(MaterialApp(home: Scaffold(body: AvailableLoadsView(loads: (_) => Stream.value(Paged.all(loads))))));
     await settle(tester);
     expect(find.textContaining('→ Jaipur'), findsNWidgets(4));
 

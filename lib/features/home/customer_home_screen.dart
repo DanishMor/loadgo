@@ -43,7 +43,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
   late final List<Widget> _pages = [
     _CustomerHomeContent(onPostLoad: _postLoad, onOpenTab: _openTab),
     CustomerBookingsView(
-      bookings: BookingService.watchForCustomer,
+      bookings: BookingService.watchForCustomerPage,
       onOpenTracking: _openBooking,
       onOpenInvoice: (id) => openInvoice(context, id),
     ),

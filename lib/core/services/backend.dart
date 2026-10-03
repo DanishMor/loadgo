@@ -51,3 +51,18 @@ int newestFirst(Timestamp? a, Timestamp? b) {
   if (b == null) return 1;
   return b.compareTo(a);
 }
+
+/// Newest-first live page of [base] holding at most [limit] documents.
+///
+/// Ordering by `createdAt` next to an equality filter needs a composite index
+/// (firestore.indexes.json). Until that is deployed the query fails with
+/// failed-precondition, so we fall back to an unordered limited query and let
+/// the caller's client-side sort order the page.
+Stream<QuerySnapshot<Map<String, dynamic>>> newestPage(Query<Map<String, dynamic>> base, int limit) async* {
+  try {
+    yield* base.orderBy('createdAt', descending: true).limit(limit).snapshots();
+  } on FirebaseException catch (e) {
+    if (e.code != 'failed-precondition') rethrow;
+    yield* base.limit(limit).snapshots();
+  }
+}
