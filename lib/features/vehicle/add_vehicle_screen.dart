@@ -224,7 +224,7 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
                   controller: _capacityCtrl,
                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
                   textInputAction: TextInputAction.next,
-                  decoration: const InputDecoration(prefixIcon: Icon(Icons.scale_outlined), hintText: 'e.g. 9'),
+                  decoration: InputDecoration(prefixIcon: const Icon(Icons.scale_outlined), hintText: '${tr(context, 'exampleShort')} 9'),
                   validator: (v) {
                     final n = num.tryParse(v?.trim() ?? '');
                     return (n == null || n <= 0 || n > 100) ? tr(context, 'invalidNumber') : null;
