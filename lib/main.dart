@@ -1,3 +1,4 @@
+import 'core/services/push_service.dart';
 import 'core/services/user_service.dart';
 import 'features/auth/driver_login_screen.dart';
 import 'features/home/customer_home_screen.dart';
@@ -25,6 +26,10 @@ Future<void> main() async {
     return true;
   };
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  // Register for push whenever a user is signed in (also after app restarts).
+  FirebaseAuth.instance.authStateChanges().listen((user) {
+    if (user != null) PushService.register();
+  });
   runApp(const LoadGoApp());
 }
 

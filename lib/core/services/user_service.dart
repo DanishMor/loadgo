@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import 'backend.dart';
+import 'push_service.dart';
 
 class UserService {
   UserService._();
@@ -116,5 +117,8 @@ class UserService {
     });
   }
 
-  static Future<void> logout() => FirebaseAuth.instance.signOut();
+  static Future<void> logout() async {
+    await PushService.unregister();
+    await FirebaseAuth.instance.signOut();
+  }
 }

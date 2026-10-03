@@ -10,3 +10,12 @@ Steps when you have the key:
 
 ## Live location (Task 2)
 Uses `geolocator`; Android/iOS location permissions are already declared. Customer sees coordinates as text; swap for a map once the Maps key exists. Firestore rules for `lastKnownLocation` are in `firestore.rules` and need to be deployed.
+
+## Push notifications / FCM (Task 3)
+App side is done: `PushService` saves the FCM token to `users/{uid}.fcmTokens`, Android `POST_NOTIFICATIONS` permission declared.
+Sending needs a server: `functions/index.js` (`pushOnNotification`) sends a push for every new `notifications` doc.
+Manual steps:
+1. Upgrade the Firebase project to the **Blaze** plan (Cloud Functions requirement).
+2. `cd functions && npm install`, then `firebase deploy --only functions`.
+3. iOS only: upload an APNs auth key in Firebase Console -> Project settings -> Cloud Messaging, and enable Push Notifications + Background Modes (Remote notifications) in Xcode.
+Until the function is deployed, notifications stay in-app only.
