@@ -26,3 +26,6 @@ Until the function is deployed, notifications stay in-app only.
 ## List pagination / Firestore indexes (Task 7)
 Available Loads, My Loads, Trips and customer Bookings load 20 items at a time ("Load more" for more). Newest-first paging uses composite indexes defined in `firestore.indexes.json`. Deploy them (works on the free plan): `firebase deploy --only firestore:indexes`. Until then the app falls back to an unordered page, so lists still work but may not show the newest items first beyond page 1.
 Earnings, the active-trip card and home counts still read all items on purpose (they need totals).
+
+## Offline handling (Task 9)
+`connectivity_plus` drives an offline banner and an explicit "No internet connection" state on list screens that have nothing cached. Firestore's offline cache keeps showing previously loaded data. No manual setup needed.

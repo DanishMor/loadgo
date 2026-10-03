@@ -9,6 +9,7 @@ import 'package:transport_app/core/models/paged.dart';
 import 'package:transport_app/features/bookings/booking_list_view.dart';
 import 'package:transport_app/features/bookings/customer_bookings_view.dart';
 import 'package:transport_app/features/loads/available_loads_view.dart';
+import 'package:transport_app/core/services/connectivity_service.dart';
 import 'package:transport_app/features/shared/live_stream.dart';
 
 Widget host(Widget child) => MaterialApp(home: Scaffold(body: child));
@@ -104,6 +105,47 @@ void main() {
           key: UniqueKey(), bookings: (_) => Stream.error(failing), onOpenTracking: (_) {}, onOpenInvoice: (_) {})));
       await tester.pumpAndSettle();
       expect(find.text('Retry'), findsOneWidget);
+    });
+  });
+
+  group('offline', () {
+    tearDown(() => ConnectivityService.online.value = true);
+
+    testWidgets('shows a clear no-internet message with Retry while nothing has loaded', (tester) async {
+      ConnectivityService.online.value = false;
+      await tester.pumpWidget(host(LiveStream<int>(
+        stream: () => StreamController<int>().stream,
+        builder: (_, d) => Text('$d'),
+      )));
+      await tester.pump();
+      expect(find.text('No internet connection. Connect and try again.'), findsOneWidget);
+      expect(find.text('Retry'), findsOneWidget);
+    });
+
+    testWidgets('a network error while offline is reported as offline, and data still wins', (tester) async {
+      ConnectivityService.online.value = false;
+      await tester.pumpWidget(host(LiveStream<int>(
+        stream: () => Stream.error(StateError('x')),
+        builder: (_, d) => Text('$d'),
+      )));
+      await tester.pumpAndSettle();
+      expect(find.text('No internet connection. Connect and try again.'), findsOneWidget);
+
+      await tester.pumpWidget(host(LiveStream<int>(
+        key: UniqueKey(),
+        stream: () => Stream.value(7),
+        builder: (_, d) => Text('cached $d'),
+      )));
+      await tester.pumpAndSettle();
+      expect(find.text('cached 7'), findsOneWidget);
+    });
+
+    testWidgets('offline banner follows connectivity', (tester) async {
+      await tester.pumpWidget(host(const OfflineBanner()));
+      expect(find.byIcon(Icons.wifi_off_rounded), findsNothing);
+      ConnectivityService.online.value = false;
+      await tester.pump();
+      expect(find.text("You're offline. Showing saved data."), findsOneWidget);
     });
   });
 }

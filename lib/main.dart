@@ -1,5 +1,7 @@
+import 'core/services/connectivity_service.dart';
 import 'core/services/push_service.dart';
 import 'core/services/user_service.dart';
+import 'features/shared/live_stream.dart' show OfflineBanner;
 import 'features/auth/driver_login_screen.dart';
 import 'features/home/customer_home_screen.dart';
 import 'features/home/driver_home_screen.dart';
@@ -26,6 +28,7 @@ Future<void> main() async {
     return true;
   };
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await ConnectivityService.start();
   // Register for push whenever a user is signed in (also after app restarts).
   FirebaseAuth.instance.authStateChanges().listen((user) {
     if (user != null) PushService.register();
@@ -3444,6 +3447,34 @@ class T {
       AppLanguage.kashmiri: 'تفصیل کلپ بورڈس پیٹھ کاپی گیٚیِ',
       AppLanguage.urdu: 'تفصیلات کلپ بورڈ پر کاپی ہو گئیں',
     },
+    'errorOffline': {
+      AppLanguage.english: 'No internet connection. Connect and try again.',
+      AppLanguage.hindi: 'इंटरनेट कनेक्शन नहीं है। कनेक्ट करके फिर कोशिश करें।',
+      AppLanguage.hinglish: 'Internet connection nahi hai. Connect karke dobara try karo.',
+      AppLanguage.kannada: 'ಇಂಟರ್ನೆಟ್ ಸಂಪರ್ಕವಿಲ್ಲ. ಸಂಪರ್ಕಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.',
+      AppLanguage.tamil: 'இணைய இணைப்பு இல்லை. இணைத்து மீண்டும் முயற்சிக்கவும்.',
+      AppLanguage.telugu: 'ఇంటర్నెట్ కనెక్షన్ లేదు. కనెక్ట్ అయి మళ్లీ ప్రయత్నించండి.',
+      AppLanguage.marathi: 'इंटरनेट कनेक्शन नाही. कनेक्ट करून पुन्हा प्रयत्न करा.',
+      AppLanguage.gujarati: 'ઇન્ટરનેટ કનેક્શન નથી. કનેક્ટ કરીને ફરી પ્રયાસ કરો.',
+      AppLanguage.bengali: 'ইন্টারনেট সংযোগ নেই। সংযুক্ত হয়ে আবার চেষ্টা করুন।',
+      AppLanguage.punjabi: 'ਇੰਟਰਨੈੱਟ ਕਨੈਕਸ਼ਨ ਨਹੀਂ ਹੈ। ਕਨੈਕਟ ਕਰਕੇ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।',
+      AppLanguage.kashmiri: 'انٹرنیٹ کنیکشن چھُ نہ۔ کنیکٹ کٔرِتھ دوبارہ کوشش کٔرِو۔',
+      AppLanguage.urdu: 'انٹرنیٹ کنکشن نہیں ہے۔ کنیکٹ کر کے دوبارہ کوشش کریں۔',
+    },
+    'offlineBanner': {
+      AppLanguage.english: 'You\'re offline. Showing saved data.',
+      AppLanguage.hindi: 'आप ऑफलाइन हैं। सेव किया हुआ डेटा दिख रहा है।',
+      AppLanguage.hinglish: 'Aap offline ho. Saved data dikh raha hai.',
+      AppLanguage.kannada: 'ನೀವು ಆಫ್‌ಲೈನ್‌ನಲ್ಲಿದ್ದೀರಿ. ಉಳಿಸಿದ ಡೇಟಾ ತೋರಿಸಲಾಗುತ್ತಿದೆ.',
+      AppLanguage.tamil: 'நீங்கள் ஆஃப்லைனில் உள்ளீர்கள். சேமித்த தரவு காட்டப்படுகிறது.',
+      AppLanguage.telugu: 'మీరు ఆఫ్‌లైన్‌లో ఉన్నారు. సేవ్ చేసిన డేటా చూపబడుతోంది.',
+      AppLanguage.marathi: 'तुम्ही ऑफलाइन आहात. जतन केलेला डेटा दाखवला जात आहे.',
+      AppLanguage.gujarati: 'તમે ઑફલાઇન છો. સાચવેલો ડેટા બતાવાઈ રહ્યો છે.',
+      AppLanguage.bengali: 'আপনি অফলাইনে আছেন। সংরক্ষিত ডেটা দেখানো হচ্ছে।',
+      AppLanguage.punjabi: 'ਤੁਸੀਂ ਆਫਲਾਈਨ ਹੋ। ਸੰਭਾਲਿਆ ਡਾਟਾ ਦਿਖਾਇਆ ਜਾ ਰਿਹਾ ਹੈ।',
+      AppLanguage.kashmiri: 'توہہِ چھِو آف لاین۔ محفوظ کرمُت ڈیٹا چھُ ظاہر گژھان۔',
+      AppLanguage.urdu: 'آپ آف لائن ہیں۔ محفوظ کردہ ڈیٹا دکھایا جا رہا ہے۔',
+    },
     'trackBooking': {
       AppLanguage.english: 'Track Booking',
       AppLanguage.hindi: 'बुकिंग ट्रैक करें',
@@ -3657,6 +3688,12 @@ class LoadGoApp extends StatelessWidget {
       child: MaterialApp(
         title: 'LoadGo',
         debugShowCheckedModeBanner: false,
+        builder: (context, child) => Column(
+          children: [
+            Expanded(child: child ?? const SizedBox.shrink()),
+            const OfflineBanner(),
+          ],
+        ),
         theme: ThemeData(
           useMaterial3: true,
           fontFamily: 'Roboto',

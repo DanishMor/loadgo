@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
+import '../../core/services/connectivity_service.dart';
 import '../../core/widgets/common.dart';
 import '../../main.dart';
 
@@ -13,7 +14,9 @@ String loadErrorKey(Object? error) {
   if (error is FirebaseException) {
     return switch (error.code) {
       'permission-denied' || 'unauthenticated' => 'errorNoAccess',
-      'unavailable' || 'deadline-exceeded' || 'network-request-failed' => 'errorNetwork',
+      'unavailable' ||
+      'deadline-exceeded' ||
+      'network-request-failed' => 'errorNetwork',
       _ => 'errorGeneric',
     };
   }
@@ -96,7 +99,12 @@ class _LiveStreamState<D> extends State<LiveStream<D>> {
       builder: (context, snap) {
         if (snap.hasError) {
           debugPrint('LiveStream error: ${snap.error}');
-          return ErrorRetry(messageKey: loadErrorKey(snap.error), onRetry: _retry, compact: widget.compact);
+          final offline = !ConnectivityService.online.value;
+          return ErrorRetry(
+            messageKey: offline ? 'errorOffline' : loadErrorKey(snap.error),
+            onRetry: _retry,
+            compact: widget.compact,
+          );
         }
         if (snap.hasData) {
           _slowTimer?.cancel();
@@ -104,16 +112,40 @@ class _LiveStreamState<D> extends State<LiveStream<D>> {
           _keepLast = false;
           return widget.builder(context, _last as D);
         }
-        if (_keepLast && _last != null) return widget.builder(context, _last as D);
-        if (_slow) return ErrorRetry(messageKey: 'errorSlow', onRetry: _retry, compact: widget.compact);
-        return widget.compact
-            ? const Padding(
-                padding: EdgeInsets.all(16),
-                child: Center(child: SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2.5))),
-              )
-            : const Center(child: CircularProgressIndicator());
+        if (_keepLast && _last != null) {
+          return widget.builder(context, _last as D);
+        }
+        // Nothing to show yet: say so plainly if the device is offline.
+        return ValueListenableBuilder<bool>(
+          valueListenable: ConnectivityService.online,
+          builder: (context, online, _) {
+            if (!online || _slow) {
+              return ErrorRetry(
+                messageKey: online ? 'errorSlow' : 'errorOffline',
+                onRetry: _retry,
+                compact: widget.compact,
+              );
+            }
+            return _spinner();
+          },
+        );
       },
     );
+  }
+
+  Widget _spinner() {
+    return widget.compact
+        ? const Padding(
+            padding: EdgeInsets.all(16),
+            child: Center(
+              child: SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(strokeWidth: 2.5),
+              ),
+            ),
+          )
+        : const Center(child: CircularProgressIndicator());
   }
 }
 
@@ -123,7 +155,12 @@ class ErrorRetry extends StatelessWidget {
   final VoidCallback onRetry;
   final bool compact;
 
-  const ErrorRetry({super.key, required this.messageKey, required this.onRetry, this.compact = false});
+  const ErrorRetry({
+    super.key,
+    required this.messageKey,
+    required this.onRetry,
+    this.compact = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -138,12 +175,62 @@ class ErrorRetry extends StatelessWidget {
           children: [
             const Icon(Icons.cloud_off_rounded, color: AppColors.faint),
             const SizedBox(width: 12),
-            Expanded(child: Text(tr(context, messageKey), style: const TextStyle(color: AppColors.muted))),
+            Expanded(
+              child: Text(
+                tr(context, messageKey),
+                style: const TextStyle(color: AppColors.muted),
+              ),
+            ),
             retry,
           ],
         ),
       );
     }
-    return EmptyState(icon: Icons.cloud_off_rounded, title: tr(context, messageKey), action: retry);
+    return EmptyState(
+      icon: Icons.cloud_off_rounded,
+      title: tr(context, messageKey),
+      action: retry,
+    );
+  }
+}
+
+/// Thin strip shown under the app while the device has no connection; lists
+/// keep showing whatever Firestore has cached.
+class OfflineBanner extends StatelessWidget {
+  const OfflineBanner({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<bool>(
+      valueListenable: ConnectivityService.online,
+      builder: (context, online, _) {
+        if (online) return const SizedBox.shrink();
+        return Material(
+          color: Colors.black87,
+          child: SafeArea(
+            top: false,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.wifi_off_rounded,
+                    size: 16,
+                    color: Colors.white,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      tr(context, 'offlineBanner'),
+                      style: const TextStyle(color: Colors.white, fontSize: 12),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
   }
 }
