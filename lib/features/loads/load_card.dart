@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/constants/logistics.dart';
 import '../../core/models/load.dart';
+import '../../core/share_text.dart';
 import '../../core/widgets/common.dart';
 import '../../main.dart';
 
@@ -55,6 +56,11 @@ class LoadCard extends StatelessWidget {
                   color: loadStatusColor(load.status, cancelled: load.cancelled),
                 ),
               ],
+              CopyShareButton(
+                text: loadShareText(load),
+                tooltip: tr(context, 'share'),
+                copiedMessage: tr(context, 'copiedToClipboard'),
+              ),
             ],
           ),
           const SizedBox(height: 10),

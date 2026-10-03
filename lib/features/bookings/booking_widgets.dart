@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/constants/logistics.dart';
 import '../../core/models/booking.dart';
 import '../../core/services/booking_service.dart';
+import '../../core/share_text.dart';
 import '../../core/widgets/common.dart';
 import '../../main.dart';
 import '../shared/live_stream.dart';
@@ -90,6 +91,11 @@ class BookingSummary extends StatelessWidget {
               Expanded(child: RouteText(pickup: b.pickup, drop: b.drop, fontSize: 19)),
               const SizedBox(width: 8),
               StatusChip(label: bookingStatusLabel(context, b.status), color: bookingStatusColor(b.status)),
+              CopyShareButton(
+                text: bookingShareText(b),
+                tooltip: tr(context, 'share'),
+                copiedMessage: tr(context, 'copiedToClipboard'),
+              ),
             ],
           ),
           const SizedBox(height: 4),

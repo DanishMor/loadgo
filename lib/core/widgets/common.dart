@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 
 /// Small UI building blocks shared by the vehicle, load and booking screens.
@@ -16,9 +17,23 @@ class AppColors {
   static const warning = Color(0xFFF79009);
 }
 
-const _months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const _months = [
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
+];
 
-String formatDate(DateTime? d) => d == null ? '--' : '${d.day} ${_months[d.month - 1]} ${d.year}';
+String formatDate(DateTime? d) =>
+    d == null ? '--' : '${d.day} ${_months[d.month - 1]} ${d.year}';
 
 String formatDateTime(DateTime d) {
   final hh = d.hour.toString().padLeft(2, '0');
@@ -27,7 +42,8 @@ String formatDateTime(DateTime d) {
 }
 
 /// Drops a trailing ".0" so 12.0 tons renders as "12".
-String formatNum(num n) => n == n.roundToDouble() ? n.toInt().toString() : n.toString();
+String formatNum(num n) =>
+    n == n.roundToDouble() ? n.toInt().toString() : n.toString();
 
 String formatRupees(num n) => '₹ ${formatNum(n)}';
 
@@ -42,7 +58,12 @@ class AppCard extends StatelessWidget {
   final VoidCallback? onTap;
   final EdgeInsetsGeometry padding;
 
-  const AppCard({super.key, required this.child, this.onTap, this.padding = const EdgeInsets.all(16)});
+  const AppCard({
+    super.key,
+    required this.child,
+    this.onTap,
+    this.padding = const EdgeInsets.all(16),
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -76,8 +97,18 @@ class StatusChip extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(color: color.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(20)),
-      child: Text(label, style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.w700)),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: color,
+          fontSize: 12,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
     );
   }
 }
@@ -88,7 +119,12 @@ class RouteText extends StatelessWidget {
   final String drop;
   final double fontSize;
 
-  const RouteText({super.key, required this.pickup, required this.drop, this.fontSize = 17});
+  const RouteText({
+    super.key,
+    required this.pickup,
+    required this.drop,
+    this.fontSize = 17,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -96,7 +132,11 @@ class RouteText extends StatelessWidget {
       '$pickup → $drop',
       maxLines: 2,
       overflow: TextOverflow.ellipsis,
-      style: TextStyle(fontSize: fontSize, fontWeight: FontWeight.w800, color: AppColors.title),
+      style: TextStyle(
+        fontSize: fontSize,
+        fontWeight: FontWeight.w800,
+        color: AppColors.title,
+      ),
     );
   }
 }
@@ -107,7 +147,13 @@ class EmptyState extends StatelessWidget {
   final String? subtitle;
   final Widget? action;
 
-  const EmptyState({super.key, required this.icon, required this.title, this.subtitle, this.action});
+  const EmptyState({
+    super.key,
+    required this.icon,
+    required this.title,
+    this.subtitle,
+    this.action,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -120,14 +166,29 @@ class EmptyState extends StatelessWidget {
             Container(
               width: 82,
               height: 82,
-              decoration: BoxDecoration(color: AppColors.primaryLight, borderRadius: BorderRadius.circular(24)),
+              decoration: BoxDecoration(
+                color: AppColors.primaryLight,
+                borderRadius: BorderRadius.circular(24),
+              ),
               child: Icon(icon, size: 42, color: AppColors.primary),
             ),
             const SizedBox(height: 20),
-            Text(title, textAlign: TextAlign.center, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.title)),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w800,
+                color: AppColors.title,
+              ),
+            ),
             if (subtitle != null) ...[
               const SizedBox(height: 8),
-              Text(subtitle!, textAlign: TextAlign.center, style: const TextStyle(fontSize: 14, color: AppColors.muted)),
+              Text(
+                subtitle!,
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontSize: 14, color: AppColors.muted),
+              ),
             ],
             if (action != null) ...[const SizedBox(height: 20), action!],
           ],
@@ -143,7 +204,13 @@ class PrimaryButton extends StatelessWidget {
   final bool loading;
   final IconData? icon;
 
-  const PrimaryButton({super.key, required this.label, required this.onPressed, this.loading = false, this.icon});
+  const PrimaryButton({
+    super.key,
+    required this.label,
+    required this.onPressed,
+    this.loading = false,
+    this.icon,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -157,19 +224,36 @@ class PrimaryButton extends StatelessWidget {
           foregroundColor: Colors.white,
           disabledBackgroundColor: const Color(0xFF9DBCE5),
           elevation: 0,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
         ),
         child: loading
             ? const SizedBox(
                 width: 23,
                 height: 23,
-                child: CircularProgressIndicator(strokeWidth: 2.5, valueColor: AlwaysStoppedAnimation<Color>(Colors.white)),
+                child: CircularProgressIndicator(
+                  strokeWidth: 2.5,
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                ),
               )
             : Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  if (icon != null) ...[Icon(icon, size: 20), const SizedBox(width: 8)],
-                  Flexible(child: Text(label, textAlign: TextAlign.center, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700))),
+                  if (icon != null) ...[
+                    Icon(icon, size: 20),
+                    const SizedBox(width: 8),
+                  ],
+                  Flexible(
+                    child: Text(
+                      label,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
                 ],
               ),
       ),
@@ -183,7 +267,47 @@ class FieldLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.only(bottom: 8),
-        child: Text(text, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.body)),
-      );
+    padding: const EdgeInsets.only(bottom: 8),
+    child: Text(
+      text,
+      style: const TextStyle(
+        fontSize: 14,
+        fontWeight: FontWeight.w700,
+        color: AppColors.body,
+      ),
+    ),
+  );
+}
+
+/// Copies [text] to the clipboard and confirms with a snackbar.
+class CopyShareButton extends StatelessWidget {
+  final String text;
+  final String tooltip;
+  final String copiedMessage;
+
+  const CopyShareButton({
+    super.key,
+    required this.text,
+    required this.tooltip,
+    required this.copiedMessage,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      tooltip: tooltip,
+      visualDensity: VisualDensity.compact,
+      icon: const Icon(Icons.share_outlined, size: 20, color: AppColors.muted),
+      onPressed: () async {
+        final messenger = ScaffoldMessenger.of(context);
+        await Clipboard.setData(ClipboardData(text: text));
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text(copiedMessage),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      },
+    );
+  }
 }
