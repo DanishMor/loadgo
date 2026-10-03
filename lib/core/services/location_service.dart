@@ -12,10 +12,15 @@ class LocationService {
   /// Asks for permission if needed; false when location can't be used.
   static Future<bool> ensurePermission() async {
     if (_fake != null) return true;
-    if (!await Geolocator.isLocationServiceEnabled()) return false;
-    var perm = await Geolocator.checkPermission();
-    if (perm == LocationPermission.denied) perm = await Geolocator.requestPermission();
-    return perm == LocationPermission.always || perm == LocationPermission.whileInUse;
+    try {
+      if (!await Geolocator.isLocationServiceEnabled()) return false;
+      var perm = await Geolocator.checkPermission();
+      if (perm == LocationPermission.denied) perm = await Geolocator.requestPermission();
+      return perm == LocationPermission.always || perm == LocationPermission.whileInUse;
+    } catch (_) {
+      // No location plugin on this platform.
+      return false;
+    }
   }
 
   /// Position updates, at most one every ~50 m of movement.
