@@ -5,7 +5,7 @@ import '../../core/models/load.dart';
 import '../../core/share_text.dart';
 import '../../core/widgets/common.dart';
 import '../../main.dart';
-import '../shared/vehicle_type_widgets.dart';
+import '../../core/widgets/vehicle_type_widgets.dart';
 
 String loadStatusLabel(BuildContext context, String status, {bool cancelled = false}) => switch (status) {
       LoadStatus.closed when cancelled => tr(context, 'statusCancelled'),

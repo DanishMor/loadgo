@@ -33,3 +33,4 @@ Paid/manual items are marked `// LATER(paid): ...` in code and listed in docs/MA
 ## Log
 - 2026-10-04 Task 1 done: resend OTP (60s, forceResendingToken), Firebase error-code map, language saved to device + users.language, masked phone on OTP/profile/home, digits-only inputs.
 - 2026-10-04 Task 2 done: VehicleTypeService (config/vehicle_types, 15 fallback types with tonne ranges), translated labels, used by add vehicle, post load (weight vs max check), filters, driver setup.
+- 2026-10-04 Structure rules received (see docs/ARCHITECTURE.md). Prep for Task 17a done early: language system, tr()/trf(), translation tables and language selector moved to lib/core/l10n; main.dart re-exports them so old `import '../../main.dart'` keeps working. New code imports core/ directly and puts screens in lib/{auth,customer,driver,admin}.

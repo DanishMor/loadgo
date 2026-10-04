@@ -5,7 +5,7 @@ import '../../core/services/load_service.dart';
 import '../../core/widgets/common.dart';
 import '../../main.dart';
 import '../../core/services/vehicle_type_service.dart';
-import '../shared/vehicle_type_widgets.dart';
+import '../../core/widgets/vehicle_type_widgets.dart';
 
 /// Customer form to post a load. Pops with `true` once posted.
 class PostLoadScreen extends StatefulWidget {

@@ -8,7 +8,7 @@ import '../../core/services/vehicle_service.dart';
 import '../../core/widgets/common.dart';
 import '../../main.dart';
 import '../../core/services/vehicle_type_service.dart';
-import '../shared/vehicle_type_widgets.dart';
+import '../../core/widgets/vehicle_type_widgets.dart';
 
 /// Lets the driver pick an RC photo from camera or gallery (compressed).
 Future<Uint8List?> pickRcImageFromDevice(BuildContext context) async {

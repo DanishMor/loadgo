@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:transport_app/l10n/strings.dart';
+import 'package:transport_app/core/l10n/strings.dart';
 import 'package:transport_app/main.dart';
 
 void main() {

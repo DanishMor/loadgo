@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-import '../../core/models/vehicle_type.dart';
-import '../../core/services/vehicle_type_service.dart';
-import '../../core/widgets/common.dart';
-import '../../main.dart';
+import '../models/vehicle_type.dart';
+import '../services/vehicle_type_service.dart';
+import 'common.dart';
+import '../l10n/l10n.dart';
 
 /// Translated display name of a vehicle type id.
 String vehicleTypeLabel(BuildContext context, String id) {
