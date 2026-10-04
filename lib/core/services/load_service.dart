@@ -4,6 +4,8 @@ import '../constants/logistics.dart';
 import '../models/load.dart';
 import '../constants/prohibited_cargo.dart';
 import '../models/paged.dart';
+import 'audit_service.dart';
+import 'risk_service.dart';
 import '../pricing/fare_calculator.dart';
 import 'backend.dart';
 
@@ -44,6 +46,7 @@ class LoadService {
     String paymentMode = 'cash',
   }) async {
     final uid = Backend.requireUid();
+    await RiskService.ensureCanTransact();
     final banned = prohibitedCargoMatch('$notes $cargoType');
     if (banned != null) throw ProhibitedCargoException(banned);
     List<String> clean(List<String> l) =>
@@ -86,6 +89,8 @@ class LoadService {
           'cancelled': true,
           'cancelledAt': FieldValue.serverTimestamp(),
         });
+        RiskService.countCancel(tx);
+        AuditService.inTransaction(tx, AuditType.cancel, loadId: loadId, data: {'by': 'customer'});
       });
     } on FirebaseException catch (e) {
       if (e.code == 'permission-denied') throw LoadNotCancellableException();

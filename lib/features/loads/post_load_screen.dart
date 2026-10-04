@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import '../../core/constants/logistics.dart';
 import '../../core/services/load_service.dart';
 import '../../core/widgets/common.dart';
+import '../../core/models/risk.dart';
 import '../../main.dart';
 import '../../core/services/vehicle_type_service.dart';
 import '../../core/widgets/logistics_labels.dart';
@@ -260,6 +261,10 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
       if (!mounted) return;
       setState(() => _saving = false);
       showSnack(context, trf(context, 'prohibitedCargo', {'item': e.item}));
+    } on AccountRestrictedException {
+      if (!mounted) return;
+      setState(() => _saving = false);
+      showSnack(context, tr(context, 'accountRestricted'));
     } catch (_) {
       if (!mounted) return;
       setState(() => _saving = false);

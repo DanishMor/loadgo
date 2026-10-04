@@ -5,6 +5,7 @@ import '../../core/models/vehicle.dart';
 import '../../core/services/booking_service.dart';
 import '../../core/services/vehicle_service.dart';
 import '../../core/widgets/common.dart';
+import '../../core/models/risk.dart';
 import '../../main.dart';
 import '../vehicle/my_vehicles_screen.dart';
 import '../../core/widgets/logistics_labels.dart';
@@ -91,6 +92,8 @@ Future<String?> acceptLoadFlow(BuildContext context, Load load, {ValueChanged<bo
     return bookingId;
   } on LoadUnavailableException {
     if (context.mounted) showSnack(context, tr(context, 'loadUnavailable'));
+  } on AccountRestrictedException {
+    if (context.mounted) showSnack(context, tr(context, 'accountRestricted'));
   } on VehicleBusyException {
     if (context.mounted) showSnack(context, tr(context, 'vehicleBusy'));
   } catch (_) {

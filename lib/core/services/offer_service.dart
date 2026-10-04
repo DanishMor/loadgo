@@ -4,6 +4,7 @@ import '../models/load.dart';
 import '../models/offer.dart';
 import '../models/vehicle.dart';
 import 'backend.dart';
+import 'risk_service.dart';
 import 'booking_service.dart';
 
 /// Price offers on open loads. Drivers offer, customers counter once and
@@ -23,6 +24,7 @@ class OfferService {
     final uid = Backend.requireUid();
     if (!validPrice(pricePaise)) throw ArgumentError.value(pricePaise, 'pricePaise');
     if (!load.isOpen || load.shipperId == uid) throw OfferStateException();
+    await RiskService.ensureCanTransact();
     final ref = _col.doc(Offer.idFor(load.id, uid));
     final profile = (await Backend.db.collection('users').doc(uid).get()).data() ?? const {};
     await Backend.db.runTransaction((tx) async {

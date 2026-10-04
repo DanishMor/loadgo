@@ -15,7 +15,7 @@ Paid/manual items are marked `// LATER(paid): ...` in code and listed in docs/MA
 | 8 | Booking chat | done | bookings/{id}/messages, chat_reads, users/{uid}/blocked, reports |
 | 9 | Support tickets & safety (SOS, contacts, breakdown) | done | tickets(+replies), sos_alerts, users.emergencyContacts, bookings.breakdown |
 | 10 | Payment records & documents center | done | paymentStatus on bookings, ledger/{bookingId}_{type} append-only, lib/core/documents |
-| 11 | Anti-fraud basics | in-progress | |
+| 11 | Anti-fraud basics | done | users.riskTier (admin-only), canTransact() rules, audit_events append-only, cancelCount (+1 in same batch), lib/admin/flagged_users_screen.dart |
 | 12 | Admin dashboard | todo | |
 | 13 | Matching & recommendations | todo | |
 | 14 | Analytics & settings | todo | |
@@ -42,3 +42,5 @@ Paid/manual items are marked `// LATER(paid): ...` in code and listed in docs/MA
 - 2026-10-04 Task 8 done: booking chat (lib/core/chat) with unread badge on the Chat button, off-platform detector (phone / UPI id / pay-outside phrases, warn before send + flag), 500-char limit, report (reports collection, admin review) and block (rules stop messages to someone who blocked you).
 - 2026-10-04 Task 9 done: support tickets (category incl. dispute needing a booking, priority, status, escalation 0-3, replies; owner/admin rules), Help & support + Emergency contacts in Profile, Help button on bookings, driver SOS (sos_alerts with last location, then call 112 / contacts via tel:), breakdown report (booking flag + replacement request + customer notification). SMS/masked calling LATER(paid).
 - 2026-10-04 Task 10 done: payment mode on loads (cash / UPI direct, copied to bookings), payment record pending -> customer_marked_paid (amount) -> driver_confirmed, which writes append-only ledger lines (earning + negative commission from config/pricing.commissionPercent), driver Wallet screen, invoice moved to core with GST-inclusive CGST/SGST split, Documents center (invoices, LR, POD; drivers also vehicle papers). All labelled records only; gateway LATER(paid).
+- 2026-10-04 Task 11 done: riskTier normal/review/restricted/suspended (admin-only write); restricted/suspended blocked from post/offer/accept in services and rules; audit_events (verification, accept, status_change, cancel, risk_change) append-only, admin-read; cancelCount incremented with every cancel (rules enforce +1 in the same batch); user reports reuse Task 8 `reports`; admin Flagged users list with tier edit (to be linked from the Task 12 dashboard).
+- Note: check `flutter test` exit status directly (not through `| tail`) before committing.

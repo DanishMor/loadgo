@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import 'audit_service.dart';
 import 'backend.dart';
 
 /// A driver awaiting (or past) verification, as shown to admins.
@@ -53,10 +54,13 @@ class AdminService {
 
   static Future<void> setStatus(String uid, String status) {
     assert(const [pending, approved, rejected].contains(status));
-    return Backend.db.collection('users').doc(uid).update({
+    final batch = Backend.db.batch();
+    batch.update(Backend.db.collection('users').doc(uid), {
       'verificationStatus': status,
       'verified': status == approved,
       'updatedAt': FieldValue.serverTimestamp(),
     });
+    AuditService.inBatch(batch, AuditType.verification, targetId: uid, data: {'status': status});
+    return batch.commit();
   }
 }

@@ -8,8 +8,10 @@ import '../models/app_notification.dart';
 import '../models/offer.dart';
 import '../models/vehicle.dart';
 import 'pricing_service.dart';
+import 'audit_service.dart';
 import 'backend.dart';
 import 'notification_service.dart';
+import 'risk_service.dart';
 
 /// Thrown when a load was taken by another driver, closed, or never existed.
 class LoadUnavailableException implements Exception {
@@ -46,6 +48,7 @@ class BookingService {
   /// `agreedFarePaise`.
   static Future<String> accept({required String loadId, required Vehicle vehicle, String? offerId}) async {
     final uid = Backend.requireUid();
+    await RiskService.ensureCanTransact();
     final profile = (await Backend.db.collection('users').doc(uid).get()).data() ?? const {};
     final loadRef = Backend.db.collection('loads').doc(loadId);
     final bookingRef = _col.doc();
@@ -108,6 +111,8 @@ class BookingService {
           'bookingId': bookingRef.id,
           'matchedAt': FieldValue.serverTimestamp(),
         });
+        AuditService.inTransaction(tx, AuditType.accept,
+            targetId: load.shipperId, bookingId: bookingRef.id, loadId: load.id, data: {'vehicleId': vehicle.id});
         NotificationService.addInTransaction(
           tx,
           userId: load.shipperId,
@@ -174,6 +179,8 @@ class BookingService {
         });
         freeVehicle();
       }
+      AuditService.inTransaction(tx, AuditType.statusChange,
+          targetId: booking.customerId, bookingId: booking.id, loadId: booking.loadId, data: {'from': booking.status, 'to': next});
       NotificationService.addInTransaction(
         tx,
         userId: booking.customerId,
@@ -228,6 +235,9 @@ class BookingService {
         'reopenedAt': FieldValue.serverTimestamp(),
       });
       freeVehicle();
+      RiskService.countCancel(tx);
+      AuditService.inTransaction(tx, AuditType.cancel,
+          targetId: booking.customerId, bookingId: booking.id, loadId: booking.loadId, data: {'by': 'driver', 'from': booking.status});
       NotificationService.addInTransaction(
         tx,
         userId: booking.customerId,

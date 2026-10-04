@@ -51,12 +51,47 @@ service cloud.firestore {
           || (d.emergencyContacts is list && d.emergencyContacts.size() <= 3);
     }
 
+    // Anti-fraud fields. riskTier/riskReason/riskUpdatedAt are admin-only;
+    // cancelCount only goes up by one (see cancelCounted()).
+    function riskFieldsAbsent(d) {
+      return !d.keys().hasAny(['riskTier', 'riskReason', 'riskUpdatedAt']) && d.get('cancelCount', 0) in [0, 1];
+    }
+
+    function ownerRiskFieldsUntouched() {
+      return !changedKeys().hasAny(['riskTier', 'riskReason', 'riskUpdatedAt'])
+          && (!changedKeys().hasAny(['cancelCount'])
+              || request.resource.data.cancelCount == resource.data.get('cancelCount', 0) + 1);
+    }
+
+    function adminRiskUpdate() {
+      let d = request.resource.data;
+      return isAdmin()
+          && changedKeys().hasOnly(['riskTier', 'riskReason', 'riskUpdatedAt'])
+          && d.riskTier in ['normal', 'review', 'restricted', 'suspended']
+          && d.riskReason is string && d.riskReason.size() <= 200
+          && d.riskUpdatedAt == request.time;
+    }
+
+    // restricted / suspended accounts cannot post, offer or accept.
+    function canTransact(uid) {
+      return !exists(/databases/$(database)/documents/users/$(uid))
+          || get(/databases/$(database)/documents/users/$(uid)).data.get('riskTier', 'normal') in ['normal', 'review'];
+    }
+
+    // A cancellation must bump the canceller's cancelCount in the same batch.
+    function cancelCounted() {
+      let ref = /databases/$(database)/documents/users/$(request.auth.uid);
+      return getAfter(ref).data.get('cancelCount', 0)
+          == (exists(ref) ? get(ref).data.get('cancelCount', 0) : 0) + 1;
+    }
+
     match /users/{userId} {
       allow read: if isUser(userId) || isAdmin();
       allow create: if isUser(userId) && verificationInitOk(request.resource.data)
-          && validEmergencyContacts(request.resource.data);
-      allow update: if adminVerificationUpdate() || (isUser(userId)
+          && validEmergencyContacts(request.resource.data) && riskFieldsAbsent(request.resource.data);
+      allow update: if adminVerificationUpdate() || adminRiskUpdate() || (isUser(userId)
           && validEmergencyContacts(request.resource.data)
+          && ownerRiskFieldsUntouched()
           && (!changedKeys().hasAny(['verified', 'verificationStatus'])
               || (resource.data.get('verificationStatus', null) == null
                   && verificationInitOk(request.resource.data))));
@@ -211,6 +246,7 @@ service cloud.firestore {
           && request.resource.data.status in ['open', 'closed']
           // Closing by the shipper is a cancellation and must be flagged.
           && request.resource.data.get('cancelled', false) == (request.resource.data.status == 'closed')
+          && (request.resource.data.status == 'open' || cancelCounted())
           && !changedKeys().hasAny(['shipperId', 'driverId', 'bookingId', 'createdAt'])
           && validLoad(request.resource.data);
     }
@@ -261,6 +297,7 @@ service cloud.firestore {
       allow create: if signedIn()
           && request.resource.data.shipperId == request.auth.uid
           && request.resource.data.status == 'open'
+          && canTransact(request.auth.uid)
           && !request.resource.data.keys().hasAny(['driverId', 'bookingId'])
           && validLoad(request.resource.data);
       allow update: if signedIn()
@@ -367,6 +404,7 @@ service cloud.firestore {
       let load = get(docPath('loads', b.loadId)).data;
       let loadAfter = getAfter(docPath('loads', b.loadId)).data;
       return b.driverId == request.auth.uid
+          && canTransact(request.auth.uid)
           && b.status == 'accepted'
           && load.status == 'open'
           && load.shipperId != request.auth.uid
@@ -435,6 +473,7 @@ service cloud.firestore {
                   && resource.data.status in ['accepted', 'driver_arriving']
                   && request.resource.data.status == 'cancelled'
                   && validCancellation(request.resource.data.get('cancellation', null))
+                  && cancelCounted()
                   && getAfter(docPath('loads', resource.data.loadId)).data.status == 'open'))));
       allow delete: if false;
 
@@ -501,6 +540,7 @@ service cloud.firestore {
           && o.keys().hasOnly(['loadId', 'driverId', 'customerId', 'pickup', 'drop', 'vehicleId', 'vehicleNumber', 'vehicleType',
                                'driverName', 'pricePaise', 'originalPaise', 'status', 'createdAt', 'updatedAt'])
           && o.driverId == request.auth.uid
+          && canTransact(request.auth.uid)
           && o.status == 'pending'
           && o.pricePaise is int && o.pricePaise > 0 && o.pricePaise <= 100000000
           && o.originalPaise == o.pricePaise
@@ -675,6 +715,24 @@ service cloud.firestore {
           && reportAboutOtherParty(request.resource.data);
       allow update: if isAdmin() && changedKeys().hasOnly(['status', 'resolvedAt', 'resolvedBy', 'adminNote']);
       allow delete: if false;
+    }
+
+    // ------------------------------------------------------------------
+    // audit_events: append-only log of verification, accept, status change,
+    // cancel and risk change. Anyone signed in appends their own events;
+    // verification and risk_change are admin-only; only admins read.
+    // TODO(functions): write from triggers so clients cannot skip or forge.
+    // ------------------------------------------------------------------
+    match /audit_events/{eventId} {
+      allow read: if isAdmin();
+      allow create: if signedIn()
+          && request.resource.data.keys().hasOnly(['type', 'actorId', 'targetId', 'bookingId', 'loadId', 'data', 'createdAt'])
+          && request.resource.data.actorId == request.auth.uid
+          && request.resource.data.type in ['verification', 'accept', 'status_change', 'cancel', 'risk_change']
+          && request.resource.data.data is map
+          && request.resource.data.createdAt == request.time
+          && (!(request.resource.data.type in ['verification', 'risk_change']) || isAdmin());
+      allow update, delete: if false;
     }
 
     // ------------------------------------------------------------------

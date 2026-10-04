@@ -1,3 +1,4 @@
+import '../core/models/risk.dart';
 import 'package:flutter/material.dart';
 
 import '../core/l10n/l10n.dart';
@@ -58,6 +59,8 @@ class _MakeOfferButtonState extends State<MakeOfferButton> {
       if (price == null || !mounted) return;
       await OfferService.send(load: widget.load, vehicle: vehicle, pricePaise: price);
       if (mounted) showSnack(context, tr(context, 'offerSent'));
+    } on AccountRestrictedException {
+      if (mounted) showSnack(context, tr(context, 'accountRestricted'));
     } on OfferExistsException {
       if (mounted) showSnack(context, tr(context, 'offerExists'));
     } on OfferStateException {

@@ -2,7 +2,7 @@
 import { readFileSync } from 'node:fs';
 import { after, before, beforeEach, describe, test } from 'node:test';
 import { assertFails, assertSucceeds, initializeTestEnvironment } from '@firebase/rules-unit-testing';
-import { GeoPoint, Timestamp, addDoc, deleteField, doc, getDoc, getDocs, collection, query, where, setDoc, updateDoc, deleteDoc, writeBatch, serverTimestamp } from 'firebase/firestore';
+import { GeoPoint, Timestamp, addDoc, deleteField, doc, getDoc, getDocs, collection, query, where, setDoc, updateDoc, deleteDoc, writeBatch, serverTimestamp, increment } from 'firebase/firestore';
 
 let env;
 
@@ -237,7 +237,13 @@ describe('loads', () => {
     await assertFails(updateDoc(doc(as('customer1'), 'loads', 'L1'), { status: 'matched' }));
     await assertFails(updateDoc(doc(as('customer1'), 'loads', 'L1'), { cancelled: true }));
     await assertFails(updateDoc(doc(as('customer1'), 'loads', 'L1'), { status: 'closed' }));
-    await assertSucceeds(updateDoc(doc(as('customer1'), 'loads', 'L1'), { status: 'closed', cancelled: true, cancelledAt: serverTimestamp() }));
+    // A cancellation must bump cancelCount in the same batch.
+    await assertFails(updateDoc(doc(as('customer1'), 'loads', 'L1'), { status: 'closed', cancelled: true, cancelledAt: serverTimestamp() }));
+    const cdb = as('customer1');
+    const b = writeBatch(cdb);
+    b.update(doc(cdb, 'loads', 'L1'), { status: 'closed', cancelled: true, cancelledAt: serverTimestamp() });
+    b.set(doc(cdb, 'users', 'customer1'), { cancelCount: increment(1) }, { merge: true });
+    await assertSucceeds(b.commit());
     // Once cancelled it cannot be reopened.
     await assertFails(updateDoc(doc(as('customer1'), 'loads', 'L1'), { status: 'open', cancelled: false }));
   });
@@ -411,6 +417,7 @@ describe('driver cancels before pickup', () => {
     const b = writeBatch(db);
     b.update(doc(db, 'bookings', bookingId), { status: 'cancelled', 'timeline.cancelled': serverTimestamp(), cancellation, updatedAt: serverTimestamp() });
     b.update(doc(db, 'loads', 'L1'), { status: 'open', driverId: deleteField(), bookingId: deleteField(), matchedAt: deleteField(), reopenedAt: serverTimestamp() });
+    b.set(doc(db, 'users', 'driver1'), { cancelCount: increment(1) }, { merge: true });
     return b.commit();
   }
 
@@ -682,6 +689,7 @@ describe('trip OTPs, proof of delivery and e-way bill', () => {
       const b = writeBatch(db);
       b.update(doc(db, 'bookings', 'L1'), { status: 'cancelled', 'timeline.cancelled': serverTimestamp(), cancellation: { by: 'driver', chargePaise: 0 }, updatedAt: serverTimestamp() });
       b.update(doc(db, 'loads', 'L1'), { status: 'open', driverId: deleteField(), bookingId: deleteField(), matchedAt: deleteField(), reopenedAt: serverTimestamp() });
+      b.set(doc(db, 'users', 'driver1'), { cancelCount: increment(1) }, { merge: true });
       return b.commit();
     };
     await assertSucceeds(cancel(as('driver1')));
@@ -884,5 +892,80 @@ describe('payment records and ledger', () => {
     await assertFails(acceptBatch(as('driver1'), 'L1'));
     await assertFails(acceptBatch(as('driver1'), 'L1', 'driver1', { paymentMode: 'upi_direct', paymentStatus: 'driver_confirmed' }));
     await assertSucceeds(acceptBatch(as('driver1'), 'L1', 'driver1', { paymentMode: 'upi_direct', paymentStatus: 'pending' }));
+  });
+});
+
+describe('anti-fraud', () => {
+  const setTier = (db, uid, tier) => updateDoc(doc(db, 'users', uid), { riskTier: tier, riskReason: 'x', riskUpdatedAt: serverTimestamp() });
+  const event = (type, extra = {}) => ({ type, actorId: 'u1', data: {}, createdAt: serverTimestamp(), ...extra });
+
+  test('only admins write riskTier; users cannot touch it or their risk fields', async () => {
+    await seed((db) => setDoc(doc(db, 'users', 'u1'), { phone: '+91' }));
+    await assertSucceeds(setTier(asAdmin(), 'u1', 'restricted'));
+    await assertSucceeds(setTier(asAdmin(), 'u1', 'normal'));
+    await assertFails(setTier(asAdmin(), 'u1', 'banned'));
+    await assertFails(setTier(as('u1'), 'u1', 'normal'));
+    await assertFails(setTier(as('u2'), 'u1', 'normal'));
+    await assertFails(updateDoc(doc(as('u1'), 'users', 'u1'), { riskReason: 'fine' }));
+    await assertFails(setDoc(doc(as('u9'), 'users', 'u9'), { phone: '+91', riskTier: 'normal' }));
+    await assertFails(updateDoc(doc(asAdmin(), 'users', 'u1'), { riskTier: 'review', riskReason: 'x', riskUpdatedAt: serverTimestamp(), phone: '1' }));
+  });
+
+  test('cancelCount can only go up by one', async () => {
+    await seed((db) => setDoc(doc(db, 'users', 'u1'), { phone: '+91', cancelCount: 2 }));
+    await assertFails(updateDoc(doc(as('u1'), 'users', 'u1'), { cancelCount: 0 }));
+    await assertFails(updateDoc(doc(as('u1'), 'users', 'u1'), { cancelCount: 5 }));
+    await assertSucceeds(updateDoc(doc(as('u1'), 'users', 'u1'), { cancelCount: increment(1) }));
+  });
+
+  test('restricted and suspended users cannot post, offer or accept', async () => {
+    await seedOpenLoad();
+    for (const tier of ['restricted', 'suspended']) {
+      await seed((db) => setDoc(doc(db, 'users', 'customer2'), { riskTier: tier }));
+      await assertFails(setDoc(doc(as('customer2'), 'loads', 'L9'), { ...LOAD, shipperId: 'customer2' }));
+      await seed((db) => setDoc(doc(db, 'users', 'driver1'), { riskTier: tier }));
+      await assertFails(acceptBatch(as('driver1'), 'L1'));
+    }
+    await seed((db) => setDoc(doc(db, 'users', 'customer2'), { riskTier: 'review' }));
+    await assertSucceeds(setDoc(doc(as('customer2'), 'loads', 'L9'), { ...LOAD, shipperId: 'customer2' }));
+    await seed((db) => setDoc(doc(db, 'users', 'driver1'), { riskTier: 'normal' }));
+    await assertSucceeds(acceptBatch(as('driver1'), 'L1'));
+  });
+
+  test('a restricted driver cannot send an offer', async () => {
+    await seedOpenLoad();
+    await seed((db) => setDoc(doc(db, 'users', 'driver1'), { riskTier: 'restricted' }));
+    await assertFails(setDoc(doc(as('driver1'), 'offers', 'L1_driver1'), {
+      loadId: 'L1', driverId: 'driver1', customerId: 'customer1', vehicleId: 'v1', vehicleNumber: VEHICLE.number, vehicleType: '20ft',
+      driverName: 'R', pricePaise: 100000, originalPaise: 100000, status: 'pending', createdAt: serverTimestamp(), updatedAt: serverTimestamp(),
+    }));
+  });
+
+  test('audit_events are append-only, self-attributed, admin-read', async () => {
+    await assertSucceeds(addDoc(collection(as('u1'), 'audit_events'), event('accept')));
+    await assertSucceeds(addDoc(collection(as('u1'), 'audit_events'), event('cancel', { bookingId: 'B1' })));
+    await assertFails(addDoc(collection(as('u1'), 'audit_events'), event('accept', { actorId: 'u2' })));
+    await assertFails(addDoc(collection(as('u1'), 'audit_events'), event('bogus')));
+    await assertFails(addDoc(collection(as('u1'), 'audit_events'), event('accept', { extra: 1 })));
+    await assertFails(addDoc(collection(as('u1'), 'audit_events'), event('accept', { createdAt: Timestamp.fromDate(new Date('2020-01-01')) })));
+    // Verification and risk changes only come from admins.
+    await assertFails(addDoc(collection(as('u1'), 'audit_events'), event('verification')));
+    await assertFails(addDoc(collection(as('u1'), 'audit_events'), event('risk_change')));
+    await assertSucceeds(addDoc(collection(asAdmin(), 'audit_events'), event('risk_change', { actorId: 'admin1', targetId: 'u1' })));
+    await assertFails(addDoc(collection(anon(), 'audit_events'), event('accept')));
+
+    let id;
+    await seed(async (db) => { id = (await addDoc(collection(db, 'audit_events'), event('accept'))).id; });
+    await assertSucceeds(getDoc(doc(asAdmin(), 'audit_events', id)));
+    await assertFails(getDoc(doc(as('u1'), 'audit_events', id)));
+    await assertFails(updateDoc(doc(asAdmin(), 'audit_events', id), { type: 'cancel' }));
+    await assertFails(deleteDoc(doc(asAdmin(), 'audit_events', id)));
+  });
+
+  test('admin can list flagged users and open reports', async () => {
+    await assertSucceeds(getDocs(query(collection(asAdmin(), 'users'), where('riskTier', 'in', ['review', 'restricted', 'suspended']))));
+    await assertSucceeds(getDocs(query(collection(asAdmin(), 'users'), where('cancelCount', '>=', 3))));
+    await assertSucceeds(getDocs(query(collection(asAdmin(), 'reports'), where('status', '==', 'open'))));
+    await assertFails(getDocs(query(collection(as('u1'), 'users'), where('cancelCount', '>=', 3))));
   });
 });
