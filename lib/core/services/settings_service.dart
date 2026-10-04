@@ -36,10 +36,25 @@ class SettingsService {
 
   static Future<Consents> loadConsents() async => Consents.fromMap((await _profile())['consents']);
 
+  /// Saves the choices. Turning location off also deletes the saved
+  /// `lastLocation`, so nothing is kept without consent.
   static Future<void> saveConsents(Consents c) => _user.set(
-        {'consents': c.toMap(), 'consentsUpdatedAt': FieldValue.serverTimestamp(), 'updatedAt': FieldValue.serverTimestamp()},
+        {
+          'consents': c.toMap(),
+          'consentsUpdatedAt': FieldValue.serverTimestamp(),
+          'updatedAt': FieldValue.serverTimestamp(),
+          if (!c.location) 'lastLocation': FieldValue.delete(),
+        },
         SetOptions(merge: true),
       );
+
+  /// Answer from the onboarding consent screen: sets the location consent and
+  /// remembers that the question was asked.
+  static Future<void> answerLocationConsent(bool allow) async {
+    final c = (await loadConsents()).copyWith(location: allow);
+    await saveConsents(c);
+    await _user.set({'locationConsentAsked': true}, SetOptions(merge: true));
+  }
 
   // ---- delete-account request ----
   // The account is not deleted by the app: an admin reviews the request and

@@ -210,7 +210,7 @@ describe('driver KYC and identity index', () => {
 describe('driver last location', () => {
   const loc = (over = {}) => ({ lat: 28.61, lng: 77.21, geohash: 'ttnfv2u9d', updatedAt: serverTimestamp(), ...over });
   test('owner saves a valid position with a geohash; bad data is refused', async () => {
-    await seed((db) => setDoc(doc(db, 'users', 'd1'), { role: 'driver', selectedRole: 'driver' }));
+    await seed((db) => setDoc(doc(db, 'users', 'd1'), { role: 'driver', selectedRole: 'driver', consents: { location: true, analytics: false, marketing: false } }));
     const ref = doc(as('d1'), 'users', 'd1');
     await assertSucceeds(updateDoc(ref, { lastLocation: loc() }));
     await assertFails(updateDoc(ref, { lastLocation: loc({ lat: 123 }) }));
@@ -219,6 +219,19 @@ describe('driver last location', () => {
     await assertFails(updateDoc(ref, { lastLocation: loc({ updatedAt: Timestamp.fromDate(new Date('2020-01-01')) }) }));
     await assertFails(updateDoc(ref, { lastLocation: { ...loc(), address: 'home' } }));
     await assertFails(updateDoc(doc(as('d2'), 'users', 'd1'), { lastLocation: loc() }));
+  });
+});
+
+describe('location consent', () => {
+  const loc = { lat: 28.61, lng: 77.21, geohash: 'ttnfv2u9d', updatedAt: serverTimestamp() };
+  test('no location is stored without consent; switching consent off can delete it', async () => {
+    await seed((db) => setDoc(doc(db, 'users', 'd1'), { role: 'driver', selectedRole: 'driver' }));
+    const ref = doc(as('d1'), 'users', 'd1');
+    await assertFails(updateDoc(ref, { lastLocation: loc }));
+    await assertSucceeds(updateDoc(ref, { consents: { location: true, analytics: false, marketing: false }, lastLocation: loc }));
+    await assertFails(updateDoc(ref, { consents: { location: false, analytics: false, marketing: false } }));
+    await assertSucceeds(updateDoc(ref, { consents: { location: false, analytics: false, marketing: false }, lastLocation: deleteField() }));
+    await assertFails(updateDoc(ref, { lastLocation: loc }));
   });
 });
 

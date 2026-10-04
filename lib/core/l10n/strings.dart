@@ -4,6 +4,7 @@
 /// en, hi, hinglish, kn, ta, te, mr, gu, bn, pa, ks, ur.
 library;
 
+import 'consent_strings.dart';
 import 'identity_strings.dart';
 import 'admin_strings.dart';
 import 'auth_strings.dart';
@@ -32,6 +33,7 @@ const List<Map<String, List<String>>> stringTables = [
   paymentStrings,
   riskStrings,
   identityStrings,
+  consentStrings,
   adminStrings,
   matchStrings,
   settingsStrings,

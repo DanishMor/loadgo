@@ -82,6 +82,7 @@ void main() {
     expect((await db.collection('users').doc('driver1').get()).exists, isFalse);
 
     LocationService.useFakeCurrent(() async => delhi);
+    await db.collection('users').doc('driver1').set({'consents': {'location': true}});
     final t = DateTime(2026, 10, 4, 10);
     expect(await DriverLocationSync.refresh(now: t), isTrue);
     expect(await DriverLocationSync.refresh(now: t.add(const Duration(minutes: 1))), isFalse);

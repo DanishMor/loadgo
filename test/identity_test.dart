@@ -1,6 +1,7 @@
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:transport_app/auth/driver_consent_screen.dart';
 import 'package:transport_app/auth/driver_kyc_screen.dart';
 import 'package:transport_app/auth/driver_pending_screen.dart';
 import 'package:transport_app/auth/driver_profile_setup_screen.dart';
@@ -121,10 +122,11 @@ void main() {
       return resolveDriverStart();
     }
 
-    const base = {'roles': ['driver'], 'driverProfileComplete': true};
+    const base = {'roles': ['driver'], 'driverProfileComplete': true, 'locationConsentAsked': true};
 
     test('profile -> documents -> pending -> home', () async {
       expect(await start({'roles': ['driver']}), isA<DriverProfileSetupScreen>());
+      expect(await start({...base, 'locationConsentAsked': false}), isA<DriverConsentScreen>());
       expect(await start(base), isA<DriverKycScreen>());
       expect(await start({...base, 'kycComplete': true, 'verificationStatus': 'pending'}), isA<DriverPendingScreen>());
       expect(await start({...base, 'kycComplete': true, 'verified': true}), isA<DriverHomeScreen>());

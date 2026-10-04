@@ -66,10 +66,11 @@ service cloud.firestore {
     }
 
     // Driver's last known position, saved with a geohash for nearest-first
-    // lists. The timestamp must be the server time.
+    // lists. Needs the location consent; the timestamp must be the server time.
     function validLastLocation(d) {
       return !('lastLocation' in d)
-          || (d.lastLocation is map
+          || (d.get('consents', {}).get('location', false) == true
+              && d.lastLocation is map
               && d.lastLocation.keys().hasOnly(['lat', 'lng', 'geohash', 'updatedAt'])
               && d.lastLocation.lat is number && d.lastLocation.lat >= -90 && d.lastLocation.lat <= 90
               && d.lastLocation.lng is number && d.lastLocation.lng >= -180 && d.lastLocation.lng <= 180

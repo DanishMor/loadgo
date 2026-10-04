@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../core/services/user_service.dart';
+import 'driver_consent_screen.dart';
 import 'driver_kyc_screen.dart';
 import 'driver_pending_screen.dart';
 import 'customer_profile_setup_screen.dart';
@@ -57,6 +58,9 @@ Future<Widget> resolveDriverStart() async {
   }
   // Router guard: Home and Loads stay closed until every document is in
   // (kycComplete) and an admin has approved the driver.
+  if (data?['locationConsentAsked'] != true) {
+    return const DriverConsentScreen();
+  }
   if (!kycComplete) {
     return const DriverKycScreen();
   }
