@@ -116,6 +116,16 @@ service cloud.firestore {
           && request.resource.data.address is string && request.resource.data.address.size() >= 2 && request.resource.data.address.size() <= 200;
     }
 
+    // users/{uid}/favourite_routes: routes a driver wants recommendations for.
+    match /users/{userId}/favourite_routes/{routeId} {
+      allow read, delete: if isUser(userId);
+      allow create, update: if isUser(userId)
+          && request.resource.data.keys().hasOnly(['pickup', 'drop', 'createdAt'])
+          && request.resource.data.pickup is string && request.resource.data.pickup.size() >= 2 && request.resource.data.pickup.size() <= 100
+          && request.resource.data.drop is string && request.resource.data.drop.size() >= 2 && request.resource.data.drop.size() <= 100
+          && request.resource.data.createdAt == request.time;
+    }
+
     // ------------------------------------------------------------------
     // vehicles: any signed-in user can read (load matching); only the owner
     // can write. Numbers are reserved in vehicle_numbers/{number} so the same

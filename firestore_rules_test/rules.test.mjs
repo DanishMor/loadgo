@@ -1021,3 +1021,16 @@ describe('admin allowlist and powers', () => {
     await assertSucceeds(setDoc(doc(asAdmin(), 'config', 'vehicle_types'), { types: [{ id: 'x' }], updatedAt: serverTimestamp() }));
   });
 });
+
+describe('favourite routes', () => {
+  const route = (extra = {}) => ({ pickup: 'Mumbai', drop: 'Delhi', createdAt: serverTimestamp(), ...extra });
+  test('only the owner reads and writes valid routes', async () => {
+    await assertSucceeds(setDoc(doc(as('driver1'), 'users', 'driver1', 'favourite_routes', 'r1'), route()));
+    await assertSucceeds(getDoc(doc(as('driver1'), 'users', 'driver1', 'favourite_routes', 'r1')));
+    await assertFails(getDoc(doc(as('driver2'), 'users', 'driver1', 'favourite_routes', 'r1')));
+    await assertFails(setDoc(doc(as('driver2'), 'users', 'driver1', 'favourite_routes', 'r2'), route()));
+    await assertFails(setDoc(doc(as('driver1'), 'users', 'driver1', 'favourite_routes', 'r3'), route({ pickup: 'M' })));
+    await assertFails(setDoc(doc(as('driver1'), 'users', 'driver1', 'favourite_routes', 'r4'), route({ extra: 1 })));
+    await assertSucceeds(deleteDoc(doc(as('driver1'), 'users', 'driver1', 'favourite_routes', 'r1')));
+  });
+});

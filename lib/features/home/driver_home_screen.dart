@@ -4,7 +4,9 @@ import '../../core/models/booking.dart';
 import '../../core/models/load.dart';
 import '../../core/services/booking_service.dart';
 import '../../core/models/vehicle.dart';
+import '../../core/matching/load_ranker.dart';
 import '../../core/services/load_service.dart';
+import '../../core/services/match_service.dart';
 import '../../core/services/vehicle_service.dart';
 import '../../core/widgets/common.dart';
 import '../../main.dart';
@@ -36,6 +38,49 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
   bool _isOnline = false;
   final Stream<List<Vehicle>> _vehicles = VehicleService.watchMine().asBroadcastStream();
   final Stream<List<Booking>> _todayTrips = BookingService.watchForDriver();
+  final Stream<List<Load>> _openLoads = LoadService.watchOpen().asBroadcastStream();
+  DateTime? _loadsSeenAt;
+
+  @override
+  void initState() {
+    super.initState();
+    MatchService.lastSeenLoads().then((t) {
+      if (!mounted) return;
+      if (t != null) {
+        setState(() => _loadsSeenAt = t);
+      } else {
+        // First run: nothing counts as new until the driver looks once.
+        _markLoadsSeen();
+      }
+    });
+  }
+
+  void _markLoadsSeen() {
+    final now = DateTime.now();
+    MatchService.markLoadsSeen(now);
+    setState(() => _loadsSeenAt = now);
+  }
+
+  void _selectTab(int i) {
+    setState(() => _index = i);
+    if (i == _loadsTab) _markLoadsSeen();
+  }
+
+  /// Loads tab icon with a count of loads posted since the driver last looked.
+  Widget _loadsIcon(IconData icon) {
+    return StreamBuilder<List<Load>>(
+      stream: _openLoads,
+      builder: (context, snap) {
+        final n = _index == _loadsTab ? 0 : LoadRanker.countNew(snap.data ?? const [], _loadsSeenAt);
+        return Badge(
+          key: const ValueKey('newLoadsBadge'),
+          isLabelVisible: n > 0,
+          label: Text(n > 9 ? '9+' : '$n'),
+          child: Icon(icon),
+        );
+      },
+    );
+  }
 
   void _snack(String msg) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -98,7 +143,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
               const SizedBox(height: 12),
             ],
             if (loads.length > 3)
-              TextButton(onPressed: () => setState(() => _index = _loadsTab), child: Text(tr(context, 'viewAll'))),
+              TextButton(onPressed: () => _selectTab(_loadsTab), child: Text(tr(context, 'viewAll'))),
           ],
         );
       },
@@ -284,12 +329,12 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
       body: IndexedStack(index: _index, children: pages),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _index,
-        onDestinationSelected: (i) => setState(() => _index = i),
+        onDestinationSelected: _selectTab,
         backgroundColor: Colors.white,
         indicatorColor: const Color(0xFFE8F1FF),
         destinations: [
           NavigationDestination(icon: const Icon(Icons.home_outlined), selectedIcon: const Icon(Icons.home_rounded), label: tr(context, 'home')),
-          NavigationDestination(icon: const Icon(Icons.inventory_2_outlined), selectedIcon: const Icon(Icons.inventory_2_rounded), label: tr(context, 'loads')),
+          NavigationDestination(icon: _loadsIcon(Icons.inventory_2_outlined), selectedIcon: const Icon(Icons.inventory_2_rounded), label: tr(context, 'loads')),
           NavigationDestination(icon: const Icon(Icons.route_outlined), selectedIcon: const Icon(Icons.route_rounded), label: tr(context, 'trips')),
           NavigationDestination(icon: const Icon(Icons.account_balance_wallet_outlined), selectedIcon: const Icon(Icons.account_balance_wallet_rounded), label: tr(context, 'earnings')),
           NavigationDestination(icon: const Icon(Icons.person_outline_rounded), selectedIcon: const Icon(Icons.person_rounded), label: tr(context, 'profile')),

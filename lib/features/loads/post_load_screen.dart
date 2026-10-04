@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 
 import '../../core/constants/logistics.dart';
 import '../../core/services/load_service.dart';
+import '../../customer/matching_vehicles_line.dart';
 import '../../core/widgets/common.dart';
 import '../../core/models/risk.dart';
 import '../../main.dart';
@@ -140,7 +141,7 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
     super.initState();
     if (widget.repostFrom != null) _prefill(widget.repostFrom!);
     // Re-quote as the route or distance changes.
-    for (final c in [_pickupCtrl, _dropCtrl, _distanceCtrl]) {
+    for (final c in [_pickupCtrl, _dropCtrl, _distanceCtrl, _weightCtrl]) {
       c.addListener(_requote);
     }
   }
@@ -354,6 +355,7 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
                     _formKey.currentState?.validate();
                   },
                 ),
+                MatchingVehiclesLine(vehicleType: _vehicleType, weight: num.tryParse(_weightCtrl.text.trim())),
                 const SizedBox(height: 18),
                 FieldLabel(tr(context, 'fareEstimate')),
                 _estimateCard(),

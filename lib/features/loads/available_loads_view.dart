@@ -9,7 +9,10 @@ import 'accept_load.dart';
 import 'load_card.dart';
 import '../../core/services/vehicle_type_service.dart';
 import '../../core/widgets/logistics_labels.dart';
+import '../../driver/favourite_routes_screen.dart';
 import '../../driver/make_offer.dart';
+import '../../driver/recommended_loads.dart';
+import '../../core/services/match_service.dart';
 
 /// Accept button wired to the full accept flow, with its own busy state.
 class AcceptLoadButton extends StatefulWidget {
@@ -36,6 +39,15 @@ class _AcceptLoadButtonState extends State<AcceptLoadButton> {
     if (bookingId != null) widget.onAccepted?.call(bookingId);
   }
 
+  Future<void> _saveRoute() async {
+    try {
+      final ok = await MatchService.addFavourite(widget.load.pickup, widget.load.drop);
+      if (mounted) showSnack(context, tr(context, ok ? 'routeSaved' : 'routesFull'));
+    } catch (_) {
+      if (mounted) showSnack(context, tr(context, 'somethingWrong'));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -43,6 +55,12 @@ class _AcceptLoadButtonState extends State<AcceptLoadButton> {
         Expanded(child: _acceptButton()),
         const SizedBox(width: 8),
         MakeOfferButton(load: widget.load),
+        IconButton(
+          key: ValueKey('saveRoute_${widget.load.id}'),
+          tooltip: tr(context, 'saveRoute'),
+          icon: const Icon(Icons.star_border_rounded),
+          onPressed: _saveRoute,
+        ),
       ],
     );
   }
@@ -132,8 +150,18 @@ class _AvailableLoadsViewState extends State<AvailableLoadsView> {
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 18, 20, 8),
-            child: Text(tr(context, 'availableLoads'),
-                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: AppColors.title)),
+            child: Row(children: [
+              Expanded(
+                child: Text(tr(context, 'availableLoads'),
+                    style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: AppColors.title)),
+              ),
+              IconButton(
+                key: const ValueKey('openFavourites'),
+                tooltip: tr(context, 'favouriteRoutes'),
+                icon: const Icon(Icons.star_rounded, color: AppColors.warning),
+                onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const FavouriteRoutesScreen())),
+              ),
+            ]),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -187,17 +215,38 @@ class _AvailableLoadsViewState extends State<AvailableLoadsView> {
                     ),
                   );
                 }
+                final showRecommended = _filter.isEmpty;
+                final offset = showRecommended ? 1 : 0;
                 return ListView.separated(
                   padding: const EdgeInsets.fromLTRB(20, 4, 20, 30),
-                  itemCount: list.length + (loadMore == null ? 0 : 1),
+                  itemCount: list.length + offset + (loadMore == null ? 0 : 1),
                   separatorBuilder: (_, _) => const SizedBox(height: 12),
-                  itemBuilder: (context, i) => i == list.length
-                      ? loadMore!
-                      : LoadCard(
-                          key: ValueKey(list[i].id),
-                          load: list[i],
-                          action: AcceptLoadButton(load: list[i], onAccepted: widget.onAccepted),
+                  itemBuilder: (context, i) {
+                    if (showRecommended && i == 0) {
+                      return RecommendedLoads(
+                        loads: all,
+                        cardBuilder: (m) => Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            MatchReasonChips(reasons: m.reasons),
+                            LoadCard(
+                              key: ValueKey('rec_${m.load.id}'),
+                              load: m.load,
+                              action: AcceptLoadButton(load: m.load, onAccepted: widget.onAccepted),
+                            ),
+                          ],
                         ),
+                      );
+                    }
+                    final k = i - offset;
+                    return k == list.length
+                        ? loadMore!
+                        : LoadCard(
+                            key: ValueKey(list[k].id),
+                            load: list[k],
+                            action: AcceptLoadButton(load: list[k], onAccepted: widget.onAccepted),
+                          );
+                  },
                 );
               },
             ),
