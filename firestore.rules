@@ -490,7 +490,12 @@ service cloud.firestore {
       let b = request.resource.data;
       let load = get(docPath('loads', b.loadId)).data;
       let loadAfter = getAfter(docPath('loads', b.loadId)).data;
-      return b.driverId == request.auth.uid
+      return b.keys().hasOnly(['loadId', 'driverId', 'vehicleId', 'customerId', 'status', 'pickup', 'drop', 'cargoType', 'weight',
+                               'vehicleType', 'budget', 'fareEstimate', 'offerId', 'agreedFarePaise', 'extraPickups', 'extraDrops',
+                               'pickupSlot', 'paymentMode', 'paymentStatus', 'containerNumber', 'sealNumber', 'pickupDate', 'notes',
+                               'vehicleNumber', 'driverName', 'driverPhone', 'timeline', 'createdAt', 'updatedAt'])
+          && b.timeline.keys().hasOnly(['accepted'])
+          && b.driverId == request.auth.uid
           && canTransact(request.auth.uid)
           && b.status == 'accepted'
           && load.status == 'open'
@@ -935,6 +940,12 @@ service cloud.firestore {
           && changedKeys().hasOnly(['read'])
           && request.resource.data.read == true;
       allow delete: if signedIn() && resource.data.userId == request.auth.uid;
+    }
+
+    // Anything not matched above is closed (this is Firestore's default; the
+    // explicit rule documents it and a test pins it).
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }

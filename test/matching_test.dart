@@ -103,6 +103,10 @@ void main() {
     final loads = [load('a', created: DateTime(2026, 10, 3)), load('b', created: DateTime(2026, 10, 1)), load('c')];
     expect(LoadRanker.countNew(loads, DateTime(2026, 10, 2)), 1);
     expect(LoadRanker.countNew(loads, null), 0);
+    final onRoute = [load('r', pickup: 'Pune', drop: 'Nashik', created: DateTime(2026, 10, 3)), ...loads];
+    const fav = FavouriteRoute(id: 'f', pickup: 'Pune', drop: 'Nashik');
+    expect(LoadRanker.countNew(onRoute, DateTime(2026, 10, 2), favourites: const [fav]), 1);
+    expect(LoadRanker.countNew(onRoute, DateTime(2026, 10, 2)), 2);
   });
 
   group('with Firestore', () {

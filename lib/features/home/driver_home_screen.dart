@@ -39,6 +39,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
   final Stream<List<Vehicle>> _vehicles = VehicleService.watchMine().asBroadcastStream();
   final Stream<List<Booking>> _todayTrips = BookingService.watchForDriver();
   final Stream<List<Load>> _openLoads = LoadService.watchOpen().asBroadcastStream();
+  final Stream<List<FavouriteRoute>> _favourites = MatchService.watchFavourites().asBroadcastStream();
   DateTime? _loadsSeenAt;
 
   @override
@@ -68,17 +69,22 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
 
   /// Loads tab icon with a count of loads posted since the driver last looked.
   Widget _loadsIcon(IconData icon) {
-    return StreamBuilder<List<Load>>(
-      stream: _openLoads,
-      builder: (context, snap) {
-        final n = _index == _loadsTab ? 0 : LoadRanker.countNew(snap.data ?? const [], _loadsSeenAt);
-        return Badge(
-          key: const ValueKey('newLoadsBadge'),
-          isLabelVisible: n > 0,
-          label: Text(n > 9 ? '9+' : '$n'),
-          child: Icon(icon),
-        );
-      },
+    return StreamBuilder<List<FavouriteRoute>>(
+      stream: _favourites,
+      builder: (context, favs) => StreamBuilder<List<Load>>(
+        stream: _openLoads,
+        builder: (context, snap) {
+          final n = _index == _loadsTab
+              ? 0
+              : LoadRanker.countNew(snap.data ?? const [], _loadsSeenAt, favourites: favs.data ?? const []);
+          return Badge(
+            key: const ValueKey('newLoadsBadge'),
+            isLabelVisible: n > 0,
+            label: Text(n > 9 ? '9+' : '$n'),
+            child: Icon(icon),
+          );
+        },
+      ),
     );
   }
 

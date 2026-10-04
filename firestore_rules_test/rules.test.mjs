@@ -1127,3 +1127,19 @@ describe('enterprise lite and import/export', () => {
     await assertFails(setDoc(doc(as('customer1'), 'shipments', 's6'), shipment()));
   });
 });
+
+describe('hardening', () => {
+  test('unknown collections are closed', async () => {
+    await assertFails(setDoc(doc(as('u1'), 'surprise', 'x'), { a: 1 }));
+    await assertFails(getDoc(doc(as('u1'), 'surprise', 'x')));
+    await assertFails(setDoc(doc(asAdmin(), 'surprise', 'x'), { a: 1 }));
+  });
+
+  test('a booking cannot be created with extra fields or a pre-filled timeline', async () => {
+    await seedOpenLoad();
+    await assertFails(acceptBatch(as('driver1'), 'L1', 'driver1', { pickupOtpVerified: true }));
+    await assertFails(acceptBatch(as('driver1'), 'L1', 'driver1', { deliveryProof: { receiverName: 'x' } }));
+    await assertFails(acceptBatch(as('driver1'), 'L1', 'driver1', { timeline: { accepted: serverTimestamp(), delivered: serverTimestamp() } }));
+    await assertSucceeds(acceptBatch(as('driver1'), 'L1'));
+  });
+});

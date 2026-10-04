@@ -4,15 +4,23 @@ Truck and cargo booking app (Flutter + Firebase). Customers post loads; verified
 
 ## Features
 
-- Phone (OTP) login with Customer and Driver roles, profile setup and editing
-- 12 app languages (English, Hindi, Hinglish, Kannada, Tamil, Telugu, Marathi, Gujarati, Bengali, Punjabi, Kashmiri, Urdu); a test checks every key has all 12
-- Customer: post loads, My Loads (cancel while open), bookings with live tracking, invoice/summary, rate driver
-- Driver: vehicles (RC photo), available loads with search and filters, accept load (atomic), trip flow accepted -> picked up -> in transit -> delivered, cancel before pickup, earnings summary, rate customer
-- Live driver location while in transit (text coordinates for the customer)
-- In-app notifications and FCM push registration
-- Pagination (20 per page + "Load more"), loading/empty/error/offline states
-- Share/copy summary of a load or booking
-- Admin driver-verification screen (code only, not linked in the UI)
+**Everyone**
+- Phone (OTP) login with Customer and Driver roles; 12 languages (English, Hindi, Hinglish, Kannada, Tamil, Telugu, Marathi, Gujarati, Bengali, Punjabi, Kashmiri, Urdu), a test checks every key has all 12
+- Booking chat with off-platform warning, report and block; support tickets with escalation; in-app notifications
+- Documents center (invoice with GST, digital LR, proof of delivery), settings, consent center, delete-account request
+
+**Customer**
+- Post loads: multi-stop, saved places, fare estimate with breakdown, payment mode, prohibited-cargo check, repost; price offers with one counter; OTP-protected pickup and delivery
+- Analytics (shipments, spend, routes, success rate); business tools: business profile (GSTIN format check), branches, bulk post (max 10), route/branch report, import/export container and seal numbers, two-leg shipments with a timeline
+
+**Driver**
+- Vehicles with papers and expiry alerts, availability, duplicate-number guard; recommended loads, favourite routes, new-loads badge; offers and accept; full trip lifecycle with proof of delivery
+- Wallet and ledger, analytics, SOS, emergency contacts, breakdown reports
+
+**Admin** (only users with an `admins/<uid>` document; rules enforce it)
+- Users search and risk tier, driver verification, vehicles, loads, bookings with manual driver reassign, tickets, SOS, reports, flagged users, deletion requests, pricing and vehicle-type editors, analytics counters
+
+All of the above runs on the free stack: Flutter + Firebase Auth + Firestore. Paid or manual items are listed in `docs/MANUAL_TODO.md`; status per roadmap item is in `docs/ROADMAP_STATUS.md`.
 
 ## Setup
 
@@ -42,13 +50,16 @@ dart run flutter_native_splash:create
 
 ## Project layout
 
-- `lib/core` models, services (Firestore access goes through `Backend`, so tests use a fake), shared widgets
-- `lib/features` screens grouped by area (loads, bookings, vehicle, profile, admin, ...)
-- `lib/main.dart` app shell, role selection, and the translation table `T`
-- `firestore.rules`, `firestore.indexes.json`, `storage.rules`, `functions/` (push sender)
-- `docs/MANUAL_SETUP.md` details for every pending manual step
+- `lib/core` shared: models, services (Firestore access goes through `Backend`, so tests use a fake), l10n, pricing, matching, analytics, enterprise helpers, shared widgets
+- `lib/auth`, `lib/customer`, `lib/driver`, `lib/admin` role-specific screens (they never import each other); `lib/features` holds older screens that are being moved (see `docs/ARCHITECTURE.md`)
+- `lib/main.dart` app shell and role selection
+- `firestore.rules`, `firestore.indexes.json`, `storage.rules`, `functions/` (push sender, needs Blaze)
+- `firestore_rules_test/` rules tests against the emulator; CI in `.github/workflows/ci.yml`
+- `docs/`: `PROGRESS.md` (task log), `ARCHITECTURE.md`, `ROADMAP_STATUS.md`, `SECURITY_REVIEW.md`, `MANUAL_TODO.md`, `MANUAL_SETUP.md`
 
 ## Pending manual tasks
+
+See `docs/MANUAL_TODO.md` for the full list. The short version:
 
 | Task | Why it is manual |
 |---|---|
@@ -65,4 +76,6 @@ dart run flutter_native_splash:create
 
 - No real deep links; sharing copies a text summary
 - Customer tracking shows coordinates as text, not a map (waiting on the Maps key)
-- Earnings are based on load budgets of delivered trips, and the invoice is a trip summary, not a tax invoice
+- Distances come from an offline 64-city table, so fares are estimates
+- Payments, KYC and GSTIN checks are records and format checks only
+- The audit log and fare maths run on the client until Cloud Functions exist (`docs/SECURITY_REVIEW.md`)

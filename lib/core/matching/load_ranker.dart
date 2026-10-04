@@ -150,9 +150,15 @@ class LoadRanker {
     return LoadMatch(load: load, vehicle: v, score: score, reasons: reasons);
   }
 
-  /// Open loads created after [since] (the "new loads" badge).
-  static int countNew(Iterable<Load> loads, DateTime? since) {
+  /// Open loads created after [since] (the "new loads" badge). With
+  /// [favourites], only loads on those routes count ("new loads on your routes").
+  static int countNew(Iterable<Load> loads, DateTime? since, {List<FavouriteRoute> favourites = const []}) {
     if (since == null) return 0;
-    return loads.where((l) => l.createdAt != null && l.createdAt!.toDate().isAfter(since)).length;
+    return loads
+        .where((l) =>
+            l.createdAt != null &&
+            l.createdAt!.toDate().isAfter(since) &&
+            (favourites.isEmpty || favourites.any((f) => f.matches(l))))
+        .length;
   }
 }
