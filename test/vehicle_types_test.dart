@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:transport_app/core/models/vehicle_type.dart';
 import 'package:transport_app/core/services/backend.dart';
 import 'package:transport_app/core/services/vehicle_type_service.dart';
-import 'package:transport_app/core/widgets/vehicle_type_widgets.dart';
+import 'package:transport_app/core/widgets/logistics_labels.dart';
 import 'package:transport_app/main.dart';
 
 void main() {

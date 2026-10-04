@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/services/user_service.dart';
 import '../../main.dart';
 import '../../core/services/vehicle_type_service.dart';
-import '../../core/widgets/vehicle_type_widgets.dart';
+import '../../core/widgets/logistics_labels.dart';
 
 class DriverProfileSetupScreen extends StatefulWidget {
   const DriverProfileSetupScreen({super.key});

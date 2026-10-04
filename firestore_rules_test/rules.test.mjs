@@ -498,3 +498,49 @@ describe('fare estimate', () => {
     await assertSucceeds(acceptBatch(as('driver1'), 'L1', 'driver1', { fareEstimate: EST.total }));
   });
 });
+
+describe('load posting upgrade', () => {
+  test('extra stops: at most 2 per side, non-empty strings', async () => {
+    const db = as('customer1');
+    await assertSucceeds(setDoc(doc(db, 'loads', 'A'), { ...LOAD, extraPickups: ['Gurugram', 'Noida'], extraDrops: ['Ajmer'] }));
+    await assertFails(setDoc(doc(db, 'loads', 'B'), { ...LOAD, extraPickups: ['a1', 'b2', 'c3'] }));
+    await assertFails(setDoc(doc(db, 'loads', 'C'), { ...LOAD, extraDrops: [''] }));
+    await assertFails(setDoc(doc(db, 'loads', 'D'), { ...LOAD, extraDrops: 'Ajmer' }));
+  });
+
+  test('pickup slot must be a known value', async () => {
+    const db = as('customer1');
+    await assertSucceeds(setDoc(doc(db, 'loads', 'A'), { ...LOAD, pickupSlot: 'evening' }));
+    await assertFails(setDoc(doc(db, 'loads', 'B'), { ...LOAD, pickupSlot: 'midnight' }));
+  });
+
+  test('prohibited goods are refused even if the app check is bypassed', async () => {
+    const db = as('customer1');
+    await assertFails(setDoc(doc(db, 'loads', 'A'), { ...LOAD, notes: 'Two boxes of Explosives' }));
+    await assertFails(setDoc(doc(db, 'loads', 'B'), { ...LOAD, notes: 'ganja' }));
+    await assertFails(setDoc(doc(db, 'loads', 'C'), { ...LOAD, cargoType: 'Fireworks' }));
+    await assertSucceeds(setDoc(doc(db, 'loads', 'D'), { ...LOAD, notes: 'gunny bags, handle with care' }));
+    await seed((s) => setDoc(doc(s, 'loads', 'E'), LOAD));
+    await assertFails(updateDoc(doc(db, 'loads', 'E'), { notes: 'actually ammunition' }));
+  });
+
+  test('bookings must copy the stops of the load', async () => {
+    await seed(async (s) => {
+      await setDoc(doc(s, 'loads', 'L1'), { ...LOAD, extraDrops: ['Ajmer'] });
+      await setDoc(doc(s, 'vehicles', 'v1'), VEHICLE);
+    });
+    await assertFails(acceptBatch(as('driver1'), 'L1'));
+    await assertSucceeds(acceptBatch(as('driver1'), 'L1', 'driver1', { extraDrops: ['Ajmer'] }));
+  });
+
+  test('saved places: owner only, validated', async () => {
+    const mine = doc(as('customer1'), 'users', 'customer1', 'saved_places', 'p1');
+    await assertSucceeds(setDoc(mine, { label: 'warehouse', name: 'Bhiwandi', address: 'Thane' }));
+    await assertSucceeds(getDoc(mine));
+    await assertFails(getDoc(doc(as('driver1'), 'users', 'customer1', 'saved_places', 'p1')));
+    await assertFails(setDoc(doc(as('driver1'), 'users', 'customer1', 'saved_places', 'p2'), { label: 'home', name: 'x', address: 'yy' }));
+    await assertFails(setDoc(doc(as('customer1'), 'users', 'customer1', 'saved_places', 'p3'), { label: 'castle', name: 'x', address: 'yy' }));
+    await assertFails(setDoc(doc(as('customer1'), 'users', 'customer1', 'saved_places', 'p4'), { label: 'home', name: 'x', address: 'yy', extra: 1 }));
+    await assertSucceeds(deleteDoc(mine));
+  });
+});

@@ -43,6 +43,18 @@ class PricingService {
     return roadKmBetween(a, b, roadFactor: config.roadFactor);
   }
 
+  /// Road km along [places] (leg by leg), or null if any place is unknown.
+  static int? estimateRouteKm(List<String> places) {
+    if (places.length < 2) return null;
+    var total = 0;
+    for (var i = 0; i + 1 < places.length; i++) {
+      final km = estimateKm(places[i], places[i + 1]);
+      if (km == null) return null;
+      total += km;
+    }
+    return total;
+  }
+
   static FareBreakdown quote({
     required String vehicleType,
     required int distanceKm,

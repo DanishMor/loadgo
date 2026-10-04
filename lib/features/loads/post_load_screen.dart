@@ -6,14 +6,20 @@ import '../../core/services/load_service.dart';
 import '../../core/widgets/common.dart';
 import '../../main.dart';
 import '../../core/services/vehicle_type_service.dart';
-import '../../core/widgets/vehicle_type_widgets.dart';
+import '../../core/widgets/logistics_labels.dart';
 import '../../core/services/pricing_service.dart';
 import '../../core/pricing/fare_calculator.dart';
 import '../../core/widgets/fare_breakdown.dart';
+import '../../core/constants/prohibited_cargo.dart';
+import '../../core/models/load.dart';
+import '../../customer/saved_place_picker.dart';
 
 /// Customer form to post a load. Pops with `true` once posted.
+/// [repostFrom] prefills everything except the pickup date.
 class PostLoadScreen extends StatefulWidget {
-  const PostLoadScreen({super.key});
+  final Load? repostFrom;
+
+  const PostLoadScreen({super.key, this.repostFrom});
 
   @override
   State<PostLoadScreen> createState() => _PostLoadScreenState();
@@ -30,7 +36,10 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
   String _cargoType = cargoTypes.first;
   String _vehicleType = '14ft';
   DateTime? _pickupDate;
+  String _slot = PickupSlot.any;
   bool _saving = false;
+  final List<TextEditingController> _extraPickups = [];
+  final List<TextEditingController> _extraDrops = [];
 
   @override
   void dispose() {
@@ -40,12 +49,91 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
     _budgetCtrl.dispose();
     _notesCtrl.dispose();
     _distanceCtrl.dispose();
+    for (final c in [..._extraPickups, ..._extraDrops]) {
+      c.dispose();
+    }
     super.dispose();
+  }
+
+  TextEditingController _stopCtrl([String text = '']) => TextEditingController(text: text)..addListener(_requote);
+
+  void _prefill(Load l) {
+    _pickupCtrl.text = l.pickup;
+    _dropCtrl.text = l.drop;
+    _weightCtrl.text = formatNum(l.weight);
+    if (l.budget != null) _budgetCtrl.text = formatNum(l.budget!);
+    _notesCtrl.text = l.notes;
+    if (cargoTypes.contains(l.cargoType)) _cargoType = l.cargoType;
+    _vehicleType = l.vehicleType;
+    _slot = l.pickupSlot;
+    if (l.distanceSource == DistanceSource.manual && l.estimate != null) _distanceCtrl.text = '${l.estimate!.distanceKm}';
+    _extraPickups.addAll(l.extraPickups.map(_stopCtrl));
+    _extraDrops.addAll(l.extraDrops.map(_stopCtrl));
+  }
+
+  Future<void> _fillFromSaved(TextEditingController c) async {
+    final place = await pickSavedPlace(context);
+    if (place != null) c.text = savedPlaceText(place);
+  }
+
+  Widget _savedPlaceButton(TextEditingController c) => IconButton(
+        tooltip: tr(context, 'savedPlaces'),
+        icon: const Icon(Icons.bookmark_border_rounded),
+        onPressed: () => _fillFromSaved(c),
+      );
+
+  Widget _stopField(TextEditingController c, String label, List<TextEditingController> list, {required bool pickup}) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 10),
+      child: TextFormField(
+        controller: c,
+        textCapitalization: TextCapitalization.words,
+        decoration: InputDecoration(
+          labelText: label,
+          prefixIcon: Icon(pickup ? Icons.trip_origin_rounded : Icons.location_on_outlined,
+              color: pickup ? AppColors.success : Colors.redAccent),
+          suffixIcon: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _savedPlaceButton(c),
+              IconButton(
+                tooltip: tr(context, 'removeStop'),
+                icon: const Icon(Icons.remove_circle_outline_rounded),
+                onPressed: () => setState(() {
+                  list.remove(c);
+                  c.dispose();
+                }),
+              ),
+            ],
+          ),
+        ),
+        validator: _requiredText,
+      ),
+    );
+  }
+
+  Widget _addStopButton(List<TextEditingController> list, String key, String textKey) {
+    if (list.length >= maxStopsPerSide - 1) return const SizedBox.shrink();
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: TextButton.icon(
+        key: ValueKey(key),
+        onPressed: () => setState(() => list.add(_stopCtrl())),
+        icon: const Icon(Icons.add_rounded, size: 18),
+        label: Text(tr(context, textKey)),
+      ),
+    );
+  }
+
+  String? _notesValidator(String? v) {
+    final banned = prohibitedCargoMatch(v ?? '');
+    return banned == null ? null : trf(context, 'prohibitedCargo', {'item': banned});
   }
 
   @override
   void initState() {
     super.initState();
+    if (widget.repostFrom != null) _prefill(widget.repostFrom!);
     // Re-quote as the route or distance changes.
     for (final c in [_pickupCtrl, _dropCtrl, _distanceCtrl]) {
       c.addListener(_requote);
@@ -59,12 +147,22 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
     return (n != null && n > 0 && n <= 5000) ? n : null;
   }
 
-  int? get _autoKm => PricingService.estimateKm(_pickupCtrl.text, _dropCtrl.text);
+  List<String> get _route => [
+        _pickupCtrl.text,
+        for (final c in _extraPickups) c.text,
+        for (final c in _extraDrops) c.text,
+        _dropCtrl.text,
+      ];
+
+  int? get _autoKm => PricingService.estimateRouteKm(_route);
 
   /// Quote for the current form, or null without a usable distance.
   FareBreakdown? get _quote {
     final km = _manualKm ?? _autoKm;
-    return km == null ? null : PricingService.quote(vehicleType: _vehicleType, distanceKm: km);
+    return km == null
+        ? null
+        : PricingService.quote(
+            vehicleType: _vehicleType, distanceKm: km, extraStops: _extraPickups.length + _extraDrops.length);
   }
 
   Widget _estimateCard() {
@@ -146,10 +244,17 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
         notes: _notesCtrl.text,
         estimate: _quote,
         distanceSource: _manualKm != null ? DistanceSource.manual : DistanceSource.cities,
+        extraPickups: [for (final c in _extraPickups) c.text],
+        extraDrops: [for (final c in _extraDrops) c.text],
+        pickupSlot: _slot,
       );
       if (!mounted) return;
       showSnack(context, tr(context, 'loadPosted'));
       Navigator.of(context).pop(true);
+    } on ProhibitedCargoException catch (e) {
+      if (!mounted) return;
+      setState(() => _saving = false);
+      showSnack(context, trf(context, 'prohibitedCargo', {'item': e.item}));
     } catch (_) {
       if (!mounted) return;
       setState(() => _saving = false);
@@ -181,18 +286,31 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
                   controller: _pickupCtrl,
                   textCapitalization: TextCapitalization.words,
                   textInputAction: TextInputAction.next,
-                  decoration: const InputDecoration(prefixIcon: Icon(Icons.trip_origin_rounded, color: AppColors.success)),
+                  decoration: InputDecoration(
+                    prefixIcon: const Icon(Icons.trip_origin_rounded, color: AppColors.success),
+                    suffixIcon: _savedPlaceButton(_pickupCtrl),
+                  ),
                   validator: _requiredText,
                 ),
-                const SizedBox(height: 18),
+                for (final (i, c) in _extraPickups.indexed)
+                  _stopField(c, trf(context, 'pickupStopN', {'n': i + 2}), _extraPickups, pickup: true),
+                _addStopButton(_extraPickups, 'addPickupStop', 'addPickupStop'),
+                const SizedBox(height: 8),
                 FieldLabel(tr(context, 'dropLocation')),
+                for (final (i, c) in _extraDrops.indexed)
+                  _stopField(c, trf(context, 'dropStopN', {'n': i + 1}), _extraDrops, pickup: false),
+                if (_extraDrops.isNotEmpty) const SizedBox(height: 10),
                 TextFormField(
                   controller: _dropCtrl,
                   textCapitalization: TextCapitalization.words,
                   textInputAction: TextInputAction.next,
-                  decoration: const InputDecoration(prefixIcon: Icon(Icons.location_on_rounded, color: Colors.redAccent)),
+                  decoration: InputDecoration(
+                    prefixIcon: const Icon(Icons.location_on_rounded, color: Colors.redAccent),
+                    suffixIcon: _savedPlaceButton(_dropCtrl),
+                  ),
                   validator: _requiredText,
                 ),
+                _addStopButton(_extraDrops, 'addDropStop', 'addDropStop'),
                 const SizedBox(height: 18),
                 FieldLabel(tr(context, 'cargoType')),
                 DropdownButtonFormField<String>(
@@ -262,9 +380,19 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
                   ),
                 ),
                 const SizedBox(height: 18),
+                FieldLabel(tr(context, 'pickupSlot')),
+                DropdownButtonFormField<String>(
+                  key: const ValueKey('pickupSlot'),
+                  initialValue: _slot,
+                  decoration: const InputDecoration(prefixIcon: Icon(Icons.schedule_rounded)),
+                  items: [for (final x in PickupSlot.all) DropdownMenuItem(value: x, child: Text(pickupSlotLabel(context, x)))],
+                  onChanged: (v) => setState(() => _slot = v ?? _slot),
+                ),
+                const SizedBox(height: 18),
                 FieldLabel(tr(context, 'notesOptional')),
                 TextFormField(
                   controller: _notesCtrl,
+                  validator: _notesValidator,
                   maxLines: 3,
                   maxLength: 300,
                   decoration: const InputDecoration(),

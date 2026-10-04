@@ -28,6 +28,14 @@ class Load {
   /// [DistanceSource] of [estimate].
   final String? distanceSource;
 
+  /// Pickups after [pickup] and drops before [drop], in visiting order
+  /// (at most [maxStopsPerSide] - 1 each).
+  final List<String> extraPickups;
+  final List<String> extraDrops;
+
+  /// [PickupSlot] value.
+  final String pickupSlot;
+
   const Load({
     required this.id,
     required this.shipperId,
@@ -46,9 +54,17 @@ class Load {
     this.createdAt,
     this.estimate,
     this.distanceSource,
+    this.extraPickups = const [],
+    this.extraDrops = const [],
+    this.pickupSlot = PickupSlot.any,
   });
 
   bool get isOpen => status == LoadStatus.open;
+
+  /// Every stop in visiting order: pickups, extra drops, final drop.
+  List<String> get route => [pickup, ...extraPickups, ...extraDrops, drop];
+
+  int get extraStopCount => extraPickups.length + extraDrops.length;
 
   factory Load.fromDoc(DocumentSnapshot<Map<String, dynamic>> doc) {
     final d = doc.data() ?? const {};
@@ -70,6 +86,9 @@ class Load {
       createdAt: d['createdAt'] as Timestamp?,
       estimate: d['estimate'] is Map ? FareBreakdown.fromMap(Map<String, dynamic>.from(d['estimate'] as Map)) : null,
       distanceSource: (d['estimate'] as Map?)?['distanceSource'] as String?,
+      extraPickups: [for (final s in (d['extraPickups'] as List?) ?? const []) s.toString()],
+      extraDrops: [for (final s in (d['extraDrops'] as List?) ?? const []) s.toString()],
+      pickupSlot: d['pickupSlot'] as String? ?? PickupSlot.any,
     );
   }
 }

@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../constants/logistics.dart';
 import '../models/load.dart';
+import '../constants/prohibited_cargo.dart';
 import '../models/paged.dart';
 import '../pricing/fare_calculator.dart';
 import 'backend.dart';
@@ -9,6 +10,15 @@ import 'backend.dart';
 class LoadNotCancellableException implements Exception {
   @override
   String toString() => 'LoadNotCancellableException';
+}
+
+/// The load mentions goods LoadGo does not carry; [item] is the match.
+class ProhibitedCargoException implements Exception {
+  final String item;
+  ProhibitedCargoException(this.item);
+
+  @override
+  String toString() => 'ProhibitedCargoException($item)';
 }
 
 class LoadService {
@@ -28,9 +38,19 @@ class LoadService {
     required String notes,
     FareBreakdown? estimate,
     String? distanceSource,
+    List<String> extraPickups = const [],
+    List<String> extraDrops = const [],
+    String pickupSlot = PickupSlot.any,
   }) async {
     final uid = Backend.requireUid();
+    final banned = prohibitedCargoMatch('$notes $cargoType');
+    if (banned != null) throw ProhibitedCargoException(banned);
+    List<String> clean(List<String> l) =>
+        [for (final s in l) if (s.trim().isNotEmpty) s.trim()].take(maxStopsPerSide - 1).toList();
     final ref = await _col.add({
+      if (clean(extraPickups).isNotEmpty) 'extraPickups': clean(extraPickups),
+      if (clean(extraDrops).isNotEmpty) 'extraDrops': clean(extraDrops),
+      'pickupSlot': pickupSlot,
       if (estimate != null) 'estimate': {...estimate.toMap(), 'distanceSource': ?distanceSource},
       'shipperId': uid,
       'pickup': pickup.trim(),

@@ -7,7 +7,7 @@ import '../../core/share_text.dart';
 import '../../core/widgets/common.dart';
 import '../../main.dart';
 import '../../core/widgets/live_stream.dart';
-import '../../core/widgets/vehicle_type_widgets.dart';
+import '../../core/widgets/logistics_labels.dart';
 
 String bookingStatusLabel(BuildContext context, String status) => switch (status) {
       BookingStatus.accepted => tr(context, 'statusAccepted'),

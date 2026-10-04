@@ -5,7 +5,7 @@ import '../core/l10n/l10n.dart';
 import '../core/models/vehicle.dart';
 import '../core/services/vehicle_service.dart';
 import '../core/widgets/common.dart';
-import '../core/widgets/vehicle_type_widgets.dart';
+import '../core/widgets/logistics_labels.dart';
 
 /// Insurance / PUC / fitness / permit details, next service date and the
 /// maintenance switch for one vehicle. Text only: nothing is uploaded or

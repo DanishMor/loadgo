@@ -34,6 +34,10 @@ class Booking {
   final GeoPoint? lastKnownLocation;
   final DateTime? locationUpdatedAt;
 
+  final List<String> extraPickups;
+  final List<String> extraDrops;
+  final String pickupSlot;
+
   /// Load's estimated total (paise), copied at acceptance.
   final int? fareEstimate;
 
@@ -64,7 +68,12 @@ class Booking {
     this.locationUpdatedAt,
     this.fareEstimate,
     this.cancellation,
+    this.extraPickups = const [],
+    this.extraDrops = const [],
+    this.pickupSlot = PickupSlot.any,
   });
+
+  List<String> get route => [pickup, ...extraPickups, ...extraDrops, drop];
 
   bool get isInTransit => status == BookingStatus.inTransit;
 
@@ -103,6 +112,9 @@ class Booking {
       lastKnownLocation: d['lastKnownLocation'] as GeoPoint?,
       locationUpdatedAt: (d['locationUpdatedAt'] as Timestamp?)?.toDate(),
       fareEstimate: (d['fareEstimate'] as num?)?.round(),
+      extraPickups: [for (final s in (d['extraPickups'] as List?) ?? const []) s.toString()],
+      extraDrops: [for (final s in (d['extraDrops'] as List?) ?? const []) s.toString()],
+      pickupSlot: d['pickupSlot'] as String? ?? PickupSlot.any,
       cancellation: d['cancellation'] is Map ? BookingCancellation.fromMap(Map<String, dynamic>.from(d['cancellation'] as Map)) : null,
     );
   }

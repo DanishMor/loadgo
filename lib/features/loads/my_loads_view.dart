@@ -7,6 +7,7 @@ import '../../core/widgets/common.dart';
 import '../../main.dart';
 import '../../core/widgets/paged_live_stream.dart';
 import 'load_card.dart';
+import 'post_load_screen.dart';
 
 /// Customer "My Loads" tab: live list of the customer's posted loads.
 class MyLoadsView extends StatefulWidget {
@@ -34,6 +35,25 @@ class _MyLoadsViewState extends State<MyLoadsView> {
             ),
           );
     if (load.isOpen) return _CancelLoadButton(load: load);
+    if (load.status == LoadStatus.closed) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ?viewBooking,
+          if (viewBooking != null) const SizedBox(height: 10),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              key: ValueKey('repost_${load.id}'),
+              onPressed: () => Navigator.of(context)
+                  .push(MaterialPageRoute<bool>(builder: (_) => PostLoadScreen(repostFrom: load))),
+              icon: const Icon(Icons.replay_rounded),
+              label: Text(tr(context, 'repostLoad')),
+            ),
+          ),
+        ],
+      );
+    }
     if (load.status == LoadStatus.matched) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,

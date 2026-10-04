@@ -6,7 +6,7 @@ import '../../core/widgets/common.dart';
 import '../../main.dart';
 import '../../core/widgets/live_stream.dart';
 import 'add_vehicle_screen.dart';
-import '../../core/widgets/vehicle_type_widgets.dart';
+import '../../core/widgets/logistics_labels.dart';
 import '../../driver/vehicle_documents_screen.dart';
 
 void openEditVehicle(BuildContext context, Vehicle vehicle) {

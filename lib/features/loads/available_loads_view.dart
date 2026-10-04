@@ -8,7 +8,7 @@ import '../../core/widgets/paged_live_stream.dart';
 import 'accept_load.dart';
 import 'load_card.dart';
 import '../../core/services/vehicle_type_service.dart';
-import '../../core/widgets/vehicle_type_widgets.dart';
+import '../../core/widgets/logistics_labels.dart';
 
 /// Accept button wired to the full accept flow, with its own busy state.
 class AcceptLoadButton extends StatefulWidget {

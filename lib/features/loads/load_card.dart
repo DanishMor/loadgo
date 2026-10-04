@@ -5,7 +5,7 @@ import '../../core/models/load.dart';
 import '../../core/share_text.dart';
 import '../../core/widgets/common.dart';
 import '../../main.dart';
-import '../../core/widgets/vehicle_type_widgets.dart';
+import '../../core/widgets/logistics_labels.dart';
 
 String loadStatusLabel(BuildContext context, String status, {bool cancelled = false}) => switch (status) {
       LoadStatus.closed when cancelled => tr(context, 'statusCancelled'),
@@ -73,6 +73,9 @@ class LoadCard extends StatelessWidget {
               _meta(Icons.local_shipping_outlined, vehicleTypeLabel(context, load.vehicleType)),
               _meta(Icons.inventory_2_outlined, load.cargoType),
               _meta(Icons.calendar_today_outlined, formatDate(load.pickupDate)),
+              if (load.pickupSlot != PickupSlot.any) _meta(Icons.schedule_rounded, pickupSlotLabel(context, load.pickupSlot)),
+              if (load.extraStopCount > 0) _meta(Icons.alt_route_rounded, trf(context, 'extraStops', {'n': load.extraStopCount})),
+              if (load.estimate != null) _meta(Icons.calculate_outlined, formatPaise(load.estimate!.total)),
             ],
           ),
           const SizedBox(height: 10),

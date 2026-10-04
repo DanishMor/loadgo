@@ -5,6 +5,7 @@
 library;
 
 import 'auth_strings.dart';
+import 'load_strings.dart';
 import 'pricing_strings.dart';
 import 'vehicle_strings.dart';
 
@@ -12,6 +13,7 @@ const List<Map<String, List<String>>> stringTables = [
   authStrings,
   vehicleStrings,
   pricingStrings,
+  loadStrings,
 ];
 
 final Map<String, List<String>> extraStrings = {

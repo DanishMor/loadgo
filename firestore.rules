@@ -55,6 +55,16 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // users/{uid}/saved_places: the owner's frequent addresses.
+    match /users/{userId}/saved_places/{placeId} {
+      allow read, delete: if isUser(userId);
+      allow create, update: if isUser(userId)
+          && request.resource.data.keys().hasOnly(['label', 'name', 'address', 'createdAt'])
+          && request.resource.data.label in ['home', 'office', 'warehouse', 'factory', 'port', 'cfs']
+          && request.resource.data.name is string && request.resource.data.name.size() >= 1 && request.resource.data.name.size() <= 40
+          && request.resource.data.address is string && request.resource.data.address.size() >= 2 && request.resource.data.address.size() <= 200;
+    }
+
     // ------------------------------------------------------------------
     // vehicles: any signed-in user can read (load matching); only the owner
     // can write. Numbers are reserved in vehicle_numbers/{number} so the same
@@ -148,7 +158,24 @@ service cloud.firestore {
           && d.vehicleType is string
           && (d.get('budget', null) == null || (d.budget is number && d.budget > 0))
           && d.pickupDate is timestamp
-          && (!('estimate' in d) || validEstimate(d.estimate));
+          && (!('estimate' in d) || validEstimate(d.estimate))
+          && validStops(d.get('extraPickups', []))
+          && validStops(d.get('extraDrops', []))
+          && d.get('pickupSlot', 'any') in ['any', 'morning', 'midday', 'afternoon', 'evening']
+          && !prohibitedText(d.get('notes', ''))
+          && !prohibitedText(d.cargoType);
+    }
+
+    // At most 2 extra stops per side (3 pickups / 3 drops in total).
+    function validStops(l) {
+      return l is list && l.size() <= 2
+          && (l.size() < 1 || (l[0] is string && l[0].size() > 1 && l[0].size() <= 200))
+          && (l.size() < 2 || (l[1] is string && l[1].size() > 1 && l[1].size() <= 200));
+    }
+
+    // Prohibited goods. Keep in sync with lib/core/constants/prohibited_cargo.dart.
+    function prohibitedText(t) {
+      return t is string && t.lower().matches('(.*[^a-z])?(explosives?|dynamite|detonator|gunpowder|firearms?|guns?|pistol|rifle|ammunition|bullets|grenade|narcotics|drugs|ganja|charas|heroin|cocaine|opium|radioactive|ivory|counterfeit|fake currency|wildlife|animal skin|fireworks|crackers|patakhe|human remains)([^a-z].*)?');
     }
 
     // Client-side fare estimate (integer paise). TODO(functions): compute
@@ -251,6 +278,8 @@ service cloud.firestore {
           && b.weight == load.weight
           && b.get('budget', null) == load.get('budget', null)
           && b.get('fareEstimate', null) == load.get('estimate', {}).get('total', null)
+          && b.get('extraPickups', []) == load.get('extraPickups', [])
+          && b.get('extraDrops', []) == load.get('extraDrops', [])
           && loadAfter.status == 'matched'
           && loadAfter.driverId == request.auth.uid
           && loadAfter.bookingId == bookingId

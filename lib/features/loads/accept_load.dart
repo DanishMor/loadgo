@@ -7,7 +7,7 @@ import '../../core/services/vehicle_service.dart';
 import '../../core/widgets/common.dart';
 import '../../main.dart';
 import '../vehicle/my_vehicles_screen.dart';
-import '../../core/widgets/vehicle_type_widgets.dart';
+import '../../core/widgets/logistics_labels.dart';
 
 /// Lets the driver pick one of their active vehicles and confirm. Returns null
 /// when cancelled.

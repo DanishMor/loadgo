@@ -46,6 +46,21 @@ class VehicleDocKind {
   static const all = [insurance, puc, fitness, permit];
 }
 
+/// Preferred pickup window. Must stay in sync with firestore.rules.
+class PickupSlot {
+  PickupSlot._();
+  static const any = 'any';
+  static const morning = 'morning';
+  static const midday = 'midday';
+  static const afternoon = 'afternoon';
+  static const evening = 'evening';
+
+  static const all = [any, morning, midday, afternoon, evening];
+}
+
+/// Most pickup and drop points a load can have (each side).
+const int maxStopsPerSide = 3;
+
 class LoadStatus {
   LoadStatus._();
   static const open = 'open';

@@ -7,7 +7,7 @@ import '../../core/widgets/common.dart';
 import '../../main.dart';
 import 'booking_tracking_screen.dart';
 import 'booking_widgets.dart';
-import '../../core/widgets/vehicle_type_widgets.dart';
+import '../../core/widgets/logistics_labels.dart';
 
 void openInvoice(BuildContext context, String bookingId) {
   Navigator.of(context).push(MaterialPageRoute(builder: (_) => InvoiceScreen(bookingId: bookingId)));

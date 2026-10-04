@@ -51,3 +51,12 @@ String vehicleDocLabel(BuildContext context, String kind) => tr(context, switch 
       VehicleDocKind.fitness => 'docFitness',
       _ => 'docPermit',
     });
+
+/// Translated [PickupSlot] value.
+String pickupSlotLabel(BuildContext context, String slot) => tr(context, switch (slot) {
+      PickupSlot.morning => 'slotMorning',
+      PickupSlot.midday => 'slotMidday',
+      PickupSlot.afternoon => 'slotAfternoon',
+      PickupSlot.evening => 'slotEvening',
+      _ => 'slotAny',
+    });
