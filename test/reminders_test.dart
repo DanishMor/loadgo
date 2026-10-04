@@ -207,7 +207,7 @@ void main() {
         languageNotifier.value = lang;
         await tester.pumpWidget(app(Builder(builder: (context) {
           for (final k in ReminderKind.values) {
-            final text = reminderText(context, Reminder(kind: k, id: 'x', args: const {'n': 1, 'days': 3, 'expired': 0, 'minutes': 5, 'route': 'A → B'}, priority: 0));
+            final text = reminderText(context, Reminder(kind: k, id: 'x', args: const {'n': 1, 'days': 3, 'expired': 0, 'minutes': 5, 'route': 'A → B', 'city': 'Pune'}, priority: 0));
             expect(text.contains('{'), isFalse, reason: '${lang.name} $k');
           }
           return const SizedBox();

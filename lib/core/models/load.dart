@@ -58,6 +58,10 @@ class Load {
   /// Packers-and-movers request (items, floor, lift, packing).
   final MoversDetails? movers;
 
+  /// Driver this load was posted for (from an accepted truck request). A
+  /// hint only: any verified driver can still accept.
+  final String? invitedDriverId;
+
   /// Exact pickup time for an advance booking (null = no fixed time).
   final DateTime? scheduledAt;
 
@@ -102,6 +106,7 @@ class Load {
     this.rentalHours,
     this.movers,
     this.scheduledAt,
+    this.invitedDriverId,
     this.fragile = false,
     this.highValue = false,
     this.promoCode,
@@ -150,6 +155,7 @@ class Load {
       rentalHours: (d['rentalHours'] as num?)?.toInt(),
       movers: d['movers'] is Map ? MoversDetails.fromMap(d['movers']) : null,
       scheduledAt: (d['scheduledAt'] as Timestamp?)?.toDate(),
+      invitedDriverId: d['invitedDriverId'] as String?,
       fragile: d['fragile'] == true,
       highValue: d['highValue'] == true,
       promoCode: (d['promo'] as Map?)?['code'] as String?,

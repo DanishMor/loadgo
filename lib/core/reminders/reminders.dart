@@ -2,9 +2,10 @@ import '../constants/logistics.dart';
 import '../models/booking.dart';
 import '../models/load.dart';
 import '../models/offer.dart';
+import '../matching/return_loads.dart';
 import '../models/vehicle.dart';
 
-enum ReminderKind { pickupSoon, noDriverYet, vehicleDocs, serviceDue, tyreDue, licenceExpiring, offersWaiting, counterWaiting, confirmWaiting }
+enum ReminderKind { returnLoads, pickupSoon, noDriverYet, vehicleDocs, serviceDue, tyreDue, licenceExpiring, offersWaiting, counterWaiting, confirmWaiting }
 
 /// An in-app reminder worked out from what the app already knows (no push,
 /// nothing stored). LATER(paid): the same rules in a scheduled Cloud
@@ -116,6 +117,16 @@ class ReminderEngine {
       final confirms = i.offers.where((o) => o.status == OfferStatus.selected).length;
       if (confirms > 0) {
         out.add(Reminder(kind: ReminderKind.confirmWaiting, id: 'confirm_waiting', args: {'n': confirms}, priority: 1));
+      }
+
+      // Driver: loads for the way back from a trip that is about to end.
+      for (final b in i.bookings) {
+        if (b.status != BookingStatus.inTransit && b.status != BookingStatus.unloading) continue;
+        final back = returnLoadsFor(b, i.loads);
+        if (back.isNotEmpty) {
+          out.add(Reminder(kind: ReminderKind.returnLoads, id: 'return_${b.id}', args: {'n': back.length, 'city': b.drop}, relatedId: b.id, priority: 2));
+          break;
+        }
       }
 
       // Driver: papers.

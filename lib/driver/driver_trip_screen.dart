@@ -16,6 +16,7 @@ import 'trip_proof_dialogs.dart';
 import '../core/documents/trip_document_buttons.dart';
 import 'trip_safety_card.dart';
 import 'trip_geofence_banner.dart';
+import 'return_loads_section.dart';
 import '../core/documents/payment_card.dart';
 
 void openDriverTrip(BuildContext context, String bookingId) {
@@ -60,6 +61,10 @@ class DriverTripScreen extends StatelessWidget {
           const SizedBox(height: 12),
           TripDocumentButtons(booking: booking),
           const SizedBox(height: 20),
+          if (booking.status == BookingStatus.inTransit || booking.status == BookingStatus.unloading || booking.status == BookingStatus.delivered) ...[
+            ReturnLoadsSection(booking: booking, onAccepted: (id) => openDriverTrip(context, id)),
+            const SizedBox(height: 14),
+          ],
           _NextStatusButton(booking: booking),
           if (booking.canDriverCancel) ...[
             const SizedBox(height: 10),

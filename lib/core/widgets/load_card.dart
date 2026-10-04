@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../constants/logistics.dart';
 import '../models/load.dart';
+import '../services/backend.dart';
 import '../share_text.dart';
 import 'common.dart';
 import '../l10n/l10n.dart';
@@ -83,6 +84,8 @@ class LoadCard extends StatelessWidget {
               if (load.fragile) _meta(Icons.broken_image_outlined, tr(context, 'fragileChip')),
               if (load.highValue) _meta(Icons.diamond_outlined, tr(context, 'highValueChip')),
               if (load.helpers > 0) _meta(Icons.people_outline_rounded, trf(context, 'helpersChip', {'n': load.helpers})),
+              if (load.invitedDriverId != null)
+                _meta(Icons.how_to_reg_outlined, load.invitedDriverId == Backend.uid ? tr(context, 'reservedForYou') : tr(context, 'reservedForDriver')),
               if (load.promoCode != null) _meta(Icons.local_offer_outlined, '${load.promoCode} -${formatPaise(load.promoDiscountPaise)}'),
               if (load.estimate != null) _meta(Icons.calculate_outlined, formatPaise(load.estimate!.total)),
             ],

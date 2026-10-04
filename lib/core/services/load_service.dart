@@ -78,6 +78,7 @@ class LoadService {
     bool fragile = false,
     bool highValue = false,
     DateTime? scheduledAt,
+    String? invitedDriverId,
   }) async {
     if (scheduledAt != null) {
       final problem = Schedule.check(scheduledAt, DateTime.now(), PricingService.config.schedule);
@@ -103,6 +104,7 @@ class LoadService {
     final data = <String, Object?>{
       'pickupGeohash': ?geohash,
       'bookingType': bookingType,
+      'invitedDriverId': ?invitedDriverId,
       if (scheduledAt != null) 'scheduledAt': Timestamp.fromDate(scheduledAt),
       if (fragile) 'fragile': true,
       if (highValue) 'highValue': true,

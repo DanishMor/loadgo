@@ -59,6 +59,7 @@ class ReminderService {
         if (isDriver) {
           listen(BookingService.watchForDriver(), (v) => bookings = v);
           listen(OfferService.watchMine(), (v) => offers = v);
+          listen(LoadService.watchOpen(), (v) => loads = v);
           listen(VehicleService.watchMine(), (v) => vehicles = v);
           final uid = Backend.uid;
           if (uid != null) {

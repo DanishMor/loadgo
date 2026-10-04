@@ -29,11 +29,11 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | BIZ Business | 15 | 4 | 1 | 7 | 3 | 0 |
 | F Anti-fraud | 18 | 4 | 9 | 0 | 5 | 0 |
 | SAFE Safety | 12 | 8 | 2 | 0 | 2 | 0 |
-| N Notifications | 15 | 9 | 1 | 3 | 2 | 0 |
+| N Notifications | 15 | 10 | 1 | 2 | 2 | 0 |
 | AI AI | 14 | 0 | 0 | 0 | 14 | 0 |
 | BE Backend | 18 | 4 | 6 | 1 | 7 | 0 |
 | TEST Testing | 14 | 4 | 3 | 0 | 7 | 0 |
-| **Total** | **347** | **153** | **82** | **35** | **76** | **1** |
+| **Total** | **347** | **154** | **82** | **34** | **76** | **1** |
 
 ## P0 Principles
 
@@ -161,7 +161,7 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | L3 | Load filters Route, distance, vehicle, weight, freight, pickup time. | Done | core/models/load_filter.dart |
 | L4 | Nearby loads Current location ke aas-paas. | Partial | Driver position saved with a geohash; Loads tab sorts by estimated km from it and shows "X km away"; city-table distance, not road distance, and only the loaded page is sorted |
 | L5 | Route loads Driver ke planned route ke aas-paas. | Done | Driver sets a planned route (Loads tab); loads along it rank higher with an On your route chip |
-| L6 | Return loads Destination par pahunchne ke baad reverse-direction opportunities. | Done | LoadRanker return-load bonus (within 200 km of active trip drop) |
+| L6 | Return loads Destination par pahunchne ke baad reverse-direction opportunities. | Done | Return loads section on the trip screen (return runs first, nearest pickup next) and a reminder |
 | L7 | Favourite routes Regular route alerts. | Done | favourite_routes_screen.dart |
 | L8 | Load alerts Matching load par push notification. | Partial | In-app new-load badge (device-local); push needs Blaze |
 | L9 | Load detail card Cargo, route, budget/fare, pickup time, verification requirements. | Done | core/widgets/load_card.dart |
@@ -437,7 +437,7 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | N5 | Delivery complete POD/settlement notification. | Done | Delivered notification |
 | N6 | KYC reminder Re-KYC due. | Paid-or-Later | Needs re-KYC |
 | N7 | Document expiry DL/RC/insurance/etc. | Done | Vehicle paper, licence, service and tyre reminders in the Home banner and the notification list (no push) |
-| N8 | Return load alert Driver route related opportunity. | Todo-free | No return load alert |
+| N8 | Return load alert Driver route related opportunity. | Done | Driver reminder when open loads start near the drop city of a trip in transit or unloading |
 | N9 | Payment notification Payment/payout/refund. | Done | In-app notifications when the customer marks payment and when the driver confirms it |
 | N10 | Chat notification Message/group alerts. | Partial | Unread badge on Chat; no notification |
 | N11 | Customer analytics Shipments, spend, routes, delivery success. | Done | customer_analytics_screen.dart |

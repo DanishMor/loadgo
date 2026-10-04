@@ -23,6 +23,7 @@ import '../core/reminders/reminders.dart';
 import '../core/widgets/reminder_widgets.dart';
 import 'city_demand_screen.dart';
 import 'upcoming_trips.dart';
+import 'empty_trucks_screen.dart';
 import 'earnings_view.dart';
 import 'available_loads_view.dart';
 import '../core/widgets/load_card.dart';
@@ -319,7 +320,11 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                   onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const CityDemandScreen())),
                 ),
                 const SizedBox(width: 12),
-                const Expanded(child: SizedBox.shrink()),
+                _tile(
+                  Icons.local_shipping_outlined,
+                  tr(context, 'emptyTrucks'),
+                  onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const EmptyTrucksScreen())),
+                ),
               ],
             ),
             const SizedBox(height: 12),

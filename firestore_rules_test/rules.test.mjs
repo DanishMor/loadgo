@@ -1023,6 +1023,99 @@ describe('scheduled bookings', () => {
   });
 });
 
+describe('empty truck board', () => {
+  const day = (n) => Timestamp.fromMillis(Date.now() + n * 86400000);
+  const seedDriver = (verified = true) =>
+    seed(async (db) => {
+      await setDoc(doc(db, 'users', 'driver1'), { role: 'driver', selectedRole: 'driver', verified });
+      await setDoc(doc(db, 'vehicles', 'v1'), VEHICLE);
+    });
+  const post = (over = {}) => ({
+    driverId: 'driver1', driverName: 'Ramesh', vehicleId: 'v1', vehicleNumber: VEHICLE.number, vehicleType: VEHICLE.type, capacity: 10,
+    fromCity: 'Pune', toCity: 'Delhi', availableDate: day(3), note: 'Open body', status: 'open', createdAt: serverTimestamp(), ...over,
+  });
+
+  test('a verified driver posts their own active vehicle within 30 days', async () => {
+    await seedDriver();
+    await assertSucceeds(addDoc(collection(as('driver1'), 'truck_posts'), post()));
+    await assertFails(addDoc(collection(as('driver1'), 'truck_posts'), post({ availableDate: day(45) })));
+    await assertFails(addDoc(collection(as('driver1'), 'truck_posts'), post({ fromCity: 'P' })));
+    await assertFails(addDoc(collection(as('driver1'), 'truck_posts'), post({ note: 'n'.repeat(201) })));
+    await assertFails(addDoc(collection(as('driver1'), 'truck_posts'), post({ vehicleNumber: 'FAKE000000' })));
+    await assertFails(addDoc(collection(as('driver1'), 'truck_posts'), post({ status: 'closed' })));
+    await assertFails(addDoc(collection(as('driver1'), 'truck_posts'), post({ extra: 1 })));
+    await assertFails(addDoc(collection(as('driver2'), 'truck_posts'), post()), 'not their post');
+    await assertFails(addDoc(collection(as('driver2'), 'truck_posts'), post({ driverId: 'driver2' })), 'not their vehicle');
+  });
+
+  test('an unverified or restricted driver cannot post', async () => {
+    await seedDriver(false);
+    await assertFails(addDoc(collection(as('driver1'), 'truck_posts'), post()));
+    await seed((db) => setDoc(doc(db, 'users', 'driver1'), { role: 'driver', selectedRole: 'driver', verified: true, riskTier: 'restricted' }));
+    await assertFails(addDoc(collection(as('driver1'), 'truck_posts'), post()));
+  });
+
+  test('anyone signed in reads the board; only the owner closes a post', async () => {
+    await seedDriver();
+    await seed((db) => setDoc(doc(db, 'truck_posts', 'P1'), { ...post(), createdAt: Timestamp.now() }));
+    await assertSucceeds(getDoc(doc(as('customer1'), 'truck_posts', 'P1')));
+    await assertFails(getDoc(doc(anon(), 'truck_posts', 'P1')));
+    await assertFails(updateDoc(doc(as('customer1'), 'truck_posts', 'P1'), { status: 'closed', closedAt: serverTimestamp() }));
+    await assertFails(updateDoc(doc(as('driver1'), 'truck_posts', 'P1'), { fromCity: 'Agra' }));
+    await assertSucceeds(updateDoc(doc(as('driver1'), 'truck_posts', 'P1'), { status: 'closed', closedAt: serverTimestamp() }));
+    await assertFails(deleteDoc(doc(as('driver1'), 'truck_posts', 'P1')));
+  });
+
+  describe('requests', () => {
+    const req = (uid, over = {}) => ({
+      postId: 'P1', driverId: 'driver1', customerId: uid, customerName: 'Anil', pickup: 'Pune', drop: 'Delhi', weight: 6, vehicleType: '20ft',
+      note: 'Fragile', status: 'pending', createdAt: serverTimestamp(), ...over,
+    });
+    const seedPost = (status = 'open') => seed((db) => setDoc(doc(db, 'truck_posts', 'P1'), { ...post({ status }), createdAt: Timestamp.now() }));
+
+    test('one request per customer per open post, for the post\'s driver', async () => {
+      await seedPost();
+      await assertSucceeds(setDoc(doc(as('customer1'), 'truck_requests', 'P1_customer1'), req('customer1')));
+      await assertFails(setDoc(doc(as('customer1'), 'truck_requests', 'P1_customer1'), req('customer1')), 'a second request is an update');
+      await assertFails(setDoc(doc(as('customer2'), 'truck_requests', 'P1_customer1'), req('customer2')), 'id must match the caller');
+      await assertFails(setDoc(doc(as('customer2'), 'truck_requests', 'P1_customer2'), req('customer2', { driverId: 'driver2' })), 'wrong driver for the post');
+      await assertFails(setDoc(doc(as('customer2'), 'truck_requests', 'P1_customer2'), req('customer2', { weight: 500 })));
+      await assertFails(setDoc(doc(as('customer2'), 'truck_requests', 'P1_customer2'), req('customer2', { pickup: 'P' })));
+      await assertFails(setDoc(doc(as('customer2'), 'truck_requests', 'P1_customer2'), req('customer2', { status: 'accepted' })));
+      await assertFails(setDoc(doc(as('driver1'), 'truck_requests', 'P1_driver1'), req('driver1')), 'own post');
+    });
+
+    test('a closed post takes no requests', async () => {
+      await seedPost('closed');
+      await assertFails(setDoc(doc(as('customer1'), 'truck_requests', 'P1_customer1'), req('customer1')));
+    });
+
+    test('the driver answers once; the customer can withdraw; the parties read it', async () => {
+      await seedPost();
+      await seed((db) => setDoc(doc(db, 'truck_requests', 'P1_customer1'), { ...req('customer1'), createdAt: Timestamp.now() }));
+      await assertFails(updateDoc(doc(as('customer1'), 'truck_requests', 'P1_customer1'), { status: 'accepted' }), 'customer cannot accept');
+      await assertFails(updateDoc(doc(as('driver2'), 'truck_requests', 'P1_customer1'), { status: 'accepted', answeredAt: serverTimestamp() }));
+      await assertFails(updateDoc(doc(as('driver1'), 'truck_requests', 'P1_customer1'), { status: 'accepted', weight: 1, answeredAt: serverTimestamp() }));
+      await assertFails(updateDoc(doc(as('driver1'), 'truck_requests', 'P1_customer1'), { status: 'withdrawn', answeredAt: serverTimestamp() }));
+      await assertSucceeds(updateDoc(doc(as('driver1'), 'truck_requests', 'P1_customer1'), { status: 'accepted', answeredAt: serverTimestamp() }));
+      await assertFails(updateDoc(doc(as('driver1'), 'truck_requests', 'P1_customer1'), { status: 'declined', answeredAt: serverTimestamp() }), 'already answered');
+      await assertFails(updateDoc(doc(as('customer1'), 'truck_requests', 'P1_customer1'), { status: 'withdrawn' }), 'already answered');
+      await assertSucceeds(getDoc(doc(as('customer1'), 'truck_requests', 'P1_customer1')));
+      await assertSucceeds(getDoc(doc(as('driver1'), 'truck_requests', 'P1_customer1')));
+      await assertFails(getDoc(doc(as('customer2'), 'truck_requests', 'P1_customer1')));
+      await seed((db) => setDoc(doc(db, 'truck_requests', 'P1_customer1'), { ...req('customer1'), createdAt: Timestamp.now() }));
+      await assertSucceeds(updateDoc(doc(as('customer1'), 'truck_requests', 'P1_customer1'), { status: 'withdrawn' }));
+    });
+
+    test('a load may name the invited driver', async () => {
+      const load = (over) => addDoc(collection(as('customer1'), 'loads'), { ...LOAD, ...over });
+      await assertSucceeds(load({ invitedDriverId: 'driver1' }));
+      await assertFails(load({ invitedDriverId: '' }));
+      await assertFails(load({ invitedDriverId: 7 }));
+    });
+  });
+});
+
 describe('admin verification', () => {
   const seedDriver = () => seed((db) => setDoc(doc(db, 'users', 'd1'), { driverName: 'R', verified: false, verificationStatus: 'pending' }));
 

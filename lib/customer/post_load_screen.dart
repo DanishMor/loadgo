@@ -29,7 +29,10 @@ import '../core/services/rewards_service.dart';
 class PostLoadScreen extends StatefulWidget {
   final Load? repostFrom;
 
-  const PostLoadScreen({super.key, this.repostFrom});
+  /// Reserve the load for this driver (from an accepted truck request).
+  final String? invitedDriverId;
+
+  const PostLoadScreen({super.key, this.repostFrom, this.invitedDriverId});
 
   @override
   State<PostLoadScreen> createState() => _PostLoadScreenState();
@@ -346,6 +349,7 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
         fragile: _fragile,
         highValue: _highValue,
         scheduledAt: _scheduledAt,
+        invitedDriverId: widget.invitedDriverId,
         pickup: _pickupCtrl.text,
         drop: _dropCtrl.text.trim().isEmpty ? _pickupCtrl.text : _dropCtrl.text,
         cargoType: _cargoType,

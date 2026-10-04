@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../core/profile/profile_nav_tile.dart';
 import 'business_hub_screen.dart';
 import 'offers_screen.dart';
+import 'truck_board_screen.dart';
 import '../core/widgets/reminder_widgets.dart';
 import '../core/reminders/reminders.dart';
 import 'customer_analytics_screen.dart';
@@ -301,6 +302,21 @@ class _CustomerHomeContent extends StatelessWidget {
                         .push(MaterialPageRoute(builder: (_) => const DocumentsCenterScreen(asDriver: false))),
                   ),
                 ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: _QuickActionCard(
+                    icon: Icons.local_shipping_outlined,
+                    title: tr(context, 'emptyTrucks'),
+                    subtitle: tr(context, 'emptyTrucksSub'),
+                    onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const TruckBoardScreen())),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                const Expanded(child: SizedBox.shrink()),
               ],
             ),
             const SizedBox(height: 28),

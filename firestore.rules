@@ -438,6 +438,7 @@ service cloud.firestore {
           && d.get('paymentMode', 'cash') in ['cash', 'upi_direct']
           && validTradeFields(d)
           && validBookingType(d)
+          && (!('invitedDriverId' in d) || (d.invitedDriverId is string && d.invitedDriverId.size() >= 1 && d.invitedDriverId.size() <= 60))
           && (!('scheduledAt' in d) || d.scheduledAt is timestamp)
           && (!('fragile' in d) || d.fragile is bool)
           && (!('highValue' in d) || d.highValue is bool)
@@ -1292,6 +1293,68 @@ service cloud.firestore {
             && request.resource.data.createdAt == request.time;
         allow update, delete: if false;
       }
+    }
+
+    // ------------------------------------------------------------------
+    // Empty-truck board. truck_posts/{id}: a verified driver's free truck
+    // (route, date up to 30 days ahead, own active vehicle). truck_requests/
+    // {postId}_{customerId}: one request per customer per post; the post's
+    // driver answers; the customer can withdraw. Nothing is booked here: an
+    // accepted request lets the customer post a load reserved for the driver.
+    // ------------------------------------------------------------------
+    match /truck_posts/{postId} {
+      allow read: if signedIn();
+      allow create: if signedIn()
+          && request.resource.data.keys().hasOnly(['driverId', 'driverName', 'vehicleId', 'vehicleNumber', 'vehicleType', 'capacity',
+                                                   'fromCity', 'toCity', 'availableDate', 'note', 'status', 'createdAt'])
+          && request.resource.data.driverId == request.auth.uid
+          && canTransact(request.auth.uid)
+          && get(docPath('users', request.auth.uid)).data.get('verified', false) == true
+          && get(docPath('vehicles', request.resource.data.vehicleId)).data.ownerId == request.auth.uid
+          && get(docPath('vehicles', request.resource.data.vehicleId)).data.status == 'active'
+          && request.resource.data.vehicleNumber == get(docPath('vehicles', request.resource.data.vehicleId)).data.number
+          && request.resource.data.vehicleType == get(docPath('vehicles', request.resource.data.vehicleId)).data.type
+          && request.resource.data.fromCity is string && request.resource.data.fromCity.size() >= 2 && request.resource.data.fromCity.size() <= 60
+          && request.resource.data.toCity is string && request.resource.data.toCity.size() >= 2 && request.resource.data.toCity.size() <= 60
+          && request.resource.data.availableDate is timestamp
+          && request.resource.data.availableDate <= request.time + duration.value(31, 'd')
+          && request.resource.data.get('note', '') is string && request.resource.data.get('note', '').size() <= 200
+          && request.resource.data.status == 'open'
+          && request.resource.data.createdAt == request.time;
+      allow update: if signedIn() && resource.data.driverId == request.auth.uid
+          && changedKeys().hasOnly(['status', 'closedAt'])
+          && request.resource.data.status == 'closed';
+      allow delete: if false;
+    }
+
+    match /truck_requests/{requestId} {
+      allow read: if signedIn() && (resource.data.customerId == request.auth.uid || resource.data.driverId == request.auth.uid || isAdmin());
+      allow create: if signedIn()
+          && request.resource.data.keys().hasOnly(['postId', 'driverId', 'customerId', 'customerName', 'pickup', 'drop', 'weight',
+                                                   'cargoType', 'vehicleType', 'note', 'status', 'createdAt'])
+          && request.resource.data.customerId == request.auth.uid
+          && requestId == request.resource.data.postId + '_' + request.auth.uid
+          && get(docPath('truck_posts', request.resource.data.postId)).data.status == 'open'
+          && get(docPath('truck_posts', request.resource.data.postId)).data.driverId == request.resource.data.driverId
+          && request.resource.data.driverId != request.auth.uid
+          && canTransact(request.auth.uid)
+          && request.resource.data.pickup is string && request.resource.data.pickup.size() >= 2 && request.resource.data.pickup.size() <= 100
+          && request.resource.data.drop is string && request.resource.data.drop.size() >= 2 && request.resource.data.drop.size() <= 100
+          && request.resource.data.weight is number && request.resource.data.weight > 0 && request.resource.data.weight <= 100
+          && request.resource.data.get('cargoType', '') is string && request.resource.data.get('cargoType', '').size() <= 40
+          && request.resource.data.get('note', '') is string && request.resource.data.get('note', '').size() <= 200
+          && request.resource.data.status == 'pending'
+          && request.resource.data.createdAt == request.time;
+      // The driver answers a pending request; the customer can withdraw one.
+      allow update: if signedIn()
+          && resource.data.status == 'pending'
+          && ((resource.data.driverId == request.auth.uid
+                  && changedKeys().hasOnly(['status', 'answeredAt'])
+                  && request.resource.data.status in ['accepted', 'declined'])
+              || (resource.data.customerId == request.auth.uid
+                  && changedKeys().hasOnly(['status'])
+                  && request.resource.data.status == 'withdrawn'));
+      allow delete: if false;
     }
 
     // ------------------------------------------------------------------

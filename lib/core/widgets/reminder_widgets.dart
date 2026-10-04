@@ -8,6 +8,7 @@ import 'common.dart';
 /// Translated sentence for a reminder.
 String reminderText(BuildContext context, Reminder r) => switch (r.kind) {
       ReminderKind.pickupSoon => trf(context, 'remPickupSoon', r.args),
+      ReminderKind.returnLoads => trf(context, 'remReturnLoads', r.args),
       ReminderKind.noDriverYet => trf(context, 'remNoDriver', r.args),
       ReminderKind.vehicleDocs => trf(context, 'remVehicleDocs', r.args),
       ReminderKind.serviceDue => trf(context, 'remServiceDue', r.args),
@@ -21,6 +22,7 @@ String reminderText(BuildContext context, Reminder r) => switch (r.kind) {
 
 IconData reminderIcon(ReminderKind k) => switch (k) {
       ReminderKind.pickupSoon || ReminderKind.noDriverYet => Icons.schedule_rounded,
+      ReminderKind.returnLoads => Icons.u_turn_left_rounded,
       ReminderKind.vehicleDocs || ReminderKind.licenceExpiring => Icons.assignment_late_rounded,
       ReminderKind.serviceDue || ReminderKind.tyreDue => Icons.build_circle_outlined,
       ReminderKind.offersWaiting || ReminderKind.counterWaiting || ReminderKind.confirmWaiting => Icons.local_offer_outlined,
