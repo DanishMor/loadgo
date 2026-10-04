@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../models/app_notification.dart';
 import 'backend.dart';
+import 'settings_service.dart';
 
 class NotificationService {
   NotificationService._();
@@ -35,7 +36,8 @@ class NotificationService {
     final uid = Backend.uid;
     if (uid == null) return Stream.value(const []);
     return _col.where('userId', isEqualTo: uid).snapshots().map((snap) {
-      final list = snap.docs.map(AppNotification.fromDoc).toList();
+      final prefs = SettingsService.prefs.value;
+      final list = snap.docs.map(AppNotification.fromDoc).where((n) => prefs.allows(n.type)).toList();
       list.sort((a, b) => newestFirst(a.createdAt, b.createdAt));
       return list;
     });

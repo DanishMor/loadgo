@@ -85,12 +85,26 @@ service cloud.firestore {
           == (exists(ref) ? get(ref).data.get('cancelCount', 0) : 0) + 1;
     }
 
+    // notificationPrefs / consents: maps of booleans with known keys only.
+    function validBoolMap(d, field, keys) {
+      return !(field in d)
+          || (d[field] is map && d[field].keys().hasOnly(keys)
+              && d[field].get(keys[0], false) is bool && d[field].get(keys[1], false) is bool && d[field].get(keys[2], false) is bool);
+    }
+
+    function validPrefs(d) {
+      return validBoolMap(d, 'notificationPrefs', ['bookingUpdates', 'ratings', 'promotions'])
+          && validBoolMap(d, 'consents', ['location', 'analytics', 'marketing']);
+    }
+
     match /users/{userId} {
       allow read: if isUser(userId) || isAdmin();
       allow create: if isUser(userId) && verificationInitOk(request.resource.data)
-          && validEmergencyContacts(request.resource.data) && riskFieldsAbsent(request.resource.data);
+          && validEmergencyContacts(request.resource.data) && riskFieldsAbsent(request.resource.data)
+          && validPrefs(request.resource.data);
       allow update: if adminVerificationUpdate() || adminRiskUpdate() || (isUser(userId)
           && validEmergencyContacts(request.resource.data)
+          && validPrefs(request.resource.data)
           && ownerRiskFieldsUntouched()
           && (!changedKeys().hasAny(['verified', 'verificationStatus'])
               || (resource.data.get('verificationStatus', null) == null
@@ -808,6 +822,29 @@ service cloud.firestore {
     // admins/{uid}: the admin allowlist. A user may read only their own
     // entry (so the app can show the Admin menu); nobody writes it from a
     // client. Add one by hand in the Firebase Console.
+    // deletion_requests/{uid}: a user asks for account deletion (one doc per
+    // user, only while none is pending); admins review and mark it done.
+    // TODO(functions): perform the deletion with the Admin SDK.
+    match /deletion_requests/{uid} {
+      allow read: if isUser(uid) || isAdmin();
+      allow create: if isUser(uid)
+          && request.resource.data.keys().hasOnly(['userId', 'status', 'reason', 'createdAt'])
+          && request.resource.data.userId == uid
+          && request.resource.data.status == 'pending'
+          && request.resource.data.reason is string && request.resource.data.reason.size() <= 300
+          && request.resource.data.createdAt == request.time;
+      allow update: if isUser(uid)
+          && resource.data.status != 'pending'
+          && request.resource.data.keys().hasOnly(['userId', 'status', 'reason', 'createdAt'])
+          && request.resource.data.status == 'pending'
+          && request.resource.data.userId == uid
+          && request.resource.data.createdAt == request.time;
+      allow update: if isAdmin()
+          && changedKeys().hasOnly(['status', 'handledBy', 'handledAt'])
+          && request.resource.data.status in ['pending', 'done', 'rejected'];
+      allow delete: if false;
+    }
+
     match /admins/{uid} {
       allow read: if isUser(uid);
       allow write: if false;

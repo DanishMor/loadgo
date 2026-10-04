@@ -1034,3 +1034,31 @@ describe('favourite routes', () => {
     await assertSucceeds(deleteDoc(doc(as('driver1'), 'users', 'driver1', 'favourite_routes', 'r1')));
   });
 });
+
+describe('settings, consents and deletion requests', () => {
+  test('notificationPrefs and consents must be boolean maps with known keys', async () => {
+    await seed((db) => setDoc(doc(db, 'users', 'u1'), { phone: '+91' }));
+    const u = doc(as('u1'), 'users', 'u1');
+    await assertSucceeds(updateDoc(u, { notificationPrefs: { bookingUpdates: true, ratings: false, promotions: true } }));
+    await assertSucceeds(updateDoc(u, { consents: { location: true, analytics: false, marketing: false }, consentsUpdatedAt: serverTimestamp() }));
+    await assertFails(updateDoc(u, { notificationPrefs: { bookingUpdates: 'yes', ratings: false, promotions: true } }));
+    await assertFails(updateDoc(u, { notificationPrefs: { bookingUpdates: true, ratings: true, promotions: true, spam: true } }));
+    await assertFails(updateDoc(u, { consents: 'all' }));
+  });
+
+  test('one deletion request per user; admin marks it done', async () => {
+    const req = (extra = {}) => ({ userId: 'u1', status: 'pending', reason: 'leaving', createdAt: serverTimestamp(), ...extra });
+    await assertFails(setDoc(doc(as('u2'), 'deletion_requests', 'u1'), req()));
+    await assertFails(setDoc(doc(as('u1'), 'deletion_requests', 'u1'), req({ status: 'done' })));
+    await assertSucceeds(setDoc(doc(as('u1'), 'deletion_requests', 'u1'), req()));
+    await assertSucceeds(getDoc(doc(as('u1'), 'deletion_requests', 'u1')));
+    await assertFails(getDoc(doc(as('u2'), 'deletion_requests', 'u1')));
+    // Cannot re-request or edit while pending.
+    await assertFails(setDoc(doc(as('u1'), 'deletion_requests', 'u1'), req({ reason: 'again' })));
+    await assertFails(updateDoc(doc(as('u1'), 'deletion_requests', 'u1'), { status: 'done' }));
+    await assertSucceeds(updateDoc(doc(asAdmin(), 'deletion_requests', 'u1'), { status: 'done', handledBy: 'admin1', handledAt: serverTimestamp() }));
+    await assertSucceeds(getDocs(collection(asAdmin(), 'deletion_requests')));
+    await assertFails(getDocs(collection(as('u1'), 'deletion_requests')));
+    await assertFails(deleteDoc(doc(asAdmin(), 'deletion_requests', 'u1')));
+  });
+});

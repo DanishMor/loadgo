@@ -28,6 +28,7 @@ class AdminDashboardScreen extends StatelessWidget {
       ('adminSos', 'adminSos', Icons.sos_rounded, const AdminSosScreen()),
       ('adminReports', 'adminReports', Icons.flag_outlined, const AdminReportsScreen()),
       ('flaggedUsers', 'flaggedUsers', Icons.warning_amber_rounded, const FlaggedUsersScreen()),
+      ('adminDeletionRequests', 'adminDeletionRequests', Icons.person_remove_outlined, const AdminDeletionRequestsScreen()),
       ('adminConfig', 'adminConfig', Icons.tune_rounded, const AdminConfigScreen()),
     ];
     return Scaffold(

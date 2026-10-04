@@ -12,6 +12,9 @@ import '../../core/widgets/live_stream.dart';
 import 'edit_profile_screen.dart';
 import '../../core/support/support_screens.dart';
 import '../../admin/admin_entry.dart';
+import '../../core/settings/settings_screen.dart';
+import '../../customer/customer_analytics_screen.dart';
+import '../../driver/driver_analytics_screen.dart';
 import '../../core/safety/emergency_contacts_screen.dart';
 
 /// Profile tab for both roles: identity, contact details, average rating and
@@ -126,6 +129,24 @@ class _ProfileViewState extends State<ProfileView> {
                       title: Text(tr(context, 'language')),
                       trailing: Text(trLanguageName(LanguageScope.of(context))),
                       onTap: () => showLanguageSelector(context),
+                    ),
+                    ListTile(
+                      key: const ValueKey('profileAnalytics'),
+                      contentPadding: EdgeInsets.zero,
+                      leading: const Icon(Icons.bar_chart_rounded, color: AppColors.muted),
+                      title: Text(tr(context, 'myAnalytics')),
+                      trailing: const Icon(Icons.chevron_right_rounded),
+                      onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                        builder: (_) => widget.isDriver ? const DriverAnalyticsScreen() : const CustomerAnalyticsScreen(),
+                      )),
+                    ),
+                    ListTile(
+                      key: const ValueKey('profileSettings'),
+                      contentPadding: EdgeInsets.zero,
+                      leading: const Icon(Icons.settings_outlined, color: AppColors.muted),
+                      title: Text(tr(context, 'settings')),
+                      trailing: const Icon(Icons.chevron_right_rounded),
+                      onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => SettingsScreen(onLogout: _logout))),
                     ),
                     const AdminEntryTile(),
                     ListTile(

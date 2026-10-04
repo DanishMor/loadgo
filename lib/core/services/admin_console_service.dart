@@ -178,6 +178,20 @@ class AdminConsoleService {
         'updatedAt': FieldValue.serverTimestamp(),
       });
 
+  // ---- deletion requests ----
+
+  static Stream<List<QueryDocumentSnapshot<Map<String, dynamic>>>> watchDeletionRequests() =>
+      _db.collection('deletion_requests').limit(listLimit).snapshots().map((s) => s.docs);
+
+  static Future<void> setDeletionStatus(String userId, String status) {
+    assert(const ['pending', 'done', 'rejected'].contains(status));
+    return _db.collection('deletion_requests').doc(userId).update({
+      'status': status,
+      'handledBy': Backend.requireUid(),
+      'handledAt': FieldValue.serverTimestamp(),
+    });
+  }
+
   // ---- config ----
 
   static Future<Map<String, dynamic>?> readConfig(String docId) async =>

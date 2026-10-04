@@ -430,3 +430,33 @@ class AdminReportsScreen extends StatelessWidget {
     );
   }
 }
+
+// ---- deletion requests ----
+
+class AdminDeletionRequestsScreen extends StatelessWidget {
+  const AdminDeletionRequestsScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return _LiveList(
+      titleKey: 'adminDeletionRequests',
+      stream: AdminConsoleService.watchDeletionRequests,
+      tile: (context, d) {
+        final r = d.data();
+        final pending = (r['status'] ?? 'pending') == 'pending';
+        return ListTile(
+          key: ValueKey('deletion_${d.id}'),
+          title: Text('${r['userId'] ?? d.id}'),
+          subtitle: Text([r['status'] ?? '', r['reason'] ?? '', _ts(r['createdAt'])].where((e) => e.toString().isNotEmpty).join(' · ')),
+          trailing: pending
+              ? TextButton(
+                  key: ValueKey('deletionDone_${d.id}'),
+                  onPressed: () => _run(context, () => AdminConsoleService.setDeletionStatus(d.id, 'done')),
+                  child: Text(tr(context, 'adminMarkDone')),
+                )
+              : null,
+        );
+      },
+    );
+  }
+}
