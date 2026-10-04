@@ -21,12 +21,16 @@ class OtpVerificationScreen extends StatefulWidget {
   final int? resendToken;
   final bool isDriver;
 
+  /// `customer`, `driver` or `fleet`. Defaults from [isDriver].
+  final String? role;
+
   const OtpVerificationScreen({
     super.key,
     required this.phoneNumber,
     required this.verificationId,
     this.resendToken,
     this.isDriver = false,
+    this.role,
   });
 
   @override
@@ -127,7 +131,12 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
       await syncLanguageAfterLogin();
 
       Widget next;
-      if (widget.isDriver) {
+      final role = widget.role ?? (widget.isDriver ? 'driver' : 'customer');
+      if (role == 'fleet') {
+        await UserService.markRoleSelected('fleet');
+        await _registerDevice();
+        next = await resolveFleetStart();
+      } else if (role == 'driver') {
         await UserService.markRoleSelected('driver');
         await _registerDevice();
         next = await resolveDriverStart();

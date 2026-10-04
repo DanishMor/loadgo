@@ -13,6 +13,8 @@ import 'driver_profile_setup_screen.dart';
 import 'role_selection_screen.dart';
 import '../customer/customer_home_screen.dart';
 import '../driver/driver_home_screen.dart';
+import '../fleet/fleet_home_screen.dart';
+import 'fleet_profile_setup_screen.dart';
 
 
 // ============================================================
@@ -70,3 +72,11 @@ Future<Widget> resolveDriverStart() async {
   return const DriverHomeScreen();
 }
 
+
+
+/// Fleet owners: profile (name, company, PAN) first, then the fleet home.
+Future<Widget> resolveFleetStart() async {
+  final data = await UserService.getUser();
+  if (data == null || data['fleetProfileComplete'] != true) return const FleetProfileSetupScreen();
+  return const FleetHomeScreen();
+}

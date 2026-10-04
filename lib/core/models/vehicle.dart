@@ -21,6 +21,9 @@ class Vehicle {
   final DateTime? nextServiceDate;
   final DateTime? nextTyreCheckDate;
 
+  /// Driver a fleet owner gave this vehicle to (null = the owner drives it).
+  final String? assignedDriverId;
+
   /// Optional profile: cargo space in metres, fuel and body type.
   final VehicleProfile profile;
 
@@ -38,6 +41,7 @@ class Vehicle {
     this.docs = const {},
     this.nextServiceDate,
     this.nextTyreCheckDate,
+    this.assignedDriverId,
     this.profile = const VehicleProfile(),
   });
 
@@ -84,6 +88,7 @@ class Vehicle {
       },
       nextServiceDate: (d['nextServiceDate'] as Timestamp?)?.toDate(),
       nextTyreCheckDate: (d['nextTyreCheckDate'] as Timestamp?)?.toDate(),
+      assignedDriverId: d['assignedDriverId'] as String?,
       profile: VehicleProfile.fromMap(d),
     );
   }

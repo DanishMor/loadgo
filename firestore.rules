@@ -182,7 +182,7 @@ service cloud.firestore {
     // `role` (customer | driver) is set once and then frozen; selectedRole
     // must keep matching it. Older accounts without `role` may set it once.
     function validRole(r) {
-      return r == null || r in ['customer', 'driver'];
+      return r == null || r in ['customer', 'driver', 'fleet'];
     }
 
     function roleLockOk() {
@@ -308,6 +308,7 @@ service cloud.firestore {
           && (!('nextServiceDate' in d) || d.nextServiceDate is timestamp)
           && (!('nextTyreCheckDate' in d) || d.nextTyreCheckDate is timestamp)
           && validVehicleProfile(d)
+          && (!('assignedDriverId' in d) || (d.assignedDriverId is string && d.assignedDriverId.size() >= 1 && d.assignedDriverId.size() <= 60))
           // RC photo must point at Firebase Storage when present.
           && (!('rcImageUrl' in d) || (d.rcImageUrl is string
               && d.rcImageUrl.matches('https://firebasestorage[.]googleapis[.]com/.*|http://(127[.]0[.]0[.]1|localhost|10[.]0[.]2[.]2):9199/.*')));
@@ -324,6 +325,28 @@ service cloud.firestore {
       return before == after || (before != 'suspended' && after != 'suspended');
     }
 
+    // A fleet owner assigns a vehicle to one of their active drivers
+    // (fleet_members); that driver can then take loads with it and flip it
+    // between available and on_trip.
+    function activeMember(ownerId, driverId) {
+      return exists(docPath('fleet_members', ownerId + '_' + driverId))
+          && get(docPath('fleet_members', ownerId + '_' + driverId)).data.active == true;
+    }
+
+    function assignmentOk() {
+      let now = request.resource.data.get('assignedDriverId', null);
+      return now == resource.data.get('assignedDriverId', null)
+          || now == null
+          || (now is string && activeMember(request.auth.uid, now));
+    }
+
+    function assignedDriverAvailability() {
+      return resource.data.get('assignedDriverId', '') == request.auth.uid
+          && changedKeys().hasOnly(['availability', 'updatedAt'])
+          && availabilityOf(resource.data) in ['available', 'on_trip']
+          && request.resource.data.availability in ['available', 'on_trip'];
+    }
+
     match /vehicles/{vehicleId} {
       allow read: if signedIn();
       allow create: if signedIn()
@@ -336,8 +359,10 @@ service cloud.firestore {
               && request.resource.data.ownerId == request.auth.uid
               && validVehicle(request.resource.data)
               && ownerAvailabilityOk()
+              && assignmentOk()
               && (request.resource.data.number == resource.data.number
                   || numberReservedFor(vehicleId, request.resource.data.number)))
+            || assignedDriverAvailability()
             || (isAdmin()
               && changedKeys().hasOnly(['availability', 'updatedAt'])
               && validVehicle(request.resource.data)));
@@ -386,7 +411,7 @@ service cloud.firestore {
       allow create: if signedIn()
           && request.resource.data.keys().hasOnly(['uid', 'role', 'type', 'createdAt'])
           && request.resource.data.uid == request.auth.uid
-          && request.resource.data.role in ['customer', 'driver']
+          && request.resource.data.role in ['customer', 'driver', 'fleet']
           && request.resource.data.type in ['dl', 'pan', 'rc', 'gst']
           && request.resource.data.role == getAfter(docPath('users', request.auth.uid)).data.get('role', request.resource.data.role)
           && hash.matches('^[0-9a-f]{64}$')
@@ -753,7 +778,7 @@ service cloud.firestore {
       return b.keys().hasOnly(['loadId', 'driverId', 'vehicleId', 'customerId', 'status', 'pickup', 'drop', 'cargoType', 'weight',
                                'vehicleType', 'budget', 'fareEstimate', 'offerId', 'agreedFarePaise', 'extraPickups', 'extraDrops',
                                'pickupSlot', 'scheduledAt', 'bookingType', 'helpers', 'rentalHours', 'paymentMode', 'paymentStatus', 'containerNumber', 'sealNumber', 'pickupDate', 'notes',
-                               'vehicleNumber', 'driverName', 'driverPhone', 'timeline', 'createdAt', 'updatedAt'])
+                               'vehicleNumber', 'driverName', 'driverPhone', 'fleetOwnerId', 'timeline', 'createdAt', 'updatedAt'])
           && b.timeline.keys().hasOnly(['accepted'])
           && b.driverId == request.auth.uid
           && canTransact(request.auth.uid)
@@ -782,7 +807,11 @@ service cloud.firestore {
           && loadAfter.driverId == request.auth.uid
           && loadAfter.bookingId == bookingId
           && offerConfirmOk(bookingId, b)
-          && get(docPath('vehicles', b.vehicleId)).data.ownerId == request.auth.uid
+          && (get(docPath('vehicles', b.vehicleId)).data.ownerId == request.auth.uid
+              || get(docPath('vehicles', b.vehicleId)).data.get('assignedDriverId', '') == request.auth.uid)
+          && (get(docPath('vehicles', b.vehicleId)).data.ownerId == request.auth.uid
+              ? !('fleetOwnerId' in b)
+              : b.get('fleetOwnerId', '') == get(docPath('vehicles', b.vehicleId)).data.ownerId)
           && get(docPath('vehicles', b.vehicleId)).data.get('status', 'active') == 'active'
           && availabilityOf(get(docPath('vehicles', b.vehicleId)).data) == 'available';
     }
@@ -846,6 +875,7 @@ service cloud.firestore {
       allow read: if signedIn()
           && (resource.data.driverId == request.auth.uid
               || resource.data.customerId == request.auth.uid
+              || resource.data.get('fleetOwnerId', '') == request.auth.uid
               || isAdmin());
       allow create: if signedIn() && validBookingCreate(bookingId);
       allow update: if signedIn()
@@ -1293,6 +1323,56 @@ service cloud.firestore {
             && request.resource.data.createdAt == request.time;
         allow update, delete: if false;
       }
+    }
+
+    // ------------------------------------------------------------------
+    // Fleet owners. fleet_invites/{ownerId}_{phoneDigits}: the owner invites a
+    // driver by phone number; the driver (matched by the phone number on
+    // their sign-in token) accepts or declines. fleet_members/{ownerId}_
+    // {driverUid}: created by the driver once an accepted invite exists; either
+    // side can end it. Vehicles are then assigned to members (see vehicles).
+    // ------------------------------------------------------------------
+    function phoneDigits(p) {
+      return p.replace('[+]', '');
+    }
+
+    match /fleet_invites/{inviteId} {
+      allow read: if signedIn() && (resource.data.ownerId == request.auth.uid
+          || resource.data.phone == request.auth.token.get('phone_number', ''));
+      allow create: if signedIn()
+          && get(docPath('users', request.auth.uid)).data.get('role', '') == 'fleet'
+          && request.resource.data.keys().hasOnly(['ownerId', 'ownerName', 'phone', 'status', 'createdAt'])
+          && request.resource.data.ownerId == request.auth.uid
+          && request.resource.data.phone is string && request.resource.data.phone.matches('^[+]91[0-9]{10}$')
+          && inviteId == request.auth.uid + '_' + phoneDigits(request.resource.data.phone)
+          && request.resource.data.get('ownerName', '') is string && request.resource.data.get('ownerName', '').size() <= 60
+          && request.resource.data.status == 'pending'
+          && request.resource.data.createdAt == request.time;
+      allow update: if signedIn() && changedKeys().hasOnly(['status', 'answeredAt'])
+          && ((resource.data.ownerId == request.auth.uid
+                  && resource.data.status == 'pending' && request.resource.data.status == 'cancelled')
+              || (resource.data.phone == request.auth.token.get('phone_number', '')
+                  && resource.data.status == 'pending' && request.resource.data.status in ['accepted', 'declined']));
+      allow delete: if false;
+    }
+
+    match /fleet_members/{memberId} {
+      allow read: if signedIn() && (resource.data.ownerId == request.auth.uid || resource.data.driverId == request.auth.uid);
+      allow create: if signedIn()
+          && request.resource.data.keys().hasOnly(['ownerId', 'ownerName', 'driverId', 'driverName', 'driverPhone', 'active', 'createdAt'])
+          && request.resource.data.driverId == request.auth.uid
+          && memberId == request.resource.data.ownerId + '_' + request.auth.uid
+          && request.resource.data.active == true
+          && request.resource.data.createdAt == request.time
+          && get(docPath('users', request.auth.uid)).data.get('role', '') == 'driver'
+          && getAfter(docPath('fleet_invites', request.resource.data.ownerId + '_' + phoneDigits(request.auth.token.get('phone_number', '')))).data.status == 'accepted'
+          && request.resource.data.driverPhone == request.auth.token.get('phone_number', '');
+      // Either side ends the membership (active goes true -> false only).
+      allow update: if signedIn()
+          && (resource.data.ownerId == request.auth.uid || resource.data.driverId == request.auth.uid)
+          && changedKeys().hasOnly(['active', 'endedAt'])
+          && resource.data.active == true && request.resource.data.active == false;
+      allow delete: if false;
     }
 
     // ------------------------------------------------------------------

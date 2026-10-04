@@ -9,7 +9,10 @@ import '../core/l10n/language_widgets.dart';
 import 'start_resolvers.dart';
 import 'otp_verification_screen.dart';
 class DriverLoginScreen extends StatefulWidget {
-  const DriverLoginScreen({super.key});
+  /// `driver` (default) or `fleet`: the same phone login with another door.
+  final String role;
+
+  const DriverLoginScreen({super.key, this.role = 'driver'});
 
   @override
   State<DriverLoginScreen> createState() => _DriverLoginScreenState();
@@ -47,9 +50,9 @@ class _DriverLoginScreenState extends State<DriverLoginScreen> {
           try {
             await FirebaseAuth.instance.signInWithCredential(credential);
             if (!mounted) return;
-            await UserService.markRoleSelected('driver');
+            await UserService.markRoleSelected(widget.role);
             await syncLanguageAfterLogin();
-            final next = await resolveDriverStart();
+            final next = widget.role == 'fleet' ? await resolveFleetStart() : await resolveDriverStart();
             if (!mounted) return;
             setState(() => _isLoading = false);
             Navigator.of(context).pushAndRemoveUntil(
@@ -72,7 +75,8 @@ class _DriverLoginScreenState extends State<DriverLoginScreen> {
                 phoneNumber: phone,
                 verificationId: verificationId,
                 resendToken: resendToken,
-                isDriver: true,
+                isDriver: widget.role == 'driver',
+                role: widget.role,
               ),
             ),
           );
@@ -90,7 +94,7 @@ class _DriverLoginScreenState extends State<DriverLoginScreen> {
         elevation: 0,
         scrolledUnderElevation: 0,
         leading: IconButton(icon: const Icon(Icons.arrow_back_rounded), onPressed: () => Navigator.of(context).pop()),
-        title: Text(tr(context, 'driverLoginTitle'), style: const TextStyle(fontWeight: FontWeight.w700)),
+        title: Text(tr(context, widget.role == 'fleet' ? 'fleetLoginTitle' : 'driverLoginTitle'), style: const TextStyle(fontWeight: FontWeight.w700)),
         actions: const [LanguageButton()],
       ),
       body: SafeArea(
@@ -112,11 +116,11 @@ class _DriverLoginScreenState extends State<DriverLoginScreen> {
                 ),
                 const SizedBox(height: 28),
                 Center(
-                  child: Text(tr(context, 'driverLoginTitle'), textAlign: TextAlign.center, style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: Color(0xFF111827))),
+                  child: Text(tr(context, widget.role == 'fleet' ? 'fleetLoginTitle' : 'driverLoginTitle'), textAlign: TextAlign.center, style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: Color(0xFF111827))),
                 ),
                 const SizedBox(height: 8),
                 Center(
-                  child: Text(tr(context, 'driverLoginSub'), textAlign: TextAlign.center, style: const TextStyle(fontSize: 15, color: Color(0xFF667085))),
+                  child: Text(tr(context, widget.role == 'fleet' ? 'fleetLoginSub' : 'driverLoginSub'), textAlign: TextAlign.center, style: const TextStyle(fontSize: 15, color: Color(0xFF667085))),
                 ),
                 const SizedBox(height: 40),
                 Text(tr(context, 'mobile'), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: Color(0xFF344054))),

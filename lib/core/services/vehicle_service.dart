@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 
@@ -24,21 +25,59 @@ class VehicleService {
   static bool isValidNumber(String raw) =>
       RegExp(r'^[A-Z0-9]{6,12}$').hasMatch(normalizeNumber(raw));
 
+  /// Vehicles the signed-in user owns plus vehicles a fleet owner assigned
+  /// to them, newest first.
   static Stream<List<Vehicle>> watchMine() {
     final uid = Backend.uid;
     if (uid == null) return Stream.value(const []);
-    return _col.where('ownerId', isEqualTo: uid).snapshots().map((snap) {
-      final list = snap.docs.map(Vehicle.fromDoc).toList();
-      list.sort((a, b) => newestFirst(a.createdAt, b.createdAt));
-      return list;
-    });
+    late StreamController<List<Vehicle>> out;
+    List<Vehicle>? owned;
+    List<Vehicle>? assigned;
+    final subs = <StreamSubscription<dynamic>>[];
+    void emit() {
+      // Wait until both queries have answered so the first event is complete.
+      if (owned == null || assigned == null) return;
+      final byId = {for (final v in [...owned!, ...assigned!]) v.id: v};
+      final list = byId.values.toList()..sort((a, b) => newestFirst(a.createdAt, b.createdAt));
+      out.add(list);
+    }
+
+    out = StreamController<List<Vehicle>>(
+      onListen: () {
+        subs.add(_col.where('ownerId', isEqualTo: uid).snapshots().listen((s) {
+          owned = s.docs.map(Vehicle.fromDoc).toList();
+          emit();
+        }, onError: out.addError));
+        subs.add(_col.where('assignedDriverId', isEqualTo: uid).snapshots().listen((s) {
+          assigned = s.docs.map(Vehicle.fromDoc).toList();
+          emit();
+        }, onError: out.addError));
+      },
+      onCancel: () async {
+        for (final s in subs) {
+          await s.cancel();
+        }
+      },
+    );
+    return out.stream;
   }
 
   static Future<List<Vehicle>> fetchMyActive() async {
     final uid = Backend.requireUid();
-    final snap = await _col.where('ownerId', isEqualTo: uid).get();
-    return snap.docs.map(Vehicle.fromDoc).where((v) => v.isActive).toList();
+    final results = await Future.wait([
+      _col.where('ownerId', isEqualTo: uid).get(),
+      _col.where('assignedDriverId', isEqualTo: uid).get(),
+    ]);
+    final byId = {for (final s in results) for (final d in s.docs) d.id: Vehicle.fromDoc(d)};
+    return byId.values.where((v) => v.isActive).toList();
   }
+
+  /// Fleet owner: give [vehicleId] to one of the active drivers, or take it
+  /// back with null. Rules check the driver is an active member.
+  static Future<void> assignDriver(String vehicleId, String? driverId) => _col.doc(vehicleId).update({
+        'assignedDriverId': driverId ?? FieldValue.delete(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
 
   /// Storage path for a vehicle's RC image; the owner uid in the path is what
   /// storage.rules checks.

@@ -13,7 +13,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 final _import = RegExp(r'''^\s*(?:import|export)\s+['"]([^'"]+)['"]''', multiLine: true);
 
-const _roles = ['customer', 'driver', 'admin'];
+const _roles = ['customer', 'driver', 'admin', 'fleet'];
 
 /// The lib/ sub-folder of [path] ("lib/customer/x.dart" -> "customer"), or
 /// null for files directly in lib/ and for files outside lib/.

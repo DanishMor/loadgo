@@ -109,6 +109,54 @@ class UserService {
     await batch.commit();
   }
 
+  /// Fleet owner profile: name, company and PAN (unique across accounts),
+  /// optional GSTIN. Saved with their identity index entries.
+  static Future<void> saveFleetProfile({
+    required String name,
+    required String companyName,
+    required String pan,
+    String gstin = '',
+    required String language,
+  }) async {
+    final user = Backend.currentUser;
+    if (user == null) return;
+    final ref = _db.collection('users').doc(user.uid);
+    final before = (await ref.get()).data();
+    final cleanPan = normaliseDocNumber(pan);
+    if (!isValidPan(cleanPan)) throw ArgumentError.value(pan, 'pan');
+    final gst = normaliseGstin(gstin);
+    final batch = _db.batch();
+    final hashes = await IdentityIndex.applyChanges(
+      batch,
+      uid: user.uid,
+      role: 'fleet',
+      oldNumbers: {
+        IdentityType.pan: (before?['fleet'] as Map?)?['pan'] as String?,
+        IdentityType.gst: (before?['business'] as Map?)?['gstin'] as String?,
+      },
+      newNumbers: {IdentityType.pan: cleanPan, IdentityType.gst: gst},
+    );
+    batch.set(
+      ref,
+      {
+        'phone': user.phoneNumber,
+        'name': name,
+        'companyName': companyName,
+        'language': language,
+        'role': 'fleet',
+        'selectedRole': 'fleet',
+        'roles': FieldValue.arrayUnion(['fleet']),
+        'fleet': {'pan': cleanPan},
+        if (gst.isNotEmpty) 'business': {'legalName': companyName, 'gstin': gst},
+        'identityHashes': hashes,
+        'fleetProfileComplete': true,
+        'updatedAt': FieldValue.serverTimestamp(),
+      },
+      SetOptions(merge: true),
+    );
+    await batch.commit();
+  }
+
   /// Driver onboarding documents (also used to edit them later). Saved
   /// together with their identity index entries, so a document already used
   /// by another account is refused ([DuplicateIdentityException]) and nothing

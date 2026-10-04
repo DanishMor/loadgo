@@ -1116,6 +1116,126 @@ describe('empty truck board', () => {
   });
 });
 
+describe('fleet owners', () => {
+  const asPhone = (uid, phone) => env.authenticatedContext(uid, { phone_number: phone }).firestore();
+  const DRIVER_PHONE = '+919876543210';
+  const invite = (over = {}) => ({ ownerId: 'owner1', ownerName: 'Sunil', phone: DRIVER_PHONE, status: 'pending', createdAt: serverTimestamp(), ...over });
+  const seedUsers = () =>
+    seed(async (db) => {
+      await setDoc(doc(db, 'users', 'owner1'), { role: 'fleet', selectedRole: 'fleet' });
+      await setDoc(doc(db, 'users', 'driver1'), { role: 'driver', selectedRole: 'driver', verified: true });
+      await setDoc(doc(db, 'users', 'customer1'), { role: 'customer', selectedRole: 'customer' });
+    });
+
+  test('fleet is a role that is set once like the others', async () => {
+    await assertSucceeds(setDoc(doc(as('f1'), 'users', 'f1'), { role: 'fleet', selectedRole: 'fleet' }));
+    await assertFails(setDoc(doc(as('f2'), 'users', 'f2'), { role: 'owner' }));
+  });
+
+  test('only a fleet owner invites, for a valid phone, under their own id', async () => {
+    await seedUsers();
+    const id = 'owner1_919876543210';
+    await assertSucceeds(setDoc(doc(as('owner1'), 'fleet_invites', id), invite()));
+    await assertFails(setDoc(doc(as('customer1'), 'fleet_invites', 'customer1_919876543210'), invite({ ownerId: 'customer1' })));
+    await assertFails(setDoc(doc(as('owner1'), 'fleet_invites', 'owner1_919876543211'), invite()), 'id must match the phone');
+    await assertFails(setDoc(doc(as('owner1'), 'fleet_invites', 'owner1_12345'), invite({ phone: '12345' })));
+    await assertFails(setDoc(doc(as('owner1'), 'fleet_invites', id), invite({ status: 'accepted' })));
+  });
+
+  test('the invited phone accepts or declines once; the owner cancels; strangers read nothing', async () => {
+    await seedUsers();
+    const id = 'owner1_919876543210';
+    await seed((db) => setDoc(doc(db, 'fleet_invites', id), invite({ createdAt: Timestamp.now() })));
+    await assertFails(getDoc(doc(as('customer1'), 'fleet_invites', id)));
+    await assertSucceeds(getDoc(doc(asPhone('driver1', DRIVER_PHONE), 'fleet_invites', id)));
+    await assertSucceeds(getDoc(doc(as('owner1'), 'fleet_invites', id)));
+    await assertFails(updateDoc(doc(asPhone('driver2', '+919000000000'), 'fleet_invites', id), { status: 'accepted', answeredAt: serverTimestamp() }));
+    await assertFails(updateDoc(doc(as('owner1'), 'fleet_invites', id), { status: 'accepted', answeredAt: serverTimestamp() }), 'owner cannot accept for the driver');
+    await assertSucceeds(updateDoc(doc(asPhone('driver1', DRIVER_PHONE), 'fleet_invites', id), { status: 'accepted', answeredAt: serverTimestamp() }));
+    await assertFails(updateDoc(doc(asPhone('driver1', DRIVER_PHONE), 'fleet_invites', id), { status: 'declined', answeredAt: serverTimestamp() }), 'already answered');
+    await assertFails(updateDoc(doc(as('owner1'), 'fleet_invites', id), { status: 'cancelled', answeredAt: serverTimestamp() }), 'already answered');
+  });
+
+  const member = (over = {}) => ({
+    ownerId: 'owner1', ownerName: 'Sunil', driverId: 'driver1', driverName: 'Ramesh', driverPhone: DRIVER_PHONE, active: true, createdAt: serverTimestamp(), ...over,
+  });
+
+  test('a driver joins only after the owner\'s invite to their phone is accepted', async () => {
+    await seedUsers();
+    const inviteId = 'owner1_919876543210';
+    await seed((db) => setDoc(doc(db, 'fleet_invites', inviteId), invite({ createdAt: Timestamp.now() })));
+    const d = () => asPhone('driver1', DRIVER_PHONE);
+    // still pending: no membership
+    await assertFails(setDoc(doc(d(), 'fleet_members', 'owner1_driver1'), member()));
+    await seed((db) => updateDoc(doc(db, 'fleet_invites', inviteId), { status: 'accepted' }));
+    await assertFails(setDoc(doc(d(), 'fleet_members', 'owner1_driver1'), member({ active: false })));
+    await assertFails(setDoc(doc(d(), 'fleet_members', 'owner1_driver1'), member({ driverPhone: '+919000000000' })));
+    await assertFails(setDoc(doc(asPhone('customer1', DRIVER_PHONE), 'fleet_members', 'owner1_customer1'), member({ driverId: 'customer1' })), 'customers cannot join');
+    await assertSucceeds(setDoc(doc(d(), 'fleet_members', 'owner1_driver1'), member()));
+    await assertSucceeds(getDoc(doc(as('owner1'), 'fleet_members', 'owner1_driver1')));
+    await assertFails(getDoc(doc(as('customer1'), 'fleet_members', 'owner1_driver1')));
+  });
+
+  test('either side ends a membership; nothing else changes', async () => {
+    await seedUsers();
+    await seed((db) => setDoc(doc(db, 'fleet_members', 'owner1_driver1'), member({ createdAt: Timestamp.now() })));
+    await assertFails(updateDoc(doc(as('driver1'), 'fleet_members', 'owner1_driver1'), { driverName: 'X' }));
+    await assertFails(updateDoc(doc(as('customer1'), 'fleet_members', 'owner1_driver1'), { active: false, endedAt: serverTimestamp() }));
+    await assertSucceeds(updateDoc(doc(as('driver1'), 'fleet_members', 'owner1_driver1'), { active: false, endedAt: serverTimestamp() }));
+    await assertFails(updateDoc(doc(as('owner1'), 'fleet_members', 'owner1_driver1'), { active: true }), 'no re-activation');
+  });
+
+  describe('vehicles and bookings', () => {
+    const seedFleet = () =>
+      seed(async (db) => {
+        await setDoc(doc(db, 'users', 'owner1'), { role: 'fleet', selectedRole: 'fleet' });
+        await setDoc(doc(db, 'users', 'driver1'), { role: 'driver', selectedRole: 'driver', verified: true });
+        await setDoc(doc(db, 'fleet_members', 'owner1_driver1'), member({ createdAt: Timestamp.now() }));
+        await setDoc(doc(db, 'fleet_members', 'owner1_driver2'), member({ driverId: 'driver2', createdAt: Timestamp.now(), active: false }));
+        await setDoc(doc(db, 'vehicles', 'fv1'), { ...VEHICLE, ownerId: 'owner1' });
+        await setDoc(doc(db, 'vehicle_numbers', VEHICLE.number), { ownerId: 'owner1', vehicleId: 'fv1' });
+        await setDoc(doc(db, 'loads', 'L1'), { ...LOAD, status: 'open' });
+      });
+
+    test('the owner assigns a vehicle to an active member only', async () => {
+      await seedFleet();
+      const ref = () => doc(as('owner1'), 'vehicles', 'fv1');
+      await assertSucceeds(updateDoc(ref(), { assignedDriverId: 'driver1' }));
+      await assertFails(updateDoc(ref(), { assignedDriverId: 'driver2' }), 'ended member');
+      await assertFails(updateDoc(ref(), { assignedDriverId: 'stranger' }));
+      await assertSucceeds(updateDoc(ref(), { assignedDriverId: deleteField() }));
+    });
+
+    test('the assigned driver flips availability but edits nothing else', async () => {
+      await seedFleet();
+      await seed((db) => updateDoc(doc(db, 'vehicles', 'fv1'), { assignedDriverId: 'driver1' }));
+      await assertSucceeds(updateDoc(doc(as('driver1'), 'vehicles', 'fv1'), { availability: 'on_trip' }));
+      await assertFails(updateDoc(doc(as('driver1'), 'vehicles', 'fv1'), { availability: 'maintenance' }));
+      await assertFails(updateDoc(doc(as('driver1'), 'vehicles', 'fv1'), { capacity: 99 }));
+      await assertFails(updateDoc(doc(as('driver1'), 'vehicles', 'fv1'), { assignedDriverId: 'driver1x' }));
+      await assertFails(updateDoc(doc(as('driver3'), 'vehicles', 'fv1'), { availability: 'on_trip' }));
+    });
+
+    test('the assigned driver takes a load with the fleet vehicle; the booking names the owner', async () => {
+      await seedFleet();
+      await seed((db) => updateDoc(doc(db, 'vehicles', 'fv1'), { assignedDriverId: 'driver1' }));
+      const over = { vehicleId: 'fv1' };
+      await assertFails(acceptBatch(as('driver1'), 'L1', 'driver1', over), 'owner id missing');
+      await assertFails(acceptBatch(as('driver1'), 'L1', 'driver1', { ...over, fleetOwnerId: 'someoneElse' }));
+      await assertFails(acceptBatch(as('driver2'), 'L1', 'driver2', { ...over, fleetOwnerId: 'owner1' }), 'not assigned');
+      await assertSucceeds(acceptBatch(as('driver1'), 'L1', 'driver1', { ...over, fleetOwnerId: 'owner1' }));
+      await assertSucceeds(getDoc(doc(as('owner1'), 'bookings', 'L1')));
+      await assertFails(getDoc(doc(as('driver3'), 'bookings', 'L1')));
+    });
+
+    test('the owner drives their own vehicle without a fleetOwnerId', async () => {
+      await seedFleet();
+      await assertFails(acceptBatch(as('owner1'), 'L1', 'owner1', { vehicleId: 'fv1', fleetOwnerId: 'owner1' }));
+      await assertSucceeds(acceptBatch(as('owner1'), 'L1', 'owner1', { vehicleId: 'fv1' }));
+    });
+  });
+});
+
 describe('admin verification', () => {
   const seedDriver = () => seed((db) => setDoc(doc(db, 'users', 'd1'), { driverName: 'R', verified: false, verificationStatus: 'pending' }));
 

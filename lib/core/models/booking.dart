@@ -39,6 +39,9 @@ class Booking {
   final List<String> extraDrops;
   final String pickupSlot;
 
+  /// Fleet owner of the vehicle when a fleet driver took the load.
+  final String? fleetOwnerId;
+
   /// Exact pickup time of an advance booking (copied from the load).
   final DateTime? scheduledAt;
 
@@ -141,6 +144,7 @@ class Booking {
     this.rentalHours,
     this.detention = const Detention(),
     this.scheduledAt,
+    this.fleetOwnerId,
     this.pickupGps,
     this.deliveryGps,
     this.odometerStart,
@@ -216,6 +220,7 @@ class Booking {
       rentalHours: (d['rentalHours'] as num?)?.toInt(),
       detention: Detention.fromMap(d['detention']),
       scheduledAt: (d['scheduledAt'] as Timestamp?)?.toDate(),
+      fleetOwnerId: d['fleetOwnerId'] as String?,
       pickupGps: d['pickupGps'] as GeoPoint?,
       deliveryGps: d['deliveryGps'] as GeoPoint?,
       odometerStart: (d['odometerStart'] as num?)?.toInt(),

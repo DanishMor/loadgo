@@ -102,6 +102,7 @@ class BookingService {
           'vehicleNumber': vehicle.number,
           'driverName': profile['driverName'] ?? '',
           'driverPhone': profile['phone'] ?? '',
+          if (vehicle.ownerId != uid) 'fleetOwnerId': vehicle.ownerId,
           'timeline': {BookingStatus.accepted: FieldValue.serverTimestamp()},
           'createdAt': FieldValue.serverTimestamp(),
           'updatedAt': FieldValue.serverTimestamp(),

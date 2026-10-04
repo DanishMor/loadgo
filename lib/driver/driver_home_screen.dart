@@ -33,6 +33,7 @@ import '../core/widgets/live_stream.dart';
 import 'my_vehicles_screen.dart';
 import 'vehicle_alerts_banner.dart';
 import 'my_offers_screen.dart';
+import 'fleet_invites_card.dart';
 import 'wallet_screen.dart';
 import '../core/documents/documents_center_screen.dart';
 
@@ -302,6 +303,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
             const SizedBox(height: 24),
             _title(tr(context, 'availableLoads')),
             const SizedBox(height: 12),
+            const FleetInvitesCard(),
             _isOnline ? _homeLoads() : _emptyCard(Icons.wifi_off_rounded, tr(context, 'goOnlineToSee')),
             const SizedBox(height: 24),
             Row(

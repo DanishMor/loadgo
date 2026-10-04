@@ -9,10 +9,11 @@ Customer and Driver apps can be published separately later (see docs/SPLIT_PLAN.
 - `lib/customer/` customer-only screens
 - `lib/driver/`   driver-only screens
 - `lib/admin/`    admin-only screens
+- `lib/fleet/`    fleet-owner-only screens (dashboard, vehicles, drivers)
 - `lib/main.dart` app shell only (`main()` and `LoadGoApp`); no feature code, and nothing imports it
 
 Import rules
-- `customer/`, `driver/` and `admin/` never import each other. They import `core/` (and `auth/` if they must).
+- `customer/`, `driver/`, `admin/` and `fleet/` never import each other. They import `core/` (and `auth/` if they must).
 - `core/` imports nothing from `auth/`, `customer/`, `driver/` or `admin/`. When core needs a screen from
   those folders it takes a builder or a widget list instead (`AppRoutes` in `core/navigation`, `ProfileView.extraTiles`).
 - `auth/` may import the role folders (it routes people into the right home screen).

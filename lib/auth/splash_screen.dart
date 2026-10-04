@@ -48,7 +48,9 @@ class _SplashScreenState extends State<SplashScreen> {
         final selectedRole = (data?['role'] ?? data?['selectedRole']) as String?;
         next = selectedRole == 'driver'
             ? await resolveDriverStart()
-            : await resolveCustomerStart();
+            : selectedRole == 'fleet'
+                ? await resolveFleetStart()
+                : await resolveCustomerStart();
       } catch (_) {
         next = const RoleSelectionScreen();
       }

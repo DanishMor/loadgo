@@ -13,8 +13,8 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | K Identity, KYC | 14 | 3 | 4 | 1 | 6 | 0 |
 | R Re-KYC | 12 | 5 | 1 | 2 | 4 | 0 |
 | C Customer app | 14 | 8 | 6 | 0 | 0 | 0 |
-| B Bike | 14 | 8 | 4 | 1 | 1 | 0 |
-| V Truck + fleet | 12 | 5 | 2 | 4 | 1 | 0 |
+| B Bike | 14 | 9 | 4 | 0 | 1 | 0 |
+| V Truck + fleet | 12 | 7 | 2 | 2 | 1 | 0 |
 | L Load marketplace | 14 | 11 | 2 | 1 | 0 | 0 |
 | P Booking + pricing | 14 | 10 | 2 | 1 | 1 | 0 |
 | M Map | 16 | 1 | 5 | 0 | 9 | 1 |
@@ -26,14 +26,14 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | PAY Payments | 14 | 4 | 4 | 1 | 5 | 0 |
 | DOC Documents | 14 | 8 | 6 | 0 | 0 | 0 |
 | IE Import/export | 14 | 11 | 2 | 1 | 0 | 0 |
-| BIZ Business | 15 | 4 | 1 | 7 | 3 | 0 |
+| BIZ Business | 15 | 4 | 2 | 6 | 3 | 0 |
 | F Anti-fraud | 18 | 4 | 9 | 0 | 5 | 0 |
 | SAFE Safety | 12 | 8 | 2 | 0 | 2 | 0 |
 | N Notifications | 15 | 10 | 1 | 2 | 2 | 0 |
 | AI AI | 14 | 0 | 0 | 0 | 14 | 0 |
 | BE Backend | 18 | 4 | 6 | 1 | 7 | 0 |
 | TEST Testing | 14 | 4 | 3 | 0 | 7 | 0 |
-| **Total** | **347** | **154** | **82** | **34** | **76** | **1** |
+| **Total** | **347** | **157** | **83** | **30** | **76** | **1** |
 
 ## P0 Principles
 
@@ -54,7 +54,7 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | A2 | Google login Optional secondary auth; Firebase identity linking ke saath. | Todo-free | Google button only shows "coming soon" (customer_login_screen.dart); google_sign_in is free |
 | A3 | Driver mobile OTP Driver signup/login with dedicated role. | Done | lib/auth/driver_login_screen.dart |
 | A4 | Business accounts Company owner, manager, dispatch, accounts, viewer roles. | Todo-free | No manager/dispatch/accounts/viewer roles |
-| A5 | Role-based access Customer, driver, transporter, fleet, shipper, importer, exporter, trader, | Partial | Customer and driver roles are locked once set (users.role, rules); admin = admins/{uid}; no transporter/fleet/importer roles |
+| A5 | Role-based access Customer, driver, transporter, fleet, shipper, importer, exporter, trader, | Partial | Customer, driver and fleet roles are locked once set; no transporter/importer roles |
 | A6 | New-device verification Naye device par extra verification / risk challenge. | Done | Device id kept per installation; a new device on an account with other devices raises a risk signal and shows as New in Settings > My devices |
 | A7 | Session management Trusted devices, logout all, session revoke. | Done | My devices: trust, sign out a device, log out everywhere (checked when the app starts; token revoke is TODO(functions)) |
 | A8 | Account recovery Secure recovery workflow; identity checks required for sensitive changes. | Paid-or-Later | No recovery flow; identity checks need KYC provider |
@@ -133,7 +133,7 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | B11 | Bike route tracking Real-time rider location and ETA. | Partial | Driver position shared to booking as text; no map/ETA |
 | B12 | Bike KYC Rider identity + DL + RC + insurance/PUC where applicable. | Partial | Same vehicle docs as trucks; no DL |
 | B13 | Business delivery Shops/businesses ke repeated local orders. | Partial | Bulk post (max 10), saved places, branches |
-| B14 | Fleet mode Multiple bikes/scooters under one fleet owner. | Todo-free | No fleet owner with multiple vehicles/drivers |
+| B14 | Fleet mode Multiple bikes/scooters under one fleet owner. | Done | Fleet owner role: several vehicles and invited drivers under one owner |
 
 ## V Truck + fleet
 
@@ -142,9 +142,9 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | V1 | Truck catalogue Open body, container, trailer, mini, 10-32 ft, multi-axle etc. | Done | config/vehicle_types, 15 types |
 | V2 | Vehicle profile Number, class, capacity, dimensions, fuel, body type. | Done | Number, type, capacity, RC, optional cargo dimensions, fuel and body type (vehicle profile, rules validated) |
 | V3 | Vehicle documents RC, insurance, PUC, fitness, permit and expiry. | Done | vehicle_documents_screen.dart insurance/PUC/fitness/permit + expiry |
-| V4 | Owner relationship Owner, authorised operator or fleet relationship record. | Todo-free | Only ownerId on vehicle |
+| V4 | Owner relationship Owner, authorised operator or fleet relationship record. | Done | Vehicle ownerId plus assignedDriverId (owner and authorised driver relationship) |
 | V5 | Driver assignment Vehicle-to-driver mapping with active assignment. | Todo-free | Driver owns vehicle; no assignment |
-| V6 | Fleet dashboard Vehicles, drivers, online/offline, active trips, idle vehicles. | Todo-free | No fleet dashboard |
+| V6 | Fleet dashboard Vehicles, drivers, online/offline, active trips, idle vehicles. | Done | Fleet dashboard: vehicles, drivers, trips on the road, idle vehicles, earnings |
 | V7 | Vehicle availability Available, busy, on-trip, maintenance, suspended. | Done | available/on_trip/maintenance/suspended, auto on_trip |
 | V8 | Maintenance reminders Service, tyre, insurance, PUC, fitness, permit. | Done | Next service and next tyre-check dates + in-app reminders (Home banner and notification list); push is the paid part |
 | V9 | FASTag layer Future partner/API integration for supported FASTag flows. | Paid-or-Later | FASTag partner API |
@@ -377,7 +377,7 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | BIZ5 | Permissions Role-based access. | Todo-free | No business roles |
 | BIZ6 | Approval workflow Large bookings ke liye manager approval. | Todo-free | No approval workflow |
 | BIZ7 | Bulk booking Multiple shipments ek saath. | Done | bulk_post_screen.dart (max 10) |
-| BIZ8 | Fleet management Company-owned/contracted vehicles. | Todo-free | No company fleet |
+| BIZ8 | Fleet management Company-owned/contracted vehicles. | Partial | Fleet owner can manage owned vehicles; contracted/company-fleet records come with Task 14 |
 | BIZ9 | Driver pool Assigned/approved drivers. | Todo-free | No driver pool |
 | BIZ10 | Expense dashboard Transport spend, fuel, toll etc. | Todo-free | No expense dashboard |
 | BIZ11 | Reports Routes, trips, payments, POD. | Done | route_report_screen.dart with CSV copy |
