@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../core/constants/logistics.dart';
 import '../../core/services/load_service.dart';
@@ -6,6 +7,9 @@ import '../../core/widgets/common.dart';
 import '../../main.dart';
 import '../../core/services/vehicle_type_service.dart';
 import '../../core/widgets/vehicle_type_widgets.dart';
+import '../../core/services/pricing_service.dart';
+import '../../core/pricing/fare_calculator.dart';
+import '../../core/widgets/fare_breakdown.dart';
 
 /// Customer form to post a load. Pops with `true` once posted.
 class PostLoadScreen extends StatefulWidget {
@@ -22,6 +26,7 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
   final _weightCtrl = TextEditingController();
   final _budgetCtrl = TextEditingController();
   final _notesCtrl = TextEditingController();
+  final _distanceCtrl = TextEditingController();
   String _cargoType = cargoTypes.first;
   String _vehicleType = '14ft';
   DateTime? _pickupDate;
@@ -34,7 +39,82 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
     _weightCtrl.dispose();
     _budgetCtrl.dispose();
     _notesCtrl.dispose();
+    _distanceCtrl.dispose();
     super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // Re-quote as the route or distance changes.
+    for (final c in [_pickupCtrl, _dropCtrl, _distanceCtrl]) {
+      c.addListener(_requote);
+    }
+  }
+
+  void _requote() => setState(() {});
+
+  int? get _manualKm {
+    final n = int.tryParse(_distanceCtrl.text.trim());
+    return (n != null && n > 0 && n <= 5000) ? n : null;
+  }
+
+  int? get _autoKm => PricingService.estimateKm(_pickupCtrl.text, _dropCtrl.text);
+
+  /// Quote for the current form, or null without a usable distance.
+  FareBreakdown? get _quote {
+    final km = _manualKm ?? _autoKm;
+    return km == null ? null : PricingService.quote(vehicleType: _vehicleType, distanceKm: km);
+  }
+
+  Widget _estimateCard() {
+    final auto = _autoKm;
+    final quote = _quote;
+    return AppCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            auto != null ? trf(context, 'distanceAuto', {'km': auto}) : tr(context, 'distanceUnknown'),
+            style: const TextStyle(color: AppColors.muted, fontSize: 13),
+          ),
+          const SizedBox(height: 10),
+          TextFormField(
+            key: const ValueKey('distanceKm'),
+            controller: _distanceCtrl,
+            keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            decoration: InputDecoration(prefixIcon: const Icon(Icons.straighten_rounded), labelText: tr(context, 'distanceOverride')),
+            validator: (v) {
+              final t = v?.trim() ?? '';
+              if (t.isEmpty) return null;
+              return _manualKm == null ? tr(context, 'invalidNumber') : null;
+            },
+          ),
+          if (quote != null) ...[
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(tr(context, 'fareTotal'), style: const TextStyle(color: AppColors.muted, fontSize: 12)),
+                      Text(formatPaise(quote.total),
+                          key: const ValueKey('fareTotal'),
+                          style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: AppColors.title)),
+                    ],
+                  ),
+                ),
+                TextButton(onPressed: () => showFareBreakdown(context, quote), child: Text(tr(context, 'viewBreakdown'))),
+              ],
+            ),
+          ],
+          const SizedBox(height: 6),
+          Text(tr(context, 'estimateNote'), style: const TextStyle(color: AppColors.faint, fontSize: 12)),
+        ],
+      ),
+    );
   }
 
   Future<void> _pickDate(FormFieldState<DateTime> field) async {
@@ -64,6 +144,8 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
         budget: budgetText.isEmpty ? null : num.parse(budgetText),
         pickupDate: _pickupDate!,
         notes: _notesCtrl.text,
+        estimate: _quote,
+        distanceSource: _manualKm != null ? DistanceSource.manual : DistanceSource.cities,
       );
       if (!mounted) return;
       showSnack(context, tr(context, 'loadPosted'));
@@ -144,6 +226,9 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
                     _formKey.currentState?.validate();
                   },
                 ),
+                const SizedBox(height: 18),
+                FieldLabel(tr(context, 'fareEstimate')),
+                _estimateCard(),
                 const SizedBox(height: 18),
                 FieldLabel(tr(context, 'budgetOptional')),
                 TextFormField(

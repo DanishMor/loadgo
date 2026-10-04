@@ -8,6 +8,7 @@ import '../../main.dart';
 import '../ratings/rating_widgets.dart';
 import 'booking_widgets.dart';
 import 'location_widgets.dart';
+import '../../core/services/pricing_service.dart';
 
 void openDriverTrip(BuildContext context, String bookingId) {
   Navigator.of(context).push(MaterialPageRoute(builder: (_) => DriverTripScreen(bookingId: bookingId)));
@@ -130,11 +131,27 @@ class _CancelBookingButtonState extends State<_CancelBookingButton> {
   bool _busy = false;
 
   Future<void> _cancel() async {
+    final charge = BookingService.cancellationCharge(widget.booking, DateTime.now());
+    final policy = PricingService.config.cancellation;
     final ok = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: Text(tr(dialogContext, 'cancelBooking')),
-        content: Text(tr(dialogContext, 'cancelBookingConfirm')),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(tr(dialogContext, 'cancelBookingConfirm')),
+            const SizedBox(height: 12),
+            Text(
+              charge == 0
+                  ? trf(dialogContext, 'cancelFree', {'m': policy.freeMinutes})
+                  : trf(dialogContext, 'cancelChargeNote', {'amount': formatPaise(charge)}),
+              key: const ValueKey('cancelPolicyNote'),
+              style: const TextStyle(fontSize: 13, color: AppColors.muted),
+            ),
+          ],
+        ),
         actions: [
           TextButton(onPressed: () => Navigator.of(dialogContext).pop(false), child: Text(tr(dialogContext, 'keepBooking'))),
           FilledButton(

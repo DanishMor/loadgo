@@ -147,7 +147,17 @@ service cloud.firestore {
           && d.weight is number && d.weight > 0
           && d.vehicleType is string
           && (d.get('budget', null) == null || (d.budget is number && d.budget > 0))
-          && d.pickupDate is timestamp;
+          && d.pickupDate is timestamp
+          && (!('estimate' in d) || validEstimate(d.estimate));
+    }
+
+    // Client-side fare estimate (integer paise). TODO(functions): compute
+    // and sign it server-side; rules can only check the shape.
+    function validEstimate(e) {
+      return e is map
+          && e.total is int && e.total >= 0
+          && e.tripFare is int && e.tripFare >= 0 && e.tripFare <= e.total
+          && e.distanceKm is int && e.distanceKm >= 0 && e.distanceKm <= 5000;
     }
 
     // Shipper edits/cancels a load that nobody has accepted yet.
@@ -240,6 +250,7 @@ service cloud.firestore {
           && b.drop == load.drop
           && b.weight == load.weight
           && b.get('budget', null) == load.get('budget', null)
+          && b.get('fareEstimate', null) == load.get('estimate', {}).get('total', null)
           && loadAfter.status == 'matched'
           && loadAfter.driverId == request.auth.uid
           && loadAfter.bookingId == bookingId
@@ -257,6 +268,12 @@ service cloud.firestore {
           && request.resource.data.lastKnownLocation is latlng;
     }
 
+    // Recorded policy charge for a driver cancellation. No money moves.
+    function validCancellation(c) {
+      return c == null || (c is map && c.keys().hasOnly(['by', 'chargePaise'])
+          && c.by == 'driver' && c.chargePaise is int && c.chargePaise >= 0 && c.chargePaise <= 10000000);
+    }
+
     match /bookings/{bookingId} {
       allow read: if signedIn()
           && (resource.data.driverId == request.auth.uid
@@ -264,11 +281,14 @@ service cloud.firestore {
       allow create: if signedIn() && validBookingCreate(bookingId);
       allow update: if signedIn()
           && resource.data.driverId == request.auth.uid
-          && (driverLocationUpdate() || (changedKeys().hasOnly(['status', 'timeline', 'updatedAt'])
-          && (request.resource.data.status == nextBookingStatus(resource.data.status)
-              || (resource.data.status == 'accepted'
+          && (driverLocationUpdate()
+              || (changedKeys().hasOnly(['status', 'timeline', 'updatedAt'])
+                  && request.resource.data.status == nextBookingStatus(resource.data.status))
+              || (changedKeys().hasOnly(['status', 'timeline', 'updatedAt', 'cancellation'])
+                  && resource.data.status == 'accepted'
                   && request.resource.data.status == 'cancelled'
-                  && getAfter(docPath('loads', resource.data.loadId)).data.status == 'open'))));
+                  && validCancellation(request.resource.data.get('cancellation', null))
+                  && getAfter(docPath('loads', resource.data.loadId)).data.status == 'open'));
       allow delete: if false;
     }
 

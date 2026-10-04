@@ -47,6 +47,25 @@ String formatNum(num n) =>
 
 String formatRupees(num n) => '₹ ${formatNum(n)}';
 
+/// Integer paise -> "₹ 1,23,456" (or "₹ 1,234.50" when there are paise).
+String formatPaise(int paise) {
+  final neg = paise < 0;
+  final p = paise.abs();
+  final rupees = p ~/ 100;
+  final rest = p % 100;
+  // Indian grouping: last three digits, then pairs.
+  final s = rupees.toString();
+  final head = s.length > 3 ? s.substring(0, s.length - 3) : '';
+  final tail = s.length > 3 ? s.substring(s.length - 3) : s;
+  final pairs = <String>[];
+  for (var i = head.length; i > 0; i -= 2) {
+    pairs.insert(0, head.substring(i - 2 < 0 ? 0 : i - 2, i));
+  }
+  final grouped = [...pairs, tail].where((x) => x.isNotEmpty).join(',');
+  final paisePart = rest == 0 ? '' : '.${rest.toString().padLeft(2, '0')}';
+  return '${neg ? '-' : ''}₹ $grouped$paisePart';
+}
+
 void showSnack(BuildContext context, String msg) {
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(content: Text(msg), behavior: SnackBarBehavior.floating),

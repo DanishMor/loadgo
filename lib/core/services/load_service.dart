@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../constants/logistics.dart';
 import '../models/load.dart';
 import '../models/paged.dart';
+import '../pricing/fare_calculator.dart';
 import 'backend.dart';
 
 class LoadNotCancellableException implements Exception {
@@ -25,9 +26,12 @@ class LoadService {
     required num? budget,
     required DateTime pickupDate,
     required String notes,
+    FareBreakdown? estimate,
+    String? distanceSource,
   }) async {
     final uid = Backend.requireUid();
     final ref = await _col.add({
+      if (estimate != null) 'estimate': {...estimate.toMap(), 'distanceSource': ?distanceSource},
       'shipperId': uid,
       'pickup': pickup.trim(),
       'drop': drop.trim(),

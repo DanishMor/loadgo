@@ -6,6 +6,7 @@ import '../models/load.dart';
 import '../models/paged.dart';
 import '../models/app_notification.dart';
 import '../models/vehicle.dart';
+import 'pricing_service.dart';
 import 'backend.dart';
 import 'notification_service.dart';
 
@@ -60,6 +61,7 @@ class BookingService {
           'weight': load.weight,
           'vehicleType': load.vehicleType,
           'budget': load.budget,
+          'fareEstimate': ?load.estimate?.total,
           'pickupDate': snap.data()!['pickupDate'],
           'notes': load.notes,
           'vehicleNumber': vehicle.number,
@@ -168,6 +170,7 @@ class BookingService {
       tx.update(ref, {
         'status': BookingStatus.cancelled,
         'timeline.${BookingStatus.cancelled}': FieldValue.serverTimestamp(),
+        'cancellation': {'by': 'driver', 'chargePaise': cancellationCharge(booking, DateTime.now())},
         'updatedAt': FieldValue.serverTimestamp(),
       });
       tx.update(Backend.db.collection('loads').doc(booking.loadId), {
@@ -186,6 +189,13 @@ class BookingService {
         relatedId: booking.id,
       );
     });
+  }
+
+  /// Policy charge (paise) for cancelling [booking] at [now]. Recorded only.
+  /// TODO(functions): compute server-side; rules only check the shape.
+  static int cancellationCharge(Booking booking, DateTime now) {
+    final accepted = booking.timeline[BookingStatus.accepted] ?? now;
+    return PricingService.config.cancellation.chargeFor(elapsed: now.difference(accepted), farePaise: booking.fareEstimate);
   }
 
   /// Reads the booking's vehicle inside [tx] (reads must precede writes) and

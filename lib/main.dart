@@ -26,7 +26,7 @@ import 'core/l10n/language_widgets.dart';
 
 export 'core/l10n/l10n.dart';
 export 'core/l10n/language_widgets.dart';
-import 'core/services/vehicle_type_service.dart';
+import 'core/services/app_config.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -43,7 +43,7 @@ Future<void> main() async {
   FirebaseAuth.instance.authStateChanges().listen((user) {
     if (user != null) {
       PushService.register();
-      VehicleTypeService.refresh();
+      refreshAppConfig();
     }
   });
   runApp(const LoadGoApp());

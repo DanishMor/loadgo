@@ -34,6 +34,12 @@ class Booking {
   final GeoPoint? lastKnownLocation;
   final DateTime? locationUpdatedAt;
 
+  /// Load's estimated total (paise), copied at acceptance.
+  final int? fareEstimate;
+
+  /// Recorded when the booking is cancelled (no money moves).
+  final BookingCancellation? cancellation;
+
   const Booking({
     required this.id,
     required this.loadId,
@@ -56,6 +62,8 @@ class Booking {
     this.createdAt,
     this.lastKnownLocation,
     this.locationUpdatedAt,
+    this.fareEstimate,
+    this.cancellation,
   });
 
   bool get isInTransit => status == BookingStatus.inTransit;
@@ -94,6 +102,19 @@ class Booking {
       createdAt: d['createdAt'] as Timestamp?,
       lastKnownLocation: d['lastKnownLocation'] as GeoPoint?,
       locationUpdatedAt: (d['locationUpdatedAt'] as Timestamp?)?.toDate(),
+      fareEstimate: (d['fareEstimate'] as num?)?.round(),
+      cancellation: d['cancellation'] is Map ? BookingCancellation.fromMap(Map<String, dynamic>.from(d['cancellation'] as Map)) : null,
     );
   }
+}
+
+/// Who cancelled and the policy charge recorded for it (paise).
+class BookingCancellation {
+  final String by;
+  final int chargePaise;
+
+  const BookingCancellation({required this.by, required this.chargePaise});
+
+  factory BookingCancellation.fromMap(Map<String, dynamic> m) =>
+      BookingCancellation(by: m['by'] as String? ?? '', chargePaise: (m['chargePaise'] as num?)?.round() ?? 0);
 }

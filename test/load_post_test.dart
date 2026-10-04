@@ -82,6 +82,10 @@ void main() {
     final docs = (await db.collection('loads').get()).docs;
     expect(docs, hasLength(1));
     expect(docs.single['budget'], isNull);
+    // Delhi -> Mumbai is in the offline city table, so an estimate is stored.
+    expect(find.byKey(const ValueKey('fareTotal')), findsNothing, reason: 'form closed');
+    expect((docs.single['estimate'] as Map)['total'], greaterThan(0));
+    expect((docs.single['estimate'] as Map)['distanceSource'], 'cities');
     expect(await result, isTrue);
 
     await tester.pumpWidget(MaterialApp(

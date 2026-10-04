@@ -394,9 +394,9 @@ describe('notifications', () => {
 
 describe('driver cancels before pickup', () => {
   /** Same writes as BookingService.cancelByDriver. */
-  function cancelBatch(db, bookingId = 'L1') {
+  function cancelBatch(db, bookingId = 'L1', cancellation = { by: 'driver', chargePaise: 0 }) {
     const b = writeBatch(db);
-    b.update(doc(db, 'bookings', bookingId), { status: 'cancelled', 'timeline.cancelled': serverTimestamp(), updatedAt: serverTimestamp() });
+    b.update(doc(db, 'bookings', bookingId), { status: 'cancelled', 'timeline.cancelled': serverTimestamp(), cancellation, updatedAt: serverTimestamp() });
     b.update(doc(db, 'loads', 'L1'), { status: 'open', driverId: deleteField(), bookingId: deleteField(), matchedAt: deleteField(), reopenedAt: serverTimestamp() });
     return b.commit();
   }
@@ -414,6 +414,15 @@ describe('driver cancels before pickup', () => {
     // The old driver can no longer touch the load or the old booking.
     await assertFails(getDoc(doc(as('driver1'), 'loads', 'L1')));
     await assertFails(updateDoc(doc(as('driver1'), 'bookings', 'L1'), { status: 'picked_up' }));
+  });
+
+  test('the recorded cancellation charge must be a sane driver record', async () => {
+    await seedBooking();
+    await assertFails(cancelBatch(as('driver1'), 'L1', { by: 'customer', chargePaise: 0 }));
+    await assertFails(cancelBatch(as('driver1'), 'L1', { by: 'driver', chargePaise: -1 }));
+    await assertFails(cancelBatch(as('driver1'), 'L1', { by: 'driver', chargePaise: 12.5 }));
+    await assertFails(cancelBatch(as('driver1'), 'L1', { by: 'driver', chargePaise: 100, paid: true }));
+    await assertSucceeds(cancelBatch(as('driver1'), 'L1', { by: 'driver', chargePaise: 5000 }));
   });
 
   test('cannot cancel after pickup, as someone else, or without reopening', async () => {
@@ -466,5 +475,26 @@ describe('vehicle availability and bookings', () => {
     await assertFails(acceptBatch(as('driver1'), 'L1'), 'inactive');
     await seed((db) => updateDoc(doc(db, 'vehicles', 'v1'), { status: 'active' }));
     await assertSucceeds(acceptBatch(as('driver1'), 'L1'));
+  });
+});
+
+describe('fare estimate', () => {
+  const EST = { total: 412000, tripFare: 380000, distanceKm: 120, platformFee: 19000, gst: 13000, distanceSource: 'cities' };
+
+  test('loads may carry a well-formed estimate in integer paise', async () => {
+    await assertSucceeds(setDoc(doc(as('customer1'), 'loads', 'L1'), { ...LOAD, estimate: EST }));
+    await assertFails(setDoc(doc(as('customer1'), 'loads', 'L2'), { ...LOAD, estimate: { ...EST, total: 4120.5 } }));
+    await assertFails(setDoc(doc(as('customer1'), 'loads', 'L3'), { ...LOAD, estimate: { ...EST, tripFare: 500000 } }));
+    await assertFails(setDoc(doc(as('customer1'), 'loads', 'L4'), { ...LOAD, estimate: { ...EST, distanceKm: 99999 } }));
+    await assertFails(setDoc(doc(as('customer1'), 'loads', 'L5'), { ...LOAD, estimate: 'cheap' }));
+  });
+
+  test('the booking must copy the load estimate total', async () => {
+    await seed(async (db) => {
+      await setDoc(doc(db, 'loads', 'L1'), { ...LOAD, estimate: EST });
+      await setDoc(doc(db, 'vehicles', 'v1'), VEHICLE);
+    });
+    await assertFails(acceptBatch(as('driver1'), 'L1', 'driver1', { fareEstimate: 1 }));
+    await assertSucceeds(acceptBatch(as('driver1'), 'L1', 'driver1', { fareEstimate: EST.total }));
   });
 });

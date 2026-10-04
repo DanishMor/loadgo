@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../constants/logistics.dart';
+import '../pricing/fare_calculator.dart';
 
 class Load {
   final String id;
@@ -21,6 +22,12 @@ class Load {
   final String? bookingId;
   final Timestamp? createdAt;
 
+  /// Fare estimate shown when posting (paise); null for older loads.
+  final FareBreakdown? estimate;
+
+  /// [DistanceSource] of [estimate].
+  final String? distanceSource;
+
   const Load({
     required this.id,
     required this.shipperId,
@@ -37,6 +44,8 @@ class Load {
     this.driverId,
     this.bookingId,
     this.createdAt,
+    this.estimate,
+    this.distanceSource,
   });
 
   bool get isOpen => status == LoadStatus.open;
@@ -59,6 +68,8 @@ class Load {
       driverId: d['driverId'] as String?,
       bookingId: d['bookingId'] as String?,
       createdAt: d['createdAt'] as Timestamp?,
+      estimate: d['estimate'] is Map ? FareBreakdown.fromMap(Map<String, dynamic>.from(d['estimate'] as Map)) : null,
+      distanceSource: (d['estimate'] as Map?)?['distanceSource'] as String?,
     );
   }
 }
