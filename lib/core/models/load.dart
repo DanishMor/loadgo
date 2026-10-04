@@ -58,6 +58,11 @@ class Load {
   /// Packers-and-movers request (items, floor, lift, packing).
   final MoversDetails? movers;
 
+  /// Promo applied at posting (record only) and credits spent, in paise.
+  final String? promoCode;
+  final int promoDiscountPaise;
+  final int creditsUsedPaise;
+
   const Load({
     required this.id,
     required this.shipperId,
@@ -89,6 +94,9 @@ class Load {
     this.helpers = 0,
     this.rentalHours,
     this.movers,
+    this.promoCode,
+    this.promoDiscountPaise = 0,
+    this.creditsUsedPaise = 0,
   });
 
   bool get isOpen => status == LoadStatus.open;
@@ -131,6 +139,9 @@ class Load {
       helpers: (d['helpers'] as num?)?.toInt() ?? 0,
       rentalHours: (d['rentalHours'] as num?)?.toInt(),
       movers: d['movers'] is Map ? MoversDetails.fromMap(d['movers']) : null,
+      promoCode: (d['promo'] as Map?)?['code'] as String?,
+      promoDiscountPaise: ((d['promo'] as Map?)?['discountPaise'] as num?)?.toInt() ?? 0,
+      creditsUsedPaise: (d['creditsUsedPaise'] as num?)?.toInt() ?? 0,
     );
   }
 }

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../core/profile/profile_nav_tile.dart';
 import 'business_hub_screen.dart';
+import 'offers_screen.dart';
 import 'customer_analytics_screen.dart';
 
 import '../core/services/auth_helpers.dart';
@@ -61,6 +62,12 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
         icon: Icons.bar_chart_rounded,
         titleKey: 'myAnalytics',
         screen: (_) => const CustomerAnalyticsScreen(),
+      ),
+      ProfileNavTile(
+        key: const ValueKey('profileOffers'),
+        icon: Icons.local_offer_outlined,
+        titleKey: 'offersAndCredits',
+        screen: (_) => const OffersScreen(),
       ),
       ProfileNavTile(
         key: const ValueKey('profileBusiness'),

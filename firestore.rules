@@ -90,6 +90,15 @@ service cloud.firestore {
               && d.identityHashes.get('gst', '0').matches('^[0-9a-f]{64}$|^0$'));
     }
 
+    // users.referralCode: set once, 6-8 capital letters / digits.
+    function referralCodeOk(d) {
+      return !('referralCode' in d) || (d.referralCode is string && d.referralCode.matches('^[A-Z0-9]{6,8}$'));
+    }
+
+    function referralCodeKept() {
+      return !changedKeys().hasAny(['referralCode']) || resource.data.get('referralCode', null) == null;
+    }
+
     // Anti-fraud fields. riskTier/riskReason/riskUpdatedAt are admin-only;
     // cancelCount only goes up by one (see cancelCounted()).
     function riskFieldsAbsent(d) {
@@ -163,13 +172,13 @@ service cloud.firestore {
     match /users/{userId} {
       allow read: if isUser(userId) || isAdmin();
       allow create: if isUser(userId) && verificationInitOk(request.resource.data)
-          && validKyc(request.resource.data) && validIdentityHashes(request.resource.data) && validLastLocation(request.resource.data) && validRole(request.resource.data.get('role', null))
+          && validKyc(request.resource.data) && referralCodeOk(request.resource.data) && validIdentityHashes(request.resource.data) && validLastLocation(request.resource.data) && validRole(request.resource.data.get('role', null))
           && (request.resource.data.get('role', null) == null
               || request.resource.data.get('selectedRole', request.resource.data.role) == request.resource.data.role)
           && validEmergencyContacts(request.resource.data) && riskFieldsAbsent(request.resource.data)
           && validPrefs(request.resource.data) && validBusiness(request.resource.data);
       allow update: if adminVerificationUpdate() || adminRiskUpdate() || (isUser(userId)
-          && roleLockOk() && validKyc(request.resource.data) && validIdentityHashes(request.resource.data) && validLastLocation(request.resource.data)
+          && roleLockOk() && validKyc(request.resource.data) && referralCodeOk(request.resource.data) && referralCodeKept() && validIdentityHashes(request.resource.data) && validLastLocation(request.resource.data)
           && validEmergencyContacts(request.resource.data)
           && validPrefs(request.resource.data) && validBusiness(request.resource.data)
           && ownerRiskFieldsUntouched()
@@ -393,6 +402,8 @@ service cloud.firestore {
           && d.get('paymentMode', 'cash') in ['cash', 'upi_direct']
           && validTradeFields(d)
           && validBookingType(d)
+          && validPromoShape(d)
+          && d.get('creditsUsedPaise', 0) is int
           && (!('pickupGeohash' in d) || (d.pickupGeohash is string && d.pickupGeohash.matches('^[0-9b-hjkmnp-z]{4,12}$')))
           && !prohibitedText(d.get('notes', ''))
           && !prohibitedText(d.cargoType);
@@ -461,7 +472,7 @@ service cloud.firestore {
           // Closing by the shipper is a cancellation and must be flagged.
           && request.resource.data.get('cancelled', false) == (request.resource.data.status == 'closed')
           && (request.resource.data.status == 'open' || cancelCounted())
-          && !changedKeys().hasAny(['shipperId', 'driverId', 'bookingId', 'createdAt'])
+          && !changedKeys().hasAny(['shipperId', 'driverId', 'bookingId', 'createdAt', 'promo', 'creditsUsedPaise'])
           && validLoad(request.resource.data);
     }
 
@@ -532,7 +543,8 @@ service cloud.firestore {
           && request.resource.data.status == 'open'
           && canTransact(request.auth.uid)
           && !request.resource.data.keys().hasAny(['driverId', 'bookingId'])
-          && validLoad(request.resource.data);
+          && validLoad(request.resource.data)
+          && offersCreateOk(loadId, request.resource.data);
       allow update: if signedIn()
           && (shipperEdit() || driverMatch(loadId) || driverClose() || driverReopen() || adminReassignLoad() || adminGeohashBackfill());
       allow delete: if signedIn()
@@ -1056,6 +1068,188 @@ service cloud.firestore {
     match /admins/{uid} {
       allow read: if isUser(uid);
       allow write: if false;
+    }
+
+    // ------------------------------------------------------------------
+    // Customer offers: promo codes, credits ledger, referrals.
+    // All of it is "record only": no money moves and totals are not summed
+    // by the server. The rules enforce what they can: promo limits through
+    // create-only slot documents, one referral per user, positive credits
+    // only from a referral or an admin.
+    // TODO(functions): sum balances, expire credits and settle discounts.
+    // ------------------------------------------------------------------
+    function slotPath(code, n) {
+      return /databases/$(database)/documents/promos/$(code)/slots/$(n);
+    }
+
+    function usePath(code, id) {
+      return /databases/$(database)/documents/promos/$(code)/uses/$(id);
+    }
+
+    function creditPath(uid, id) {
+      return /databases/$(database)/documents/users/$(uid)/credits/$(id);
+    }
+
+    function promoDiscount(p, total) {
+      let raw = p.type == 'percent' ? math.floor(total * p.value / 100) : p.value;
+      let capped = (p.get('maxDiscountPaise', 0) > 0 && raw > p.maxDiscountPaise) ? p.maxDiscountPaise : raw;
+      return capped > total ? total : capped;
+    }
+
+    function promoUsable(p) {
+      return p.active == true && p.expiresAt > request.time;
+    }
+
+    function validPromoDoc(code) {
+      let p = request.resource.data;
+      return p.keys().hasOnly(['code', 'type', 'value', 'maxDiscountPaise', 'minOrderPaise', 'expiresAt', 'usageLimit',
+                               'perUserLimit', 'active', 'createdAt', 'updatedAt'])
+          && p.code == code && code.matches('^[A-Z0-9]{3,20}$')
+          && p.type in ['percent', 'flat']
+          && p.value is int && p.value > 0
+          && (p.type == 'flat' || p.value <= 100)
+          && (p.type == 'percent' || p.value <= 10000000)
+          && p.maxDiscountPaise is int && p.maxDiscountPaise >= 0 && p.maxDiscountPaise <= 10000000
+          && p.minOrderPaise is int && p.minOrderPaise >= 0
+          && p.expiresAt is timestamp
+          && p.usageLimit is int && p.usageLimit >= 1 && p.usageLimit <= 100000
+          && p.perUserLimit is int && p.perUserLimit >= 1 && p.perUserLimit <= 100
+          && p.active is bool;
+    }
+
+    match /promos/{code} {
+      allow get: if signedIn();
+      allow list: if isAdmin();
+      allow create, update: if isAdmin() && validPromoDoc(code);
+      allow delete: if false;
+
+      // One document per redemption, numbered 1..usageLimit (no user id, so a
+      // signed-in user can probe for a free number). A second create for the
+      // same number is an update and fails, so the limit holds even when two
+      // people redeem at once.
+      match /slots/{n} {
+        allow get: if signedIn();
+        allow list: if isAdmin();
+        allow create: if signedIn()
+            && n.matches('^[0-9]{1,6}$') && int(n) >= 1
+            && int(n) <= get(docPath('promos', code)).data.usageLimit
+            && promoUsable(get(docPath('promos', code)).data)
+            && request.resource.data.keys().hasOnly(['loadId', 'createdAt'])
+            && getAfter(docPath('loads', request.resource.data.loadId)).data.shipperId == request.auth.uid
+            && getAfter(docPath('loads', request.resource.data.loadId)).data.promo.code == code
+            && getAfter(docPath('loads', request.resource.data.loadId)).data.promo.slot == int(n);
+        allow update, delete: if false;
+      }
+
+      // The same, per user: id is uid_1 .. uid_perUserLimit.
+      match /uses/{useId} {
+        allow get: if signedIn() && useId.matches('^' + request.auth.uid + '_[0-9]+$');
+        allow list: if isAdmin();
+        allow create: if signedIn()
+            && useId.matches('^' + request.auth.uid + '_[0-9]{1,3}$')
+            && int(useId.split('_')[1]) >= 1
+            && int(useId.split('_')[1]) <= get(docPath('promos', code)).data.perUserLimit
+            && request.resource.data.keys().hasOnly(['uid', 'loadId', 'createdAt'])
+            && request.resource.data.uid == request.auth.uid
+            && getAfter(docPath('loads', request.resource.data.loadId)).data.shipperId == request.auth.uid
+            && getAfter(docPath('loads', request.resource.data.loadId)).data.promo.code == code
+            && getAfter(docPath('loads', request.resource.data.loadId)).data.promo.use == int(useId.split('_')[1]);
+        allow update, delete: if false;
+      }
+    }
+
+    // The offer on a new load: the code must be usable, the order big enough,
+    // the discount exactly what the code gives, and the slot / per-user
+    // documents must be created in the same batch.
+    function validPromoOnCreate(loadId, d) {
+      let pr = d.get('promo', null);
+      let p = get(docPath('promos', pr.code)).data;
+      return pr.keys().hasOnly(['code', 'discountPaise', 'slot', 'use'])
+          && pr.slot is int && pr.use is int
+          && 'estimate' in d
+          && promoUsable(p)
+          && d.estimate.total >= p.minOrderPaise
+          && pr.discountPaise is int && pr.discountPaise > 0
+          && pr.discountPaise == promoDiscount(p, d.estimate.total)
+          && getAfter(slotPath(pr.code, string(pr.slot))).data.loadId == loadId
+          && getAfter(usePath(pr.code, d.shipperId + '_' + string(pr.use))).data.loadId == loadId;
+    }
+
+    function validCreditsOnCreate(loadId, d) {
+      let used = d.get('creditsUsedPaise', 0);
+      return used is int && used >= 0
+          && (used == 0 || (d.get('estimate', null) != null && used <= d.estimate.total
+              && getAfter(creditPath(d.shipperId, 'spend_' + loadId)).data.amountPaise == -used
+              && getAfter(creditPath(d.shipperId, 'spend_' + loadId)).data.loadId == loadId));
+    }
+
+    function offersCreateOk(loadId, d) {
+      return validPromoShape(d) && (!('promo' in d) || validPromoOnCreate(loadId, d)) && validCreditsOnCreate(loadId, d);
+    }
+
+    function validPromoShape(d) {
+      return !('promo' in d)
+          || (d.promo is map && d.promo.code is string && d.promo.code.matches('^[A-Z0-9]{3,20}$'));
+    }
+
+    function referralBonus() {
+      return exists(docPath('config', 'offers'))
+          ? get(docPath('config', 'offers')).data.get('referralBonusPaise', 10000)
+          : 10000;
+    }
+
+    // users/{uid}/credits/{id}: append-only ledger lines (signed paise).
+    // Owner: spend lines tied to their own new load, and the two referral
+    // lines of a valid referral. Admin: grants and refunds.
+    match /users/{userId}/credits/{lineId} {
+      allow read: if isUser(userId) || isAdmin();
+      allow create: if signedIn()
+          && request.resource.data.amountPaise is int
+          && request.resource.data.keys().hasOnly(['amountPaise', 'kind', 'loadId', 'note', 'createdAt'])
+          && ((isUser(userId) && request.resource.data.kind == 'spend'
+                  && request.resource.data.amountPaise < 0
+                  && lineId == 'spend_' + request.resource.data.loadId
+                  && getAfter(docPath('loads', request.resource.data.loadId)).data.shipperId == userId
+                  && getAfter(docPath('loads', request.resource.data.loadId)).data.get('creditsUsedPaise', 0) == -request.resource.data.amountPaise)
+              || (request.resource.data.kind == 'referral'
+                  && request.resource.data.amountPaise == referralBonus()
+                  && existsAfter(docPath('referrals', request.auth.uid))
+                  && ((isUser(userId) && lineId == 'referral_in')
+                      || (lineId == 'referral_from_' + request.auth.uid
+                          && getAfter(docPath('referrals', request.auth.uid)).data.referrerUid == userId)))
+              || (isAdmin() && request.resource.data.kind in ['admin_grant', 'admin_deduct']
+                  && request.resource.data.amountPaise != 0
+                  && request.resource.data.amountPaise >= -100000000 && request.resource.data.amountPaise <= 100000000
+                  && (!('note' in request.resource.data) || request.resource.data.note.size() <= 200)));
+      allow update, delete: if false;
+    }
+
+    // referral_codes/{CODE} = {uid}: a user's own short code (set once on the
+    // profile as users.referralCode).
+    match /referral_codes/{code} {
+      allow get: if signedIn();
+      allow list: if false;
+      allow create: if signedIn()
+          && code.matches('^[A-Z0-9]{6,8}$')
+          && request.resource.data.keys().hasOnly(['uid', 'createdAt'])
+          && request.resource.data.uid == request.auth.uid
+          && getAfter(docPath('users', request.auth.uid)).data.referralCode == code;
+      allow update, delete: if false;
+    }
+
+    // referrals/{refereeUid}: one referral per user, never your own code, only
+    // in the first 7 days of the account, and both credit lines in the batch.
+    match /referrals/{refereeUid} {
+      allow read: if isUser(refereeUid) || isAdmin() || resource.data.referrerUid == request.auth.uid;
+      allow create: if isUser(refereeUid)
+          && request.resource.data.keys().hasOnly(['referrerUid', 'code', 'createdAt'])
+          && request.resource.data.referrerUid != request.auth.uid
+          && get(docPath('referral_codes', request.resource.data.code)).data.uid == request.resource.data.referrerUid
+          && get(docPath('users', request.auth.uid)).data.get('role', 'customer') == 'customer'
+          && get(docPath('users', request.auth.uid)).data.createdAt > request.time - duration.value(7, 'd')
+          && existsAfter(creditPath(request.auth.uid, 'referral_in'))
+          && existsAfter(creditPath(request.resource.data.referrerUid, 'referral_from_' + request.auth.uid));
+      allow update, delete: if false;
     }
 
     match /config/{docId} {

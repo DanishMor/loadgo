@@ -10,7 +10,9 @@ import '../constants/prohibited_cargo.dart';
 import '../matching/nearest.dart';
 import '../models/paged.dart';
 import '../enterprise/validators.dart';
+import '../offers/promo.dart';
 import 'audit_service.dart';
+import 'rewards_service.dart';
 import 'risk_service.dart';
 import '../pricing/fare_calculator.dart';
 import 'backend.dart';
@@ -59,7 +61,10 @@ class LoadService {
     int helpers = 0,
     int? rentalHours,
     MoversDetails? movers,
+    PromoApplication? promo,
+    int creditsUsedPaise = 0,
   }) async {
+    if (creditsUsedPaise < 0) throw ArgumentError.value(creditsUsedPaise, 'creditsUsedPaise');
     if (!BookingType.all.contains(bookingType)) throw ArgumentError.value(bookingType, 'bookingType');
     if (helpers < 0 || helpers > maxHelpers) throw ArgumentError.value(helpers, 'helpers');
     if (bookingType == BookingType.rental && !rentalHourOptions.contains(rentalHours)) {
@@ -75,7 +80,8 @@ class LoadService {
     List<String> clean(List<String> l) =>
         [for (final s in l) if (s.trim().isNotEmpty) s.trim()].take(maxStopsPerSide - 1).toList();
     final geohash = pickupGeohashFor(pickup);
-    final ref = await _col.add({
+    final ref = _col.doc();
+    final data = <String, Object?>{
       'pickupGeohash': ?geohash,
       'bookingType': bookingType,
       'helpers': helpers,
@@ -102,7 +108,16 @@ class LoadService {
       'notes': notes.trim(),
       'status': LoadStatus.open,
       'createdAt': FieldValue.serverTimestamp(),
-    });
+      if (promo != null) 'promo': promo.toLoadMap(),
+      if (creditsUsedPaise > 0) 'creditsUsedPaise': creditsUsedPaise,
+    };
+    final batch = Backend.db.batch();
+    batch.set(ref, data);
+    // Offers are recorded in the same batch: the promo slot and per-user use
+    // documents, and the credits spend line (the rules check all of them).
+    if (promo != null) RewardsService.addRedemption(batch, promo, loadId: ref.id, uid: uid);
+    if (creditsUsedPaise > 0) RewardsService.addSpend(batch, uid: uid, loadId: ref.id, paise: creditsUsedPaise);
+    await batch.commit();
     return ref.id;
   }
 

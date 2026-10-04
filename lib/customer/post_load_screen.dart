@@ -19,6 +19,9 @@ import 'saved_place_picker.dart';
 import '../core/models/ledger_entry.dart';
 import '../core/documents/payment_card.dart';
 import 'trade_details_section.dart';
+import 'offers_section.dart';
+import '../core/offers/promo.dart';
+import '../core/services/rewards_service.dart';
 
 /// Customer form to post a load. Pops with `true` once posted.
 /// [repostFrom] prefills everything except the pickup date.
@@ -48,6 +51,7 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
   String _slot = PickupSlot.any;
   String _paymentMode = PaymentMode.cash;
   bool _saving = false;
+  OffersChoice _offers = const OffersChoice();
   String _bookingType = BookingType.freight;
   int _helpers = 0;
   int _rentalHours = rentalHourOptions.first;
@@ -296,7 +300,20 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
     setState(() => _saving = true);
     try {
       final budgetText = _budgetCtrl.text.trim();
+      final quote = _quote;
+      // Number the promo slot for the final total, and decide the credits.
+      PromoApplication? promo;
+      var credits = 0;
+      if (quote != null) {
+        if (_offers.promo != null) promo = await RewardsService.reserve(_offers.promo!.code, quote.total);
+        if (_offers.useCredits) {
+          credits = creditsToSpend(
+              total: quote.total, promo: _offers.promo, creditsBalance: await RewardsService.balance(), useCredits: true);
+        }
+      }
       await LoadService.post(
+        promo: promo,
+        creditsUsedPaise: credits,
         pickup: _pickupCtrl.text,
         drop: _dropCtrl.text.trim().isEmpty ? _pickupCtrl.text : _dropCtrl.text,
         cargoType: _cargoType,
@@ -322,6 +339,12 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
       if (!mounted) return;
       showSnack(context, tr(context, 'loadPosted'));
       Navigator.of(context).pop(true);
+    } on PromoException catch (e) {
+      if (!mounted) return;
+      setState(() => _saving = false);
+      showSnack(context, e.problem == PromoProblem.belowMinimum && e.minOrderPaise != null
+          ? trf(context, 'promoBelowMinimum', {'min': formatPaise(e.minOrderPaise!)})
+          : tr(context, promoProblemKey(e.problem)));
     } on ProhibitedCargoException catch (e) {
       if (!mounted) return;
       setState(() => _saving = false);
@@ -445,6 +468,8 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
                 const SizedBox(height: 18),
                 FieldLabel(tr(context, 'fareEstimate')),
                 _estimateCard(),
+                const SizedBox(height: 12),
+                OffersSection(total: _quote?.total, onChanged: (c) => setState(() => _offers = c)),
                 const SizedBox(height: 18),
                 FieldLabel(tr(context, 'budgetOptional')),
                 TextFormField(

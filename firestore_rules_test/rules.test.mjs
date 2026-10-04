@@ -375,6 +375,214 @@ describe('booking types', () => {
   });
 });
 
+describe('customer offers', () => {
+  const future = Timestamp.fromDate(new Date('2035-01-01'));
+  const past = Timestamp.fromDate(new Date('2020-01-01'));
+  const promoDoc = (over = {}) => ({
+    code: 'SAVE10', type: 'percent', value: 10, maxDiscountPaise: 0, minOrderPaise: 0, expiresAt: future,
+    usageLimit: 3, perUserLimit: 1, active: true, createdAt: serverTimestamp(), updatedAt: serverTimestamp(), ...over,
+  });
+  const seedPromo = (over = {}) => seed((db) => setDoc(doc(db, 'promos', over.code ?? 'SAVE10'), promoDoc({ ...over, createdAt: Timestamp.now(), updatedAt: Timestamp.now() })));
+  const EST = { total: 50000, tripFare: 45000, distanceKm: 10 };
+
+  // One batch: the load with its promo / credits, plus the documents the rules ask for.
+  function postOffer(uid, { id = 'L9', promo, credits = 0, slot, use, est = EST, extra = [] } = {}) {
+    if (est === undefined) est = EST;
+    const db = as(uid);
+    const b = writeBatch(db);
+    const load = { ...LOAD, shipperId: uid, estimate: est };
+    if (est === false) delete load.estimate;
+    if (promo) load.promo = { ...promo, slot: slot ?? 1, use: use ?? 1 };
+    if (credits) load.creditsUsedPaise = credits;
+    b.set(doc(db, 'loads', id), load);
+    if (promo && slot !== null) b.set(doc(db, 'promos', promo.code, 'slots', String(slot ?? 1)), { loadId: id, createdAt: serverTimestamp() });
+    if (promo && use !== null) b.set(doc(db, 'promos', promo.code, 'uses', `${uid}_${use ?? 1}`), { uid, loadId: id, createdAt: serverTimestamp() });
+    if (credits) b.set(doc(db, 'users', uid, 'credits', `spend_${id}`), { amountPaise: -credits, kind: 'spend', loadId: id, createdAt: serverTimestamp() });
+    for (const fn of extra) fn(b, db);
+    return b.commit();
+  }
+
+  test('admins manage promo codes; others only read one by code', async () => {
+    await assertSucceeds(setDoc(doc(asAdmin(), 'promos', 'SAVE10'), promoDoc()));
+    await assertFails(setDoc(doc(as('customer1'), 'promos', 'NEWONE'), promoDoc({ code: 'NEWONE' })));
+    await assertSucceeds(getDoc(doc(as('customer1'), 'promos', 'SAVE10')));
+    await assertFails(getDocs(collection(as('customer1'), 'promos')));
+    await assertSucceeds(getDocs(collection(asAdmin(), 'promos')));
+    await assertSucceeds(updateDoc(doc(asAdmin(), 'promos', 'SAVE10'), { active: false, updatedAt: serverTimestamp() }));
+    await assertFails(setDoc(doc(asAdmin(), 'promos', 'BAD'), promoDoc({ code: 'BAD', value: 150 })));
+    await assertFails(setDoc(doc(asAdmin(), 'promos', 'OTHER'), promoDoc({ code: 'SAVE10' })));
+    await assertFails(setDoc(doc(asAdmin(), 'promos', 'low'), promoDoc({ code: 'low' })));
+    await assertFails(setDoc(doc(asAdmin(), 'promos', 'ZERO'), promoDoc({ code: 'ZERO', perUserLimit: 0 })));
+  });
+
+  test('a load can carry a promo only with the exact discount and its slot / use documents', async () => {
+    await seedPromo();
+    await assertSucceeds(postOffer('customer1', { promo: { code: 'SAVE10', discountPaise: 5000 } }));
+    await seedPromo({ code: 'SAVE10' });
+  });
+
+  test('wrong discount, missing documents or a bad number are refused', async () => {
+    await seedPromo();
+    const p = (d) => ({ code: 'SAVE10', discountPaise: d });
+    await assertFails(postOffer('customer1', { promo: p(6000) }));
+    await assertFails(postOffer('customer1', { promo: p(0) }));
+    await assertFails(postOffer('customer1', { promo: p(5000), slot: null }));
+    await assertFails(postOffer('customer1', { promo: p(5000), use: null }));
+    await assertFails(postOffer('customer1', { promo: p(5000), slot: 4 }), 'slot above the usage limit');
+    await assertFails(postOffer('customer1', { promo: p(5000), slot: 0 }));
+    await assertFails(postOffer('customer1', { promo: p(5000), use: 2 }), 'second use but perUserLimit is 1');
+    await assertFails(postOffer('customer1', { promo: p(5000), est: false }));
+  });
+
+  test('cap and flat codes use the same arithmetic as the app', async () => {
+    await seedPromo({ code: 'CAP', value: 50, maxDiscountPaise: 3000 });
+    await assertFails(postOffer('customer1', { promo: { code: 'CAP', discountPaise: 25000 } }));
+    await assertSucceeds(postOffer('customer1', { promo: { code: 'CAP', discountPaise: 3000 } }));
+    await seedPromo({ code: 'FLAT', type: 'flat', value: 80000 });
+    await assertSucceeds(postOffer('customer2', { id: 'L10', promo: { code: 'FLAT', discountPaise: 50000 } }));
+  });
+
+  test('expired, switched-off and too-small orders are refused', async () => {
+    const p = (code) => ({ code, discountPaise: 5000 });
+    await seedPromo({ code: 'OLD', expiresAt: past });
+    await seedPromo({ code: 'OFF', active: false });
+    await seedPromo({ code: 'BIG', minOrderPaise: 60000 });
+    await assertFails(postOffer('customer1', { promo: p('OLD') }));
+    await assertFails(postOffer('customer1', { promo: p('OFF') }));
+    await assertFails(postOffer('customer1', { promo: p('BIG') }));
+  });
+
+  test('a slot or per-user number cannot be taken twice', async () => {
+    await seedPromo({ perUserLimit: 2 });
+    const p = { code: 'SAVE10', discountPaise: 5000 };
+    await assertSucceeds(postOffer('customer1', { id: 'A', promo: p, slot: 1, use: 1 }));
+    await assertFails(postOffer('customer2', { id: 'B', promo: p, slot: 1, use: 1 }), 'slot 1 is taken');
+    await assertFails(postOffer('customer1', { id: 'C', promo: p, slot: 2, use: 1 }), 'use 1 is taken');
+    await assertSucceeds(postOffer('customer1', { id: 'D', promo: p, slot: 2, use: 2 }));
+    await assertFails(postOffer('customer1', { id: 'E', promo: p, slot: 3, use: 3 }), 'beyond perUserLimit');
+    await assertSucceeds(postOffer('customer2', { id: 'F', promo: p, slot: 3, use: 1 }));
+    await assertFails(postOffer('customer3', { id: 'G', promo: p, slot: 4, use: 1 }), 'beyond usageLimit');
+  });
+
+  test('slot documents cannot be forged for someone else\'s load or edited', async () => {
+    await seedPromo();
+    await seed((db) => setDoc(doc(db, 'loads', 'LX'), { ...LOAD, shipperId: 'customer2' }));
+    await assertFails(setDoc(doc(as('customer1'), 'promos', 'SAVE10', 'slots', '1'), { loadId: 'LX', createdAt: serverTimestamp() }));
+    await assertSucceeds(postOffer('customer1', { promo: { code: 'SAVE10', discountPaise: 5000 } }));
+    await assertFails(updateDoc(doc(as('customer1'), 'promos', 'SAVE10', 'slots', '1'), { loadId: 'other' }));
+    await assertFails(deleteDoc(doc(as('customer1'), 'promos', 'SAVE10', 'slots', '1')));
+    await assertSucceeds(getDoc(doc(as('customer2'), 'promos', 'SAVE10', 'slots', '1')));
+  });
+
+  test('the promo cannot be added or changed after posting', async () => {
+    await seedPromo();
+    await seed((db) => setDoc(doc(db, 'loads', 'L1'), { ...LOAD, estimate: EST }));
+    await assertFails(updateDoc(doc(as('customer1'), 'loads', 'L1'), { promo: { code: 'SAVE10', discountPaise: 5000, slot: 1, use: 1 } }));
+    await assertFails(updateDoc(doc(as('customer1'), 'loads', 'L1'), { creditsUsedPaise: 100 }));
+  });
+
+  test('credits: spend lines match the load; positive lines come only from referral or admin', async () => {
+    await assertSucceeds(postOffer('customer1', { credits: 12000 }));
+    await assertFails(postOffer('customer1', { id: 'L10', credits: 12000, est: { total: 5000, tripFare: 4000, distanceKm: 1 } }), 'more than the order');
+    // spend line that does not match the load's creditsUsedPaise
+    const db = as('customer1');
+    const b = writeBatch(db);
+    b.set(doc(db, 'loads', 'L11'), { ...LOAD, shipperId: 'customer1', estimate: EST, creditsUsedPaise: 100 });
+    b.set(doc(db, 'users', 'customer1', 'credits', 'spend_L11'), { amountPaise: -500, kind: 'spend', loadId: 'L11', createdAt: serverTimestamp() });
+    await assertFails(b.commit());
+    // credits claimed on a load without the ledger line
+    await assertFails(setDoc(doc(as('customer1'), 'loads', 'L12'), { ...LOAD, shipperId: 'customer1', estimate: EST, creditsUsedPaise: 100 }));
+    // free money
+    await assertFails(setDoc(doc(as('customer1'), 'users', 'customer1', 'credits', 'x'), { amountPaise: 999999, kind: 'spend', createdAt: serverTimestamp() }));
+    await assertFails(setDoc(doc(as('customer1'), 'users', 'customer1', 'credits', 'x'), { amountPaise: 999999, kind: 'admin_grant', createdAt: serverTimestamp() }));
+    await assertFails(updateDoc(doc(as('customer1'), 'users', 'customer1', 'credits', 'spend_L9'), { amountPaise: 0 }));
+    await assertFails(deleteDoc(doc(as('customer1'), 'users', 'customer1', 'credits', 'spend_L9')));
+  });
+
+  test('credits: admins grant and deduct; owners read, others do not', async () => {
+    await assertSucceeds(addDoc(collection(asAdmin(), 'users', 'customer1', 'credits'), { amountPaise: 50000, kind: 'admin_grant', note: 'sorry', createdAt: serverTimestamp() }));
+    await assertSucceeds(addDoc(collection(asAdmin(), 'users', 'customer1', 'credits'), { amountPaise: -20000, kind: 'admin_deduct', createdAt: serverTimestamp() }));
+    await assertFails(addDoc(collection(asAdmin(), 'users', 'customer1', 'credits'), { amountPaise: 0, kind: 'admin_grant', createdAt: serverTimestamp() }));
+    await assertSucceeds(getDocs(collection(as('customer1'), 'users', 'customer1', 'credits')));
+    await assertFails(getDocs(collection(as('customer2'), 'users', 'customer1', 'credits')));
+  });
+
+  describe('referral', () => {
+    const fresh = Timestamp.now();
+    const old = Timestamp.fromDate(new Date(Date.now() - 9 * 86400000));
+    const seedUsers = (refereeCreated = fresh) =>
+      seed(async (db) => {
+        await setDoc(doc(db, 'users', 'referrer'), { role: 'customer', createdAt: old, referralCode: 'FRIEND' });
+        await setDoc(doc(db, 'referral_codes', 'FRIEND'), { uid: 'referrer' });
+        await setDoc(doc(db, 'users', 'newbie'), { role: 'customer', createdAt: refereeCreated });
+      });
+    const apply = (uid, { code = 'FRIEND', referrer = 'referrer', amountIn = 10000, amountFrom = 10000, skipFrom = false, skipIn = false } = {}) => {
+      const db = as(uid);
+      const b = writeBatch(db);
+      b.set(doc(db, 'referrals', uid), { referrerUid: referrer, code, createdAt: serverTimestamp() });
+      if (!skipIn) b.set(doc(db, 'users', uid, 'credits', 'referral_in'), { amountPaise: amountIn, kind: 'referral', createdAt: serverTimestamp() });
+      if (!skipFrom) b.set(doc(db, 'users', referrer, 'credits', `referral_from_${uid}`), { amountPaise: amountFrom, kind: 'referral', createdAt: serverTimestamp() });
+      return b.commit();
+    };
+
+    test('a new customer applies a friend\'s code once and both get a credit line', async () => {
+      await seedUsers();
+      await assertSucceeds(apply('newbie'));
+      await assertFails(apply('newbie'), 'a second referral');
+      await assertSucceeds(getDoc(doc(as('referrer'), 'referrals', 'newbie')));
+      await assertFails(getDoc(doc(as('customer2'), 'referrals', 'newbie')));
+    });
+
+    test('abuse: own code, wrong owner, old account, wrong amount, missing line', async () => {
+      await seedUsers();
+      await assertFails(apply('referrer', { referrer: 'referrer' }), 'own code');
+      await assertFails(apply('newbie', { referrer: 'someoneElse' }), 'code belongs to another user');
+      await assertFails(apply('newbie', { amountIn: 99999 }));
+      await assertFails(apply('newbie', { amountFrom: 99999 }));
+      await assertFails(apply('newbie', { skipFrom: true }));
+      await assertFails(apply('newbie', { skipIn: true }));
+      await seed((db) => setDoc(doc(db, 'users', 'newbie'), { role: 'customer', createdAt: old }));
+      await assertFails(apply('newbie'), 'account older than 7 days');
+    });
+
+    test('the bonus follows config/offers', async () => {
+      await seedUsers();
+      await seed((db) => setDoc(doc(db, 'config', 'offers'), { referralBonusPaise: 25000 }));
+      await assertFails(apply('newbie'));
+      await assertSucceeds(apply('newbie', { amountIn: 25000, amountFrom: 25000 }));
+    });
+
+    test('referral credit lines cannot be written without a referral', async () => {
+      await seedUsers();
+      await assertFails(setDoc(doc(as('newbie'), 'users', 'newbie', 'credits', 'referral_in'), { amountPaise: 10000, kind: 'referral', createdAt: serverTimestamp() }));
+      await assertFails(setDoc(doc(as('newbie'), 'users', 'referrer', 'credits', 'referral_from_newbie'), { amountPaise: 10000, kind: 'referral', createdAt: serverTimestamp() }));
+    });
+
+    test('each user claims one code, set once on the profile', async () => {
+      await seed((db) => setDoc(doc(db, 'users', 'u1'), { role: 'customer', createdAt: fresh }));
+      const db = as('u1');
+      const claim = (code) => {
+        const b = writeBatch(db);
+        b.update(doc(db, 'users', 'u1'), { referralCode: code });
+        b.set(doc(db, 'referral_codes', code), { uid: 'u1', createdAt: serverTimestamp() });
+        return b.commit();
+      };
+      await assertFails(claim('abc'), 'too short');
+      await assertSucceeds(claim('ABCD23'));
+      await assertFails(claim('ZZZZ99'), 'a second code');
+      await assertFails(updateDoc(doc(db, 'users', 'u1'), { referralCode: 'ZZZZ99' }));
+      await seed((d) => setDoc(doc(d, 'users', 'u2'), { role: 'customer', createdAt: fresh }));
+      const db2 = as('u2');
+      const b2 = writeBatch(db2);
+      b2.update(doc(db2, 'users', 'u2'), { referralCode: 'ABCD23' });
+      b2.set(doc(db2, 'referral_codes', 'ABCD23'), { uid: 'u2', createdAt: serverTimestamp() });
+      await assertFails(b2.commit(), 'code already taken');
+      await assertSucceeds(getDoc(doc(db2, 'referral_codes', 'ABCD23')));
+      await assertFails(getDocs(collection(db2, 'referral_codes')));
+    });
+  });
+});
+
 describe('admin verification', () => {
   const seedDriver = () => seed((db) => setDoc(doc(db, 'users', 'd1'), { driverName: 'R', verified: false, verificationStatus: 'pending' }));
 
