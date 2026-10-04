@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../core/enterprise/validators.dart';
+import '../core/identity/identity_index.dart';
 import '../core/services/user_service.dart';
 import '../core/l10n/l10n.dart';
 import '../core/l10n/language_widgets.dart';
@@ -25,6 +27,7 @@ class _CustomerProfileSetupScreenState extends State<CustomerProfileSetupScreen>
   late final TextEditingController _nameCtrl;
   final _companyCtrl = TextEditingController();
   final _emailCtrl = TextEditingController();
+  final _gstCtrl = TextEditingController();
   bool _saving = false;
 
   @override
@@ -38,6 +41,7 @@ class _CustomerProfileSetupScreenState extends State<CustomerProfileSetupScreen>
     _nameCtrl.dispose();
     _companyCtrl.dispose();
     _emailCtrl.dispose();
+    _gstCtrl.dispose();
     super.dispose();
   }
 
@@ -50,6 +54,7 @@ class _CustomerProfileSetupScreenState extends State<CustomerProfileSetupScreen>
         name: _nameCtrl.text.trim(),
         companyName: _companyCtrl.text.trim(),
         email: _emailCtrl.text.trim(),
+        gstin: _gstCtrl.text,
         language: languageNotifier.value.name,
       );
       if (!mounted) return;
@@ -57,6 +62,10 @@ class _CustomerProfileSetupScreenState extends State<CustomerProfileSetupScreen>
         MaterialPageRoute(builder: (_) => const CustomerHomeScreen()),
         (route) => false,
       );
+    } on DuplicateIdentityException catch (e) {
+      if (!mounted) return;
+      setState(() => _saving = false);
+      showDuplicateIdentity(context, e);
     } catch (_) {
       if (!mounted) return;
       setState(() => _saving = false);
@@ -134,6 +143,20 @@ class _CustomerProfileSetupScreenState extends State<CustomerProfileSetupScreen>
                       final e = v?.trim() ?? '';
                       if (e.isEmpty) return null;
                       return RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(e) ? null : tr(context, 'invalidEmail');
+                    },
+                  ),
+                  const SizedBox(height: 18),
+                  _label(tr(context, 'gstOptional')),
+                  TextFormField(
+                    key: const ValueKey('gstField'),
+                    controller: _gstCtrl,
+                    textCapitalization: TextCapitalization.characters,
+                    maxLength: 15,
+                    decoration: const InputDecoration(prefixIcon: Icon(Icons.receipt_long_outlined), counterText: ''),
+                    validator: (v) {
+                      final g = v?.trim() ?? '';
+                      if (g.isEmpty) return null;
+                      return isValidGstinFormat(g) ? null : tr(context, 'gstinInvalid');
                     },
                   ),
                   const SizedBox(height: 30),

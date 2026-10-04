@@ -151,6 +151,62 @@ describe('role lock', () => {
   });
 });
 
+describe('driver KYC and identity index', () => {
+  const KYC = { dlNumber: 'MH1220110012345', dlExpiry: Timestamp.fromDate(new Date('2030-01-01')), rcNumber: 'MH12AB1234', aadhaarLast4: '4321', pan: 'ABCDE1234F' };
+  const H1 = 'a'.repeat(64);
+  const H2 = 'b'.repeat(64);
+  const seedUser = (uid, role) => seed((db) => setDoc(doc(db, 'users', uid), { role, selectedRole: role }));
+
+  test('KYC keeps only the last four Aadhaar digits', async () => {
+    await seedUser('d1', 'driver');
+    const ref = doc(as('d1'), 'users', 'd1');
+    await assertFails(updateDoc(ref, { driverKyc: { ...KYC, aadhaarLast4: '123456789012' }, kycComplete: true }));
+    await assertFails(updateDoc(ref, { driverKyc: { ...KYC, aadhaarNumber: '123456789012' }, kycComplete: true }));
+    await assertFails(updateDoc(ref, { driverKyc: { ...KYC, pan: 'abc' }, kycComplete: true }));
+    await assertFails(updateDoc(ref, { kycComplete: true }));
+    await assertSucceeds(updateDoc(ref, { driverKyc: KYC, kycComplete: true }));
+  });
+
+  test('identity_index: create-only, own uid and role, admin-only update/delete', async () => {
+    await seedUser('d1', 'driver');
+    await seedUser('d2', 'driver');
+    await seedUser('c1', 'customer');
+    const entry = (uid, role) => ({ uid, role, createdAt: serverTimestamp() });
+    await assertSucceeds(setDoc(doc(as('d1'), 'identity_index', H1), entry('d1', 'driver')));
+    // the same document again: by another account, by the same account, as another role
+    await assertFails(setDoc(doc(as('d2'), 'identity_index', H1), entry('d2', 'driver')));
+    await assertFails(setDoc(doc(as('d1'), 'identity_index', H1), entry('d1', 'driver')));
+    await assertFails(setDoc(doc(as('c1'), 'identity_index', H1), entry('c1', 'customer')));
+    // cannot claim for someone else, with the wrong role, extra fields or a plain-text id
+    await assertFails(setDoc(doc(as('d2'), 'identity_index', H2), entry('d1', 'driver')));
+    await assertFails(setDoc(doc(as('d2'), 'identity_index', H2), entry('d2', 'customer')));
+    await assertFails(setDoc(doc(as('d2'), 'identity_index', H2), { ...entry('d2', 'driver'), number: 'MH12' }));
+    await assertFails(setDoc(doc(as('d2'), 'identity_index', 'MH1220110012345'), entry('d2', 'driver')));
+    await assertFails(setDoc(doc(anon(), 'identity_index', H2), entry('d2', 'driver')));
+    // update / delete: admin only
+    await assertFails(updateDoc(doc(as('d1'), 'identity_index', H1), { uid: 'd2' }));
+    await assertFails(deleteDoc(doc(as('d1'), 'identity_index', H1)));
+    await assertSucceeds(updateDoc(doc(asAdmin(), 'identity_index', H1), { uid: 'd2' }));
+    await assertSucceeds(deleteDoc(doc(asAdmin(), 'identity_index', H1)));
+  });
+
+  test('identity_index: get for signed-in users, never list', async () => {
+    await seed((db) => setDoc(doc(db, 'identity_index', H1), { uid: 'd1', role: 'driver' }));
+    await assertSucceeds(getDoc(doc(as('d2'), 'identity_index', H1)));
+    await assertFails(getDoc(doc(anon(), 'identity_index', H1)));
+    await assertFails(getDocs(collection(as('d2'), 'identity_index')));
+  });
+
+  test('profile and index can be written together in one batch', async () => {
+    await seedUser('d1', 'driver');
+    const db = as('d1');
+    const batch = writeBatch(db);
+    batch.set(doc(db, 'users', 'd1'), { driverKyc: KYC, kycComplete: true }, { merge: true });
+    batch.set(doc(db, 'identity_index', H1), { uid: 'd1', role: 'driver', createdAt: serverTimestamp() });
+    await assertSucceeds(batch.commit());
+  });
+});
+
 describe('admin verification', () => {
   const seedDriver = () => seed((db) => setDoc(doc(db, 'users', 'd1'), { driverName: 'R', verified: false, verificationStatus: 'pending' }));
 

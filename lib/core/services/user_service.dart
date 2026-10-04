@@ -1,6 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+import '../enterprise/validators.dart';
+import '../identity/identity_index.dart';
+import '../identity/kyc_validators.dart';
 import 'backend.dart';
 import 'push_service.dart';
 
@@ -68,10 +71,16 @@ class UserService {
     required String companyName,
     required String email,
     required String language,
+    String gstin = '',
   }) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
     final ref = _db.collection('users').doc(user.uid);
+
+    // GST is optional; when given it must not belong to another account.
+    final gst = normaliseGstin(gstin);
+    final claims = {if (gst.isNotEmpty) IdentityType.gst: gst};
+    await IdentityIndex.assertAvailable(claims, uid: user.uid);
 
     final data = <String, dynamic>{
       'phone': user.phoneNumber,
@@ -85,8 +94,40 @@ class UserService {
     };
     if (companyName.isNotEmpty) data['companyName'] = companyName;
     if (email.isNotEmpty) data['email'] = email;
+    // Format-checked only, never verified (see enterprise validators).
+    if (gst.isNotEmpty) data['business'] = {'legalName': companyName, 'gstin': gst};
 
-    await ref.set(data, SetOptions(merge: true));
+    final batch = _db.batch();
+    batch.set(ref, data, SetOptions(merge: true));
+    await IdentityIndex.addClaims(batch, claims, uid: user.uid, role: 'customer');
+    await batch.commit();
+  }
+
+  /// Driver onboarding documents. Saved together with their identity index
+  /// entries, so a document already used by another account is refused
+  /// ([DuplicateIdentityException]) and nothing is written. Only the last four
+  /// Aadhaar digits ever reach Firestore.
+  static Future<void> saveDriverKyc(DriverKyc kyc) async {
+    final uid = Backend.requireUid();
+    final claims = {
+      IdentityType.dl: kyc.dlNumber,
+      IdentityType.pan: kyc.pan,
+      IdentityType.rc: kyc.rcNumber,
+    };
+    await IdentityIndex.assertAvailable(claims, uid: uid);
+
+    final batch = _db.batch();
+    batch.set(
+      _db.collection('users').doc(uid),
+      {
+        'driverKyc': kyc.toMap(),
+        'kycComplete': true,
+        'updatedAt': FieldValue.serverTimestamp(),
+      },
+      SetOptions(merge: true),
+    );
+    await IdentityIndex.addClaims(batch, claims, uid: uid, role: 'driver');
+    await batch.commit();
   }
 
   static Future<void> saveDriverProfile({

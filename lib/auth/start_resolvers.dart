@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../core/services/user_service.dart';
+import 'driver_kyc_screen.dart';
 import 'driver_pending_screen.dart';
 import 'customer_profile_setup_screen.dart';
 import 'driver_profile_setup_screen.dart';
@@ -47,11 +48,17 @@ Future<Widget> resolveDriverStart() async {
       .map((e) => e.toString())
       .toList();
   final profileComplete = data?['driverProfileComplete'] == true;
+  final kycComplete = data?['kycComplete'] == true;
   final verified = data?['verified'] == true ||
       data?['verificationStatus'] == 'approved';
 
   if (!roles.contains('driver') || !profileComplete) {
     return const DriverProfileSetupScreen();
+  }
+  // Router guard: Home and Loads stay closed until every document is in
+  // (kycComplete) and an admin has approved the driver.
+  if (!kycComplete) {
+    return const DriverKycScreen();
   }
   if (!verified) {
     return const DriverPendingScreen();

@@ -51,6 +51,20 @@ service cloud.firestore {
           || (d.emergencyContacts is list && d.emergencyContacts.size() <= 3);
     }
 
+    // Driver onboarding documents. Aadhaar is only ever the last four digits;
+    // a full number cannot pass the regex. kycComplete needs the documents.
+    function validKyc(d) {
+      return (!('driverKyc' in d)
+              || (d.driverKyc is map
+                  && d.driverKyc.keys().hasOnly(['dlNumber', 'dlExpiry', 'rcNumber', 'aadhaarLast4', 'pan'])
+                  && d.driverKyc.get('aadhaarLast4', '').matches('^[0-9]{4}$')
+                  && d.driverKyc.get('pan', '').matches('^[A-Z]{5}[0-9]{4}[A-Z]$')
+                  && d.driverKyc.get('dlNumber', '') is string && d.driverKyc.get('dlNumber', '').size() >= 8
+                  && d.driverKyc.get('rcNumber', '') is string && d.driverKyc.get('rcNumber', '').size() >= 5
+                  && d.driverKyc.get('dlExpiry', null) is timestamp))
+          && (d.get('kycComplete', false) == false || 'driverKyc' in d);
+    }
+
     // Anti-fraud fields. riskTier/riskReason/riskUpdatedAt are admin-only;
     // cancelCount only goes up by one (see cancelCounted()).
     function riskFieldsAbsent(d) {
@@ -124,13 +138,13 @@ service cloud.firestore {
     match /users/{userId} {
       allow read: if isUser(userId) || isAdmin();
       allow create: if isUser(userId) && verificationInitOk(request.resource.data)
-          && validRole(request.resource.data.get('role', null))
+          && validKyc(request.resource.data) && validRole(request.resource.data.get('role', null))
           && (request.resource.data.get('role', null) == null
               || request.resource.data.get('selectedRole', request.resource.data.role) == request.resource.data.role)
           && validEmergencyContacts(request.resource.data) && riskFieldsAbsent(request.resource.data)
           && validPrefs(request.resource.data) && validBusiness(request.resource.data);
       allow update: if adminVerificationUpdate() || adminRiskUpdate() || (isUser(userId)
-          && roleLockOk()
+          && roleLockOk() && validKyc(request.resource.data)
           && validEmergencyContacts(request.resource.data)
           && validPrefs(request.resource.data) && validBusiness(request.resource.data)
           && ownerRiskFieldsUntouched()
@@ -258,6 +272,25 @@ service cloud.firestore {
               && changedKeys().hasOnly(['availability', 'updatedAt'])
               && validVehicle(request.resource.data)));
       allow delete: if signedIn() && resource.data.ownerId == request.auth.uid;
+    }
+
+    // identity_index/{sha256(type + number)} = {uid, role, createdAt}. One
+    // document (licence, PAN, RC, GST) can belong to one account only: the id
+    // is derived from the number, so a second create is an update and fails.
+    // Only admins change or free an entry. get is open to signed-in users so
+    // the app can show a clear "already registered" message; list is closed
+    // and the id is a hash, so it does not reveal the number.
+    // LATER(paid): Cloud Function with an HMAC secret instead of a plain hash.
+    match /identity_index/{hash} {
+      allow get: if signedIn();
+      allow list: if false;
+      allow create: if signedIn()
+          && request.resource.data.keys().hasOnly(['uid', 'role', 'createdAt'])
+          && request.resource.data.uid == request.auth.uid
+          && request.resource.data.role in ['customer', 'driver']
+          && request.resource.data.role == getAfter(docPath('users', request.auth.uid)).data.get('role', request.resource.data.role)
+          && hash.matches('^[0-9a-f]{64}$');
+      allow update, delete: if isAdmin();
     }
 
     // vehicle_numbers/{number}: {ownerId, vehicleId}. Created next to the
