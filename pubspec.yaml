@@ -59,6 +59,7 @@ dev_dependencies:
   fake_cloud_firestore: ^4.3.0
   flutter_launcher_icons: ^0.14.4
   flutter_native_splash: ^2.4.8
+  firebase_auth_mocks: ^0.15.2
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

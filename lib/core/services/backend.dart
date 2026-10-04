@@ -11,11 +11,18 @@ class Backend {
   static FirebaseFirestore? _db;
   static String? Function()? _uid;
   static FileUploader? _uploader;
+  static FirebaseAuth Function()? _auth;
 
   static FirebaseFirestore get db => _db ??= FirebaseFirestore.instance;
 
+  /// The Firebase Auth instance (a mock in tests).
+  static FirebaseAuth get auth => _auth != null ? _auth!() : FirebaseAuth.instance;
+
+  /// The signed-in user, or null.
+  static User? get currentUser => auth.currentUser;
+
   static String? get uid =>
-      _uid != null ? _uid!() : FirebaseAuth.instance.currentUser?.uid;
+      _uid != null ? _uid!() : auth.currentUser?.uid;
 
   /// Throws when nobody is signed in; use for write paths.
   static String requireUid() {
@@ -34,10 +41,11 @@ class Backend {
   }
 
   @visibleForTesting
-  static void useFakes({required FirebaseFirestore db, required String? Function() uid, FileUploader? uploader}) {
+  static void useFakes({required FirebaseFirestore db, required String? Function() uid, FileUploader? uploader, FirebaseAuth Function()? auth}) {
     _db = db;
     _uid = uid;
     _uploader = uploader;
+    _auth = auth;
   }
 }
 

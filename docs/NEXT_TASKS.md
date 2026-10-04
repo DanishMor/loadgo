@@ -40,7 +40,7 @@ Written 2026-10-04 after run 3, Task 9. The items still marked **Todo-free** in 
 | N8 | Return load alert Driver route related opportunity. | No return load alert | Task 12 |
 | N13 | Fleet analytics Utilisation, idle time, revenue, maintenance | No fleet analytics | Task 13 |
 | BE5 | App Check Untrusted app requests ko reduce/deny karne ke liy | App Check not set up; free | BLOCKED (Play Integrity setup) |
-| TEST3 | Integration tests Firebase/KYC/payment/map/provider flows. | No integration_test folder | Task 10 |
+| ~~TEST3~~ | Integration tests Firebase/KYC/payment/map/provider flows. | No integration_test folder | Task 10 |
 
 ## Left for later (too big for one step, split)
 

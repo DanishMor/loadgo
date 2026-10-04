@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 import '../enterprise/validators.dart';
 import '../identity/identity_index.dart';
@@ -48,7 +47,7 @@ class UserService {
   /// `role` is set once and never changes (rules enforce it too); logging in
   /// through the other role's door throws [RoleMismatchException].
   static Future<void> markRoleSelected(String role) async {
-    final user = FirebaseAuth.instance.currentUser;
+    final user = Backend.currentUser;
     if (user == null) return;
     final ref = _db.collection('users').doc(user.uid);
     final snap = await ref.get();
@@ -74,7 +73,7 @@ class UserService {
     required String language,
     String gstin = '',
   }) async {
-    final user = FirebaseAuth.instance.currentUser;
+    final user = Backend.currentUser;
     if (user == null) return;
     final ref = _db.collection('users').doc(user.uid);
 
@@ -158,7 +157,7 @@ class UserService {
     required String vehicleType,
     required String language,
   }) async {
-    final user = FirebaseAuth.instance.currentUser;
+    final user = Backend.currentUser;
     if (user == null) return;
     final ref = _db.collection('users').doc(user.uid);
     final snap = await ref.get();
@@ -239,6 +238,6 @@ class UserService {
 
   static Future<void> logout() async {
     await PushService.unregister();
-    await FirebaseAuth.instance.signOut();
+    await Backend.auth.signOut();
   }
 }

@@ -32,8 +32,8 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | N Notifications | 15 | 9 | 1 | 3 | 2 | 0 |
 | AI AI | 14 | 0 | 0 | 0 | 14 | 0 |
 | BE Backend | 18 | 4 | 6 | 1 | 7 | 0 |
-| TEST Testing | 14 | 3 | 3 | 1 | 7 | 0 |
-| **Total** | **347** | **151** | **82** | **37** | **76** | **1** |
+| TEST Testing | 14 | 4 | 3 | 0 | 7 | 0 |
+| **Total** | **347** | **152** | **82** | **36** | **76** | **1** |
 
 ## P0 Principles
 
@@ -494,7 +494,7 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 |---|---|---|---|
 | TEST1 | Unit tests Fare, matching, booking state, permissions, validation. | Done | test/ 39 files: fare, matching, ranker, state, validators |
 | TEST2 | Widget tests Login, booking, map, forms, chat, dashboards. | Done | widget tests for login, forms, chat, dashboards |
-| TEST3 | Integration tests Firebase/KYC/payment/map/provider flows. | Todo-free | No integration_test folder |
+| TEST3 | Integration tests Firebase/KYC/payment/map/provider flows. | Done | test/e2e_flow_test.dart runs the whole customer to driver flow on fake Firestore + firebase_auth_mocks (rules are covered by firestore_rules_test); provider and map flows stay paid |
 | TEST4 | Security tests Rules, role escalation, document access, auth takeover scenarios. | Done | firestore_rules_test (105 cases) |
 | TEST5 | Location tests Background location, GPS loss, route deviation, low network. | Partial | live_location_test.dart; no background/GPS-loss tests |
 | TEST6 | Payment tests Success/failure/refund/payout/duplicate transaction. | Partial | payments_test.dart for records; no gateway |
