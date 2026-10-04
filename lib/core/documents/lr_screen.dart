@@ -56,8 +56,11 @@ class LrScreen extends StatelessWidget {
                       row(tr(context, 'weightTons'), formatNum(weight)),
                       row(tr(context, 'vehicle'), '${b.vehicleNumber} (${vehicleTypeLabel(context, b.vehicleType)})'),
                       if (b.driverName.isNotEmpty) row(tr(context, 'driver'), b.driverName),
+                      if (b.containerNumber.isNotEmpty) row(tr(context, 'containerNumber'), b.containerNumber),
                       if (b.pickupProof?.sealNumber.isNotEmpty == true)
-                        row(tr(context, 'sealNumber'), b.pickupProof!.sealNumber),
+                        row(tr(context, 'sealNumber'), b.pickupProof!.sealNumber)
+                      else if (b.sealNumber.isNotEmpty)
+                        row(tr(context, 'sealNumber'), b.sealNumber),
                       if (b.agreedFarePaise != null) row(tr(context, 'agreedFare'), formatPaise(b.agreedFarePaise!)),
                     ],
                   ),

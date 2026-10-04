@@ -7,6 +7,7 @@ library;
 import 'admin_strings.dart';
 import 'auth_strings.dart';
 import 'chat_strings.dart';
+import 'enterprise_strings.dart';
 import 'load_strings.dart';
 import 'match_strings.dart';
 import 'offer_strings.dart';
@@ -32,6 +33,7 @@ const List<Map<String, List<String>>> stringTables = [
   adminStrings,
   matchStrings,
   settingsStrings,
+  enterpriseStrings,
 ];
 
 final Map<String, List<String>> extraStrings = {

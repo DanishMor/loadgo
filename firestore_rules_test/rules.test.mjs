@@ -1062,3 +1062,68 @@ describe('settings, consents and deletion requests', () => {
     await assertFails(deleteDoc(doc(asAdmin(), 'deletion_requests', 'u1')));
   });
 });
+
+describe('enterprise lite and import/export', () => {
+  const GSTIN = '27AAPFU0939F1ZV';
+  const shipment = (extra = {}) => ({
+    ownerId: 'customer1', kind: 'export', origin: 'Pune', hub: 'JNPT, Navi Mumbai', destination: 'Mumbai',
+    containerNumber: 'CSQU3054383', sealNumber: 'SL-1', leg1LoadId: 'a', leg2LoadId: 'b', createdAt: serverTimestamp(), ...extra,
+  });
+
+  test('business profile needs a GSTIN in the official format', async () => {
+    await seed((db) => setDoc(doc(db, 'users', 'u1'), { phone: '+91' }));
+    const u = doc(as('u1'), 'users', 'u1');
+    await assertSucceeds(updateDoc(u, { business: { legalName: 'Acme', gstin: GSTIN, address: 'Pune' } }));
+    await assertSucceeds(updateDoc(u, { business: { legalName: 'Acme', gstin: '', address: '' } }));
+    await assertFails(updateDoc(u, { business: { legalName: 'Acme', gstin: '27AAPFU0939F1XV', address: '' } }));
+    await assertFails(updateDoc(u, { business: { legalName: 'Acme', gstin: 'abc', address: '' } }));
+    await assertFails(updateDoc(u, { business: { legalName: 'Acme', gstin: GSTIN, address: '', verified: true } }));
+    await assertFails(updateDoc(u, { business: 'Acme' }));
+  });
+
+  test('branches: owner only, valid type and name', async () => {
+    const b = (extra = {}) => ({ type: 'warehouse', name: 'Bhiwandi WH', address: 'Plot 4', city: 'Bhiwandi', createdAt: serverTimestamp(), ...extra });
+    await assertSucceeds(setDoc(doc(as('u1'), 'users', 'u1', 'branches', 'b1'), b()));
+    await assertFails(setDoc(doc(as('u2'), 'users', 'u1', 'branches', 'b2'), b()));
+    await assertFails(setDoc(doc(as('u1'), 'users', 'u1', 'branches', 'b3'), b({ type: 'moon' })));
+    await assertFails(setDoc(doc(as('u1'), 'users', 'u1', 'branches', 'b4'), b({ name: '' })));
+    await assertFails(setDoc(doc(as('u1'), 'users', 'u1', 'branches', 'b5'), b({ extra: 1 })));
+    await assertFails(getDoc(doc(as('u2'), 'users', 'u1', 'branches', 'b1')));
+    await assertSucceeds(deleteDoc(doc(as('u1'), 'users', 'u1', 'branches', 'b1')));
+  });
+
+  test('loads accept container, seal and shipment fields only in valid shape', async () => {
+    const withExtra = (extra) => setDoc(doc(as('customer1'), 'loads', 'T' + Math.random().toString(36).slice(2)), { ...LOAD, ...extra });
+    await assertSucceeds(withExtra({ containerNumber: 'CSQU3054383', sealNumber: 'SL-9', branchId: 'b1', shipmentId: 's1', shipmentLeg: 1 }));
+    await assertFails(withExtra({ containerNumber: 'csqu3054383' }));
+    await assertFails(withExtra({ containerNumber: 'CSQU305438' }));
+    await assertFails(withExtra({ sealNumber: 'bad seal!' }));
+    await assertFails(withExtra({ shipmentLeg: 3 }));
+    await assertFails(withExtra({ branchId: '' }));
+  });
+
+  test('the booking must carry the load container and seal numbers unchanged', async () => {
+    await seed(async (db) => {
+      await setDoc(doc(db, 'loads', 'L1'), { ...LOAD, containerNumber: 'CSQU3054383', sealNumber: 'SL-9' });
+      await setDoc(doc(db, 'vehicles', 'v1'), VEHICLE);
+    });
+    await assertFails(acceptBatch(as('driver1'), 'L1'));
+    await assertFails(acceptBatch(as('driver1'), 'L1', 'driver1', { containerNumber: 'MSKU9070322', sealNumber: 'SL-9' }));
+    await assertSucceeds(acceptBatch(as('driver1'), 'L1', 'driver1', { containerNumber: 'CSQU3054383', sealNumber: 'SL-9' }));
+  });
+
+  test('shipments: owner creates once, immutable, owner/admin read', async () => {
+    await assertSucceeds(setDoc(doc(as('customer1'), 'shipments', 's1'), shipment()));
+    await assertFails(setDoc(doc(as('customer2'), 'shipments', 's2'), shipment()));
+    await assertFails(setDoc(doc(as('customer1'), 'shipments', 's3'), shipment({ kind: 'transit' })));
+    await assertFails(setDoc(doc(as('customer1'), 'shipments', 's4'), shipment({ containerNumber: 'bad' })));
+    await assertFails(setDoc(doc(as('customer1'), 'shipments', 's5'), shipment({ extra: 1 })));
+    await assertSucceeds(getDoc(doc(as('customer1'), 'shipments', 's1')));
+    await assertSucceeds(getDoc(doc(asAdmin(), 'shipments', 's1')));
+    await assertFails(getDoc(doc(as('customer2'), 'shipments', 's1')));
+    await assertFails(updateDoc(doc(as('customer1'), 'shipments', 's1'), { hub: 'x' }));
+    await assertFails(deleteDoc(doc(as('customer1'), 'shipments', 's1')));
+    await seed((db) => setDoc(doc(db, 'users', 'customer1'), { riskTier: 'restricted' }));
+    await assertFails(setDoc(doc(as('customer1'), 'shipments', 's6'), shipment()));
+  });
+});

@@ -17,6 +17,7 @@ import '../../core/models/load.dart';
 import '../../customer/saved_place_picker.dart';
 import '../../core/models/ledger_entry.dart';
 import '../../core/documents/payment_card.dart';
+import '../../customer/trade_details_section.dart';
 
 /// Customer form to post a load. Pops with `true` once posted.
 /// [repostFrom] prefills everything except the pickup date.
@@ -37,6 +38,9 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
   final _budgetCtrl = TextEditingController();
   final _notesCtrl = TextEditingController();
   final _distanceCtrl = TextEditingController();
+  final _containerCtrl = TextEditingController();
+  final _sealCtrl = TextEditingController();
+  String? _branchId;
   String _cargoType = cargoTypes.first;
   String _vehicleType = '14ft';
   DateTime? _pickupDate;
@@ -54,6 +58,8 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
     _budgetCtrl.dispose();
     _notesCtrl.dispose();
     _distanceCtrl.dispose();
+    _containerCtrl.dispose();
+    _sealCtrl.dispose();
     for (final c in [..._extraPickups, ..._extraDrops]) {
       c.dispose();
     }
@@ -254,6 +260,9 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
         extraDrops: [for (final c in _extraDrops) c.text],
         pickupSlot: _slot,
         paymentMode: _paymentMode,
+        containerNumber: _containerCtrl.text,
+        sealNumber: _sealCtrl.text,
+        branchId: _branchId,
       );
       if (!mounted) return;
       showSnack(context, tr(context, 'loadPosted'));
@@ -408,6 +417,16 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
                   decoration: const InputDecoration(prefixIcon: Icon(Icons.payments_outlined)),
                   items: [for (final m in PaymentMode.all) DropdownMenuItem(value: m, child: Text(paymentModeLabel(context, m)))],
                   onChanged: (v) => setState(() => _paymentMode = v ?? _paymentMode),
+                ),
+                TradeDetailsSection(
+                  container: _containerCtrl,
+                  seal: _sealCtrl,
+                  branchId: _branchId,
+                  onBranch: (b) => setState(() {
+                    _branchId = b?.id;
+                    if (b != null) _pickupCtrl.text = b.place;
+                  }),
+                  onHub: (h, {required asPickup}) => setState(() => (asPickup ? _pickupCtrl : _dropCtrl).text = h.place),
                 ),
                 const SizedBox(height: 18),
                 FieldLabel(tr(context, 'notesOptional')),

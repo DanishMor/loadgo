@@ -13,6 +13,7 @@ import 'edit_profile_screen.dart';
 import '../../core/support/support_screens.dart';
 import '../../admin/admin_entry.dart';
 import '../../core/settings/settings_screen.dart';
+import '../../customer/business_hub_screen.dart';
 import '../../customer/customer_analytics_screen.dart';
 import '../../driver/driver_analytics_screen.dart';
 import '../../core/safety/emergency_contacts_screen.dart';
@@ -140,6 +141,15 @@ class _ProfileViewState extends State<ProfileView> {
                         builder: (_) => widget.isDriver ? const DriverAnalyticsScreen() : const CustomerAnalyticsScreen(),
                       )),
                     ),
+                    if (!widget.isDriver)
+                      ListTile(
+                        key: const ValueKey('profileBusiness'),
+                        contentPadding: EdgeInsets.zero,
+                        leading: const Icon(Icons.business_center_outlined, color: AppColors.muted),
+                        title: Text(tr(context, 'businessTools')),
+                        trailing: const Icon(Icons.chevron_right_rounded),
+                        onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const BusinessHubScreen())),
+                      ),
                     ListTile(
                       key: const ValueKey('profileSettings'),
                       contentPadding: EdgeInsets.zero,

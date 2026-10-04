@@ -92,6 +92,17 @@ service cloud.firestore {
               && d[field].get(keys[0], false) is bool && d[field].get(keys[1], false) is bool && d[field].get(keys[2], false) is bool);
     }
 
+    // Business profile: legal name, optional GSTIN in the official format
+    // (format only, never verified), address.
+    function validBusiness(d) {
+      return !('business' in d)
+          || (d.business is map && d.business.keys().hasOnly(['legalName', 'gstin', 'address'])
+              && d.business.get('legalName', '') is string && d.business.get('legalName', '').size() <= 100
+              && d.business.get('address', '') is string && d.business.get('address', '').size() <= 200
+              && d.business.get('gstin', '') is string
+              && d.business.get('gstin', '').matches('^$|^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$'));
+    }
+
     function validPrefs(d) {
       return validBoolMap(d, 'notificationPrefs', ['bookingUpdates', 'ratings', 'promotions'])
           && validBoolMap(d, 'consents', ['location', 'analytics', 'marketing']);
@@ -101,10 +112,10 @@ service cloud.firestore {
       allow read: if isUser(userId) || isAdmin();
       allow create: if isUser(userId) && verificationInitOk(request.resource.data)
           && validEmergencyContacts(request.resource.data) && riskFieldsAbsent(request.resource.data)
-          && validPrefs(request.resource.data);
+          && validPrefs(request.resource.data) && validBusiness(request.resource.data);
       allow update: if adminVerificationUpdate() || adminRiskUpdate() || (isUser(userId)
           && validEmergencyContacts(request.resource.data)
-          && validPrefs(request.resource.data)
+          && validPrefs(request.resource.data) && validBusiness(request.resource.data)
           && ownerRiskFieldsUntouched()
           && (!changedKeys().hasAny(['verified', 'verificationStatus'])
               || (resource.data.get('verificationStatus', null) == null
@@ -128,6 +139,37 @@ service cloud.firestore {
           && request.resource.data.label in ['home', 'office', 'warehouse', 'factory', 'port', 'cfs']
           && request.resource.data.name is string && request.resource.data.name.size() >= 1 && request.resource.data.name.size() <= 40
           && request.resource.data.address is string && request.resource.data.address.size() >= 2 && request.resource.data.address.size() <= 200;
+    }
+
+    // users/{uid}/branches: a business's warehouses, factories, ports, CFS.
+    match /users/{userId}/branches/{branchId} {
+      allow read, delete: if isUser(userId);
+      allow create, update: if isUser(userId)
+          && request.resource.data.keys().hasOnly(['type', 'name', 'address', 'city', 'createdAt'])
+          && request.resource.data.type in ['warehouse', 'factory', 'port', 'cfs']
+          && request.resource.data.name is string && request.resource.data.name.size() >= 1 && request.resource.data.name.size() <= 60
+          && request.resource.data.address is string && request.resource.data.address.size() <= 200
+          && request.resource.data.city is string && request.resource.data.city.size() <= 60
+          && request.resource.data.createdAt == request.time;
+    }
+
+    // shipments/{id}: a two-leg import/export move that links two loads.
+    // Immutable after creation; the loads carry the live status.
+    match /shipments/{shipmentId} {
+      allow read: if signedIn() && (resource.data.ownerId == request.auth.uid || isAdmin());
+      allow create: if signedIn()
+          && request.resource.data.keys().hasOnly(['ownerId', 'kind', 'origin', 'hub', 'destination', 'containerNumber', 'sealNumber', 'leg1LoadId', 'leg2LoadId', 'createdAt'])
+          && request.resource.data.ownerId == request.auth.uid
+          && canTransact(request.auth.uid)
+          && request.resource.data.kind in ['export', 'import']
+          && request.resource.data.origin is string && request.resource.data.origin.size() >= 2 && request.resource.data.origin.size() <= 200
+          && request.resource.data.hub is string && request.resource.data.hub.size() >= 2 && request.resource.data.hub.size() <= 200
+          && request.resource.data.destination is string && request.resource.data.destination.size() >= 2 && request.resource.data.destination.size() <= 200
+          && request.resource.data.containerNumber.matches('^$|^[A-Z]{4}[0-9]{7}$')
+          && request.resource.data.sealNumber.matches('^$|^[A-Za-z0-9-]{1,20}$')
+          && request.resource.data.leg1LoadId is string && request.resource.data.leg2LoadId is string
+          && request.resource.data.createdAt == request.time;
+      allow update, delete: if false;
     }
 
     // users/{uid}/favourite_routes: routes a driver wants recommendations for.
@@ -238,8 +280,18 @@ service cloud.firestore {
           && validStops(d.get('extraDrops', []))
           && d.get('pickupSlot', 'any') in ['any', 'morning', 'midday', 'afternoon', 'evening']
           && d.get('paymentMode', 'cash') in ['cash', 'upi_direct']
+          && validTradeFields(d)
           && !prohibitedText(d.get('notes', ''))
           && !prohibitedText(d.cargoType);
+    }
+
+    // Import/export details, branch and shipment links (all optional).
+    function validTradeFields(d) {
+      return (!('containerNumber' in d) || (d.containerNumber is string && d.containerNumber.matches('^[A-Z]{4}[0-9]{7}$')))
+          && (!('sealNumber' in d) || (d.sealNumber is string && d.sealNumber.matches('^[A-Za-z0-9-]{1,20}$')))
+          && (!('branchId' in d) || (d.branchId is string && d.branchId.size() >= 1 && d.branchId.size() <= 60))
+          && (!('shipmentId' in d) || (d.shipmentId is string && d.shipmentId.size() >= 1 && d.shipmentId.size() <= 60))
+          && (!('shipmentLeg' in d) || d.shipmentLeg in [1, 2]);
     }
 
     // At most 2 extra stops per side (3 pickups / 3 drops in total).
@@ -453,6 +505,8 @@ service cloud.firestore {
           && b.get('extraPickups', []) == load.get('extraPickups', [])
           && b.get('extraDrops', []) == load.get('extraDrops', [])
           && b.get('paymentMode', 'cash') == load.get('paymentMode', 'cash')
+          && b.get('containerNumber', null) == load.get('containerNumber', null)
+          && b.get('sealNumber', null) == load.get('sealNumber', null)
           && b.get('paymentStatus', 'pending') == 'pending'
           && !('paidAmountPaise' in b)
           && loadAfter.status == 'matched'

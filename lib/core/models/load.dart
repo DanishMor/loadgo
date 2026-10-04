@@ -39,6 +39,15 @@ class Load {
   /// `PaymentMode` value (cash / upi_direct).
   final String paymentMode;
 
+  /// Import/export details and the business branch the load starts from.
+  final String containerNumber;
+  final String sealNumber;
+  final String? branchId;
+
+  /// Set when the load is one leg of a two-leg shipment.
+  final String? shipmentId;
+  final int? shipmentLeg;
+
   const Load({
     required this.id,
     required this.shipperId,
@@ -61,6 +70,11 @@ class Load {
     this.extraDrops = const [],
     this.pickupSlot = PickupSlot.any,
     this.paymentMode = 'cash',
+    this.containerNumber = '',
+    this.sealNumber = '',
+    this.branchId,
+    this.shipmentId,
+    this.shipmentLeg,
   });
 
   bool get isOpen => status == LoadStatus.open;
@@ -94,6 +108,11 @@ class Load {
       extraDrops: [for (final s in (d['extraDrops'] as List?) ?? const []) s.toString()],
       pickupSlot: d['pickupSlot'] as String? ?? PickupSlot.any,
       paymentMode: d['paymentMode'] as String? ?? 'cash',
+      containerNumber: d['containerNumber'] as String? ?? '',
+      sealNumber: d['sealNumber'] as String? ?? '',
+      branchId: d['branchId'] as String?,
+      shipmentId: d['shipmentId'] as String?,
+      shipmentLeg: (d['shipmentLeg'] as num?)?.toInt(),
     );
   }
 }

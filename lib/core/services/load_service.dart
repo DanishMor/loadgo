@@ -4,6 +4,7 @@ import '../constants/logistics.dart';
 import '../models/load.dart';
 import '../constants/prohibited_cargo.dart';
 import '../models/paged.dart';
+import '../enterprise/validators.dart';
 import 'audit_service.dart';
 import 'risk_service.dart';
 import '../pricing/fare_calculator.dart';
@@ -44,6 +45,11 @@ class LoadService {
     List<String> extraDrops = const [],
     String pickupSlot = PickupSlot.any,
     String paymentMode = 'cash',
+    String containerNumber = '',
+    String sealNumber = '',
+    String? branchId,
+    String? shipmentId,
+    int? shipmentLeg,
   }) async {
     final uid = Backend.requireUid();
     await RiskService.ensureCanTransact();
@@ -56,6 +62,11 @@ class LoadService {
       if (clean(extraDrops).isNotEmpty) 'extraDrops': clean(extraDrops),
       'pickupSlot': pickupSlot,
       'paymentMode': paymentMode,
+      if (containerNumber.trim().isNotEmpty) 'containerNumber': normaliseContainer(containerNumber),
+      if (sealNumber.trim().isNotEmpty) 'sealNumber': sealNumber.trim(),
+      'branchId': ?branchId,
+      'shipmentId': ?shipmentId,
+      'shipmentLeg': ?shipmentLeg,
       if (estimate != null) 'estimate': {...estimate.toMap(), 'distanceSource': ?distanceSource},
       'shipperId': uid,
       'pickup': pickup.trim(),

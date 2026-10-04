@@ -38,6 +38,10 @@ class Booking {
   final List<String> extraDrops;
   final String pickupSlot;
 
+  /// Copied from the load (import/export).
+  final String containerNumber;
+  final String sealNumber;
+
   /// Price agreed through an offer (paise), and that offer's id.
   final int? agreedFarePaise;
   final String? offerId;
@@ -114,6 +118,8 @@ class Booking {
     this.extraPickups = const [],
     this.extraDrops = const [],
     this.pickupSlot = PickupSlot.any,
+    this.containerNumber = '',
+    this.sealNumber = '',
   });
 
   List<String> get route => [pickup, ...extraPickups, ...extraDrops, drop];
@@ -170,6 +176,8 @@ class Booking {
       extraPickups: [for (final s in (d['extraPickups'] as List?) ?? const []) s.toString()],
       extraDrops: [for (final s in (d['extraDrops'] as List?) ?? const []) s.toString()],
       pickupSlot: d['pickupSlot'] as String? ?? PickupSlot.any,
+      containerNumber: d['containerNumber'] as String? ?? '',
+      sealNumber: d['sealNumber'] as String? ?? '',
       cancellation: d['cancellation'] is Map ? BookingCancellation.fromMap(Map<String, dynamic>.from(d['cancellation'] as Map)) : null,
     );
   }
