@@ -120,6 +120,37 @@ describe('users', () => {
   });
 });
 
+describe('role lock', () => {
+  test('role is set once and then frozen', async () => {
+    const ref = doc(as('u1'), 'users', 'u1');
+    await assertSucceeds(setDoc(ref, { phone: '+91', role: 'customer', selectedRole: 'customer' }));
+    await assertFails(updateDoc(ref, { role: 'driver' }));
+    await assertFails(updateDoc(ref, { role: 'driver', selectedRole: 'driver' }));
+    await assertFails(updateDoc(ref, { selectedRole: 'driver' }));
+    await assertFails(updateDoc(ref, { role: deleteField() }));
+    await assertFails(setDoc(ref, { phone: '+91', role: 'driver', selectedRole: 'driver' }));
+    await assertSucceeds(updateDoc(ref, { name: 'Anil' }));
+  });
+
+  test('only customer or driver are valid roles', async () => {
+    await assertFails(setDoc(doc(as('u1'), 'users', 'u1'), { role: 'admin' }));
+    await assertFails(setDoc(doc(as('u2'), 'users', 'u2'), { role: 'customer', selectedRole: 'driver' }));
+  });
+
+  test('an older account without a role can set it once', async () => {
+    await seed((db) => setDoc(doc(db, 'users', 'old1'), { phone: '+91', selectedRole: 'driver' }));
+    const ref = doc(as('old1'), 'users', 'old1');
+    await assertFails(updateDoc(ref, { role: 'owner' }));
+    await assertSucceeds(updateDoc(ref, { role: 'driver' }));
+    await assertFails(updateDoc(ref, { role: 'customer' }));
+  });
+
+  test('an admin cannot change the role either', async () => {
+    await seed((db) => setDoc(doc(db, 'users', 'u1'), { role: 'customer', selectedRole: 'customer' }));
+    await assertFails(updateDoc(doc(asAdmin(), 'users', 'u1'), { role: 'driver' }));
+  });
+});
+
 describe('admin verification', () => {
   const seedDriver = () => seed((db) => setDoc(doc(db, 'users', 'd1'), { driverName: 'R', verified: false, verificationStatus: 'pending' }));
 

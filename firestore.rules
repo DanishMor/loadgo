@@ -108,12 +108,29 @@ service cloud.firestore {
           && validBoolMap(d, 'consents', ['location', 'analytics', 'marketing']);
     }
 
+    // `role` (customer | driver) is set once and then frozen; selectedRole
+    // must keep matching it. Older accounts without `role` may set it once.
+    function validRole(r) {
+      return r == null || r in ['customer', 'driver'];
+    }
+
+    function roleLockOk() {
+      let before = resource.data.get('role', null);
+      let after = request.resource.data.get('role', null);
+      return (before == null ? validRole(after) : after == before
+              && request.resource.data.get('selectedRole', before) == before);
+    }
+
     match /users/{userId} {
       allow read: if isUser(userId) || isAdmin();
       allow create: if isUser(userId) && verificationInitOk(request.resource.data)
+          && validRole(request.resource.data.get('role', null))
+          && (request.resource.data.get('role', null) == null
+              || request.resource.data.get('selectedRole', request.resource.data.role) == request.resource.data.role)
           && validEmergencyContacts(request.resource.data) && riskFieldsAbsent(request.resource.data)
           && validPrefs(request.resource.data) && validBusiness(request.resource.data);
       allow update: if adminVerificationUpdate() || adminRiskUpdate() || (isUser(userId)
+          && roleLockOk()
           && validEmergencyContacts(request.resource.data)
           && validPrefs(request.resource.data) && validBusiness(request.resource.data)
           && ownerRiskFieldsUntouched()

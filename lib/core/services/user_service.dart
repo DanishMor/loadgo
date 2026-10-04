@@ -4,6 +4,16 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'backend.dart';
 import 'push_service.dart';
 
+/// The account is already locked to [existing]; [requested] was chosen at login.
+class RoleMismatchException implements Exception {
+  final String existing;
+  final String requested;
+  const RoleMismatchException({required this.existing, required this.requested});
+
+  @override
+  String toString() => 'RoleMismatchException(existing: $existing, requested: $requested)';
+}
+
 class UserService {
   UserService._();
 
@@ -23,15 +33,27 @@ class UserService {
     return _db.collection('users').doc(uid).snapshots().map((s) => s.data() ?? const {});
   }
 
+  /// Throws [RoleMismatchException] when the account is locked to another role.
+  static void ensureRoleAllowed(String? lockedRole, String requested) {
+    if (lockedRole != null && lockedRole != requested) {
+      throw RoleMismatchException(existing: lockedRole, requested: requested);
+    }
+  }
+
   /// OTP verify hote hi call karo — role aur session record karta hai.
+  /// `role` is set once and never changes (rules enforce it too); logging in
+  /// through the other role's door throws [RoleMismatchException].
   static Future<void> markRoleSelected(String role) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
     final ref = _db.collection('users').doc(user.uid);
     final snap = await ref.get();
 
+    ensureRoleAllowed(snap.data()?['role'] as String?, role);
+
     final data = <String, dynamic>{
       'phone': user.phoneNumber,
+      'role': role,
       'selectedRole': role,
       'roles': FieldValue.arrayUnion([role]),
       'updatedAt': FieldValue.serverTimestamp(),
@@ -56,6 +78,7 @@ class UserService {
       'name': name,
       'language': language,
       'profileComplete': true,
+      'role': 'customer',
       'selectedRole': 'customer',
       'roles': FieldValue.arrayUnion(['customer']),
       'updatedAt': FieldValue.serverTimestamp(),
@@ -85,6 +108,7 @@ class UserService {
       'vehicleType': vehicleType,
       'language': language,
       'driverProfileComplete': true,
+      'role': 'driver',
       'selectedRole': 'driver',
       'roles': FieldValue.arrayUnion(['driver']),
       'updatedAt': FieldValue.serverTimestamp(),

@@ -37,7 +37,7 @@ class _SplashScreenState extends State<SplashScreen> {
     if (user != null) {
       try {
         final data = await UserService.getUser();
-        final selectedRole = data?['selectedRole'] as String?;
+        final selectedRole = (data?['role'] ?? data?['selectedRole']) as String?;
         next = selectedRole == 'driver'
             ? await resolveDriverStart()
             : await resolveCustomerStart();

@@ -134,6 +134,15 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
         MaterialPageRoute(builder: (_) => next),
         (route) => false,
       );
+    } on RoleMismatchException catch (e) {
+      // Wrong door for this number: drop the session so nothing is half-open.
+      await UserService.logout();
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+      final role = tr(context, e.existing == 'driver' ? 'roleNameDriver' : 'roleNameCustomer');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(trf(context, 'roleMismatch', {'role': role})), behavior: SnackBarBehavior.floating),
+      );
     } on FirebaseAuthException catch (e) {
       if (!mounted) return;
       setState(() => _isLoading = false);
