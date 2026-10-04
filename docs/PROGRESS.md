@@ -12,8 +12,8 @@ Paid/manual items are marked `// LATER(paid): ...` in code and listed in docs/MA
 | 5 | Load posting upgrade (multi-stop, saved places, prohibited cargo, slot, repost) | done | lib/customer/saved_place_picker.dart, rules regex for prohibited goods |
 | 6 | Offers & negotiation | done | offers/{loadId}_{driverId}, double confirmation in the booking transaction |
 | 7 | Trip lifecycle + OTPs + POD + LR | done | bookings/{id}/secrets/otp (customer-only), rules compare driver input; lib/core/documents |
-| 8 | Booking chat | in-progress | |
-| 9 | Support tickets & safety (SOS, contacts, breakdown) | todo | |
+| 8 | Booking chat | done | bookings/{id}/messages, chat_reads, users/{uid}/blocked, reports |
+| 9 | Support tickets & safety (SOS, contacts, breakdown) | in-progress | |
 | 10 | Payment records & documents center | todo | |
 | 11 | Anti-fraud basics | todo | |
 | 12 | Admin dashboard | todo | |
@@ -39,3 +39,4 @@ Paid/manual items are marked `// LATER(paid): ...` in code and listed in docs/MA
 - 2026-10-04 Task 5 done: up to 3 pickups/3 drops (extraPickups/extraDrops, leg-by-leg distance, per-stop charge), saved places (users/{uid}/saved_places, max 20), prohibited goods list (client + rules regex), pickup time slot, Repost on closed loads. core/widgets/vehicle_type_widgets.dart renamed logistics_labels.dart.
 - 2026-10-04 Task 6 done: drivers send a price (Make offer next to Accept); customer sees Offers (n) on open loads, counters once, selects/rejects; selected driver confirms and the booking is created with agreedFarePaise in the same transaction (rules check the offer is selected, price matches, offer becomes confirmed). My Offers screen for drivers.
 - 2026-10-04 Task 7 done: statuses accepted→driver_arriving→loading→picked_up→in_transit→unloading→delivered; customer creates 6-digit pickup/delivery OTPs in bookings/{id}/secrets/otp (only they can read); driver's entered OTP must equal the secret (rules); pickup proof (packages, weight, seal, damage) and delivery proof (receiver name/phone, damage); POD packet screen (photos LATER(paid)); digital LR/bilty screen with 12-digit e-way bill field. Driver can cancel until loading. TODO(functions): OTP attempt rate-limit.
+- 2026-10-04 Task 8 done: booking chat (lib/core/chat) with unread badge on the Chat button, off-platform detector (phone / UPI id / pay-outside phrases, warn before send + flag), 500-char limit, report (reports collection, admin review) and block (rules stop messages to someone who blocked you).

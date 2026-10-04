@@ -55,6 +55,14 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // users/{uid}/blocked/{otherUid}: people this user does not want
+    // messages from. Only the owner sees or changes the list.
+    match /users/{userId}/blocked/{otherId} {
+      allow read, delete: if isUser(userId);
+      allow create, update: if isUser(userId) && otherId != userId
+          && request.resource.data.keys().hasOnly(['createdAt']);
+    }
+
     // users/{uid}/saved_places: the owner's frequent addresses.
     match /users/{userId}/saved_places/{placeId} {
       allow read, delete: if isUser(userId);
@@ -382,6 +390,37 @@ service cloud.firestore {
                   && getAfter(docPath('loads', resource.data.loadId)).data.status == 'open'))));
       allow delete: if false;
 
+      // messages: customer <-> driver chat. Plain text up to 500 chars,
+      // stamped with the server time, never edited or deleted. Someone who
+      // blocked you does not receive your messages.
+      function isParty(b) {
+        return request.auth.uid == b.driverId || request.auth.uid == b.customerId;
+      }
+
+      match /messages/{messageId} {
+        allow read: if signedIn() && isParty(get(docPath('bookings', bookingId)).data);
+        allow create: if signedIn()
+            && isParty(get(docPath('bookings', bookingId)).data)
+            && request.resource.data.keys().hasOnly(['senderId', 'text', 'flagged', 'createdAt'])
+            && request.resource.data.senderId == request.auth.uid
+            && request.resource.data.text is string
+            && request.resource.data.text.size() >= 1 && request.resource.data.text.size() <= 500
+            && request.resource.data.flagged is bool
+            && request.resource.data.createdAt == request.time
+            && !exists(/databases/$(database)/documents/users/$(
+                   get(docPath('bookings', bookingId)).data.driverId == request.auth.uid
+                       ? get(docPath('bookings', bookingId)).data.customerId
+                       : get(docPath('bookings', bookingId)).data.driverId)/blocked/$(request.auth.uid));
+        allow update, delete: if false;
+      }
+
+      // chat_reads/{uid}: when each party last read the chat (unread badge).
+      match /chat_reads/{userId} {
+        allow read, write: if isUser(userId)
+            && isParty(get(docPath('bookings', bookingId)).data)
+            && (request.resource == null || request.resource.data.keys().hasOnly(['lastReadAt']));
+      }
+
       // secrets/otp: pickup and delivery codes. Only the customer creates and
       // reads them; nobody can change them afterwards.
       match /secrets/{secretId} {
@@ -457,6 +496,30 @@ service cloud.firestore {
           && (resource.data.driverId == request.auth.uid || resource.data.customerId == request.auth.uid);
       allow create: if signedIn() && validOfferCreate(offerId);
       allow update: if signedIn() && (driverOfferUpdate(offerId) || customerOfferUpdate());
+      allow delete: if false;
+    }
+
+    // ------------------------------------------------------------------
+    // reports: a booking party reports the other one. Reporters see their
+    // own reports; admins review them. Nobody edits a report after filing.
+    // ------------------------------------------------------------------
+    function reportAboutOtherParty(r) {
+      let b = get(docPath('bookings', r.bookingId)).data;
+      return (b.driverId == request.auth.uid && b.customerId == r.reportedId)
+          || (b.customerId == request.auth.uid && b.driverId == r.reportedId);
+    }
+
+    match /reports/{reportId} {
+      allow read: if signedIn() && (resource.data.reporterId == request.auth.uid || isAdmin());
+      allow create: if signedIn()
+          && request.resource.data.keys().hasOnly(['reporterId', 'reportedId', 'bookingId', 'reason', 'details', 'messageId', 'status', 'createdAt'])
+          && request.resource.data.reporterId == request.auth.uid
+          && request.resource.data.reportedId != request.auth.uid
+          && request.resource.data.reason in ['abuse', 'fraud', 'off_platform', 'other']
+          && request.resource.data.details is string && request.resource.data.details.size() <= 300
+          && request.resource.data.status == 'open'
+          && reportAboutOtherParty(request.resource.data);
+      allow update: if isAdmin() && changedKeys().hasOnly(['status', 'resolvedAt', 'resolvedBy', 'adminNote']);
       allow delete: if false;
     }
 

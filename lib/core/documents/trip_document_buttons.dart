@@ -5,6 +5,7 @@ import '../l10n/l10n.dart';
 import '../models/booking.dart';
 import 'lr_screen.dart';
 import 'pod_screen.dart';
+import '../chat/chat_screen.dart';
 
 /// "View LR" and (once picked up) "View POD" for a booking, either role.
 class TripDocumentButtons extends StatelessWidget {
@@ -18,6 +19,7 @@ class TripDocumentButtons extends StatelessWidget {
       spacing: 8,
       runSpacing: 8,
       children: [
+        BookingChatButton(booking: booking),
         OutlinedButton.icon(
           key: const ValueKey('viewLr'),
           onPressed: () =>

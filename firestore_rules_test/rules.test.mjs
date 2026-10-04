@@ -698,3 +698,62 @@ describe('trip OTPs, proof of delivery and e-way bill', () => {
     await assertFails(updateDoc(doc(as('driver2'), 'bookings', 'L1'), { ewayBillNo: '123456789012' }));
   });
 });
+
+describe('booking chat', () => {
+  const msg = (sender, text = 'Namaste', extra = {}) => ({ senderId: sender, text, flagged: false, createdAt: serverTimestamp(), ...extra });
+  const msgs = (db) => collection(db, 'bookings', 'L1', 'messages');
+
+  test('both parties send and read; outsiders cannot', async () => {
+    await seedBooking();
+    await assertSucceeds(addDoc(msgs(as('customer1')), msg('customer1')));
+    await assertSucceeds(addDoc(msgs(as('driver1')), msg('driver1', 'On my way', { flagged: true })));
+    await assertSucceeds(getDocs(msgs(as('driver1'))));
+    await assertFails(getDocs(msgs(as('driver2'))));
+    await assertFails(addDoc(msgs(as('driver2')), msg('driver2')));
+  });
+
+  test('length, sender, server time and immutability are enforced', async () => {
+    await seedBooking();
+    const db = as('customer1');
+    await assertFails(addDoc(msgs(db), msg('customer1', '')));
+    await assertFails(addDoc(msgs(db), msg('customer1', 'x'.repeat(501))));
+    await assertFails(addDoc(msgs(db), msg('driver1')));
+    await assertFails(addDoc(msgs(db), msg('customer1', 'hi', { createdAt: Timestamp.fromDate(new Date('2020-01-01')) })));
+    await assertFails(addDoc(msgs(db), msg('customer1', 'hi', { extra: 1 })));
+    await seed((s) => setDoc(doc(s, 'bookings', 'L1', 'messages', 'm1'), msg('customer1')));
+    await assertFails(updateDoc(doc(db, 'bookings', 'L1', 'messages', 'm1'), { text: 'edited' }));
+    await assertFails(deleteDoc(doc(db, 'bookings', 'L1', 'messages', 'm1')));
+  });
+
+  test('a blocked sender cannot message the person who blocked them', async () => {
+    await seedBooking();
+    await assertSucceeds(setDoc(doc(as('customer1'), 'users', 'customer1', 'blocked', 'driver1'), { createdAt: serverTimestamp() }));
+    await assertFails(getDoc(doc(as('driver1'), 'users', 'customer1', 'blocked', 'driver1')));
+    await assertFails(addDoc(msgs(as('driver1')), msg('driver1')));
+    await assertSucceeds(addDoc(msgs(as('customer1')), msg('customer1')));
+    await assertSucceeds(deleteDoc(doc(as('customer1'), 'users', 'customer1', 'blocked', 'driver1')));
+    await assertSucceeds(addDoc(msgs(as('driver1')), msg('driver1')));
+  });
+
+  test('read marks are personal', async () => {
+    await seedBooking();
+    await assertSucceeds(setDoc(doc(as('driver1'), 'bookings', 'L1', 'chat_reads', 'driver1'), { lastReadAt: serverTimestamp() }));
+    await assertFails(setDoc(doc(as('driver1'), 'bookings', 'L1', 'chat_reads', 'customer1'), { lastReadAt: serverTimestamp() }));
+    await assertFails(setDoc(doc(as('driver2'), 'bookings', 'L1', 'chat_reads', 'driver2'), { lastReadAt: serverTimestamp() }));
+  });
+
+  test('reports: only about the other booking party; admins review', async () => {
+    await seedBooking();
+    const rep = (by, about, extra = {}) => ({ reporterId: by, reportedId: about, bookingId: 'L1', reason: 'off_platform', details: '', status: 'open', createdAt: serverTimestamp(), ...extra });
+    await assertSucceeds(setDoc(doc(as('customer1'), 'reports', 'r1'), rep('customer1', 'driver1')));
+    await assertSucceeds(getDoc(doc(as('customer1'), 'reports', 'r1')));
+    await assertFails(getDoc(doc(as('driver1'), 'reports', 'r1')));
+    await assertSucceeds(getDoc(doc(asAdmin(), 'reports', 'r1')));
+    await assertFails(setDoc(doc(as('driver2'), 'reports', 'r2'), rep('driver2', 'customer1')));
+    await assertFails(setDoc(doc(as('customer1'), 'reports', 'r3'), rep('customer1', 'driver2')));
+    await assertFails(setDoc(doc(as('customer1'), 'reports', 'r4'), rep('customer1', 'driver1', { reason: 'meh' })));
+    await assertFails(setDoc(doc(as('customer1'), 'reports', 'r5'), rep('customer1', 'driver1', { status: 'resolved' })));
+    await assertFails(updateDoc(doc(as('customer1'), 'reports', 'r1'), { status: 'resolved' }));
+    await assertSucceeds(updateDoc(doc(asAdmin(), 'reports', 'r1'), { status: 'resolved', resolvedBy: 'admin1' }));
+  });
+});
