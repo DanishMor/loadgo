@@ -59,7 +59,7 @@ dart run flutter_native_splash:create
 | Deploy push function: `cd functions && npm install`, `firebase deploy --only functions` (after Blaze) | Sends FCM pushes for new notifications |
 | iOS push: upload APNs key in Firebase Console, enable Push + Background Modes in Xcode | Apple developer account needed |
 | Google Maps API key, then add `google_maps_flutter` and the map picker/tracking map | Key needs a billing account. See `docs/MANUAL_SETUP.md` |
-| Grant admin: set custom claim `admin: true` on your user with the Admin SDK | Then gate `AdminVerificationScreen` on it and add admin login before linking it in the UI |
+| Grant admin: in Firebase Console create a document `admins/<your uid>` (any field, e.g. `note: "owner"`) | Then the Admin panel appears in your Profile tab |
 
 ## Known limitations
 

@@ -35,7 +35,7 @@ class DriverVerification {
 }
 
 /// Driver verification for admins. Firestore rules only allow this for users
-/// with the `admin` custom claim; the app does not check that itself yet.
+/// listed in `admins/{uid}`.
 class AdminService {
   AdminService._();
 
