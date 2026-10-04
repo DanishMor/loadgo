@@ -62,6 +62,11 @@ class Load {
   /// hint only: any verified driver can still accept.
   final String? invitedDriverId;
 
+  /// Company account this load is booked under (the owner's uid) and the
+  /// internal cost centre tag, for the business statement.
+  final String? businessId;
+  final String? costCenter;
+
   /// Exact pickup time for an advance booking (null = no fixed time).
   final DateTime? scheduledAt;
 
@@ -107,6 +112,8 @@ class Load {
     this.movers,
     this.scheduledAt,
     this.invitedDriverId,
+    this.businessId,
+    this.costCenter,
     this.fragile = false,
     this.highValue = false,
     this.promoCode,
@@ -156,6 +163,8 @@ class Load {
       movers: d['movers'] is Map ? MoversDetails.fromMap(d['movers']) : null,
       scheduledAt: (d['scheduledAt'] as Timestamp?)?.toDate(),
       invitedDriverId: d['invitedDriverId'] as String?,
+      businessId: d['businessId'] as String?,
+      costCenter: d['costCenter'] as String?,
       fragile: d['fragile'] == true,
       highValue: d['highValue'] == true,
       promoCode: (d['promo'] as Map?)?['code'] as String?,

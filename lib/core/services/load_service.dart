@@ -79,6 +79,8 @@ class LoadService {
     bool highValue = false,
     DateTime? scheduledAt,
     String? invitedDriverId,
+    String? businessId,
+    String? costCenter,
   }) async {
     if (scheduledAt != null) {
       final problem = Schedule.check(scheduledAt, DateTime.now(), PricingService.config.schedule);
@@ -93,6 +95,7 @@ class LoadService {
     if (bookingType == BookingType.movers && (movers == null || movers.items.isEmpty)) {
       throw ArgumentError('A movers request needs at least one item');
     }
+    if (costCenter != null && costCenter.trim().length > 30) throw ArgumentError.value(costCenter, 'costCenter');
     final uid = Backend.requireUid();
     await RiskService.ensureCanTransact();
     final banned = prohibitedCargoMatch('$notes $cargoType');
@@ -105,6 +108,8 @@ class LoadService {
       'pickupGeohash': ?geohash,
       'bookingType': bookingType,
       'invitedDriverId': ?invitedDriverId,
+      'businessId': ?businessId,
+      if (costCenter != null && costCenter.trim().isNotEmpty) 'costCenter': costCenter.trim(),
       if (scheduledAt != null) 'scheduledAt': Timestamp.fromDate(scheduledAt),
       if (fragile) 'fragile': true,
       if (highValue) 'highValue': true,

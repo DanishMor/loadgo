@@ -95,6 +95,8 @@ class BookingService {
           'rentalHours': ?load.rentalHours,
           if (load.containerNumber.isNotEmpty) 'containerNumber': load.containerNumber,
           if (load.sealNumber.isNotEmpty) 'sealNumber': load.sealNumber,
+          'businessId': ?load.businessId,
+          'costCenter': ?load.costCenter,
           'paymentMode': load.paymentMode,
           'paymentStatus': 'pending',
           'pickupDate': snap.data()!['pickupDate'],

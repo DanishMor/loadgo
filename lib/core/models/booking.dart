@@ -42,6 +42,10 @@ class Booking {
   /// Fleet owner of the vehicle when a fleet driver took the load.
   final String? fleetOwnerId;
 
+  /// Company account and cost centre copied from the load.
+  final String? businessId;
+  final String? costCenter;
+
   /// Exact pickup time of an advance booking (copied from the load).
   final DateTime? scheduledAt;
 
@@ -145,6 +149,8 @@ class Booking {
     this.detention = const Detention(),
     this.scheduledAt,
     this.fleetOwnerId,
+    this.businessId,
+    this.costCenter,
     this.pickupGps,
     this.deliveryGps,
     this.odometerStart,
@@ -221,6 +227,8 @@ class Booking {
       detention: Detention.fromMap(d['detention']),
       scheduledAt: (d['scheduledAt'] as Timestamp?)?.toDate(),
       fleetOwnerId: d['fleetOwnerId'] as String?,
+      businessId: d['businessId'] as String?,
+      costCenter: d['costCenter'] as String?,
       pickupGps: d['pickupGps'] as GeoPoint?,
       deliveryGps: d['deliveryGps'] as GeoPoint?,
       odometerStart: (d['odometerStart'] as num?)?.toInt(),

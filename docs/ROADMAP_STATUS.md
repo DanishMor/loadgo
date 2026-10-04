@@ -26,14 +26,14 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | PAY Payments | 14 | 4 | 4 | 1 | 5 | 0 |
 | DOC Documents | 14 | 8 | 6 | 0 | 0 | 0 |
 | IE Import/export | 14 | 11 | 2 | 1 | 0 | 0 |
-| BIZ Business | 15 | 4 | 2 | 6 | 3 | 0 |
+| BIZ Business | 15 | 4 | 4 | 4 | 3 | 0 |
 | F Anti-fraud | 18 | 4 | 9 | 0 | 5 | 0 |
 | SAFE Safety | 12 | 8 | 2 | 0 | 2 | 0 |
 | N Notifications | 15 | 10 | 1 | 2 | 2 | 0 |
 | AI AI | 14 | 0 | 0 | 0 | 14 | 0 |
 | BE Backend | 18 | 4 | 6 | 1 | 7 | 0 |
 | TEST Testing | 14 | 4 | 3 | 0 | 7 | 0 |
-| **Total** | **347** | **157** | **83** | **30** | **76** | **1** |
+| **Total** | **347** | **157** | **85** | **28** | **76** | **1** |
 
 ## P0 Principles
 
@@ -373,11 +373,11 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | BIZ1 | Business KYC GST/PAN/company/entity verification. | Paid-or-Later | GST/PAN/MCA verification needs API |
 | BIZ2 | Company profile Legal + trade name, addresses, contacts. | Done | business_screen.dart |
 | BIZ3 | Branches Multiple warehouses/factories/cities. | Done | users/{uid}/branches (max 20) |
-| BIZ4 | Users Owner, admin, manager, dispatch, accounts, viewer. | Todo-free | No multi-user company |
-| BIZ5 | Permissions Role-based access. | Todo-free | No business roles |
+| BIZ4 | Users Owner, admin, manager, dispatch, accounts, viewer. | Partial | Owner plus booker team members by phone invite; no manager/dispatch/accounts/viewer roles |
+| BIZ5 | Permissions Role-based access. | Partial | Bookers can post for the company; owner reads the company bookings; no finer permissions |
 | BIZ6 | Approval workflow Large bookings ke liye manager approval. | Todo-free | No approval workflow |
 | BIZ7 | Bulk booking Multiple shipments ek saath. | Done | bulk_post_screen.dart (max 10) |
-| BIZ8 | Fleet management Company-owned/contracted vehicles. | Partial | Fleet owner can manage owned vehicles; contracted/company-fleet records come with Task 14 |
+| BIZ8 | Fleet management Company-owned/contracted vehicles. | Partial | Fleet owners manage owned vehicles; no company contract-vehicle records |
 | BIZ9 | Driver pool Assigned/approved drivers. | Todo-free | No driver pool |
 | BIZ10 | Expense dashboard Transport spend, fuel, toll etc. | Todo-free | No expense dashboard |
 | BIZ11 | Reports Routes, trips, payments, POD. | Done | route_report_screen.dart with CSV copy |

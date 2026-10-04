@@ -448,6 +448,13 @@ service cloud.firestore {
     // the load is open; drivers can only match (with a booking) and close
     // (after delivery).
     // ------------------------------------------------------------------
+    // A business owner's booker (business_members) may post loads on the
+    // company's behalf; the load then carries businessId and the owner reads it.
+    function activeBooker(ownerId, memberId) {
+      return exists(docPath('business_members', ownerId + '_' + memberId))
+          && get(docPath('business_members', ownerId + '_' + memberId)).data.active == true;
+    }
+
     function validLoad(d) {
       return d.pickup is string && d.pickup.size() > 1
           && d.drop is string && d.drop.size() > 1
@@ -464,6 +471,8 @@ service cloud.firestore {
           && validTradeFields(d)
           && validBookingType(d)
           && (!('invitedDriverId' in d) || (d.invitedDriverId is string && d.invitedDriverId.size() >= 1 && d.invitedDriverId.size() <= 60))
+          && (!('costCenter' in d) || (d.costCenter is string && d.costCenter.size() >= 1 && d.costCenter.size() <= 30))
+          && (!('businessId' in d) || (d.businessId is string && (d.businessId == d.shipperId || activeBooker(d.businessId, d.shipperId))))
           && (!('scheduledAt' in d) || d.scheduledAt is timestamp)
           && (!('fragile' in d) || d.fragile is bool)
           && (!('highValue' in d) || d.highValue is bool)
@@ -614,6 +623,7 @@ service cloud.firestore {
       allow read: if signedIn()
           && (resource.data.status == 'open'
               || resource.data.shipperId == request.auth.uid
+              || resource.data.get('businessId', '') == request.auth.uid
               || resource.data.get('driverId', null) == request.auth.uid
               || isAdmin());
       allow create: if signedIn()
@@ -778,7 +788,7 @@ service cloud.firestore {
       return b.keys().hasOnly(['loadId', 'driverId', 'vehicleId', 'customerId', 'status', 'pickup', 'drop', 'cargoType', 'weight',
                                'vehicleType', 'budget', 'fareEstimate', 'offerId', 'agreedFarePaise', 'extraPickups', 'extraDrops',
                                'pickupSlot', 'scheduledAt', 'bookingType', 'helpers', 'rentalHours', 'paymentMode', 'paymentStatus', 'containerNumber', 'sealNumber', 'pickupDate', 'notes',
-                               'vehicleNumber', 'driverName', 'driverPhone', 'fleetOwnerId', 'timeline', 'createdAt', 'updatedAt'])
+                               'vehicleNumber', 'driverName', 'driverPhone', 'fleetOwnerId', 'businessId', 'costCenter', 'timeline', 'createdAt', 'updatedAt'])
           && b.timeline.keys().hasOnly(['accepted'])
           && b.driverId == request.auth.uid
           && canTransact(request.auth.uid)
@@ -801,6 +811,8 @@ service cloud.firestore {
           && b.get('rentalHours', null) == load.get('rentalHours', null)
           && b.get('containerNumber', null) == load.get('containerNumber', null)
           && b.get('sealNumber', null) == load.get('sealNumber', null)
+          && b.get('businessId', null) == load.get('businessId', null)
+          && b.get('costCenter', null) == load.get('costCenter', null)
           && b.get('paymentStatus', 'pending') == 'pending'
           && !('paidAmountPaise' in b)
           && loadAfter.status == 'matched'
@@ -876,6 +888,7 @@ service cloud.firestore {
           && (resource.data.driverId == request.auth.uid
               || resource.data.customerId == request.auth.uid
               || resource.data.get('fleetOwnerId', '') == request.auth.uid
+              || resource.data.get('businessId', '') == request.auth.uid
               || isAdmin());
       allow create: if signedIn() && validBookingCreate(bookingId);
       allow update: if signedIn()
@@ -1372,6 +1385,68 @@ service cloud.firestore {
           && (resource.data.ownerId == request.auth.uid || resource.data.driverId == request.auth.uid)
           && changedKeys().hasOnly(['active', 'endedAt'])
           && resource.data.active == true && request.resource.data.active == false;
+      allow delete: if false;
+    }
+
+    // ------------------------------------------------------------------
+    // Business accounts. A customer with a company profile (the owner) invites
+    // team members by phone (same flow as fleet_invites). Members are bookers:
+    // loads they post carry businessId = the owner, so the owner sees them and
+    // the monthly statement. business_statements/{ownerId}_{yyyy-MM} is the
+    // owner's saved record of a month (totals in paise per cost center);
+    // it is a record, not an invoice or a payment.
+    // ------------------------------------------------------------------
+    match /business_invites/{inviteId} {
+      allow read: if signedIn() && (resource.data.ownerId == request.auth.uid
+          || resource.data.phone == request.auth.token.get('phone_number', ''));
+      allow create: if signedIn()
+          && get(docPath('users', request.auth.uid)).data.get('role', '') == 'customer'
+          && request.resource.data.keys().hasOnly(['ownerId', 'ownerName', 'phone', 'status', 'createdAt'])
+          && request.resource.data.ownerId == request.auth.uid
+          && request.resource.data.phone is string && request.resource.data.phone.matches('^[+]91[0-9]{10}$')
+          && inviteId == request.auth.uid + '_' + phoneDigits(request.resource.data.phone)
+          && request.resource.data.get('ownerName', '') is string && request.resource.data.get('ownerName', '').size() <= 100
+          && request.resource.data.status == 'pending'
+          && request.resource.data.createdAt == request.time;
+      allow update: if signedIn() && changedKeys().hasOnly(['status', 'answeredAt'])
+          && ((resource.data.ownerId == request.auth.uid
+                  && resource.data.status == 'pending' && request.resource.data.status == 'cancelled')
+              || (resource.data.phone == request.auth.token.get('phone_number', '')
+                  && resource.data.status == 'pending' && request.resource.data.status in ['accepted', 'declined']));
+      allow delete: if false;
+    }
+
+    match /business_members/{memberId} {
+      allow read: if signedIn() && (resource.data.ownerId == request.auth.uid || resource.data.memberId == request.auth.uid);
+      allow create: if signedIn()
+          && request.resource.data.keys().hasOnly(['ownerId', 'ownerName', 'memberId', 'memberName', 'memberPhone', 'role', 'active', 'createdAt'])
+          && request.resource.data.memberId == request.auth.uid
+          && request.resource.data.ownerId != request.auth.uid
+          && memberId == request.resource.data.ownerId + '_' + request.auth.uid
+          && request.resource.data.role == 'booker'
+          && request.resource.data.active == true
+          && request.resource.data.createdAt == request.time
+          && get(docPath('users', request.auth.uid)).data.get('role', '') == 'customer'
+          && getAfter(docPath('business_invites', request.resource.data.ownerId + '_' + phoneDigits(request.auth.token.get('phone_number', '')))).data.status == 'accepted'
+          && request.resource.data.memberPhone == request.auth.token.get('phone_number', '');
+      allow update: if signedIn()
+          && (resource.data.ownerId == request.auth.uid || resource.data.memberId == request.auth.uid)
+          && changedKeys().hasOnly(['active', 'endedAt'])
+          && resource.data.active == true && request.resource.data.active == false;
+      allow delete: if false;
+    }
+
+    match /business_statements/{statementId} {
+      allow read: if signedIn() && resource.data.ownerId == request.auth.uid;
+      allow create, update: if signedIn()
+          && request.resource.data.keys().hasOnly(['ownerId', 'month', 'trips', 'totalPaise', 'byCostCenter', 'createdAt'])
+          && request.resource.data.ownerId == request.auth.uid
+          && request.resource.data.month is string && request.resource.data.month.matches('^20[0-9]{2}-(0[1-9]|1[0-2])$')
+          && statementId == request.auth.uid + '_' + request.resource.data.month
+          && request.resource.data.trips is int && request.resource.data.trips >= 0
+          && request.resource.data.totalPaise is int && request.resource.data.totalPaise >= 0
+          && request.resource.data.byCostCenter is map && request.resource.data.byCostCenter.size() <= 50
+          && request.resource.data.createdAt == request.time;
       allow delete: if false;
     }
 

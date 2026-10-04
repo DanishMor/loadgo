@@ -23,6 +23,7 @@ import 'offers_section.dart';
 import '../core/scheduling/schedule.dart';
 import '../core/offers/promo.dart';
 import '../core/services/rewards_service.dart';
+import '../core/services/business_service.dart';
 
 /// Customer form to post a load. Pops with `true` once posted.
 /// [repostFrom] prefills everything except the pickup date.
@@ -45,6 +46,8 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
   final _weightCtrl = TextEditingController();
   final _budgetCtrl = TextEditingController();
   final _notesCtrl = TextEditingController();
+  final _costCenterCtrl = TextEditingController();
+  String? _businessId;
   final _distanceCtrl = TextEditingController();
   final _containerCtrl = TextEditingController();
   final _sealCtrl = TextEditingController();
@@ -76,6 +79,7 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
     _weightCtrl.dispose();
     _budgetCtrl.dispose();
     _notesCtrl.dispose();
+    _costCenterCtrl.dispose();
     _distanceCtrl.dispose();
     _containerCtrl.dispose();
     _sealCtrl.dispose();
@@ -179,6 +183,9 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
   void initState() {
     super.initState();
     if (widget.repostFrom != null) _prefill(widget.repostFrom!);
+    BusinessService.postingBusinessId().then((id) {
+      if (mounted && id != null) setState(() => _businessId = id);
+    }, onError: (_) {});
     // Re-quote as the route or distance changes.
     for (final c in [_pickupCtrl, _dropCtrl, _distanceCtrl, _weightCtrl, _itemsCtrl, _floorCtrl]) {
       c.addListener(_requote);
@@ -350,6 +357,8 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
         highValue: _highValue,
         scheduledAt: _scheduledAt,
         invitedDriverId: widget.invitedDriverId,
+        businessId: _businessId,
+        costCenter: _businessId == null ? null : _costCenterCtrl.text,
         pickup: _pickupCtrl.text,
         drop: _dropCtrl.text.trim().isEmpty ? _pickupCtrl.text : _dropCtrl.text,
         cargoType: _cargoType,
@@ -612,6 +621,16 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
                   maxLength: 300,
                   decoration: const InputDecoration(),
                 ),
+                if (_businessId != null) ...[
+                  const SizedBox(height: 18),
+                  FieldLabel(tr(context, 'costCenterOptional')),
+                  TextFormField(
+                    key: const ValueKey('costCenter'),
+                    controller: _costCenterCtrl,
+                    maxLength: 30,
+                    decoration: InputDecoration(hintText: tr(context, 'costCenterHint')),
+                  ),
+                ],
                 const SizedBox(height: 20),
                 PrimaryButton(label: tr(context, 'postLoad'), icon: Icons.send_rounded, loading: _saving, onPressed: _submit),
               ],

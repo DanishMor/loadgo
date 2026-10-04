@@ -1236,6 +1236,112 @@ describe('fleet owners', () => {
   });
 });
 
+describe('business accounts', () => {
+  const asPhone = (uid, phone) => env.authenticatedContext(uid, { phone_number: phone }).firestore();
+  const PHONE = '+919876543210';
+  const invite = (over = {}) => ({ ownerId: 'owner1', ownerName: 'Acme Ltd', phone: PHONE, status: 'pending', createdAt: serverTimestamp(), ...over });
+  const member = (over = {}) => ({
+    ownerId: 'owner1', ownerName: 'Acme Ltd', memberId: 'booker1', memberName: 'Bina', memberPhone: PHONE, role: 'booker', active: true, createdAt: serverTimestamp(), ...over,
+  });
+  const seedUsers = () =>
+    seed(async (db) => {
+      await setDoc(doc(db, 'users', 'owner1'), { role: 'customer', selectedRole: 'customer' });
+      await setDoc(doc(db, 'users', 'booker1'), { role: 'customer', selectedRole: 'customer' });
+      await setDoc(doc(db, 'users', 'driver1'), { role: 'driver', selectedRole: 'driver' });
+    });
+
+  test('a customer owner invites; drivers and wrong ids cannot', async () => {
+    await seedUsers();
+    await assertSucceeds(setDoc(doc(as('owner1'), 'business_invites', 'owner1_919876543210'), invite()));
+    await assertFails(setDoc(doc(as('driver1'), 'business_invites', 'driver1_919876543210'), invite({ ownerId: 'driver1' })));
+    await assertFails(setDoc(doc(as('owner1'), 'business_invites', 'owner1_919000000000'), invite()));
+    await assertFails(setDoc(doc(as('owner1'), 'business_invites', 'owner1_919876543210'), invite({ ownerName: 'x'.repeat(101) })));
+  });
+
+  test('the invited phone answers once; the owner may cancel a pending invite', async () => {
+    await seedUsers();
+    const id = 'owner1_919876543210';
+    await seed((db) => setDoc(doc(db, 'business_invites', id), invite({ createdAt: Timestamp.now() })));
+    await assertFails(getDoc(doc(as('customer9'), 'business_invites', id)));
+    await assertFails(updateDoc(doc(as('owner1'), 'business_invites', id), { status: 'accepted', answeredAt: serverTimestamp() }));
+    await assertSucceeds(updateDoc(doc(asPhone('booker1', PHONE), 'business_invites', id), { status: 'accepted', answeredAt: serverTimestamp() }));
+    await assertFails(updateDoc(doc(asPhone('booker1', PHONE), 'business_invites', id), { status: 'declined', answeredAt: serverTimestamp() }));
+  });
+
+  test('membership needs an accepted invite and a customer account', async () => {
+    await seedUsers();
+    const id = 'owner1_919876543210';
+    await seed((db) => setDoc(doc(db, 'business_invites', id), invite({ createdAt: Timestamp.now() })));
+    const b = () => asPhone('booker1', PHONE);
+    await assertFails(setDoc(doc(b(), 'business_members', 'owner1_booker1'), member()), 'invite still pending');
+    await seed((db) => updateDoc(doc(db, 'business_invites', id), { status: 'accepted' }));
+    await assertFails(setDoc(doc(b(), 'business_members', 'owner1_booker1'), member({ role: 'owner' })));
+    await assertFails(setDoc(doc(b(), 'business_members', 'owner1_booker1'), member({ memberPhone: '+919000000000' })));
+    await assertFails(setDoc(doc(asPhone('driver1', PHONE), 'business_members', 'owner1_driver1'), member({ memberId: 'driver1' })), 'drivers cannot');
+    await assertSucceeds(setDoc(doc(b(), 'business_members', 'owner1_booker1'), member()));
+    await assertSucceeds(getDoc(doc(as('owner1'), 'business_members', 'owner1_booker1')));
+    await assertFails(getDoc(doc(as('customer9'), 'business_members', 'owner1_booker1')));
+    await assertSucceeds(updateDoc(doc(as('owner1'), 'business_members', 'owner1_booker1'), { active: false, endedAt: serverTimestamp() }));
+    await assertFails(updateDoc(doc(as('owner1'), 'business_members', 'owner1_booker1'), { active: true }));
+  });
+
+  describe('loads, bookings and statements', () => {
+    const seedTeam = () =>
+      seed(async (db) => {
+        await setDoc(doc(db, 'users', 'owner1'), { role: 'customer', selectedRole: 'customer' });
+        await setDoc(doc(db, 'business_members', 'owner1_booker1'), member({ createdAt: Timestamp.now() }));
+        await setDoc(doc(db, 'business_members', 'owner1_old'), member({ memberId: 'old', createdAt: Timestamp.now(), active: false }));
+        await setDoc(doc(db, 'vehicles', 'v1'), VEHICLE);
+      });
+    const postLoad = (uid, over) => addDoc(collection(as(uid), 'loads'), { ...LOAD, shipperId: uid, createdAt: serverTimestamp(), ...over });
+
+    test('only the owner or an active booker may tag a load with the company; cost centre is length-limited', async () => {
+      await seedTeam();
+      await assertSucceeds(postLoad('booker1', { businessId: 'owner1', costCenter: 'Plant 2' }));
+      await assertSucceeds(postLoad('owner1', { businessId: 'owner1' }));
+      await assertFails(postLoad('old', { businessId: 'owner1' }), 'ended member');
+      await assertFails(postLoad('customer9', { businessId: 'owner1' }), 'stranger');
+      await assertFails(postLoad('booker1', { businessId: 'owner1', costCenter: 'x'.repeat(31) }));
+      await assertFails(postLoad('booker1', { businessId: 'owner1', costCenter: '' }));
+      await assertSucceeds(postLoad('customer9', { costCenter: 'mine' }));
+    });
+
+    test('the owner reads the company\'s loads and bookings', async () => {
+      await seedTeam();
+      await seed(async (db) => {
+        await setDoc(doc(db, 'loads', 'L1'), { ...LOAD, shipperId: 'booker1', status: 'matched', driverId: 'driver1', businessId: 'owner1', costCenter: 'P2' });
+        await setDoc(doc(db, 'bookings', 'L1'), { ...bookingFor('L1', { customerId: 'booker1' }), timeline: {}, businessId: 'owner1', costCenter: 'P2' });
+      });
+      await assertSucceeds(getDocs(query(collection(as('owner1'), 'bookings'), where('businessId', '==', 'owner1'))));
+      await assertSucceeds(getDoc(doc(as('owner1'), 'loads', 'L1')));
+      await assertFails(getDoc(doc(as('customer9'), 'bookings', 'L1')));
+    });
+
+    test('the booking must copy the load\'s company id and cost centre', async () => {
+      await seedTeam();
+      await seed((db) => setDoc(doc(db, 'loads', 'L1'), { ...LOAD, shipperId: 'booker1', businessId: 'owner1', costCenter: 'P2' }));
+      const over = { customerId: 'booker1' };
+      await assertFails(acceptBatch(as('driver1'), 'L1', 'driver1', over), 'tags missing');
+      await assertFails(acceptBatch(as('driver1'), 'L1', 'driver1', { ...over, businessId: 'owner1', costCenter: 'other' }));
+      await assertSucceeds(acceptBatch(as('driver1'), 'L1', 'driver1', { ...over, businessId: 'owner1', costCenter: 'P2' }));
+    });
+
+    test('statement records: the owner writes their own month, nobody else reads it', async () => {
+      const st = (over = {}) => ({ ownerId: 'owner1', month: '2026-09', trips: 3, totalPaise: 425050, byCostCenter: { 'Plant 2': 350050, '-': 75000 }, createdAt: serverTimestamp(), ...over });
+      await assertSucceeds(setDoc(doc(as('owner1'), 'business_statements', 'owner1_2026-09'), st()));
+      await assertSucceeds(setDoc(doc(as('owner1'), 'business_statements', 'owner1_2026-09'), st({ trips: 4 })), 'replace');
+      await assertFails(setDoc(doc(as('owner1'), 'business_statements', 'owner1_2026-10'), st()), 'id must match month');
+      await assertFails(setDoc(doc(as('owner1'), 'business_statements', 'owner1_2026-13'), st({ month: '2026-13' })));
+      await assertFails(setDoc(doc(as('owner1'), 'business_statements', 'owner1_2026-09'), st({ totalPaise: 10.5 })));
+      await assertFails(setDoc(doc(as('owner1'), 'business_statements', 'owner1_2026-09'), st({ totalPaise: -1 })));
+      await assertFails(setDoc(doc(as('owner2'), 'business_statements', 'owner1_2026-09'), st()));
+      await assertSucceeds(getDoc(doc(as('owner1'), 'business_statements', 'owner1_2026-09')));
+      await assertFails(getDoc(doc(as('owner2'), 'business_statements', 'owner1_2026-09')));
+      await assertFails(deleteDoc(doc(as('owner1'), 'business_statements', 'owner1_2026-09')));
+    });
+  });
+});
+
 describe('admin verification', () => {
   const seedDriver = () => seed((db) => setDoc(doc(db, 'users', 'd1'), { driverName: 'R', verified: false, verificationStatus: 'pending' }));
 

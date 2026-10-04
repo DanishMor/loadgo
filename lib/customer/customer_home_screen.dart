@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../core/profile/profile_nav_tile.dart';
 import 'business_hub_screen.dart';
+import 'business_invites_card.dart';
 import 'offers_screen.dart';
 import 'truck_board_screen.dart';
 import '../core/widgets/reminder_widgets.dart';
@@ -215,6 +216,7 @@ class _CustomerHomeContent extends StatelessWidget {
               ),
             ),
             RemindersBanner(isDriver: false, onOpen: (r) => _openReminder(context, r)),
+            const BusinessInvitesCard(),
             const SizedBox(height: 25),
             Container(
               width: double.infinity,

@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import '../core/l10n/l10n.dart';
 import 'bulk_post_screen.dart';
 import 'business_screen.dart';
+import 'business_statement_screen.dart';
+import 'business_team_screen.dart';
 import 'route_report_screen.dart';
 import 'shipments_screen.dart';
 
@@ -24,6 +26,22 @@ class BusinessHubScreen extends StatelessWidget {
           subtitle: Text(tr(context, 'branches')),
           trailing: const Icon(Icons.chevron_right_rounded),
           onTap: () => open(const BusinessScreen()),
+        ),
+        ListTile(
+          key: const ValueKey('hubTeam'),
+          leading: const Icon(Icons.groups_outlined),
+          title: Text(tr(context, 'businessTeam')),
+          subtitle: Text(tr(context, 'teamRoleBooker')),
+          trailing: const Icon(Icons.chevron_right_rounded),
+          onTap: () => open(const BusinessTeamScreen()),
+        ),
+        ListTile(
+          key: const ValueKey('hubStatement'),
+          leading: const Icon(Icons.receipt_long_outlined),
+          title: Text(tr(context, 'monthlyStatement')),
+          subtitle: Text(tr(context, 'byCostCenter')),
+          trailing: const Icon(Icons.chevron_right_rounded),
+          onTap: () => open(const BusinessStatementScreen()),
         ),
         ListTile(
           key: const ValueKey('hubBulk'),
