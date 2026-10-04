@@ -52,6 +52,8 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
   String _paymentMode = PaymentMode.cash;
   bool _saving = false;
   OffersChoice _offers = const OffersChoice();
+  bool _fragile = false;
+  bool _highValue = false;
   String _bookingType = BookingType.freight;
   int _helpers = 0;
   int _rentalHours = rentalHourOptions.first;
@@ -94,6 +96,8 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
     _paymentMode = l.paymentMode;
     if (l.distanceSource == DistanceSource.manual && l.estimate != null) _distanceCtrl.text = '${l.estimate!.distanceKm}';
     _bookingType = l.bookingType;
+    _fragile = l.fragile;
+    _highValue = l.highValue;
     _helpers = l.helpers;
     _rentalHours = l.rentalHours ?? _rentalHours;
     final m = l.movers;
@@ -314,6 +318,8 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
       await LoadService.post(
         promo: promo,
         creditsUsedPaise: credits,
+        fragile: _fragile,
+        highValue: _highValue,
         pickup: _pickupCtrl.text,
         drop: _dropCtrl.text.trim().isEmpty ? _pickupCtrl.text : _dropCtrl.text,
         cargoType: _cargoType,
@@ -446,6 +452,20 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
                   },
                 ),
                 MatchingVehiclesLine(vehicleType: _vehicleType, weight: num.tryParse(_weightCtrl.text.trim())),
+                SwitchListTile(
+                  key: const ValueKey('fragileSwitch'),
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(tr(context, 'fragileGoods')),
+                  value: _fragile,
+                  onChanged: (v) => setState(() => _fragile = v),
+                ),
+                SwitchListTile(
+                  key: const ValueKey('highValueSwitch'),
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(tr(context, 'highValueGoods')),
+                  value: _highValue,
+                  onChanged: (v) => setState(() => _highValue = v),
+                ),
                 const SizedBox(height: 18),
                 if (_bookingType == BookingType.rental) ...[
                   FieldLabel(tr(context, 'rentalPackage')),

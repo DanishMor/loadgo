@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../core/constants/logistics.dart';
 import '../core/models/vehicle.dart';
 import '../core/services/user_service.dart';
 import '../core/services/vehicle_service.dart';
@@ -61,6 +62,11 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
   final _numberCtrl = TextEditingController();
   final _capacityCtrl = TextEditingController();
   final _rcCtrl = TextEditingController();
+  final _lengthCtrl = TextEditingController();
+  final _widthCtrl = TextEditingController();
+  final _heightCtrl = TextEditingController();
+  String? _fuel;
+  String? _bodyType;
   String _type = 'Mini';
   Uint8List? _rcImage;
   bool _saving = false;
@@ -76,6 +82,12 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
       _capacityCtrl.text = formatNum(v.capacity);
       _rcCtrl.text = v.rcNumber;
       _type = v.type;
+      final p = v.profile;
+      if (p.lengthM != null) _lengthCtrl.text = '${p.lengthM}';
+      if (p.widthM != null) _widthCtrl.text = '${p.widthM}';
+      if (p.heightM != null) _heightCtrl.text = '${p.heightM}';
+      _fuel = p.fuel;
+      _bodyType = p.bodyType;
     } else if (widget.prefillFromProfile) {
       _prefill();
     }
@@ -144,6 +156,9 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
     _numberCtrl.dispose();
     _capacityCtrl.dispose();
     _rcCtrl.dispose();
+    _lengthCtrl.dispose();
+    _widthCtrl.dispose();
+    _heightCtrl.dispose();
     super.dispose();
   }
 
@@ -152,6 +167,14 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
     setState(() => _saving = true);
     try {
       final capacity = num.parse(_capacityCtrl.text.trim());
+      double? dim(TextEditingController c) => double.tryParse(c.text.trim());
+      final profile = VehicleProfile(
+        lengthM: dim(_lengthCtrl),
+        widthM: dim(_widthCtrl),
+        heightM: dim(_heightCtrl),
+        fuel: _fuel,
+        bodyType: _bodyType,
+      );
       if (_isEdit) {
         await VehicleService.update(
           vehicleId: widget.vehicle!.id,
@@ -160,6 +183,7 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
           capacity: capacity,
           rcNumber: _rcCtrl.text,
           rcImage: _rcImage,
+          profile: profile,
         );
       } else {
         await VehicleService.add(
@@ -168,6 +192,7 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
           capacity: capacity,
           rcNumber: _rcCtrl.text,
           rcImage: _rcImage,
+          profile: profile,
         );
       }
       if (!mounted) return;
@@ -247,6 +272,55 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
                   textCapitalization: TextCapitalization.characters,
                   decoration: const InputDecoration(prefixIcon: Icon(Icons.description_outlined)),
                   validator: (v) => (v == null || v.trim().length < 4) ? tr(context, 'fieldRequired') : null,
+                ),
+                const SizedBox(height: 18),
+                FieldLabel(tr(context, 'vehicleDimensions')),
+                Row(children: [
+                  for (final (key, ctrl, label) in [
+                    ('vehLength', _lengthCtrl, 'lengthM'),
+                    ('vehWidth', _widthCtrl, 'widthM'),
+                    ('vehHeight', _heightCtrl, 'heightM'),
+                  ])
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: TextFormField(
+                          key: ValueKey(key),
+                          controller: ctrl,
+                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                          decoration: InputDecoration(labelText: tr(context, label)),
+                          validator: (v) {
+                            final t = v?.trim() ?? '';
+                            if (t.isEmpty) return null;
+                            return VehicleProfile.validDimension(double.tryParse(t)) ? null : tr(context, 'invalidNumber');
+                          },
+                        ),
+                      ),
+                    ),
+                ]),
+                const SizedBox(height: 18),
+                FieldLabel(tr(context, 'fuelType')),
+                DropdownButtonFormField<String?>(
+                  key: const ValueKey('vehFuel'),
+                  initialValue: _fuel,
+                  decoration: const InputDecoration(prefixIcon: Icon(Icons.local_gas_station_outlined)),
+                  items: [
+                    DropdownMenuItem(value: null, child: Text(tr(context, 'notSpecified'))),
+                    for (final f in FuelType.all) DropdownMenuItem(value: f, child: Text(tr(context, 'fuel_$f'))),
+                  ],
+                  onChanged: (v) => setState(() => _fuel = v),
+                ),
+                const SizedBox(height: 18),
+                FieldLabel(tr(context, 'bodyTypeLabel')),
+                DropdownButtonFormField<String?>(
+                  key: const ValueKey('vehBody'),
+                  initialValue: _bodyType,
+                  decoration: const InputDecoration(prefixIcon: Icon(Icons.view_in_ar_outlined)),
+                  items: [
+                    DropdownMenuItem(value: null, child: Text(tr(context, 'notSpecified'))),
+                    for (final b in BodyType.all) DropdownMenuItem(value: b, child: Text(tr(context, 'body_$b'))),
+                  ],
+                  onChanged: (v) => setState(() => _bodyType = v),
                 ),
                 const SizedBox(height: 18),
                 FieldLabel(tr(context, 'rcPhotoOptional')),

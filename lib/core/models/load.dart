@@ -58,6 +58,10 @@ class Load {
   /// Packers-and-movers request (items, floor, lift, packing).
   final MoversDetails? movers;
 
+  /// Handle with care / valuable goods (shown to drivers before accepting).
+  final bool fragile;
+  final bool highValue;
+
   /// Promo applied at posting (record only) and credits spent, in paise.
   final String? promoCode;
   final int promoDiscountPaise;
@@ -94,6 +98,8 @@ class Load {
     this.helpers = 0,
     this.rentalHours,
     this.movers,
+    this.fragile = false,
+    this.highValue = false,
     this.promoCode,
     this.promoDiscountPaise = 0,
     this.creditsUsedPaise = 0,
@@ -139,6 +145,8 @@ class Load {
       helpers: (d['helpers'] as num?)?.toInt() ?? 0,
       rentalHours: (d['rentalHours'] as num?)?.toInt(),
       movers: d['movers'] is Map ? MoversDetails.fromMap(d['movers']) : null,
+      fragile: d['fragile'] == true,
+      highValue: d['highValue'] == true,
       promoCode: (d['promo'] as Map?)?['code'] as String?,
       promoDiscountPaise: ((d['promo'] as Map?)?['discountPaise'] as num?)?.toInt() ?? 0,
       creditsUsedPaise: (d['creditsUsedPaise'] as num?)?.toInt() ?? 0,

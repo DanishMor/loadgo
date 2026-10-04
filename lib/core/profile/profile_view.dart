@@ -11,6 +11,10 @@ import '../l10n/l10n.dart';
 import '../l10n/language_widgets.dart';
 import '../widgets/rating_widgets.dart';
 import '../widgets/live_stream.dart';
+import '../widgets/verification_badges.dart';
+import '../services/vehicle_service.dart';
+import '../models/vehicle.dart';
+import '../models/driver_extras.dart';
 import 'edit_profile_screen.dart';
 import '../support/support_screens.dart';
 import '../settings/settings_screen.dart';
@@ -63,6 +67,49 @@ class _ProfileViewState extends State<ProfileView> {
           ],
         );
       },
+    );
+  }
+
+  bool _showNumbers = false;
+  late final Stream<List<Vehicle>> _vehicles = VehicleService.watchMine().asBroadcastStream();
+
+  /// Per-document badges (masked), review info, and for drivers the vehicles,
+  /// languages and plan.
+  Widget _verificationCard(Map<String, dynamic> data) {
+    final pro = DriverPlan.isPro(data, DateTime.now());
+    return AppCard(
+      key: const ValueKey('verificationCard'),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [
+          Expanded(child: Text(tr(context, 'verificationTitle'), style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16))),
+          if (widget.isDriver)
+            StatusChip(
+              label: tr(context, data['verified'] == true ? 'adminApproved' : 'pendingVerification'),
+              color: data['verified'] == true ? AppColors.success : AppColors.warning,
+            ),
+        ]),
+        const SizedBox(height: 6),
+        VerificationBadges(user: data, isDriver: widget.isDriver, reveal: _showNumbers),
+        TextButton.icon(
+          key: const ValueKey('toggleNumbers'),
+          onPressed: () => setState(() => _showNumbers = !_showNumbers),
+          icon: Icon(_showNumbers ? Icons.visibility_off_outlined : Icons.visibility_outlined, size: 18),
+          label: Text(tr(context, _showNumbers ? 'hideNumbers' : 'showNumbers')),
+        ),
+        if (widget.isDriver) ...[
+          const Divider(),
+          StreamBuilder<List<Vehicle>>(
+            stream: _vehicles,
+            builder: (context, snap) => Text(
+              trf(context, 'profileVehicles', {'n': snap.data?.length ?? 0}),
+              key: const ValueKey('profileVehicleCount'),
+              style: const TextStyle(color: AppColors.muted),
+            ),
+          ),
+          Text(trf(context, 'profileLanguage', {'lang': trLanguageName(LanguageScope.of(context))}), style: const TextStyle(color: AppColors.muted)),
+          Text(tr(context, pro ? 'planPro' : 'planFree'), key: const ValueKey('profilePlan'), style: const TextStyle(color: AppColors.muted)),
+        ],
+      ]),
     );
   }
 
@@ -155,6 +202,8 @@ class _ProfileViewState extends State<ProfileView> {
                   ],
                 ),
               ),
+              const SizedBox(height: 14),
+              _verificationCard(data),
               const SizedBox(height: 20),
               OutlinedButton.icon(
                 onPressed: _logout,

@@ -79,6 +79,8 @@ class LoadCard extends StatelessWidget {
                 _meta(Icons.timer_outlined, trf(context, 'rentalHoursChip', {'h': load.rentalHours!})),
               if (load.bookingType == BookingType.movers && load.movers != null)
                 _meta(Icons.chair_alt_outlined, trf(context, 'moversChip', {'n': load.movers!.units, 'floor': load.movers!.floor})),
+              if (load.fragile) _meta(Icons.broken_image_outlined, tr(context, 'fragileChip')),
+              if (load.highValue) _meta(Icons.diamond_outlined, tr(context, 'highValueChip')),
               if (load.helpers > 0) _meta(Icons.people_outline_rounded, trf(context, 'helpersChip', {'n': load.helpers})),
               if (load.promoCode != null) _meta(Icons.local_offer_outlined, '${load.promoCode} -${formatPaise(load.promoDiscountPaise)}'),
               if (load.estimate != null) _meta(Icons.calculate_outlined, formatPaise(load.estimate!.total)),

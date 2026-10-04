@@ -19,6 +19,10 @@ class Vehicle {
   /// Insurance/PUC/fitness/permit details keyed by [VehicleDocKind].
   final Map<String, VehicleDocInfo> docs;
   final DateTime? nextServiceDate;
+  final DateTime? nextTyreCheckDate;
+
+  /// Optional profile: cargo space in metres, fuel and body type.
+  final VehicleProfile profile;
 
   const Vehicle({
     required this.id,
@@ -33,6 +37,8 @@ class Vehicle {
     this.availability = VehicleAvailability.available,
     this.docs = const {},
     this.nextServiceDate,
+    this.nextTyreCheckDate,
+    this.profile = const VehicleProfile(),
   });
 
   bool get isActive => status == VehicleStatus.active;
@@ -55,6 +61,10 @@ class Vehicle {
   bool serviceDue(DateTime now) =>
       nextServiceDate != null && !nextServiceDate!.isAfter(now.add(const Duration(days: 7)));
 
+  /// Tyre check is due within a week (or overdue).
+  bool tyreDue(DateTime now) =>
+      nextTyreCheckDate != null && !nextTyreCheckDate!.isAfter(now.add(const Duration(days: 7)));
+
   factory Vehicle.fromDoc(DocumentSnapshot<Map<String, dynamic>> doc) {
     final d = doc.data() ?? const {};
     return Vehicle(
@@ -73,6 +83,8 @@ class Vehicle {
           if (e.value is Map) e.key as String: VehicleDocInfo.fromMap(Map<String, dynamic>.from(e.value as Map)),
       },
       nextServiceDate: (d['nextServiceDate'] as Timestamp?)?.toDate(),
+      nextTyreCheckDate: (d['nextTyreCheckDate'] as Timestamp?)?.toDate(),
+      profile: VehicleProfile.fromMap(d),
     );
   }
 }
@@ -98,4 +110,57 @@ class VehicleDocInfo {
         'number': number,
         if (expiry != null) 'expiry': Timestamp.fromDate(expiry!),
       };
+}
+
+/// Cargo space (metres), fuel and body type; all optional.
+class VehicleProfile {
+  final double? lengthM;
+  final double? widthM;
+  final double? heightM;
+  final String? fuel;
+  final String? bodyType;
+
+  const VehicleProfile({this.lengthM, this.widthM, this.heightM, this.fuel, this.bodyType});
+
+  bool get isEmpty => lengthM == null && widthM == null && heightM == null && fuel == null && bodyType == null;
+
+  /// Largest side allowed for any dimension (metres).
+  static const maxDimensionM = 30.0;
+
+  static bool validDimension(double? v) => v == null || (v > 0 && v <= maxDimensionM);
+
+  bool get valid => validDimension(lengthM) && validDimension(widthM) && validDimension(heightM) &&
+      (fuel == null || FuelType.all.contains(fuel)) && (bodyType == null || BodyType.all.contains(bodyType));
+
+  factory VehicleProfile.fromMap(Map<String, dynamic> d) => VehicleProfile(
+        lengthM: (d['lengthM'] as num?)?.toDouble(),
+        widthM: (d['widthM'] as num?)?.toDouble(),
+        heightM: (d['heightM'] as num?)?.toDouble(),
+        fuel: d['fuel'] as String?,
+        bodyType: d['bodyType'] as String?,
+      );
+
+  /// Fields to write; empty ones are deleted on update (see [toUpdate]).
+  Map<String, Object> toMap() => {
+        'lengthM': ?lengthM,
+        'widthM': ?widthM,
+        'heightM': ?heightM,
+        'fuel': ?fuel,
+        'bodyType': ?bodyType,
+      };
+
+  Map<String, Object> toUpdate() => {
+        'lengthM': lengthM ?? FieldValue.delete(),
+        'widthM': widthM ?? FieldValue.delete(),
+        'heightM': heightM ?? FieldValue.delete(),
+        'fuel': fuel ?? FieldValue.delete(),
+        'bodyType': bodyType ?? FieldValue.delete(),
+      };
+
+  /// "6.1 x 2.4 x 2.4 m" or null when no dimensions are set.
+  String? get dimensionsText {
+    if (lengthM == null && widthM == null && heightM == null) return null;
+    String f(double? v) => v == null ? '-' : (v == v.roundToDouble() ? v.toStringAsFixed(0) : v.toString());
+    return '${f(lengthM)} × ${f(widthM)} × ${f(heightM)} m';
+  }
 }

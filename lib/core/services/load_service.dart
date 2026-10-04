@@ -63,6 +63,8 @@ class LoadService {
     MoversDetails? movers,
     PromoApplication? promo,
     int creditsUsedPaise = 0,
+    bool fragile = false,
+    bool highValue = false,
   }) async {
     if (creditsUsedPaise < 0) throw ArgumentError.value(creditsUsedPaise, 'creditsUsedPaise');
     if (!BookingType.all.contains(bookingType)) throw ArgumentError.value(bookingType, 'bookingType');
@@ -84,6 +86,8 @@ class LoadService {
     final data = <String, Object?>{
       'pickupGeohash': ?geohash,
       'bookingType': bookingType,
+      if (fragile) 'fragile': true,
+      if (highValue) 'highValue': true,
       'helpers': helpers,
       if (bookingType == BookingType.rental) 'rentalHours': rentalHours,
       if (bookingType == BookingType.movers) 'movers': movers!.toMap(),

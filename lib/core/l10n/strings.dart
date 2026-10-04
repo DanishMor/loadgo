@@ -4,6 +4,7 @@
 /// en, hi, hinglish, kn, ta, te, mr, gu, bn, pa, ks, ur.
 library;
 
+import 'badge_strings.dart';
 import 'booking_type_strings.dart';
 import 'consent_strings.dart';
 import 'identity_strings.dart';
@@ -18,6 +19,7 @@ import 'offer_strings.dart';
 import 'offers_strings.dart';
 import 'payment_strings.dart';
 import 'pricing_strings.dart';
+import 'profile_strings.dart';
 import 'reminder_strings.dart';
 import 'risk_strings.dart';
 import 'settings_strings.dart';
@@ -42,6 +44,8 @@ const List<Map<String, List<String>>> stringTables = [
   customerOffersStrings,
   driverExtrasStrings,
   reminderStrings,
+  profileFieldStrings,
+  badgeStrings,
   adminStrings,
   matchStrings,
   settingsStrings,

@@ -6,6 +6,7 @@ import '../matching/load_ranker.dart';
 import '../models/booking.dart';
 import '../models/vehicle.dart';
 import 'backend.dart';
+import 'user_service.dart';
 import 'vehicle_service.dart';
 
 /// Data for the matching features: favourite routes, the driver's context
@@ -69,6 +70,8 @@ class MatchService {
     return DriverContext(
       vehicles: vehicles,
       verified: user['verified'] == true,
+      riskTier: user['riskTier'] as String? ?? 'normal',
+      origin: UserService.lastLocationOf(user),
       anchorPlace: active.isNotEmpty ? active.first.drop : (delivered.isNotEmpty ? delivered.first.drop : null),
       anchorIsActiveTrip: active.isNotEmpty,
       favourites: favourites,

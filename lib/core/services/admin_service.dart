@@ -12,6 +12,9 @@ class DriverVerification {
   final String vehicleType;
   final String status;
 
+  /// The whole profile, so the admin can see the documents behind the request.
+  final Map<String, dynamic> data;
+
   const DriverVerification({
     required this.uid,
     required this.name,
@@ -19,6 +22,7 @@ class DriverVerification {
     required this.vehicleNumber,
     required this.vehicleType,
     required this.status,
+    this.data = const {},
   });
 
   factory DriverVerification.fromDoc(DocumentSnapshot<Map<String, dynamic>> doc) {
@@ -30,6 +34,7 @@ class DriverVerification {
       vehicleNumber: d['vehicleNumber'] as String? ?? '',
       vehicleType: d['vehicleType'] as String? ?? '',
       status: d['verificationStatus'] as String? ?? 'pending',
+      data: d,
     );
   }
 }
@@ -58,6 +63,13 @@ class AdminService {
     batch.update(Backend.db.collection('users').doc(uid), {
       'verificationStatus': status,
       'verified': status == approved,
+      // Who decided, how and when (no external source yet: LATER(paid) KYC APIs).
+      'verificationMeta': {
+        'source': 'manual_review',
+        'by': Backend.requireUid(),
+        'status': status,
+        'at': FieldValue.serverTimestamp(),
+      },
       'updatedAt': FieldValue.serverTimestamp(),
     });
     AuditService.inBatch(batch, AuditType.verification, targetId: uid, data: {'status': status});

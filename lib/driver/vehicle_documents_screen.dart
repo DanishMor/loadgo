@@ -24,6 +24,7 @@ class _VehicleDocumentsScreenState extends State<VehicleDocumentsScreen> {
   };
   late final Map<String, DateTime?> _expiry = {for (final k in VehicleDocKind.all) k: widget.vehicle.docs[k]?.expiry};
   late DateTime? _nextService = widget.vehicle.nextServiceDate;
+  late DateTime? _nextTyre = widget.vehicle.nextTyreCheckDate;
   late bool _maintenance = widget.vehicle.availability == VehicleAvailability.maintenance;
   bool _saving = false;
 
@@ -55,7 +56,7 @@ class _VehicleDocumentsScreenState extends State<VehicleDocumentsScreen> {
     try {
       await VehicleService.saveDocuments(widget.vehicle.id, {
         for (final k in VehicleDocKind.all) k: VehicleDocInfo(number: _numbers[k]!.text.trim(), expiry: _expiry[k]),
-      }, nextServiceDate: _nextService);
+      }, nextServiceDate: _nextService, nextTyreCheckDate: _nextTyre);
       final wanted = _maintenance ? VehicleAvailability.maintenance : VehicleAvailability.available;
       if (_canToggleMaintenance && wanted != widget.vehicle.availability) {
         await VehicleService.setAvailability(widget.vehicle.id, wanted);
@@ -190,6 +191,13 @@ class _VehicleDocumentsScreenState extends State<VehicleDocumentsScreen> {
                       label: tr(context, 'nextService'),
                       value: _nextService,
                       onChanged: (d) => setState(() => _nextService = d),
+                    ),
+                    const SizedBox(height: 8),
+                    _dateRow(
+                      key: const ValueKey('nextTyre'),
+                      label: tr(context, 'tyreCheckDate'),
+                      value: _nextTyre,
+                      onChanged: (d) => setState(() => _nextTyre = d),
                     ),
                     SwitchListTile(
                       key: const ValueKey('maintenanceSwitch'),

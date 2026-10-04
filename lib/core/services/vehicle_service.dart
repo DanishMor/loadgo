@@ -75,7 +75,9 @@ class VehicleService {
     required num capacity,
     required String rcNumber,
     Uint8List? rcImage,
+    VehicleProfile profile = const VehicleProfile(),
   }) async {
+    if (!profile.valid) throw ArgumentError('Invalid vehicle profile');
     final uid = Backend.requireUid();
     final ref = _col.doc();
     final normalized = normalizeNumber(number);
@@ -92,6 +94,7 @@ class VehicleService {
       'status': VehicleStatus.active,
       'availability': VehicleAvailability.available,
       'rcImageUrl': ?rcImageUrl,
+      ...profile.toMap(),
       'createdAt': FieldValue.serverTimestamp(),
     });
     try {
@@ -112,7 +115,9 @@ class VehicleService {
     required num capacity,
     required String rcNumber,
     Uint8List? rcImage,
+    VehicleProfile? profile,
   }) async {
+    if (profile != null && !profile.valid) throw ArgumentError('Invalid vehicle profile');
     final uid = Backend.requireUid();
     final normalized = normalizeNumber(number);
     final old = await _col.doc(vehicleId).get();
@@ -134,6 +139,7 @@ class VehicleService {
       'capacity': capacity,
       'rcNumber': rcNumber.trim().toUpperCase(),
       'rcImageUrl': ?rcImageUrl,
+      if (profile != null) ...profile.toUpdate(),
       'updatedAt': FieldValue.serverTimestamp(),
     });
     try {
@@ -146,13 +152,14 @@ class VehicleService {
 
   /// Saves insurance/PUC/fitness/permit details and the next service date.
   /// Empty entries are removed.
-  static Future<void> saveDocuments(String vehicleId, Map<String, VehicleDocInfo> docs, {DateTime? nextServiceDate}) {
+  static Future<void> saveDocuments(String vehicleId, Map<String, VehicleDocInfo> docs, {DateTime? nextServiceDate, DateTime? nextTyreCheckDate}) {
     return _col.doc(vehicleId).update({
       'docs': {
         for (final e in docs.entries)
           if (VehicleDocKind.all.contains(e.key) && !e.value.isEmpty) e.key: e.value.toMap(),
       },
       'nextServiceDate': nextServiceDate == null ? FieldValue.delete() : Timestamp.fromDate(nextServiceDate),
+      'nextTyreCheckDate': nextTyreCheckDate == null ? FieldValue.delete() : Timestamp.fromDate(nextTyreCheckDate),
       'updatedAt': FieldValue.serverTimestamp(),
     });
   }

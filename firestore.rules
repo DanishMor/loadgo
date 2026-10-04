@@ -40,7 +40,13 @@ service cloud.firestore {
 
     function adminVerificationUpdate() {
       return isAdmin()
-          && changedKeys().hasOnly(['verified', 'verificationStatus', 'updatedAt'])
+          && changedKeys().hasOnly(['verified', 'verificationStatus', 'verificationMeta', 'updatedAt'])
+          && (!('verificationMeta' in request.resource.data)
+              || (request.resource.data.verificationMeta.keys().hasOnly(['source', 'by', 'status', 'at'])
+                  && request.resource.data.verificationMeta.source == 'manual_review'
+                  && request.resource.data.verificationMeta.by == request.auth.uid
+                  && request.resource.data.verificationMeta.status == request.resource.data.verificationStatus
+                  && request.resource.data.verificationMeta.at == request.time))
           && request.resource.data.verificationStatus in ['pending', 'approved', 'rejected']
           && request.resource.data.verified == (request.resource.data.verificationStatus == 'approved');
     }
@@ -109,6 +115,11 @@ service cloud.firestore {
           && changedKeys().hasOnly(['plan', 'planUntil', 'updatedAt'])
           && request.resource.data.get('plan', 'free') in ['free', 'pro']
           && (!('planUntil' in request.resource.data) || request.resource.data.planUntil is timestamp);
+    }
+
+    // Owners cannot write the review record; admins do (adminVerificationUpdate).
+    function reviewMetaAbsent(d) {
+      return !('verificationMeta' in d);
     }
 
     // Anti-fraud fields. riskTier/riskReason/riskUpdatedAt are admin-only;
@@ -184,13 +195,13 @@ service cloud.firestore {
     match /users/{userId} {
       allow read: if isUser(userId) || isAdmin();
       allow create: if isUser(userId) && verificationInitOk(request.resource.data)
-          && validKyc(request.resource.data) && planFieldsAbsent(request.resource.data) && referralCodeOk(request.resource.data) && validIdentityHashes(request.resource.data) && validLastLocation(request.resource.data) && validRole(request.resource.data.get('role', null))
+          && validKyc(request.resource.data) && reviewMetaAbsent(request.resource.data) && planFieldsAbsent(request.resource.data) && referralCodeOk(request.resource.data) && validIdentityHashes(request.resource.data) && validLastLocation(request.resource.data) && validRole(request.resource.data.get('role', null))
           && (request.resource.data.get('role', null) == null
               || request.resource.data.get('selectedRole', request.resource.data.role) == request.resource.data.role)
           && validEmergencyContacts(request.resource.data) && riskFieldsAbsent(request.resource.data)
           && validPrefs(request.resource.data) && validBusiness(request.resource.data);
       allow update: if adminVerificationUpdate() || adminRiskUpdate() || adminPlanUpdate() || (isUser(userId)
-          && roleLockOk() && validKyc(request.resource.data) && !changedKeys().hasAny(['plan', 'planUntil']) && referralCodeOk(request.resource.data) && referralCodeKept() && validIdentityHashes(request.resource.data) && validLastLocation(request.resource.data)
+          && roleLockOk() && validKyc(request.resource.data) && !changedKeys().hasAny(['plan', 'planUntil', 'verificationMeta']) && referralCodeOk(request.resource.data) && referralCodeKept() && validIdentityHashes(request.resource.data) && validLastLocation(request.resource.data)
           && validEmergencyContacts(request.resource.data)
           && validPrefs(request.resource.data) && validBusiness(request.resource.data)
           && ownerRiskFieldsUntouched()
@@ -275,6 +286,17 @@ service cloud.firestore {
           && d.docs.keys().hasOnly(['insurance', 'puc', 'fitness', 'permit']));
     }
 
+    // Optional cargo space (m), fuel and body type.
+    function validDimension(d, k) {
+      return !(k in d) || (d[k] is number && d[k] > 0 && d[k] <= 30);
+    }
+
+    function validVehicleProfile(d) {
+      return validDimension(d, 'lengthM') && validDimension(d, 'widthM') && validDimension(d, 'heightM')
+          && (!('fuel' in d) || d.fuel in ['diesel', 'petrol', 'cng', 'electric', 'lpg'])
+          && (!('bodyType' in d) || d.bodyType in ['open', 'closed', 'container', 'flatbed', 'tanker', 'tipper', 'refrigerated', 'other']);
+    }
+
     function validVehicle(d) {
       return d.keys().hasAll(['ownerId', 'number', 'type', 'capacity', 'status'])
           && d.number is string && d.number.size() >= 6 && d.number.size() <= 12
@@ -284,6 +306,8 @@ service cloud.firestore {
           && availabilityOf(d) in ['available', 'on_trip', 'maintenance', 'suspended']
           && validVehicleDocs(d)
           && (!('nextServiceDate' in d) || d.nextServiceDate is timestamp)
+          && (!('nextTyreCheckDate' in d) || d.nextTyreCheckDate is timestamp)
+          && validVehicleProfile(d)
           // RC photo must point at Firebase Storage when present.
           && (!('rcImageUrl' in d) || (d.rcImageUrl is string
               && d.rcImageUrl.matches('https://firebasestorage[.]googleapis[.]com/.*|http://(127[.]0[.]0[.]1|localhost|10[.]0[.]2[.]2):9199/.*')));
@@ -414,6 +438,8 @@ service cloud.firestore {
           && d.get('paymentMode', 'cash') in ['cash', 'upi_direct']
           && validTradeFields(d)
           && validBookingType(d)
+          && (!('fragile' in d) || d.fragile is bool)
+          && (!('highValue' in d) || d.highValue is bool)
           && validPromoShape(d)
           && d.get('creditsUsedPaise', 0) is int
           && (!('pickupGeohash' in d) || (d.pickupGeohash is string && d.pickupGeohash.matches('^[0-9b-hjkmnp-z]{4,12}$')))

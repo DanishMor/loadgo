@@ -4,7 +4,7 @@ import '../models/load.dart';
 import '../models/offer.dart';
 import '../models/vehicle.dart';
 
-enum ReminderKind { pickupSoon, noDriverYet, vehicleDocs, serviceDue, licenceExpiring, offersWaiting, counterWaiting, confirmWaiting }
+enum ReminderKind { pickupSoon, noDriverYet, vehicleDocs, serviceDue, tyreDue, licenceExpiring, offersWaiting, counterWaiting, confirmWaiting }
 
 /// An in-app reminder worked out from what the app already knows (no push,
 /// nothing stored). LATER(paid): the same rules in a scheduled Cloud
@@ -123,6 +123,8 @@ class ReminderEngine {
       if (docs > 0) out.add(Reminder(kind: ReminderKind.vehicleDocs, id: 'vehicle_docs', args: {'n': docs}, priority: 3));
       final service = i.vehicles.where((v) => v.serviceDue(i.now)).length;
       if (service > 0) out.add(Reminder(kind: ReminderKind.serviceDue, id: 'service_due', args: {'n': service}, priority: 4));
+      final tyres = i.vehicles.where((v) => v.tyreDue(i.now)).length;
+      if (tyres > 0) out.add(Reminder(kind: ReminderKind.tyreDue, id: 'tyre_due', args: {'n': tyres}, priority: 4));
       final licence = i.licenceExpiry;
       if (licence != null) {
         final days = DateTime(licence.year, licence.month, licence.day).difference(DateTime(i.now.year, i.now.month, i.now.day)).inDays;

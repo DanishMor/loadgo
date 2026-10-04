@@ -117,6 +117,8 @@ class _VehicleCardState extends State<_VehicleCard> {
                 const SizedBox(height: 4),
                 Text('${vehicleTypeLabel(context, v.type)} • ${formatNum(v.capacity)} T • RC ${v.rcNumber}',
                     style: const TextStyle(color: AppColors.muted, fontSize: 13)),
+                if (_profileLine(context, v) case final line?)
+                  Text(line, key: ValueKey('profile_${v.id}'), style: const TextStyle(color: AppColors.muted, fontSize: 12)),
                 const SizedBox(height: 8),
                 Wrap(
                   spacing: 6,
@@ -136,6 +138,7 @@ class _VehicleCardState extends State<_VehicleCard> {
                     else if (v.docsExpiringWithin(now).isNotEmpty)
                       StatusChip(label: trf(context, 'docsExpiringBanner', {'n': v.docsExpiringWithin(now).length}), color: AppColors.warning),
                     if (v.serviceDue(now)) StatusChip(label: tr(context, 'serviceDue'), color: AppColors.warning),
+                    if (v.tyreDue(now)) StatusChip(label: tr(context, 'tyreDue'), color: AppColors.warning),
                   ],
                 ),
                 TextButton.icon(
@@ -154,4 +157,15 @@ class _VehicleCardState extends State<_VehicleCard> {
       ),
     );
   }
+}
+
+/// "Closed body • Diesel • 6.1 × 2.4 × 2.4 m" or null when the profile is empty.
+String? _profileLine(BuildContext context, Vehicle v) {
+  final p = v.profile;
+  final parts = [
+    if (p.bodyType != null) tr(context, 'body_${p.bodyType}'),
+    if (p.fuel != null) tr(context, 'fuel_${p.fuel}'),
+    ?p.dimensionsText,
+  ];
+  return parts.isEmpty ? null : parts.join(' • ');
 }

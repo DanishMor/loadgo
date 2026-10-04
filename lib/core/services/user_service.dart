@@ -185,6 +185,16 @@ class UserService {
     await ref.set(data, SetOptions(merge: true));
   }
 
+  /// Driver online / offline switch, kept on the profile so it survives a
+  /// restart (and an admin can see who is available).
+  static Future<void> setOnline(bool online) async {
+    final uid = Backend.requireUid();
+    await _db.collection('users').doc(uid).set({
+      'online': online,
+      'onlineChangedAt': FieldValue.serverTimestamp(),
+    }, SetOptions(merge: true));
+  }
+
   /// Remembers where the driver last was (with a geohash) so loads can be
   /// listed nearest-first. LATER(paid): a Cloud Function reads the geohash
   /// for wave dispatch and FCM.

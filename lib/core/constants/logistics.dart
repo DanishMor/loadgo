@@ -46,6 +46,18 @@ class VehicleDocKind {
   static const all = [insurance, puc, fitness, permit];
 }
 
+/// Fuel and body type of a vehicle (optional profile fields). Keep in sync
+/// with firestore.rules.
+class FuelType {
+  FuelType._();
+  static const all = ['diesel', 'petrol', 'cng', 'electric', 'lpg'];
+}
+
+class BodyType {
+  BodyType._();
+  static const all = ['open', 'closed', 'container', 'flatbed', 'tanker', 'tipper', 'refrigerated', 'other'];
+}
+
 /// Preferred pickup window. Must stay in sync with firestore.rules.
 class PickupSlot {
   PickupSlot._();

@@ -708,6 +708,53 @@ describe('reminder queries', () => {
   });
 });
 
+describe('vehicle profile, goods flags and review record', () => {
+  test('vehicle: dimensions, fuel, body type and tyre date are validated', async () => {
+    let n = 0;
+    const v = (extra) => {
+      n += 1;
+      const number = `MH12AB${1000 + n}`;
+      return addVehicle(as('driver1'), `vp${n}`, { ...VEHICLE, number, ...extra });
+    };
+    await assertSucceeds(v({ lengthM: 6.1, widthM: 2.4, heightM: 2.4, fuel: 'diesel', bodyType: 'closed', nextTyreCheckDate: Timestamp.fromDate(new Date('2026-12-01')) }));
+    await assertFails(v({ lengthM: 0 }));
+    await assertFails(v({ lengthM: 31 }));
+    await assertFails(v({ widthM: 'wide' }));
+    await assertFails(v({ fuel: 'coal' }));
+    await assertFails(v({ bodyType: 'boat' }));
+    await assertFails(v({ nextTyreCheckDate: 'soon' }));
+    await assertSucceeds(v({}));
+  });
+
+  test('load: fragile and highValue must be booleans', async () => {
+    const post = (extra) => addDoc(collection(as('customer1'), 'loads'), { ...LOAD, ...extra });
+    await assertSucceeds(post({ fragile: true, highValue: false }));
+    await assertFails(post({ fragile: 'yes' }));
+    await assertFails(post({ highValue: 1 }));
+  });
+
+  test('online flag is free for the owner', async () => {
+    await seed((db) => setDoc(doc(db, 'users', 'driver1'), { role: 'driver', selectedRole: 'driver' }));
+    await assertSucceeds(updateDoc(doc(as('driver1'), 'users', 'driver1'), { online: true, onlineChangedAt: serverTimestamp() }));
+  });
+
+  test('review record: only an admin writes it, as themselves, matching the decision', async () => {
+    await seed((db) => setDoc(doc(db, 'users', 'driver1'), { role: 'driver', selectedRole: 'driver', verified: false, verificationStatus: 'pending' }));
+    const meta = (over = {}) => ({ source: 'manual_review', by: 'admin1', status: 'approved', at: serverTimestamp(), ...over });
+    const approve = (over = {}, status = 'approved') =>
+      updateDoc(doc(asAdmin(), 'users', 'driver1'), { verified: status === 'approved', verificationStatus: status, verificationMeta: meta(over), updatedAt: serverTimestamp() });
+    await assertFails(approve({ by: 'someoneElse' }));
+    await assertFails(approve({ source: 'kyc_api' }));
+    await assertFails(approve({ status: 'rejected' }));
+    await assertFails(approve({ extra: 1 }));
+    await assertFails(approve({ at: Timestamp.fromDate(new Date('2020-01-01')) }));
+    await assertSucceeds(approve());
+    // owners cannot forge or change it
+    await assertFails(updateDoc(doc(as('driver1'), 'users', 'driver1'), { verificationMeta: meta() }));
+    await assertFails(setDoc(doc(as('newdriver'), 'users', 'newdriver'), { verificationMeta: meta() }));
+  });
+});
+
 describe('admin verification', () => {
   const seedDriver = () => seed((db) => setDoc(doc(db, 'users', 'd1'), { driverName: 'R', verified: false, verificationStatus: 'pending' }));
 

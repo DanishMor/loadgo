@@ -2,6 +2,7 @@ import '../constants/logistics.dart';
 import '../models/load.dart';
 import '../models/vehicle.dart';
 import '../pricing/cities.dart';
+import 'nearest.dart';
 
 /// Why a load was recommended. Shown as chips on the driver's card.
 enum MatchReason { nearPickup, returnLoad, favouriteRoute, bestFit }
@@ -47,6 +48,14 @@ class DriverContext {
   final List<FavouriteRoute> favourites;
   final DateTime now;
 
+  /// Admin risk tier (`normal`, `review`, `restricted`, `suspended`).
+  /// Restricted and suspended drivers get no matches.
+  final String riskTier;
+
+  /// The driver's last saved position. When there is no active trip it is
+  /// the starting point for "near pickup", instead of [anchorPlace].
+  final LatLng? origin;
+
   const DriverContext({
     required this.vehicles,
     this.verified = true,
@@ -54,6 +63,8 @@ class DriverContext {
     this.anchorIsActiveTrip = false,
     this.favourites = const [],
     required this.now,
+    this.riskTier = 'normal',
+    this.origin,
   });
 }
 
@@ -92,7 +103,7 @@ class LoadRanker {
 
   /// Best eligible vehicle for [load] with its score, or null if none fits.
   static LoadMatch? matchFor(Load load, DriverContext ctx) {
-    if (!ctx.verified || !load.isOpen) return null;
+    if (!ctx.verified || !load.isOpen || !canTransactTier(ctx.riskTier)) return null;
     LoadMatch? best;
     for (final v in ctx.vehicles) {
       if (!vehicleFits(v,
@@ -104,6 +115,9 @@ class LoadRanker {
     }
     return best;
   }
+
+  /// Only normal and review accounts may take loads (same as the rules).
+  static bool canTransactTier(String tier) => tier == 'normal' || tier == 'review';
 
   /// Eligible loads, best first (ties: newest first).
   static List<LoadMatch> rank(Iterable<Load> loads, DriverContext ctx) {
@@ -124,7 +138,13 @@ class LoadRanker {
 
     final anchor = ctx.anchorPlace == null ? null : findCity(ctx.anchorPlace!);
     final pickup = findCity(load.pickup);
-    if (anchor != null && pickup != null) {
+    // With no trip in progress the driver's real position beats the last drop.
+    final here = !ctx.anchorIsActiveTrip ? ctx.origin : null;
+    if (here != null && pickup != null) {
+      final km = (haversineKm(here.lat, here.lng, pickup.lat, pickup.lng) * 1.25).ceil();
+      score += (40 - km ~/ 10).clamp(0, 40);
+      if (km <= 50) reasons.add(MatchReason.nearPickup);
+    } else if (anchor != null && pickup != null) {
       final km = roadKmBetween(anchor, pickup);
       score += (40 - km ~/ 10).clamp(0, 40);
       if (km <= 50) reasons.add(MatchReason.nearPickup);

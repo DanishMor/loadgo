@@ -4,6 +4,7 @@ import '../core/l10n/l10n.dart';
 import '../core/services/admin_service.dart';
 import '../core/widgets/common.dart';
 import '../core/widgets/live_stream.dart';
+import '../core/widgets/verification_badges.dart';
 
 /// Driver verification queue for admins (opened from the admin panel; the
 /// `admins/{uid}` rules are the real gate).
@@ -96,15 +97,23 @@ class _AdminVerificationScreenState extends State<AdminVerificationScreen> {
   }
 }
 
-class _DriverCard extends StatelessWidget {
+class _DriverCard extends StatefulWidget {
   final DriverVerification driver;
   final ValueChanged<String> onSet;
 
   const _DriverCard({required this.driver, required this.onSet});
 
   @override
+  State<_DriverCard> createState() => _DriverCardState();
+}
+
+class _DriverCardState extends State<_DriverCard> {
+  bool _reveal = false;
+
+  @override
   Widget build(BuildContext context) {
-    final d = driver;
+    final d = widget.driver;
+    final onSet = widget.onSet;
     return AppCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -122,7 +131,17 @@ class _DriverCard extends StatelessWidget {
             '${d.phone} • ${d.vehicleNumber} • ${d.vehicleType}',
             style: const TextStyle(color: AppColors.muted),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
+          VerificationBadges(user: d.data, isDriver: true, reveal: _reveal),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton.icon(
+              key: ValueKey('reveal_${d.uid}'),
+              onPressed: () => setState(() => _reveal = !_reveal),
+              icon: Icon(_reveal ? Icons.visibility_off_outlined : Icons.visibility_outlined, size: 18),
+              label: Text(tr(context, _reveal ? 'hideNumbers' : 'showNumbers')),
+            ),
+          ),
           Row(
             children: [
               if (d.status != AdminService.approved)

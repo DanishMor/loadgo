@@ -11,6 +11,7 @@ import '../core/models/vehicle.dart';
 import '../core/matching/load_ranker.dart';
 import '../core/services/load_service.dart';
 import '../core/services/match_service.dart';
+import '../core/services/user_service.dart';
 import '../core/services/vehicle_service.dart';
 import '../core/widgets/common.dart';
 import '../core/l10n/l10n.dart';
@@ -55,6 +56,9 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
   void initState() {
     super.initState();
     DriverLocationSync.refresh();
+    UserService.getUser().then((u) {
+      if (mounted && u?['online'] == true) setState(() => _isOnline = true);
+    }).catchError((_) {});
     MatchService.lastSeenLoads().then((t) {
       if (!mounted) return;
       if (t != null) {
@@ -166,6 +170,15 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
     );
   }
 
+  Future<void> _setOnline(bool v) async {
+    setState(() => _isOnline = v);
+    try {
+      await UserService.setOnline(v);
+    } catch (_) {
+      // Offline: the switch still works for this session.
+    }
+  }
+
   /// Pickup reminders open the trip, offer reminders My Offers, papers My Truck.
   void _openReminder(Reminder r) {
     switch (r.kind) {
@@ -254,7 +267,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                   Expanded(
                     child: Text(_isOnline ? tr(context, 'online') : tr(context, 'offline'), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
                   ),
-                  Switch(value: _isOnline, onChanged: (v) => setState(() => _isOnline = v)),
+                  Switch(key: const ValueKey('onlineSwitch'), value: _isOnline, onChanged: _setOnline),
                 ],
               ),
             ),
