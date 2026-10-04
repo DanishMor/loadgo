@@ -38,6 +38,11 @@ class Booking {
   final List<String> extraDrops;
   final String pickupSlot;
 
+  /// Copied from the load: [BookingType], helpers (0-4), rental hours.
+  final String bookingType;
+  final int helpers;
+  final int? rentalHours;
+
   /// Copied from the load (import/export).
   final String containerNumber;
   final String sealNumber;
@@ -118,6 +123,9 @@ class Booking {
     this.extraPickups = const [],
     this.extraDrops = const [],
     this.pickupSlot = PickupSlot.any,
+    this.bookingType = BookingType.freight,
+    this.helpers = 0,
+    this.rentalHours,
     this.containerNumber = '',
     this.sealNumber = '',
   });
@@ -176,6 +184,9 @@ class Booking {
       extraPickups: [for (final s in (d['extraPickups'] as List?) ?? const []) s.toString()],
       extraDrops: [for (final s in (d['extraDrops'] as List?) ?? const []) s.toString()],
       pickupSlot: d['pickupSlot'] as String? ?? PickupSlot.any,
+      bookingType: d['bookingType'] as String? ?? BookingType.freight,
+      helpers: (d['helpers'] as num?)?.toInt() ?? 0,
+      rentalHours: (d['rentalHours'] as num?)?.toInt(),
       containerNumber: d['containerNumber'] as String? ?? '',
       sealNumber: d['sealNumber'] as String? ?? '',
       cancellation: d['cancellation'] is Map ? BookingCancellation.fromMap(Map<String, dynamic>.from(d['cancellation'] as Map)) : null,

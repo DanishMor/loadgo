@@ -55,7 +55,19 @@ class LoadService {
     String? branchId,
     String? shipmentId,
     int? shipmentLeg,
+    String bookingType = BookingType.freight,
+    int helpers = 0,
+    int? rentalHours,
+    MoversDetails? movers,
   }) async {
+    if (!BookingType.all.contains(bookingType)) throw ArgumentError.value(bookingType, 'bookingType');
+    if (helpers < 0 || helpers > maxHelpers) throw ArgumentError.value(helpers, 'helpers');
+    if (bookingType == BookingType.rental && !rentalHourOptions.contains(rentalHours)) {
+      throw ArgumentError.value(rentalHours, 'rentalHours');
+    }
+    if (bookingType == BookingType.movers && (movers == null || movers.items.isEmpty)) {
+      throw ArgumentError('A movers request needs at least one item');
+    }
     final uid = Backend.requireUid();
     await RiskService.ensureCanTransact();
     final banned = prohibitedCargoMatch('$notes $cargoType');
@@ -65,6 +77,10 @@ class LoadService {
     final geohash = pickupGeohashFor(pickup);
     final ref = await _col.add({
       'pickupGeohash': ?geohash,
+      'bookingType': bookingType,
+      'helpers': helpers,
+      if (bookingType == BookingType.rental) 'rentalHours': rentalHours,
+      if (bookingType == BookingType.movers) 'movers': movers!.toMap(),
       if (clean(extraPickups).isNotEmpty) 'extraPickups': clean(extraPickups),
       if (clean(extraDrops).isNotEmpty) 'extraDrops': clean(extraDrops),
       'pickupSlot': pickupSlot,

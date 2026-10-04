@@ -58,6 +58,16 @@ class PickupSlot {
   static const all = [any, morning, midday, afternoon, evening];
 }
 
+/// What the customer is booking. Must stay in sync with firestore.rules.
+class BookingType {
+  BookingType._();
+  static const freight = 'freight';
+  static const rental = 'rental';
+  static const movers = 'movers';
+
+  static const all = [freight, rental, movers];
+}
+
 /// Most pickup and drop points a load can have (each side).
 const int maxStopsPerSide = 3;
 

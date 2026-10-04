@@ -335,6 +335,46 @@ describe('pickup geohash', () => {
   });
 });
 
+describe('booking types', () => {
+  const post = (extra) => addDoc(collection(as('customer1'), 'loads'), { ...LOAD, ...extra });
+  const MOVERS = { items: [{ name: 'Sofa', qty: 1 }], floor: 2, hasLift: false, packing: true };
+
+  test('helpers 0-4 on any type', async () => {
+    await assertSucceeds(post({ helpers: 0 }));
+    await assertSucceeds(post({ helpers: 4, bookingType: 'freight' }));
+    await assertFails(post({ helpers: 5 }));
+    await assertFails(post({ helpers: -1 }));
+    await assertFails(post({ helpers: 1.5 }));
+  });
+
+  test('rental needs 4, 8 or 12 hours and nothing else may carry hours', async () => {
+    await assertSucceeds(post({ bookingType: 'rental', rentalHours: 8 }));
+    await assertFails(post({ bookingType: 'rental', rentalHours: 6 }));
+    await assertFails(post({ bookingType: 'rental' }));
+    await assertFails(post({ rentalHours: 8 }));
+    await assertFails(post({ bookingType: 'movers', movers: MOVERS, rentalHours: 4 }));
+  });
+
+  test('movers needs a valid request and only movers may have one', async () => {
+    await assertSucceeds(post({ bookingType: 'movers', movers: MOVERS }));
+    await assertFails(post({ bookingType: 'movers' }));
+    await assertFails(post({ bookingType: 'movers', movers: { ...MOVERS, items: [] } }));
+    await assertFails(post({ bookingType: 'movers', movers: { ...MOVERS, floor: 99 } }));
+    await assertFails(post({ bookingType: 'movers', movers: { ...MOVERS, items: [{ name: 'Sofa', qty: 0 }] } }));
+    await assertFails(post({ bookingType: 'movers', movers: { ...MOVERS, hasLift: 'yes' } }));
+    await assertFails(post({ bookingType: 'movers', movers: { ...MOVERS, extra: 1 } }));
+    await assertFails(post({ movers: MOVERS }));
+    await assertFails(post({ bookingType: 'teleport' }));
+  });
+
+  test('estimate lines must be non-negative integers', async () => {
+    const est = { total: 1000, tripFare: 900, distanceKm: 10 };
+    await assertSucceeds(post({ estimate: { ...est, helperCharge: 300, rentalCharge: 0, packingCharge: 100 } }));
+    await assertFails(post({ estimate: { ...est, helperCharge: -1 } }));
+    await assertFails(post({ estimate: { ...est, floorCharge: 1.5 } }));
+  });
+});
+
 describe('admin verification', () => {
   const seedDriver = () => seed((db) => setDoc(doc(db, 'users', 'd1'), { driverName: 'R', verified: false, verificationStatus: 'pending' }));
 
@@ -491,6 +531,15 @@ describe('accepting a load', () => {
     await seedOpenLoad();
     await assertFails(acceptBatch(as('driver1'), 'L1', 'driver1', { budget: 99999 }));
     await assertFails(acceptBatch(as('driver1'), 'L1', 'driver1', { vehicleId: 'v2' }));
+  });
+
+  test('the booking must repeat the load\'s type, helpers and rental hours', async () => {
+    await seed((db) => setDoc(doc(db, 'loads', 'L1'), { ...LOAD, bookingType: 'rental', rentalHours: 8, helpers: 2 }));
+    await seed((db) => setDoc(doc(db, 'vehicles', 'v1'), VEHICLE));
+    await assertFails(acceptBatch(as('driver1'), 'L1'));
+    await assertFails(acceptBatch(as('driver1'), 'L1', 'driver1', { bookingType: 'rental', rentalHours: 8, helpers: 0 }));
+    await assertFails(acceptBatch(as('driver1'), 'L1', 'driver1', { bookingType: 'rental', rentalHours: 4, helpers: 2 }));
+    await assertSucceeds(acceptBatch(as('driver1'), 'L1', 'driver1', { bookingType: 'rental', rentalHours: 8, helpers: 2 }));
   });
 
   test('cannot accept own load or an already matched load', async () => {

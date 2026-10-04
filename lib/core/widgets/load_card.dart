@@ -75,6 +75,11 @@ class LoadCard extends StatelessWidget {
               _meta(Icons.calendar_today_outlined, formatDate(load.pickupDate)),
               if (load.pickupSlot != PickupSlot.any) _meta(Icons.schedule_rounded, pickupSlotLabel(context, load.pickupSlot)),
               if (load.extraStopCount > 0) _meta(Icons.alt_route_rounded, trf(context, 'extraStops', {'n': load.extraStopCount})),
+              if (load.bookingType == BookingType.rental && load.rentalHours != null)
+                _meta(Icons.timer_outlined, trf(context, 'rentalHoursChip', {'h': load.rentalHours!})),
+              if (load.bookingType == BookingType.movers && load.movers != null)
+                _meta(Icons.chair_alt_outlined, trf(context, 'moversChip', {'n': load.movers!.units, 'floor': load.movers!.floor})),
+              if (load.helpers > 0) _meta(Icons.people_outline_rounded, trf(context, 'helpersChip', {'n': load.helpers})),
               if (load.estimate != null) _meta(Icons.calculate_outlined, formatPaise(load.estimate!.total)),
             ],
           ),

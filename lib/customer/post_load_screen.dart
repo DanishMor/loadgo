@@ -14,6 +14,7 @@ import '../core/pricing/fare_calculator.dart';
 import '../core/widgets/fare_breakdown.dart';
 import '../core/constants/prohibited_cargo.dart';
 import '../core/models/load.dart';
+import '../core/widgets/booking_type_widgets.dart';
 import 'saved_place_picker.dart';
 import '../core/models/ledger_entry.dart';
 import '../core/documents/payment_card.dart';
@@ -47,6 +48,13 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
   String _slot = PickupSlot.any;
   String _paymentMode = PaymentMode.cash;
   bool _saving = false;
+  String _bookingType = BookingType.freight;
+  int _helpers = 0;
+  int _rentalHours = rentalHourOptions.first;
+  final _itemsCtrl = TextEditingController();
+  final _floorCtrl = TextEditingController(text: '0');
+  bool _hasLift = true;
+  bool _packing = false;
   final List<TextEditingController> _extraPickups = [];
   final List<TextEditingController> _extraDrops = [];
 
@@ -60,6 +68,8 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
     _distanceCtrl.dispose();
     _containerCtrl.dispose();
     _sealCtrl.dispose();
+    _itemsCtrl.dispose();
+    _floorCtrl.dispose();
     for (final c in [..._extraPickups, ..._extraDrops]) {
       c.dispose();
     }
@@ -79,6 +89,16 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
     _slot = l.pickupSlot;
     _paymentMode = l.paymentMode;
     if (l.distanceSource == DistanceSource.manual && l.estimate != null) _distanceCtrl.text = '${l.estimate!.distanceKm}';
+    _bookingType = l.bookingType;
+    _helpers = l.helpers;
+    _rentalHours = l.rentalHours ?? _rentalHours;
+    final m = l.movers;
+    if (m != null) {
+      _itemsCtrl.text = [for (final e in m.items.entries) '${e.key} x${e.value}'].join('\n');
+      _floorCtrl.text = '${m.floor}';
+      _hasLift = m.hasLift;
+      _packing = m.packingNeeded;
+    }
     _extraPickups.addAll(l.extraPickups.map(_stopCtrl));
     _extraDrops.addAll(l.extraDrops.map(_stopCtrl));
   }
@@ -147,7 +167,7 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
     super.initState();
     if (widget.repostFrom != null) _prefill(widget.repostFrom!);
     // Re-quote as the route or distance changes.
-    for (final c in [_pickupCtrl, _dropCtrl, _distanceCtrl, _weightCtrl]) {
+    for (final c in [_pickupCtrl, _dropCtrl, _distanceCtrl, _weightCtrl, _itemsCtrl, _floorCtrl]) {
       c.addListener(_requote);
     }
   }
@@ -168,13 +188,34 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
 
   int? get _autoKm => PricingService.estimateRouteKm(_route);
 
-  /// Quote for the current form, or null without a usable distance.
+  MoversDetails? get _movers {
+    final items = MoversDetails.parseItems(_itemsCtrl.text);
+    if (items == null || items.isEmpty) return null;
+    return MoversDetails(
+      items: items,
+      floor: (int.tryParse(_floorCtrl.text.trim()) ?? 0).clamp(0, 50),
+      hasLift: _hasLift,
+      packingNeeded: _packing,
+    );
+  }
+
+  /// Quote for the current form, or null without what the type needs (a
+  /// usable distance for freight and movers, items for movers).
   FareBreakdown? get _quote {
+    if (_bookingType == BookingType.rental) {
+      return PricingService.quoteRental(vehicleType: _vehicleType, hours: _rentalHours, helpers: _helpers);
+    }
     final km = _manualKm ?? _autoKm;
-    return km == null
-        ? null
-        : PricingService.quote(
-            vehicleType: _vehicleType, distanceKm: km, extraStops: _extraPickups.length + _extraDrops.length);
+    if (km == null) return null;
+    final movers = _bookingType == BookingType.movers ? _movers : null;
+    if (_bookingType == BookingType.movers && movers == null) return null;
+    return PricingService.quote(
+      vehicleType: _vehicleType,
+      distanceKm: km,
+      extraStops: _extraPickups.length + _extraDrops.length,
+      helpers: _helpers,
+      movers: movers,
+    );
   }
 
   Widget _estimateCard() {
@@ -184,12 +225,22 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(
-            auto != null ? trf(context, 'distanceAuto', {'km': auto}) : tr(context, 'distanceUnknown'),
-            style: const TextStyle(color: AppColors.muted, fontSize: 13),
-          ),
-          const SizedBox(height: 10),
-          TextFormField(
+          if (_bookingType == BookingType.rental)
+            Text(
+              trf(context, 'rentalIncludes', {
+                'km': PricingService.rentalIncludedKm(_vehicleType, _rentalHours),
+                'hours': _rentalHours,
+              }),
+              key: const ValueKey('rentalIncludes'),
+              style: const TextStyle(color: AppColors.muted, fontSize: 13),
+            )
+          else
+            Text(
+              auto != null ? trf(context, 'distanceAuto', {'km': auto}) : tr(context, 'distanceUnknown'),
+              style: const TextStyle(color: AppColors.muted, fontSize: 13),
+            ),
+          if (_bookingType != BookingType.rental) const SizedBox(height: 10),
+          if (_bookingType != BookingType.rental) TextFormField(
             key: const ValueKey('distanceKm'),
             controller: _distanceCtrl,
             keyboardType: TextInputType.number,
@@ -247,13 +298,17 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
       final budgetText = _budgetCtrl.text.trim();
       await LoadService.post(
         pickup: _pickupCtrl.text,
-        drop: _dropCtrl.text,
+        drop: _dropCtrl.text.trim().isEmpty ? _pickupCtrl.text : _dropCtrl.text,
         cargoType: _cargoType,
         weight: num.parse(_weightCtrl.text.trim()),
         vehicleType: _vehicleType,
         budget: budgetText.isEmpty ? null : num.parse(budgetText),
         pickupDate: _pickupDate!,
         notes: _notesCtrl.text,
+        bookingType: _bookingType,
+        helpers: _helpers,
+        rentalHours: _bookingType == BookingType.rental ? _rentalHours : null,
+        movers: _bookingType == BookingType.movers ? _movers : null,
         estimate: _quote,
         distanceSource: _manualKm != null ? DistanceSource.manual : DistanceSource.cities,
         extraPickups: [for (final c in _extraPickups) c.text],
@@ -301,6 +356,9 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                FieldLabel(tr(context, 'bookingTypeLabel')),
+                BookingTypePicker(value: _bookingType, onChanged: (t) => setState(() => _bookingType = t)),
+                const SizedBox(height: 18),
                 FieldLabel(tr(context, 'pickupLocation')),
                 TextFormField(
                   controller: _pickupCtrl,
@@ -328,7 +386,7 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
                     prefixIcon: const Icon(Icons.location_on_rounded, color: Colors.redAccent),
                     suffixIcon: _savedPlaceButton(_dropCtrl),
                   ),
-                  validator: _requiredText,
+                  validator: (v) => _bookingType == BookingType.rental ? null : _requiredText(v),
                 ),
                 _addStopButton(_extraDrops, 'addDropStop', 'addDropStop'),
                 const SizedBox(height: 18),
@@ -365,6 +423,25 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
                   },
                 ),
                 MatchingVehiclesLine(vehicleType: _vehicleType, weight: num.tryParse(_weightCtrl.text.trim())),
+                const SizedBox(height: 18),
+                if (_bookingType == BookingType.rental) ...[
+                  FieldLabel(tr(context, 'rentalPackage')),
+                  RentalHoursPicker(value: _rentalHours, onChanged: (h) => setState(() => _rentalHours = h)),
+                  const SizedBox(height: 18),
+                ],
+                if (_bookingType == BookingType.movers) ...[
+                  MoversSection(
+                    items: _itemsCtrl,
+                    floor: _floorCtrl,
+                    hasLift: _hasLift,
+                    packing: _packing,
+                    onLift: (v) => setState(() => _hasLift = v),
+                    onPacking: (v) => setState(() => _packing = v),
+                  ),
+                  const SizedBox(height: 18),
+                ],
+                FieldLabel(tr(context, 'helpersLabel')),
+                HelpersStepper(value: _helpers, onChanged: (n) => setState(() => _helpers = n)),
                 const SizedBox(height: 18),
                 FieldLabel(tr(context, 'fareEstimate')),
                 _estimateCard(),

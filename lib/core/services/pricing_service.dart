@@ -60,6 +60,8 @@ class PricingService {
     required int distanceKm,
     int extraStops = 0,
     int waitingMinutes = 0,
+    int helpers = 0,
+    MoversDetails? movers,
   }) {
     final category = VehicleTypeService.byId(vehicleType)?.category ?? 'lcv';
     final c = config;
@@ -70,7 +72,37 @@ class PricingService {
       gstPercent: c.gstPercent,
       extraStops: extraStops,
       waitingMinutes: waitingMinutes,
+      helpers: helpers,
+      movers: movers,
     );
+  }
+
+  /// Hourly rental package quote ([hours] 4, 8 or 12). Pass [usedKm] /
+  /// [usedMinutes] after the trip to bill extras.
+  static FareBreakdown quoteRental({
+    required String vehicleType,
+    required int hours,
+    int helpers = 0,
+    int? usedKm,
+    int? usedMinutes,
+  }) {
+    final category = VehicleTypeService.byId(vehicleType)?.category ?? 'lcv';
+    final c = config;
+    return FareCalculator.calculateRental(
+      rule: c.ruleFor(vehicleType, category),
+      hours: hours,
+      platformFeePercent: c.platformFeePercent,
+      gstPercent: c.gstPercent,
+      helpers: helpers,
+      usedKm: usedKm,
+      usedMinutes: usedMinutes,
+    );
+  }
+
+  /// Km included in a rental package for [vehicleType].
+  static int rentalIncludedKm(String vehicleType, int hours) {
+    final category = VehicleTypeService.byId(vehicleType)?.category ?? 'lcv';
+    return hours * config.ruleFor(vehicleType, category).rentalKmPerHour;
   }
 
   @visibleForTesting

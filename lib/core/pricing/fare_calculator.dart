@@ -20,6 +20,22 @@ class PricingRule {
   /// Extra pickup/drop stop beyond the first of each.
   final int perExtraStop;
 
+  /// Fixed charge for each helper (labour) added to the booking.
+  final int helperCharge;
+
+  /// Hourly rental: price per package hour, km included per hour, and the
+  /// charges beyond the package. [extraHourCharge] 0 means "same as hourly".
+  final int rentalPerHour;
+  final int rentalKmPerHour;
+  final int extraKmCharge;
+  final int extraHourCharge;
+
+  /// Packers and movers: handling per item (units counted), per floor above
+  /// the ground when there is no lift, and packing material + work per item.
+  final int moversPerItem;
+  final int moversPerFloor;
+  final int packingPerItem;
+
   const PricingRule({
     required this.baseFare,
     required this.perKm,
@@ -28,6 +44,14 @@ class PricingRule {
     this.unloadingCharge = 0,
     this.waitingPerHour = 0,
     this.perExtraStop = 0,
+    this.helperCharge = 0,
+    this.rentalPerHour = 0,
+    this.rentalKmPerHour = 10,
+    this.extraKmCharge = 0,
+    this.extraHourCharge = 0,
+    this.moversPerItem = 0,
+    this.moversPerFloor = 0,
+    this.packingPerItem = 0,
   });
 
   factory PricingRule.fromMap(Map<String, dynamic> m, PricingRule fallback) {
@@ -40,6 +64,14 @@ class PricingRule {
       unloadingCharge: v('unloadingCharge', fallback.unloadingCharge),
       waitingPerHour: v('waitingPerHour', fallback.waitingPerHour),
       perExtraStop: v('perExtraStop', fallback.perExtraStop),
+      helperCharge: v('helperCharge', fallback.helperCharge),
+      rentalPerHour: v('rentalPerHour', fallback.rentalPerHour),
+      rentalKmPerHour: v('rentalKmPerHour', fallback.rentalKmPerHour),
+      extraKmCharge: v('extraKmCharge', fallback.extraKmCharge),
+      extraHourCharge: v('extraHourCharge', fallback.extraHourCharge),
+      moversPerItem: v('moversPerItem', fallback.moversPerItem),
+      moversPerFloor: v('moversPerFloor', fallback.moversPerFloor),
+      packingPerItem: v('packingPerItem', fallback.packingPerItem),
     );
   }
 
@@ -51,7 +83,76 @@ class PricingRule {
         'unloadingCharge': unloadingCharge,
         'waitingPerHour': waitingPerHour,
         'perExtraStop': perExtraStop,
+        'helperCharge': helperCharge,
+        'rentalPerHour': rentalPerHour,
+        'rentalKmPerHour': rentalKmPerHour,
+        'extraKmCharge': extraKmCharge,
+        'extraHourCharge': extraHourCharge,
+        'moversPerItem': moversPerItem,
+        'moversPerFloor': moversPerFloor,
+        'packingPerItem': packingPerItem,
       };
+
+  /// Charge for one extra started hour beyond a rental package.
+  int get effectiveExtraHour => extraHourCharge > 0 ? extraHourCharge : rentalPerHour;
+}
+
+/// Hourly rental packages offered to customers.
+const rentalHourOptions = [4, 8, 12];
+
+/// Most helpers that can be added to one booking.
+const maxHelpers = 4;
+
+/// What a packers-and-movers request needs to be priced.
+class MoversDetails {
+  /// Item name -> units (for example sofa: 1, boxes: 20).
+  final Map<String, int> items;
+
+  /// Floor of the pickup home (0 = ground).
+  final int floor;
+  final bool hasLift;
+  final bool packingNeeded;
+
+  const MoversDetails({this.items = const {}, this.floor = 0, this.hasLift = true, this.packingNeeded = false});
+
+  int get units => items.values.fold(0, (a, b) => a + b);
+
+  Map<String, Object> toMap() => {
+        'items': [for (final e in items.entries) {'name': e.key, 'qty': e.value}],
+        'floor': floor,
+        'hasLift': hasLift,
+        'packing': packingNeeded,
+      };
+
+  factory MoversDetails.fromMap(Object? raw) {
+    final m = raw is Map ? raw : const {};
+    final items = <String, int>{};
+    for (final e in (m['items'] as List?) ?? const []) {
+      if (e is Map && e['name'] is String) items[e['name'] as String] = (e['qty'] as num?)?.toInt() ?? 1;
+    }
+    return MoversDetails(
+      items: items,
+      floor: (m['floor'] as num?)?.toInt() ?? 0,
+      hasLift: m['hasLift'] != false,
+      packingNeeded: m['packing'] == true,
+    );
+  }
+
+  /// One item per line, "name" or "name x3" / "name 3"; blank lines ignored.
+  /// Returns null if a line has a bad quantity.
+  static Map<String, int>? parseItems(String text) {
+    final out = <String, int>{};
+    for (final raw in text.split('\n')) {
+      final line = raw.trim();
+      if (line.isEmpty) continue;
+      final m = RegExp(r'^(.*?)(?:\s*[xX*]?\s*(\d+))?$').firstMatch(line)!;
+      final name = (m.group(1) ?? '').trim();
+      final qty = m.group(2) == null ? 1 : int.parse(m.group(2)!);
+      if (name.isEmpty || qty < 1 || qty > 99) return null;
+      out[name] = (out[name] ?? 0) + qty;
+    }
+    return out;
+  }
 }
 
 /// Config-driven cancellation charge (recorded only; no money moves).
@@ -98,6 +199,16 @@ class FareBreakdown {
   final int waitingCharge;
   final int extraStopCharge;
 
+  /// Helpers (labour), hourly rental package, kilometres/hours beyond the
+  /// package, and packers-and-movers lines. All 0 on a plain freight fare.
+  final int helperCharge;
+  final int rentalCharge;
+  final int extraKmCharge;
+  final int extraHourCharge;
+  final int itemHandlingCharge;
+  final int floorCharge;
+  final int packingCharge;
+
   /// Top-up so the trip fare reaches the minimum fare (0 if not needed).
   final int minimumFareAdjustment;
   final int platformFee;
@@ -113,6 +224,13 @@ class FareBreakdown {
     required this.unloadingCharge,
     required this.waitingCharge,
     required this.extraStopCharge,
+    this.helperCharge = 0,
+    this.rentalCharge = 0,
+    this.extraKmCharge = 0,
+    this.extraHourCharge = 0,
+    this.itemHandlingCharge = 0,
+    this.floorCharge = 0,
+    this.packingCharge = 0,
     required this.minimumFareAdjustment,
     required this.platformFee,
     required this.gst,
@@ -122,7 +240,8 @@ class FareBreakdown {
 
   /// What the trip itself costs (driver side), before platform fee and GST.
   int get tripFare =>
-      baseFare + distanceCharge + loadingCharge + unloadingCharge + waitingCharge + extraStopCharge + minimumFareAdjustment;
+      baseFare + distanceCharge + loadingCharge + unloadingCharge + waitingCharge + extraStopCharge + minimumFareAdjustment +
+      helperCharge + rentalCharge + extraKmCharge + extraHourCharge + itemHandlingCharge + floorCharge + packingCharge;
 
   int get total => tripFare + platformFee + gst;
 
@@ -134,6 +253,13 @@ class FareBreakdown {
         'unloadingCharge': unloadingCharge,
         'waitingCharge': waitingCharge,
         'extraStopCharge': extraStopCharge,
+        'helperCharge': helperCharge,
+        'rentalCharge': rentalCharge,
+        'extraKmCharge': extraKmCharge,
+        'extraHourCharge': extraHourCharge,
+        'itemHandlingCharge': itemHandlingCharge,
+        'floorCharge': floorCharge,
+        'packingCharge': packingCharge,
         'minimumFareAdjustment': minimumFareAdjustment,
         'platformFee': platformFee,
         'gst': gst,
@@ -153,6 +279,13 @@ class FareBreakdown {
       unloadingCharge: v('unloadingCharge'),
       waitingCharge: v('waitingCharge'),
       extraStopCharge: v('extraStopCharge'),
+      helperCharge: v('helperCharge'),
+      rentalCharge: v('rentalCharge'),
+      extraKmCharge: v('extraKmCharge'),
+      extraHourCharge: v('extraHourCharge'),
+      itemHandlingCharge: v('itemHandlingCharge'),
+      floorCharge: v('floorCharge'),
+      packingCharge: v('packingCharge'),
       minimumFareAdjustment: v('minimumFareAdjustment'),
       platformFee: v('platformFee'),
       gst: v('gst'),
@@ -177,20 +310,32 @@ class FareCalculator {
     bool unloading = true,
     int waitingMinutes = 0,
     int extraStops = 0,
+    int helpers = 0,
+    MoversDetails? movers,
   }) {
     if (distanceKm < 0) throw ArgumentError.value(distanceKm, 'distanceKm');
+    if (helpers < 0 || helpers > maxHelpers) throw ArgumentError.value(helpers, 'helpers');
     final base = rule.baseFare;
     final distance = rule.perKm * distanceKm;
     final load = loading ? rule.loadingCharge : 0;
     final unload = unloading ? rule.unloadingCharge : 0;
     final waiting = rule.waitingPerHour * ((waitingMinutes + 59) ~/ 60);
     final stops = rule.perExtraStop * (extraStops < 0 ? 0 : extraStops);
+    final helper = rule.helperCharge * helpers;
+    final handling = movers == null ? 0 : rule.moversPerItem * movers.units;
+    // Climbing floors only costs extra when there is no lift.
+    final floors = movers == null || movers.hasLift ? 0 : rule.moversPerFloor * (movers.floor < 0 ? 0 : movers.floor);
+    final packing = movers == null || !movers.packingNeeded ? 0 : rule.packingPerItem * movers.units;
     final sum = base + distance + load + unload + waiting + stops;
     final topUp = sum < rule.minimumFare ? rule.minimumFare - sum : 0;
-    final trip = sum + topUp;
+    final trip = sum + topUp + helper + handling + floors + packing;
     final fee = _pct(trip, platformFeePercent);
     final gst = _pct(trip + fee, gstPercent);
     return FareBreakdown(
+      helperCharge: helper,
+      itemHandlingCharge: handling,
+      floorCharge: floors,
+      packingCharge: packing,
       distanceKm: distanceKm,
       baseFare: base,
       distanceCharge: distance,
@@ -199,6 +344,53 @@ class FareCalculator {
       waitingCharge: waiting,
       extraStopCharge: stops,
       minimumFareAdjustment: topUp,
+      platformFee: fee,
+      gst: gst,
+      platformFeePercent: platformFeePercent,
+      gstPercent: gstPercent,
+    );
+  }
+
+  /// Hourly rental: the package price for [hours] (4, 8 or 12), plus
+  /// [helpers]. Kilometres beyond `hours x rentalKmPerHour` and started hours
+  /// beyond the package are billed at the extra rates; pass the actual
+  /// [usedKm] / [usedMinutes] once the trip is over (they default to the
+  /// package, so a quote has no extras).
+  static FareBreakdown calculateRental({
+    required PricingRule rule,
+    required int hours,
+    num platformFeePercent = 0,
+    num gstPercent = 0,
+    int helpers = 0,
+    int? usedKm,
+    int? usedMinutes,
+  }) {
+    if (!rentalHourOptions.contains(hours)) throw ArgumentError.value(hours, 'hours');
+    if (helpers < 0 || helpers > maxHelpers) throw ArgumentError.value(helpers, 'helpers');
+    final includedKm = hours * rule.rentalKmPerHour;
+    final overKm = usedKm == null || usedKm <= includedKm ? 0 : usedKm - includedKm;
+    final overMinutes = usedMinutes == null || usedMinutes <= hours * 60 ? 0 : usedMinutes - hours * 60;
+    final overHours = (overMinutes + 59) ~/ 60;
+    final package = rule.rentalPerHour * hours;
+    final extraKm = overKm * rule.extraKmCharge;
+    final extraHours = overHours * rule.effectiveExtraHour;
+    final helper = rule.helperCharge * helpers;
+    final trip = package + extraKm + extraHours + helper;
+    final fee = _pct(trip, platformFeePercent);
+    final gst = _pct(trip + fee, gstPercent);
+    return FareBreakdown(
+      distanceKm: usedKm ?? includedKm,
+      baseFare: 0,
+      distanceCharge: 0,
+      loadingCharge: 0,
+      unloadingCharge: 0,
+      waitingCharge: 0,
+      extraStopCharge: 0,
+      rentalCharge: package,
+      extraKmCharge: extraKm,
+      extraHourCharge: extraHours,
+      helperCharge: helper,
+      minimumFareAdjustment: 0,
       platformFee: fee,
       gst: gst,
       platformFeePercent: platformFeePercent,

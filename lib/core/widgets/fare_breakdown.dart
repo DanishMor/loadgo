@@ -29,8 +29,18 @@ class FareBreakdownView extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _row(tr(context, 'fareBase'), f.baseFare),
-        _row(trf(context, 'fareDistance', {'km': f.distanceKm}), f.distanceCharge),
+        if (f.rentalCharge > 0)
+          _row(tr(context, 'fareRental'), f.rentalCharge)
+        else ...[
+          _row(tr(context, 'fareBase'), f.baseFare),
+          _row(trf(context, 'fareDistance', {'km': f.distanceKm}), f.distanceCharge),
+        ],
+        if (f.extraKmCharge > 0) _row(tr(context, 'fareExtraKm'), f.extraKmCharge),
+        if (f.extraHourCharge > 0) _row(tr(context, 'fareExtraHours'), f.extraHourCharge),
+        if (f.helperCharge > 0) _row(tr(context, 'fareHelpers'), f.helperCharge),
+        if (f.itemHandlingCharge > 0) _row(tr(context, 'fareItemHandling'), f.itemHandlingCharge),
+        if (f.floorCharge > 0) _row(tr(context, 'fareFloors'), f.floorCharge),
+        if (f.packingCharge > 0) _row(tr(context, 'farePacking'), f.packingCharge),
         if (f.loadingCharge > 0) _row(tr(context, 'fareLoading'), f.loadingCharge),
         if (f.unloadingCharge > 0) _row(tr(context, 'fareUnloading'), f.unloadingCharge),
         if (f.waitingCharge > 0) _row(tr(context, 'fareWaiting'), f.waitingCharge),

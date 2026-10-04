@@ -392,9 +392,30 @@ service cloud.firestore {
           && d.get('pickupSlot', 'any') in ['any', 'morning', 'midday', 'afternoon', 'evening']
           && d.get('paymentMode', 'cash') in ['cash', 'upi_direct']
           && validTradeFields(d)
+          && validBookingType(d)
           && (!('pickupGeohash' in d) || (d.pickupGeohash is string && d.pickupGeohash.matches('^[0-9b-hjkmnp-z]{4,12}$')))
           && !prohibitedText(d.get('notes', ''))
           && !prohibitedText(d.cargoType);
+    }
+
+    // freight | rental (4/8/12 hours) | movers (items, floor, lift, packing);
+    // 0-4 helpers on any of them. Fields of other types are not allowed.
+    function validMovers(m) {
+      return m is map && m.keys().hasOnly(['items', 'floor', 'hasLift', 'packing'])
+          && m.items is list && m.items.size() >= 1 && m.items.size() <= 30
+          && (m.items[0] is map && m.items[0].keys().hasOnly(['name', 'qty'])
+              && m.items[0].name is string && m.items[0].name.size() >= 1 && m.items[0].name.size() <= 40
+              && m.items[0].qty is int && m.items[0].qty >= 1 && m.items[0].qty <= 99)
+          && m.floor is int && m.floor >= 0 && m.floor <= 50
+          && m.hasLift is bool && m.packing is bool;
+    }
+
+    function validBookingType(d) {
+      let t = d.get('bookingType', 'freight');
+      return t in ['freight', 'rental', 'movers']
+          && d.get('helpers', 0) is int && d.get('helpers', 0) >= 0 && d.get('helpers', 0) <= 4
+          && (t == 'rental' ? d.get('rentalHours', 0) in [4, 8, 12] : !('rentalHours' in d))
+          && (t == 'movers' ? validMovers(d.get('movers', null)) : !('movers' in d));
     }
 
     // Import/export details, branch and shipment links (all optional).
@@ -424,7 +445,12 @@ service cloud.firestore {
       return e is map
           && e.total is int && e.total >= 0
           && e.tripFare is int && e.tripFare >= 0 && e.tripFare <= e.total
-          && e.distanceKm is int && e.distanceKm >= 0 && e.distanceKm <= 5000;
+          && e.distanceKm is int && e.distanceKm >= 0 && e.distanceKm <= 5000
+          && e.get('helperCharge', 0) is int && e.get('helperCharge', 0) >= 0
+          && e.get('rentalCharge', 0) is int && e.get('rentalCharge', 0) >= 0
+          && e.get('itemHandlingCharge', 0) is int && e.get('itemHandlingCharge', 0) >= 0
+          && e.get('floorCharge', 0) is int && e.get('floorCharge', 0) >= 0
+          && e.get('packingCharge', 0) is int && e.get('packingCharge', 0) >= 0;
     }
 
     // Shipper edits/cancels a load that nobody has accepted yet.
@@ -612,7 +638,7 @@ service cloud.firestore {
       let loadAfter = getAfter(docPath('loads', b.loadId)).data;
       return b.keys().hasOnly(['loadId', 'driverId', 'vehicleId', 'customerId', 'status', 'pickup', 'drop', 'cargoType', 'weight',
                                'vehicleType', 'budget', 'fareEstimate', 'offerId', 'agreedFarePaise', 'extraPickups', 'extraDrops',
-                               'pickupSlot', 'paymentMode', 'paymentStatus', 'containerNumber', 'sealNumber', 'pickupDate', 'notes',
+                               'pickupSlot', 'bookingType', 'helpers', 'rentalHours', 'paymentMode', 'paymentStatus', 'containerNumber', 'sealNumber', 'pickupDate', 'notes',
                                'vehicleNumber', 'driverName', 'driverPhone', 'timeline', 'createdAt', 'updatedAt'])
           && b.timeline.keys().hasOnly(['accepted'])
           && b.driverId == request.auth.uid
@@ -630,6 +656,9 @@ service cloud.firestore {
           && b.get('extraPickups', []) == load.get('extraPickups', [])
           && b.get('extraDrops', []) == load.get('extraDrops', [])
           && b.get('paymentMode', 'cash') == load.get('paymentMode', 'cash')
+          && b.get('bookingType', 'freight') == load.get('bookingType', 'freight')
+          && b.get('helpers', 0) == load.get('helpers', 0)
+          && b.get('rentalHours', null) == load.get('rentalHours', null)
           && b.get('containerNumber', null) == load.get('containerNumber', null)
           && b.get('sealNumber', null) == load.get('sealNumber', null)
           && b.get('paymentStatus', 'pending') == 'pending'

@@ -48,6 +48,16 @@ class Load {
   final String? shipmentId;
   final int? shipmentLeg;
 
+  /// [BookingType] value; helpers (0-4) apply to every type.
+  final String bookingType;
+  final int helpers;
+
+  /// 4, 8 or 12 for hourly rentals.
+  final int? rentalHours;
+
+  /// Packers-and-movers request (items, floor, lift, packing).
+  final MoversDetails? movers;
+
   const Load({
     required this.id,
     required this.shipperId,
@@ -75,6 +85,10 @@ class Load {
     this.branchId,
     this.shipmentId,
     this.shipmentLeg,
+    this.bookingType = BookingType.freight,
+    this.helpers = 0,
+    this.rentalHours,
+    this.movers,
   });
 
   bool get isOpen => status == LoadStatus.open;
@@ -113,6 +127,10 @@ class Load {
       branchId: d['branchId'] as String?,
       shipmentId: d['shipmentId'] as String?,
       shipmentLeg: (d['shipmentLeg'] as num?)?.toInt(),
+      bookingType: d['bookingType'] as String? ?? BookingType.freight,
+      helpers: (d['helpers'] as num?)?.toInt() ?? 0,
+      rentalHours: (d['rentalHours'] as num?)?.toInt(),
+      movers: d['movers'] is Map ? MoversDetails.fromMap(d['movers']) : null,
     );
   }
 }
