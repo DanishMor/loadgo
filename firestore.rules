@@ -682,6 +682,32 @@ service cloud.firestore {
           && request.resource.data.ewayBillNo.matches('^$|^[0-9]{12}$');
     }
 
+    // Waiting at the loading / unloading point (record only). Minutes can
+    // only grow, by no more than the time the clock was running (+1 minute),
+    // and a clock can only be started while loading / unloading.
+    function stageClockOk(stage) {
+      let before = resource.data.get('detention', {});
+      let after = request.resource.data.get('detention', {});
+      let startedKey = stage + 'StartedAt';
+      let minutesKey = stage + 'Minutes';
+      let wasRunning = startedKey in before;
+      let isRunning = startedKey in after;
+      let grew = after.get(minutesKey, 0) - before.get(minutesKey, 0);
+      return after.get(minutesKey, 0) is int && after.get(minutesKey, 0) >= before.get(minutesKey, 0) && after.get(minutesKey, 0) <= 1440
+          && (isRunning ? (after[startedKey] == request.time || (wasRunning && after[startedKey] == before[startedKey])) : true)
+          && (wasRunning || grew == 0)
+          && (!wasRunning || isRunning || grew <= (request.time.toMillis() - before[startedKey].toMillis()) / 60000 + 1)
+          && (!isRunning || wasRunning || resource.data.status == stage);
+    }
+
+    function detentionUpdate() {
+      return changedKeys().hasOnly(['detention', 'updatedAt'])
+          && resource.data.status in ['loading', 'unloading']
+          && request.resource.data.detention is map
+          && request.resource.data.detention.keys().hasOnly(['loadingMinutes', 'unloadingMinutes', 'loadingStartedAt', 'unloadingStartedAt'])
+          && stageClockOk('loading') && stageClockOk('unloading');
+    }
+
     function validBookingCreate(bookingId) {
       let b = request.resource.data;
       let load = get(docPath('loads', b.loadId)).data;
@@ -773,6 +799,7 @@ service cloud.firestore {
           || (resource.data.driverId == request.auth.uid
           && (driverLocationUpdate()
               || ewayBillUpdate()
+              || detentionUpdate()
               || driverConfirmsPayment(bookingId)
               || breakdownReport()
               || driverStep(bookingId)
@@ -1035,10 +1062,10 @@ service cloud.firestore {
       allow create: if signedIn()
           && request.resource.data.keys().hasOnly(['type', 'actorId', 'targetId', 'bookingId', 'loadId', 'data', 'createdAt'])
           && request.resource.data.actorId == request.auth.uid
-          && request.resource.data.type in ['verification', 'accept', 'status_change', 'cancel', 'risk_change', 'reassign']
+          && request.resource.data.type in ['verification', 'accept', 'status_change', 'cancel', 'risk_change', 'reassign', 'config_change']
           && request.resource.data.data is map
           && request.resource.data.createdAt == request.time
-          && (!(request.resource.data.type in ['verification', 'risk_change', 'reassign']) || isAdmin());
+          && (!(request.resource.data.type in ['verification', 'risk_change', 'reassign', 'config_change']) || isAdmin());
       allow update, delete: if false;
     }
 
@@ -1106,6 +1133,63 @@ service cloud.firestore {
     match /admins/{uid} {
       allow read: if isUser(uid);
       allow write: if false;
+    }
+
+    // ------------------------------------------------------------------
+    // fraud_cases/{id}: admin-only case management (alert -> evidence ->
+    // action -> resolution). Notes are append-only.
+    // ------------------------------------------------------------------
+    match /fraud_cases/{caseId} {
+      allow read: if isAdmin();
+      allow create: if isAdmin()
+          && request.resource.data.keys().hasOnly(['userId', 'summary', 'status', 'reportIds', 'createdBy', 'createdAt', 'updatedAt'])
+          && request.resource.data.userId is string && request.resource.data.userId.size() >= 1
+          && request.resource.data.summary is string && request.resource.data.summary.size() >= 3 && request.resource.data.summary.size() <= 300
+          && request.resource.data.status == 'open'
+          && request.resource.data.reportIds is list && request.resource.data.reportIds.size() <= 20
+          && request.resource.data.createdBy == request.auth.uid
+          && request.resource.data.createdAt == request.time;
+      allow update: if isAdmin()
+          && changedKeys().hasOnly(['status', 'outcome', 'resolvedBy', 'resolvedAt', 'reportIds', 'updatedAt'])
+          && request.resource.data.status in ['open', 'investigating', 'resolved', 'dismissed']
+          && (!('outcome' in request.resource.data) || request.resource.data.outcome in ['no_action', 'warned', 'restricted', 'suspended'])
+          && (!(request.resource.data.status in ['resolved', 'dismissed']) || 'outcome' in request.resource.data);
+      allow delete: if false;
+
+      match /notes/{noteId} {
+        allow read: if isAdmin();
+        allow create: if isAdmin()
+            && request.resource.data.keys().hasOnly(['by', 'text', 'createdAt'])
+            && request.resource.data.by == request.auth.uid
+            && request.resource.data.text is string && request.resource.data.text.size() >= 1 && request.resource.data.text.size() <= 1000
+            && request.resource.data.createdAt == request.time;
+        allow update, delete: if false;
+      }
+    }
+
+    // ------------------------------------------------------------------
+    // payouts/{id}: a driver asks for money from their wallet. Record only:
+    // an admin pays by hand and marks it paid or rejected. The rules cannot
+    // sum the ledger, so the balance and the one-open-request limit are
+    // checked in the app. TODO(functions): check them on the server.
+    // ------------------------------------------------------------------
+    match /payouts/{payoutId} {
+      allow read: if signedIn() && (resource.data.driverId == request.auth.uid || isAdmin());
+      allow create: if signedIn()
+          && request.resource.data.keys().hasOnly(['driverId', 'amountPaise', 'status', 'createdAt'])
+          && request.resource.data.driverId == request.auth.uid
+          && request.resource.data.status == 'requested'
+          && request.resource.data.amountPaise is int
+          && request.resource.data.amountPaise >= 100 && request.resource.data.amountPaise <= 100000000
+          && request.resource.data.createdAt == request.time
+          && canTransact(request.auth.uid);
+      allow update: if isAdmin()
+          && resource.data.status == 'requested'
+          && changedKeys().hasOnly(['status', 'handledBy', 'handledAt'])
+          && request.resource.data.status in ['paid', 'rejected']
+          && request.resource.data.handledBy == request.auth.uid
+          && request.resource.data.handledAt == request.time;
+      allow delete: if false;
     }
 
     // ------------------------------------------------------------------

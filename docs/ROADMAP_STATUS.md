@@ -10,30 +10,30 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 |---|---|---|---|---|---|---|
 | P0 Principles | 6 | 1 | 5 | 0 | 0 | 0 |
 | A Authentication | 10 | 3 | 2 | 4 | 1 | 0 |
-| K Identity, KYC | 14 | 0 | 7 | 1 | 6 | 0 |
+| K Identity, KYC | 14 | 3 | 4 | 1 | 6 | 0 |
 | R Re-KYC | 12 | 0 | 1 | 7 | 4 | 0 |
 | C Customer app | 14 | 8 | 6 | 0 | 0 | 0 |
-| B Bike | 14 | 6 | 5 | 2 | 1 | 0 |
-| V Truck + fleet | 12 | 3 | 4 | 4 | 1 | 0 |
+| B Bike | 14 | 7 | 4 | 2 | 1 | 0 |
+| V Truck + fleet | 12 | 5 | 2 | 4 | 1 | 0 |
 | L Load marketplace | 14 | 10 | 2 | 2 | 0 | 0 |
-| P Booking + pricing | 14 | 8 | 4 | 1 | 1 | 0 |
+| P Booking + pricing | 14 | 10 | 2 | 1 | 1 | 0 |
 | M Map | 16 | 0 | 5 | 1 | 9 | 1 |
-| SM Smart matching | 14 | 7 | 4 | 3 | 0 | 0 |
-| D Driver app | 16 | 5 | 8 | 3 | 0 | 0 |
+| SM Smart matching | 14 | 9 | 2 | 3 | 0 | 0 |
+| D Driver app | 16 | 8 | 5 | 3 | 0 | 0 |
 | CH Chat | 14 | 3 | 2 | 5 | 4 | 0 |
 | T Trip lifecycle | 14 | 6 | 4 | 3 | 1 | 0 |
 | S Pickup, cargo, POD | 15 | 7 | 2 | 3 | 3 | 0 |
-| PAY Payments | 14 | 3 | 5 | 1 | 5 | 0 |
-| DOC Documents | 14 | 4 | 8 | 2 | 0 | 0 |
+| PAY Payments | 14 | 4 | 4 | 1 | 5 | 0 |
+| DOC Documents | 14 | 6 | 6 | 2 | 0 | 0 |
 | IE Import/export | 14 | 10 | 2 | 2 | 0 | 0 |
 | BIZ Business | 15 | 4 | 1 | 7 | 3 | 0 |
-| F Anti-fraud | 18 | 2 | 9 | 2 | 5 | 0 |
-| SAFE Safety | 12 | 6 | 3 | 1 | 2 | 0 |
-| N Notifications | 15 | 6 | 3 | 4 | 2 | 0 |
+| F Anti-fraud | 18 | 3 | 8 | 2 | 5 | 0 |
+| SAFE Safety | 12 | 7 | 2 | 1 | 2 | 0 |
+| N Notifications | 15 | 8 | 1 | 4 | 2 | 0 |
 | AI AI | 14 | 0 | 0 | 0 | 14 | 0 |
 | BE Backend | 18 | 3 | 6 | 2 | 7 | 0 |
 | TEST Testing | 14 | 3 | 3 | 1 | 7 | 0 |
-| **Total** | **347** | **108** | **101** | **61** | **76** | **1** |
+| **Total** | **347** | **128** | **81** | **61** | **76** | **1** |
 
 ## P0 Principles
 
@@ -75,10 +75,10 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | K8 | Driver KYC pack Aadhaar, PAN, DL, address, photo, payout profile, vehicle relationship. | Partial | Driver onboarding (lib/auth/driver_kyc_screen.dart): DL number + expiry, RC number, Aadhaar last 4, PAN, then admin approval; no photo, address or payout profile |
 | K9 | Business KYC GSTIN, PAN, business name, trade name, addresses, company | Partial | users.business with GSTIN format check, always "Not verified" |
 | K10 | MCA / EntityLocker path Eligible company/entity documents ke authorised verification workflow ke | Paid-or-Later | MCA/EntityLocker integration |
-| K11 | Verification badge Mobile/identity/PAN/DL/RC/GST/business/face status alag-alag visible. | Partial | Single driver verified flag + "Unverified"/"Not verified" labels; not per-type badges |
-| K12 | Expiry tracking DL, RC, insurance, PUC, fitness, permits and other relevant document | Partial | Vehicle insurance/PUC/fitness/permit expiry + Home banner; driving licence expiry is stored at onboarding but has no reminder; no push |
+| K11 | Verification badge Mobile/identity/PAN/DL/RC/GST/business/face status alag-alag visible. | Done | Per-document badges (OTP, provided/unverified, reviewed, missing) on the profile and in the admin queue; no source verification yet |
+| K12 | Expiry tracking DL, RC, insurance, PUC, fitness, permits and other relevant document | Done | Vehicle papers, tyre/service and the driving licence expiry feed in-app reminders; push is the paid part |
 | K13 | Mismatch workflow Name/entity/vehicle relationship mismatch -> pending/manual review, | Todo-free | Admin approves manually; no mismatch workflow |
-| K14 | Source + timestamp Har verification result ke saath source/type/status/timestamp/expiry | Partial | Verification change writes audit event + updatedAt; no source/type/expiry metadata |
+| K14 | Source + timestamp Har verification result ke saath source/type/status/timestamp/expiry | Done | Admin review writes verificationMeta {source: manual_review, by, status, at}; shown on the profile; external sources are LATER(paid) |
 
 ## R Re-KYC
 
@@ -128,7 +128,7 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | B6 | Mini truck Tata Ace / similar category. | Done | Vehicle type "Mini" |
 | B7 | Instant local booking Pickup now -> nearby rider/vehicle -> ETA -> delivery. | Partial | Post load + driver accept; no nearby-rider ETA |
 | B8 | Schedule local delivery Future date/time slot. | Done | Pickup date + time slot on loads |
-| B9 | Package details Weight, size, quantity, fragile/high-value flag. | Partial | Weight, packages, seal, damage; no fragile/high-value flag |
+| B9 | Package details Weight, size, quantity, fragile/high-value flag. | Done | Weight, packages, seal, damage plus fragile and high-value flags |
 | B10 | Photo capture Pickup/delivery proof for parcel. | Paid-or-Later | Needs Storage (POD screen placeholder) |
 | B11 | Bike route tracking Real-time rider location and ETA. | Partial | Driver position shared to booking as text; no map/ETA |
 | B12 | Bike KYC Rider identity + DL + RC + insurance/PUC where applicable. | Partial | Same vehicle docs as trucks; no DL |
@@ -140,13 +140,13 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | Code | Item | Status | Where / why |
 |---|---|---|---|
 | V1 | Truck catalogue Open body, container, trailer, mini, 10-32 ft, multi-axle etc. | Done | config/vehicle_types, 15 types |
-| V2 | Vehicle profile Number, class, capacity, dimensions, fuel, body type. | Partial | Number, type, capacity, RC number; no dimensions/fuel/body type |
+| V2 | Vehicle profile Number, class, capacity, dimensions, fuel, body type. | Done | Number, type, capacity, RC, optional cargo dimensions, fuel and body type (vehicle profile, rules validated) |
 | V3 | Vehicle documents RC, insurance, PUC, fitness, permit and expiry. | Done | vehicle_documents_screen.dart insurance/PUC/fitness/permit + expiry |
 | V4 | Owner relationship Owner, authorised operator or fleet relationship record. | Todo-free | Only ownerId on vehicle |
 | V5 | Driver assignment Vehicle-to-driver mapping with active assignment. | Todo-free | Driver owns vehicle; no assignment |
 | V6 | Fleet dashboard Vehicles, drivers, online/offline, active trips, idle vehicles. | Todo-free | No fleet dashboard |
 | V7 | Vehicle availability Available, busy, on-trip, maintenance, suspended. | Done | available/on_trip/maintenance/suspended, auto on_trip |
-| V8 | Maintenance reminders Service, tyre, insurance, PUC, fitness, permit. | Partial | Next service date + Home banner; no tyre/other reminders, no push |
+| V8 | Maintenance reminders Service, tyre, insurance, PUC, fitness, permit. | Done | Next service and next tyre-check dates + in-app reminders (Home banner and notification list); push is the paid part |
 | V9 | FASTag layer Future partner/API integration for supported FASTag flows. | Paid-or-Later | FASTag partner API |
 | V10 | Fuel layer Fuel station map, expense tracking, future partner integration. | Todo-free | Expense tracking buildable; fuel station map is paid |
 | V11 | Replacement vehicle Breakdown/availability issue par replacement workflow. | Partial | Breakdown report sets replacement flag; no replacement vehicle assignment |
@@ -184,11 +184,11 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | P7 | Minimum fare Vehicle/category based minimum pricing. | Done | Minimum fare in config/pricing |
 | P8 | Driver offer Marketplace quote option. | Done | Driver offers |
 | P9 | Hybrid pricing System estimate + offers. | Done | Estimate + offers |
-| P10 | Detention Loading/unloading waiting record and configured charge. | Partial | Waiting charge in fare calc; no live detention record on trip |
+| P10 | Detention Loading/unloading waiting record and configured charge. | Done | Driver starts/stops a waiting clock at loading/unloading; minutes and the charge from config shown to both; record only |
 | P11 | Cancellation policy Reason + charge/refund logic. | Partial | Config charge recorded on driver cancel; no refund moves |
 | P12 | Booking state machine Created -> matched -> accepted -> confirmed -> active -> delivered -> | Partial | accepted..delivered (+cancelled); no created/matched/settled |
 | P13 | Server-side pricing Client estimate is not authoritative; final quote from secure backend. | Paid-or-Later | TODO(functions); needs Blaze |
-| P14 | Pricing admin Admin-configurable rates/rules with audit trail. | Partial | Admin JSON editors for config/pricing; config edits not audited |
+| P14 | Pricing admin Admin-configurable rates/rules with audit trail. | Done | Config edits write config_change audit events; Admin > Audit log lists them |
 
 ## M Map
 
@@ -215,14 +215,14 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 
 | Code | Item | Status | Where / why |
 |---|---|---|---|
-| SM1 | Nearest vehicle Pickup ke nearest eligible vehicle. | Partial | Distance from anchor city, not live location |
+| SM1 | Nearest vehicle Pickup ke nearest eligible vehicle. | Done | Ranker measures from the driver's saved position when no trip is active; falls back to the last drop |
 | SM2 | Correct capacity Weight/dimensions ke according capacity filter. | Done | LoadRanker capacity >= weight |
 | SM3 | Correct vehicle type Bike/mini/container/trailer etc. | Done | LoadRanker vehicle type |
 | SM4 | Availability Online + eligible + free vehicle. | Done | Active vehicle + available state |
 | SM5 | Route match Driver route aur shipment route alignment. | Partial | Favourite route bonus only |
 | SM6 | Return-load match Empty return reduce karne ke liye. | Done | Return-load bonus |
 | SM7 | Verification filter Required KYC/document status valid. | Done | Verified driver + no expired papers |
-| SM8 | Risk filter High-risk/suspended accounts exclude/hold. | Partial | Restricted/suspended blocked in services and rules; ranker does not read tier |
+| SM8 | Risk filter High-risk/suspended accounts exclude/hold. | Done | LoadRanker returns nothing for restricted or suspended drivers |
 | SM9 | Fleet matching Fleet ke available vehicles se auto allocation. | Todo-free | No fleet auto allocation |
 | SM10 | Scheduled matching Pickup slot ke according. | Todo-free | Slot is stored, not used in matching |
 | SM11 | Multi-stop matching Compatible route and capacity. | Todo-free | No multi-stop matching |
@@ -235,15 +235,15 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | Code | Item | Status | Where / why |
 |---|---|---|---|
 | D1 | Driver Home Online/offline, map, loads, trips, earnings. | Partial | driver_home_screen.dart: online switch (local state only), loads, trips, earnings |
-| D2 | Online/offline Availability control. | Partial | Online/offline is a local widget state, not saved |
+| D2 | Online/offline Availability control. | Done | Online switch saved on the profile (users.online) and restored on start |
 | D3 | Nearby loads Location based marketplace. | Partial | Loads list sorted nearest first from the last saved position (users.lastLocation); no geohash range query yet (LATER(paid) wave dispatch) |
 | D4 | Route loads Planned route related opportunities. | Partial | Favourite routes |
 | D5 | Return loads Destination based reverse load suggestions. | Done | Recommended for you with return load reason |
 | D6 | Trip dashboard Current assignment and steps. | Done | driver_trip_screen.dart |
 | D7 | Earnings Day/week/month and trip level. | Done | earnings_view.dart + driver_analytics_screen.dart |
-| D8 | Wallet Pending/available/payout records. | Partial | wallet_screen.dart: earnings, commission, net; no pending/available/payout |
+| D8 | Wallet Pending/available/payout records. | Done | Wallet shows pending, available and paid-out figures, payout requests and history (records only) |
 | D9 | Documents KYC + vehicle docs + expiry. | Partial | Vehicle docs + expiry; driver licence, RC, Aadhaar last 4 and PAN at onboarding; no document photos |
-| D10 | Driver profile Verified badges, vehicles, service info, languages. | Partial | Profile with rating; no badges/languages/vehicles |
+| D10 | Driver profile Verified badges, vehicles, service info, languages. | Done | Profile shows verified badge, per-document badges, vehicle count, language and plan |
 | D11 | Nearby drivers Privacy-controlled network map/list. | Todo-free | No driver network |
 | D12 | Connect Driver-to-driver connection request. | Todo-free | No driver connections |
 | D13 | Groups Trip/route/convoy/fleet groups. | Todo-free | No groups |
@@ -321,7 +321,7 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | PAY6 | Cancellation charges Rules-based calculation. | Partial | Charge computed and recorded; no money moves |
 | PAY7 | Payment receipt Transaction proof. | Done | invoice_screen.dart + payment_card.dart |
 | PAY8 | Driver payout Completed trip settlement. | Paid-or-Later | Payouts need provider |
-| PAY9 | Wallet Pending/available balances. | Partial | Driver wallet shows earnings/commission/net only |
+| PAY9 | Wallet Pending/available balances. | Done | Driver wallet pending/available/paid-out with payout requests; customer credits ledger exists (offers) |
 | PAY10 | Payout verification Bank/account ownership checks. | Paid-or-Later | Bank verification provider |
 | PAY11 | Suspicious payout hold Risk high hone par temporary hold + review. | Paid-or-Later | No payouts to hold |
 | PAY12 | Commission LoadGo platform fee with transparent record. | Done | Commission % in config/pricing, negative ledger line |
@@ -342,9 +342,9 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | DOC8 | POD packet Delivery evidence bundle. | Partial | POD packet is text + timeline |
 | DOC9 | Versioning Changed document history. | Todo-free | No version history |
 | DOC10 | Access control Customer/driver/admin/enterprise role based. | Partial | Rules: owner/party/admin; no enterprise roles |
-| DOC11 | Masking Sensitive identifiers partially masked on UI. | Partial | Phone masked; other identifiers not masked |
+| DOC11 | Masking Sensitive identifiers partially masked on UI. | Done | Phone, PAN, licence, RC, GST masked on the profile; admins can reveal in the verification queue |
 | DOC12 | Verification source Document source and verification status. | Partial | "Unverified" label only |
-| DOC13 | Expiry reminders Upcoming expiry notifications. | Partial | Home banner 30 days; no notifications/push |
+| DOC13 | Expiry reminders Upcoming expiry notifications. | Done | Expiry reminders for vehicle papers and the licence in-app (no push) |
 | DOC14 | Audit Document upload/update/view verification logs where required. | Partial | Audit covers verification and status changes, not document views |
 
 ## IE Import/export
@@ -407,7 +407,7 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | F15 | Human review High-risk cases manual operations queue. | Done | Admin flagged users + reports queue |
 | F16 | Audit trail Critical events immutable-style logging architecture. | Partial | audit_events append-only but client-written |
 | F17 | Risk tiers Normal / review / restricted / suspended states. | Done | riskTier normal/review/restricted/suspended |
-| F18 | Fraud case management Alert -> evidence -> analyst action -> resolution. | Partial | Reports + tickets + admin risk edit; no case object |
+| F18 | Fraud case management Alert -> evidence -> analyst action -> resolution. | Done | fraud_cases with notes, status, decision (risk tier) and audit; open from a report |
 
 ## SAFE Safety
 
@@ -420,7 +420,7 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | SAFE5 | Customer support Booking/payment/delivery issues. | Done | Tickets from bookings |
 | SAFE6 | Driver support Load/payment/vehicle issues. | Done | Tickets for drivers |
 | SAFE7 | Ticketing Case ID, priority, status. | Done | Case id, priority, status |
-| SAFE8 | Call support Provider-based call option. | Partial | Calls 112 via tel:; no support number configured |
+| SAFE8 | Call support Provider-based call option. | Done | config/support phone shows a Call support button on Help and support (provider-managed line is paid) |
 | SAFE9 | Goods insurance Optional authorised partner integration. | Paid-or-Later | Insurance partner |
 | SAFE10 | Driver accident cover Optional partner product. | Paid-or-Later | Insurance partner |
 | SAFE11 | Dispute management Pickup/delivery/payment evidence based review. | Partial | Dispute ticket category needs booking; no evidence review flow |
@@ -436,7 +436,7 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | N4 | Route deviation Alert. | Paid-or-Later | Needs route deviation |
 | N5 | Delivery complete POD/settlement notification. | Done | Delivered notification |
 | N6 | KYC reminder Re-KYC due. | Paid-or-Later | Needs re-KYC |
-| N7 | Document expiry DL/RC/insurance/etc. | Partial | Home banner only |
+| N7 | Document expiry DL/RC/insurance/etc. | Done | Vehicle paper, licence, service and tyre reminders in the Home banner and the notification list (no push) |
 | N8 | Return load alert Driver route related opportunity. | Todo-free | No return load alert |
 | N9 | Payment notification Payment/payout/refund. | Todo-free | No payment notifications |
 | N10 | Chat notification Message/group alerts. | Partial | Unread badge on Chat; no notification |
@@ -444,7 +444,7 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | N12 | Driver analytics Trips, earnings, acceptance, empty km. | Done | driver_analytics_screen.dart (no empty km) |
 | N13 | Fleet analytics Utilisation, idle time, revenue, maintenance. | Todo-free | No fleet analytics |
 | N14 | Admin analytics Users, loads, bookings, GMV-like metrics, fraud alerts. | Done | admin dashboard counters (no fraud alert metric) |
-| N15 | Enterprise reports Branch-wise, route-wise, driver-wise reports. | Partial | Route/branch summary report; no driver-wise |
+| N15 | Enterprise reports Branch-wise, route-wise, driver-wise reports. | Done | Route, branch and driver-wise report with CSV |
 
 ## AI AI
 

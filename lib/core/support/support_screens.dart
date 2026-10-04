@@ -7,7 +7,9 @@ import '../models/booking.dart';
 import '../models/support_ticket.dart';
 import '../services/backend.dart';
 import '../services/booking_service.dart';
+import '../services/support_config.dart';
 import '../services/support_service.dart';
+import '../safety/call.dart';
 import '../widgets/common.dart';
 import '../widgets/live_stream.dart';
 
@@ -102,7 +104,32 @@ class SupportHomeScreen extends StatelessWidget {
         label: Text(tr(context, 'newTicket')),
       ),
       body: SafeArea(
-        child: LiveStream<List<SupportTicket>>(
+        child: Column(children: [
+          FutureBuilder<SupportConfig>(
+            future: SupportConfig.load(),
+            builder: (context, snap) {
+              final c = snap.data;
+              if (c == null || !c.hasPhone) return const SizedBox.shrink();
+              return Padding(
+                padding: const EdgeInsets.fromLTRB(20, 4, 20, 0),
+                child: AppCard(
+                  key: const ValueKey('callSupport'),
+                  onTap: () => callNumber(context, c.phone),
+                  child: Row(children: [
+                    const Icon(Icons.call_rounded, color: AppColors.primary),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                        Text(tr(context, 'callSupport'), style: const TextStyle(fontWeight: FontWeight.w800)),
+                        Text(c.hours.isEmpty ? c.phone : '${c.phone} · ${c.hours}', style: const TextStyle(color: AppColors.muted, fontSize: 13)),
+                      ]),
+                    ),
+                  ]),
+                ),
+              );
+            },
+          ),
+          Expanded(child: LiveStream<List<SupportTicket>>(
           stream: SupportService.watchMine,
           builder: (context, tickets) {
             if (tickets.isEmpty) return EmptyState(icon: Icons.support_agent_rounded, title: tr(context, 'noTickets'));
@@ -118,7 +145,8 @@ class SupportHomeScreen extends StatelessWidget {
               ),
             );
           },
-        ),
+        )),
+        ]),
       ),
     );
   }

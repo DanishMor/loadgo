@@ -52,6 +52,16 @@ class RouteReportScreen extends StatelessWidget {
                 title: Text(x.branch),
                 subtitle: Text(line(x.loads, x.delivered, x.spendPaise)),
               ),
+            const SizedBox(height: 16),
+            Text(tr(context, 'reportByDriver'), style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+            if (r.drivers.isEmpty) Padding(padding: const EdgeInsets.all(12), child: Text(tr(context, 'statNoData'))),
+            for (final x in r.drivers)
+              ListTile(
+                key: ValueKey('driverRow_${x.driver}'),
+                contentPadding: EdgeInsets.zero,
+                title: Text(x.driver),
+                subtitle: Text(line(x.trips, x.delivered, x.spendPaise)),
+              ),
           ]);
         },
       ),

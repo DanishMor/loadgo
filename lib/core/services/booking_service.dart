@@ -138,6 +138,34 @@ class BookingService {
   }
 
   /// Live single booking; emits null if it doesn't exist.
+  /// Driver starts the waiting clock at the current stage (loading or
+  /// unloading). Record only.
+  static Future<void> startWaiting(Booking b) async {
+    final stage = b.status;
+    if (b.driverId != Backend.requireUid() || (stage != Detention.loadingStage && stage != Detention.unloadingStage)) {
+      throw StateError('Waiting can only be recorded while loading or unloading');
+    }
+    if (b.detention.startedAt(stage) != null) return;
+    await Backend.db.collection('bookings').doc(b.id).update({
+      'detention.${stage}StartedAt': FieldValue.serverTimestamp(),
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+  /// Driver stops the clock; the minutes waited are added to the stage.
+  static Future<void> stopWaiting(Booking b, {DateTime? now}) async {
+    final stage = b.status;
+    final started = b.detention.startedAt(stage);
+    if (b.driverId != Backend.requireUid() || started == null) throw StateError('Not waiting');
+    final waited = (((now ?? DateTime.now()).difference(started).inSeconds) / 60).ceil().clamp(0, Detention.maxMinutes);
+    final total = (b.detention.minutes(stage) + waited).clamp(0, Detention.maxMinutes);
+    await Backend.db.collection('bookings').doc(b.id).update({
+      'detention.${stage}Minutes': total,
+      'detention.${stage}StartedAt': FieldValue.delete(),
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+  }
+
   static Stream<Booking?> watch(String bookingId) =>
       _col.doc(bookingId).snapshots().map((s) => s.exists ? Booking.fromDoc(s) : null);
 

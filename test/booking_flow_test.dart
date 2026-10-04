@@ -25,6 +25,8 @@ Future<void> tapButton(WidgetTester tester, String label) async {
   await tester.pumpAndSettle();
   // The trip screen is a lazy list; scroll until the button is built.
   await tester.scrollUntilVisible(find.text(label), 200, scrollable: find.byType(Scrollable).first);
+  await tester.ensureVisible(find.text(label));
+  await tester.pumpAndSettle();
   await tester.tap(find.text(label));
 }
 

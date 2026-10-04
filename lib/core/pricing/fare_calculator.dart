@@ -298,6 +298,13 @@ class FareBreakdown {
 class FareCalculator {
   FareCalculator._();
 
+  /// Waiting charge for [minutes] at the points: the first [freeMinutes] are
+  /// free, then every started hour costs `waitingPerHour`.
+  static int detentionCharge(PricingRule rule, int minutes, {int freeMinutes = 60}) {
+    final over = minutes - freeMinutes;
+    return over <= 0 ? 0 : rule.waitingPerHour * ((over + 59) ~/ 60);
+  }
+
   /// Fare for [distanceKm] with [rule]. Waiting is billed per started hour
   /// from [waitingMinutes]. Platform fee is a percent of the trip fare; GST is
   /// charged on trip fare + platform fee.

@@ -14,6 +14,9 @@ class PricingConfig {
   /// Recorded on the driver's ledger when they confirm payment received.
   final num commissionPercent;
 
+  /// Minutes of waiting at the points that are free before detention is charged.
+  final int detentionFreeMinutes;
+
   /// Commission for drivers on the Pro plan.
   final num proCommissionPercent;
   final double roadFactor;
@@ -26,6 +29,7 @@ class PricingConfig {
     this.gstPercent = 5,
     this.commissionPercent = 5,
     this.proCommissionPercent = 2,
+    this.detentionFreeMinutes = 60,
     this.roadFactor = 1.25,
     this.cancellation = const CancellationPolicy(),
   });
@@ -55,6 +59,7 @@ class PricingConfig {
       gstPercent: m['gstPercent'] as num? ?? defaultPricing.gstPercent,
       commissionPercent: m['commissionPercent'] as num? ?? defaultPricing.commissionPercent,
       proCommissionPercent: m['proCommissionPercent'] as num? ?? defaultPricing.proCommissionPercent,
+      detentionFreeMinutes: (m['detentionFreeMinutes'] as num?)?.round() ?? defaultPricing.detentionFreeMinutes,
       roadFactor: (m['roadFactor'] as num?)?.toDouble() ?? defaultPricing.roadFactor,
       cancellation: CancellationPolicy.fromMap(m['cancellation'] as Map<String, dynamic>?),
     );
@@ -67,6 +72,7 @@ class PricingConfig {
         'gstPercent': gstPercent,
         'commissionPercent': commissionPercent,
         'proCommissionPercent': proCommissionPercent,
+        'detentionFreeMinutes': detentionFreeMinutes,
         'roadFactor': roadFactor,
         'cancellation': cancellation.toMap(),
       };

@@ -35,6 +35,13 @@ class AdminConfigScreen extends StatelessWidget {
           onTap: () => open('vehicle_types', 'adminVehicleTypes'),
         ),
         ListTile(
+          key: const ValueKey('editSupport'),
+          title: Text(tr(context, 'adminSupportConfig')),
+          subtitle: Text(tr(context, 'adminSupportConfigSub')),
+          trailing: const Icon(Icons.chevron_right_rounded),
+          onTap: () => open('support', 'adminSupportConfig'),
+        ),
+        ListTile(
           key: const ValueKey('backfillGeohash'),
           title: Text(tr(context, 'adminBackfillGeohash')),
           subtitle: Text(tr(context, 'adminBackfillGeohashSub')),

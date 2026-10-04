@@ -17,6 +17,7 @@ import 'load_strings.dart';
 import 'match_strings.dart';
 import 'offer_strings.dart';
 import 'offers_strings.dart';
+import 'ops_strings.dart';
 import 'payment_strings.dart';
 import 'pricing_strings.dart';
 import 'profile_strings.dart';
@@ -46,6 +47,7 @@ const List<Map<String, List<String>>> stringTables = [
   reminderStrings,
   profileFieldStrings,
   badgeStrings,
+  opsStrings,
   adminStrings,
   matchStrings,
   settingsStrings,

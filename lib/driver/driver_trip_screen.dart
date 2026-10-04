@@ -8,6 +8,7 @@ import '../core/l10n/l10n.dart';
 import '../core/widgets/rating_widgets.dart';
 import '../core/widgets/booking_widgets.dart';
 import '../core/widgets/location_widgets.dart';
+import '../core/widgets/detention_card.dart';
 import '../core/services/pricing_service.dart';
 import 'trip_proof_dialogs.dart';
 import '../core/documents/trip_document_buttons.dart';
@@ -42,6 +43,8 @@ class DriverTripScreen extends StatelessWidget {
             const SizedBox(height: 14),
             LocationSharingCard(booking: booking),
           ],
+          const SizedBox(height: 14),
+          DetentionCard(booking: booking, isDriver: true),
           const SizedBox(height: 14),
           PaymentCard(booking: booking),
           const SizedBox(height: 14),

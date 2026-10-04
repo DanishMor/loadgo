@@ -11,6 +11,8 @@ import '../core/support/support_screens.dart';
 import '../core/widgets/common.dart';
 import '../core/widgets/live_stream.dart';
 import '../core/widgets/logistics_labels.dart';
+import '../core/services/fraud_case_service.dart';
+import 'admin_fraud_cases_screen.dart';
 import 'flagged_users_screen.dart';
 
 typedef Doc = QueryDocumentSnapshot<Map<String, dynamic>>;
@@ -419,12 +421,55 @@ class AdminReportsScreen extends StatelessWidget {
           title: Text('${r['reason'] ?? ''}: ${r['reportedId'] ?? ''}'),
           subtitle: Text([r['details'] ?? '', r['status'] ?? '', _ts(r['createdAt'])].where((e) => e.toString().isNotEmpty).join(' · ')),
           trailing: open
-              ? TextButton(
-                  key: ValueKey('resolveReport_${d.id}'),
-                  onPressed: () => _run(context, () => AdminConsoleService.resolveReport(d.id)),
-                  child: Text(tr(context, 'adminResolve')),
-                )
+              ? Row(mainAxisSize: MainAxisSize.min, children: [
+                  TextButton(
+                    key: ValueKey('openCase_${d.id}'),
+                    onPressed: () => _run(context, () async {
+                      final id = await FraudCaseService.open(
+                        userId: '${r['reportedId'] ?? ''}',
+                        summary: '${r['reason'] ?? 'report'}: ${r['details'] ?? ''}'.trim(),
+                        reportId: d.id,
+                      );
+                      if (context.mounted) Navigator.of(context).push(MaterialPageRoute(builder: (_) => FraudCaseScreen(caseId: id)));
+                    }),
+                    child: Text(tr(context, 'openCase')),
+                  ),
+                  TextButton(
+                    key: ValueKey('resolveReport_${d.id}'),
+                    onPressed: () => _run(context, () => AdminConsoleService.resolveReport(d.id)),
+                    child: Text(tr(context, 'adminResolve')),
+                  ),
+                ])
               : null,
+        );
+      },
+    );
+  }
+}
+
+// ---- audit log ----
+
+/// Latest audit events: who did what to which record (read only).
+class AdminAuditScreen extends StatelessWidget {
+  const AdminAuditScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return _LiveList(
+      titleKey: 'adminAudit',
+      stream: AdminConsoleService.watchAudit,
+      tile: (context, d) {
+        final e = d.data();
+        final data = (e['data'] as Map?) ?? const {};
+        final detail = [
+          if (e['targetId'] != null) '${e['targetId']}',
+          for (final x in data.entries) '${x.key}: ${x.value is List ? (x.value as List).join(', ') : x.value}',
+        ].join(' · ');
+        return ListTile(
+          key: ValueKey('audit_${d.id}'),
+          title: Text('${e['type']} · ${e['actorId']}'),
+          subtitle: Text([detail, _ts(e['createdAt'])].where((x) => x.isNotEmpty).join('\n')),
+          isThreeLine: detail.isNotEmpty,
         );
       },
     );

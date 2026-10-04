@@ -38,6 +38,9 @@ class Booking {
   final List<String> extraDrops;
   final String pickupSlot;
 
+  /// Time the driver waited at loading / unloading (record only).
+  final Detention detention;
+
   /// Copied from the load: [BookingType], helpers (0-4), rental hours.
   final String bookingType;
   final int helpers;
@@ -126,6 +129,7 @@ class Booking {
     this.bookingType = BookingType.freight,
     this.helpers = 0,
     this.rentalHours,
+    this.detention = const Detention(),
     this.containerNumber = '',
     this.sealNumber = '',
   });
@@ -187,6 +191,7 @@ class Booking {
       bookingType: d['bookingType'] as String? ?? BookingType.freight,
       helpers: (d['helpers'] as num?)?.toInt() ?? 0,
       rentalHours: (d['rentalHours'] as num?)?.toInt(),
+      detention: Detention.fromMap(d['detention']),
       containerNumber: d['containerNumber'] as String? ?? '',
       sealNumber: d['sealNumber'] as String? ?? '',
       cancellation: d['cancellation'] is Map ? BookingCancellation.fromMap(Map<String, dynamic>.from(d['cancellation'] as Map)) : null,
@@ -263,4 +268,50 @@ class BookingCancellation {
 
   factory BookingCancellation.fromMap(Map<String, dynamic> m) =>
       BookingCancellation(by: m['by'] as String? ?? '', chargePaise: (m['chargePaise'] as num?)?.round() ?? 0);
+}
+
+/// Waiting at the loading and unloading points: whole minutes done and, while
+/// the driver is waiting right now, when that started. Record only: the
+/// charge is worked out from `config/pricing` and shown, nothing is billed.
+class Detention {
+  final int loadingMinutes;
+  final int unloadingMinutes;
+  final DateTime? loadingStartedAt;
+  final DateTime? unloadingStartedAt;
+
+  const Detention({this.loadingMinutes = 0, this.unloadingMinutes = 0, this.loadingStartedAt, this.unloadingStartedAt});
+
+  /// Most minutes one stage can hold (a day).
+  static const maxMinutes = 1440;
+
+  static const loadingStage = 'loading';
+  static const unloadingStage = 'unloading';
+
+  bool get isEmpty => totalMinutes == 0 && loadingStartedAt == null && unloadingStartedAt == null;
+
+  int get totalMinutes => loadingMinutes + unloadingMinutes;
+
+  DateTime? startedAt(String stage) => stage == loadingStage ? loadingStartedAt : unloadingStartedAt;
+
+  int minutes(String stage) => stage == loadingStage ? loadingMinutes : unloadingMinutes;
+
+  /// Minutes including a stage still running at [now] (started hours counted
+  /// as whole minutes, rounded up).
+  int minutesAt(DateTime now) {
+    var total = totalMinutes;
+    for (final s in [loadingStartedAt, unloadingStartedAt]) {
+      if (s != null) total += (now.difference(s).inSeconds / 60).ceil().clamp(0, maxMinutes);
+    }
+    return total;
+  }
+
+  factory Detention.fromMap(Object? raw) {
+    final m = raw is Map ? raw : const {};
+    return Detention(
+      loadingMinutes: (m['loadingMinutes'] as num?)?.toInt() ?? 0,
+      unloadingMinutes: (m['unloadingMinutes'] as num?)?.toInt() ?? 0,
+      loadingStartedAt: (m['loadingStartedAt'] as Timestamp?)?.toDate(),
+      unloadingStartedAt: (m['unloadingStartedAt'] as Timestamp?)?.toDate(),
+    );
+  }
 }

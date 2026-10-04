@@ -4,6 +4,7 @@ import '../core/constants/logistics.dart';
 import '../core/l10n/l10n.dart';
 import '../core/widgets/rating_widgets.dart';
 import '../core/widgets/tip_card.dart';
+import '../core/widgets/detention_card.dart';
 import '../core/widgets/booking_widgets.dart';
 import '../core/widgets/location_widgets.dart';
 import 'trip_otp_card.dart';
@@ -39,6 +40,8 @@ class BookingTrackingScreen extends StatelessWidget {
             const SizedBox(height: 8),
             DriverLocationCard(booking: booking),
           ],
+          const SizedBox(height: 8),
+          DetentionCard(booking: booking, isDriver: false),
           const SizedBox(height: 8),
           PaymentCard(booking: booking),
           const SizedBox(height: 8),

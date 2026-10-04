@@ -104,7 +104,7 @@ void main() {
     await settle(tester);
     expect(find.text('₹ 18,000'), findsWidgets);
     expect(find.text('-₹ 900'), findsWidgets);
-    expect(find.text('₹ 17,100'), findsOneWidget);
+    expect(find.text('₹ 17,100'), findsNWidgets(2));
   });
 
   testWidgets('documents center lists invoice, LR and POD for delivered trips', (tester) async {

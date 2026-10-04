@@ -7,8 +7,10 @@ import '../core/widgets/common.dart';
 import '../core/widgets/logistics_labels.dart';
 import 'admin_config_screen.dart';
 import 'admin_driver_rewards_screen.dart';
+import 'admin_fraud_cases_screen.dart';
 import 'admin_lists.dart';
 import 'admin_offers_screen.dart';
+import 'admin_payouts_screen.dart';
 import 'admin_verification_screen.dart';
 import 'flagged_users_screen.dart';
 
@@ -29,9 +31,12 @@ class AdminDashboardScreen extends StatelessWidget {
       ('adminTickets', 'adminTickets', Icons.support_agent_rounded, const AdminTicketsScreen()),
       ('adminSos', 'adminSos', Icons.sos_rounded, const AdminSosScreen()),
       ('adminReports', 'adminReports', Icons.flag_outlined, const AdminReportsScreen()),
+      ('adminFraudCases', 'adminFraudCases', Icons.gavel_rounded, const AdminFraudCasesScreen()),
       ('flaggedUsers', 'flaggedUsers', Icons.warning_amber_rounded, const FlaggedUsersScreen()),
       ('adminDeletionRequests', 'adminDeletionRequests', Icons.person_remove_outlined, const AdminDeletionRequestsScreen()),
+      ('adminAudit', 'adminAudit', Icons.history_rounded, const AdminAuditScreen()),
       ('adminDriverRewards', 'adminDriverRewards', Icons.emoji_events_outlined, const AdminDriverRewardsScreen()),
+      ('adminPayouts', 'adminPayouts', Icons.account_balance_outlined, const AdminPayoutsScreen()),
       ('adminOffers', 'adminOffers', Icons.local_offer_outlined, const AdminOffersScreen()),
       ('adminConfig', 'adminConfig', Icons.tune_rounded, const AdminConfigScreen()),
     ];

@@ -12,7 +12,8 @@ class AuditType {
   static const cancel = 'cancel';
   static const riskChange = 'risk_change';
   static const reassign = 'reassign';
-  static const all = [verification, accept, statusChange, cancel, riskChange, reassign];
+  static const configChange = 'config_change';
+  static const all = [verification, accept, statusChange, cancel, riskChange, reassign, configChange];
 }
 
 class AuditService {

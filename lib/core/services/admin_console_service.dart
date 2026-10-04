@@ -201,8 +201,25 @@ class AdminConsoleService {
   static Future<Map<String, dynamic>?> readConfig(String docId) async =>
       (await _db.collection('config').doc(docId).get()).data();
 
-  static Future<void> writeConfig(String docId, Map<String, dynamic> data) =>
-      _db.collection('config').doc(docId).set({...data, 'updatedAt': FieldValue.serverTimestamp()});
+  /// Saves a config document and records who changed which top-level keys
+  /// in the audit log (same batch), so pricing and rule edits are traceable.
+  static Future<void> writeConfig(String docId, Map<String, dynamic> data) async {
+    final ref = _db.collection('config').doc(docId);
+    final before = (await ref.get()).data() ?? const <String, dynamic>{};
+    final changed = <String>{
+      for (final k in {...before.keys, ...data.keys})
+        if (k != 'updatedAt' && '${before[k]}' != '${data[k]}') k,
+    }.toList()
+      ..sort();
+    final batch = _db.batch();
+    batch.set(ref, {...data, 'updatedAt': FieldValue.serverTimestamp()});
+    AuditService.inBatch(batch, AuditType.configChange, targetId: docId, data: {'doc': docId, 'changedKeys': changed});
+    await batch.commit();
+  }
+
+  /// The latest audit events (admins only), newest first.
+  static Stream<List<QueryDocumentSnapshot<Map<String, dynamic>>>> watchAudit({int limit = 100}) =>
+      _db.collection('audit_events').orderBy('createdAt', descending: true).limit(limit).snapshots().map((s) => s.docs);
 
   // ---- analytics ----
 

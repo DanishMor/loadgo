@@ -755,6 +755,86 @@ describe('vehicle profile, goods flags and review record', () => {
   });
 });
 
+describe('payouts, fraud cases, detention and config audit', () => {
+  test('payouts: a driver asks once for a valid amount; only admins answer', async () => {
+    const req = (over = {}) => ({ driverId: 'driver1', amountPaise: 5000, status: 'requested', createdAt: serverTimestamp(), ...over });
+    await assertSucceeds(addDoc(collection(as('driver1'), 'payouts'), req()));
+    await assertFails(addDoc(collection(as('driver1'), 'payouts'), req({ amountPaise: 50 })));
+    await assertFails(addDoc(collection(as('driver1'), 'payouts'), req({ amountPaise: 100000001 })));
+    await assertFails(addDoc(collection(as('driver1'), 'payouts'), req({ amountPaise: 99.5 })));
+    await assertFails(addDoc(collection(as('driver1'), 'payouts'), req({ status: 'paid' })));
+    await assertFails(addDoc(collection(as('driver2'), 'payouts'), req()));
+    await seed((db) => setDoc(doc(db, 'users', 'driver3'), { role: 'driver', selectedRole: 'driver', riskTier: 'suspended' }));
+    await assertFails(addDoc(collection(as('driver3'), 'payouts'), req({ driverId: 'driver3' })));
+    await seed((db) => setDoc(doc(db, 'payouts', 'P1'), { driverId: 'driver1', amountPaise: 5000, status: 'requested' }));
+    await assertFails(updateDoc(doc(as('driver1'), 'payouts', 'P1'), { status: 'paid' }));
+    await assertFails(updateDoc(doc(asAdmin(), 'payouts', 'P1'), { status: 'paid', amountPaise: 1, handledBy: 'admin1', handledAt: serverTimestamp() }));
+    await assertFails(updateDoc(doc(asAdmin(), 'payouts', 'P1'), { status: 'paid', handledBy: 'someone', handledAt: serverTimestamp() }));
+    await assertSucceeds(updateDoc(doc(asAdmin(), 'payouts', 'P1'), { status: 'paid', handledBy: 'admin1', handledAt: serverTimestamp() }));
+    await assertFails(updateDoc(doc(asAdmin(), 'payouts', 'P1'), { status: 'rejected', handledBy: 'admin1', handledAt: serverTimestamp() }));
+    await assertSucceeds(getDoc(doc(as('driver1'), 'payouts', 'P1')));
+    await assertFails(getDoc(doc(as('driver2'), 'payouts', 'P1')));
+  });
+
+  test('fraud cases: admin only, notes append-only, closing needs an outcome', async () => {
+    const c = (over = {}) => ({ userId: 'u1', summary: 'Fake papers', status: 'open', reportIds: [], createdBy: 'admin1', createdAt: serverTimestamp(), updatedAt: serverTimestamp(), ...over });
+    await assertFails(setDoc(doc(as('driver1'), 'fraud_cases', 'C1'), c({ createdBy: 'driver1' })));
+    await assertFails(setDoc(doc(asAdmin(), 'fraud_cases', 'C1'), c({ summary: 'x' })));
+    await assertFails(setDoc(doc(asAdmin(), 'fraud_cases', 'C1'), c({ createdBy: 'other' })));
+    await assertSucceeds(setDoc(doc(asAdmin(), 'fraud_cases', 'C1'), c()));
+    await assertFails(getDoc(doc(as('driver1'), 'fraud_cases', 'C1')));
+    await assertSucceeds(updateDoc(doc(asAdmin(), 'fraud_cases', 'C1'), { status: 'investigating', updatedAt: serverTimestamp() }));
+    await assertFails(updateDoc(doc(asAdmin(), 'fraud_cases', 'C1'), { status: 'resolved', updatedAt: serverTimestamp() }));
+    await assertFails(updateDoc(doc(asAdmin(), 'fraud_cases', 'C1'), { status: 'resolved', outcome: 'jailed', updatedAt: serverTimestamp() }));
+    await assertFails(updateDoc(doc(asAdmin(), 'fraud_cases', 'C1'), { userId: 'u2', updatedAt: serverTimestamp() }));
+    await assertSucceeds(updateDoc(doc(asAdmin(), 'fraud_cases', 'C1'), { status: 'resolved', outcome: 'warned', resolvedBy: 'admin1', resolvedAt: serverTimestamp(), updatedAt: serverTimestamp() }));
+    const note = (over = {}) => ({ by: 'admin1', text: 'Checked', createdAt: serverTimestamp(), ...over });
+    await assertSucceeds(addDoc(collection(asAdmin(), 'fraud_cases', 'C1', 'notes'), note()));
+    await assertFails(addDoc(collection(asAdmin(), 'fraud_cases', 'C1', 'notes'), note({ by: 'x' })));
+    await assertFails(addDoc(collection(asAdmin(), 'fraud_cases', 'C1', 'notes'), note({ text: '' })));
+    await assertFails(addDoc(collection(as('driver1'), 'fraud_cases', 'C1', 'notes'), note({ by: 'driver1' })));
+  });
+
+  test('config changes are audited by admins only', async () => {
+    const ev = (uid) => ({ type: 'config_change', actorId: uid, targetId: 'pricing', data: { doc: 'pricing', changedKeys: ['gstPercent'] }, createdAt: serverTimestamp() });
+    await assertSucceeds(addDoc(collection(asAdmin(), 'audit_events'), ev('admin1')));
+    await assertFails(addDoc(collection(as('driver1'), 'audit_events'), ev('driver1')));
+  });
+
+  describe('detention', () => {
+    const seedStage = (status, detention) => seed((db) => setDoc(doc(db, 'bookings', 'D1'), { ...bookingFor('L1'), status, timeline: {}, ...(detention ? { detention } : {}) }));
+    const set = (uid, status, detention) => updateDoc(doc(as(uid), 'bookings', 'D1'), { detention, updatedAt: serverTimestamp() });
+
+    test('start the clock while loading, stop it with the minutes waited', async () => {
+      await seedStage('loading');
+      await assertSucceeds(set('driver1', 'loading', { loadingStartedAt: serverTimestamp() }));
+      await seedStage('loading', { loadingStartedAt: Timestamp.fromMillis(Date.now() - 20 * 60000) });
+      await assertSucceeds(set('driver1', 'loading', { loadingMinutes: 21 }));
+    });
+
+    test('refused: wrong stage, other people, too many minutes, shrinking, forged start', async () => {
+      await seedStage('in_transit');
+      await assertFails(set('driver1', 'in_transit', { loadingStartedAt: serverTimestamp() }));
+      await seedStage('loading');
+      await assertFails(set('customer1', 'loading', { loadingStartedAt: serverTimestamp() }));
+      await assertFails(set('driver2', 'loading', { loadingStartedAt: serverTimestamp() }));
+      await assertFails(set('driver1', 'loading', { loadingMinutes: 30 }), 'minutes without a running clock');
+      await assertFails(set('driver1', 'loading', { loadingStartedAt: Timestamp.fromMillis(Date.now() - 3600000) }), 'start must be now');
+      await assertFails(set('driver1', 'loading', { loadingStartedAt: serverTimestamp(), extra: 1 }));
+      await seedStage('loading', { loadingStartedAt: Timestamp.fromMillis(Date.now() - 20 * 60000) });
+      await assertFails(set('driver1', 'loading', { loadingMinutes: 90 }), 'more than the clock ran');
+      await assertFails(set('driver1', 'loading', { loadingMinutes: 5000 }));
+      await seedStage('loading', { loadingMinutes: 40 });
+      await assertFails(set('driver1', 'loading', { loadingMinutes: 10 }), 'minutes cannot shrink');
+    });
+
+    test('unloading works the same and does not disturb loading minutes', async () => {
+      await seedStage('unloading', { loadingMinutes: 40 });
+      await assertSucceeds(set('driver1', 'unloading', { loadingMinutes: 40, unloadingStartedAt: serverTimestamp() }));
+    });
+  });
+});
+
 describe('admin verification', () => {
   const seedDriver = () => seed((db) => setDoc(doc(db, 'users', 'd1'), { driverName: 'R', verified: false, verificationStatus: 'pending' }));
 
