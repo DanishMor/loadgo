@@ -1,4 +1,6 @@
+import 'core/services/auth_helpers.dart';
 import 'core/services/connectivity_service.dart';
+import 'core/services/language_store.dart';
 import 'core/services/push_service.dart';
 import 'core/services/user_service.dart';
 import 'features/shared/live_stream.dart' show OfflineBanner;
@@ -16,8 +18,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'firebase_options.dart';
+import 'l10n/strings.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -29,6 +33,7 @@ Future<void> main() async {
   };
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await ConnectivityService.start();
+  applyLanguageName(await LanguageStore.loadLocal());
   // Register for push whenever a user is signed in (also after app restarts).
   FirebaseAuth.instance.authStateChanges().listen((user) {
     if (user != null) PushService.register();
@@ -58,6 +63,31 @@ enum AppLanguage {
 final ValueNotifier<AppLanguage> languageNotifier = ValueNotifier<AppLanguage>(
   AppLanguage.english,
 );
+
+/// Switches the UI to the language with enum [name]; unknown names are ignored.
+void applyLanguageName(String? name) {
+  for (final l in AppLanguage.values) {
+    if (l.name == name) languageNotifier.value = l;
+  }
+}
+
+/// User picked a language: apply it and remember it on device + profile.
+Future<void> setAppLanguage(AppLanguage lang) {
+  languageNotifier.value = lang;
+  return LanguageStore.save(lang.name);
+}
+
+/// After sign-in, prefer the language saved on the profile; otherwise store
+/// the one chosen on this device.
+Future<void> syncLanguageAfterLogin() async {
+  final remote = await LanguageStore.loadRemote();
+  if (remote != null) {
+    applyLanguageName(remote);
+    await LanguageStore.save(languageNotifier.value.name);
+  } else {
+    await LanguageStore.save(languageNotifier.value.name);
+  }
+}
 
 class LanguageInfo {
   final String nativeName;
@@ -94,7 +124,18 @@ class LanguageScope extends InheritedNotifier<ValueNotifier<AppLanguage>> {
 }
 
 class T {
-  static const Map<String, Map<AppLanguage, String>> data = {
+  /// Every UI string: the original table plus the per-feature tables in
+  /// lib/l10n (12-item lists in [AppLanguage] order).
+  static final Map<String, Map<AppLanguage, String>> data = {
+    ..._core,
+    for (final e in extraStrings.entries)
+      e.key: {
+        for (var i = 0; i < AppLanguage.values.length && i < e.value.length; i++)
+          AppLanguage.values[i]: e.value[i],
+      },
+  };
+
+  static const Map<String, Map<AppLanguage, String>> _core = {
     'tagline': {
       AppLanguage.english: 'Truck & Cargo Booking',
       AppLanguage.hindi: 'ट्रक और कार्गो बुकिंग',
@@ -3639,6 +3680,13 @@ class T {
 String tr(BuildContext context, String key) =>
     T.get(key, LanguageScope.of(context));
 
+/// [tr] with `{name}` placeholders filled from [args].
+String trf(BuildContext context, String key, Map<String, Object> args) {
+  var s = tr(context, key);
+  args.forEach((k, v) => s = s.replaceAll('{$k}', '$v'));
+  return s;
+}
+
 String trLanguageName(AppLanguage language) =>
     languageInfo[language]?.nativeName ?? 'English';
 
@@ -3801,7 +3849,7 @@ void showLanguageSelector(BuildContext context) {
                               ? const Icon(Icons.check_circle_rounded, color: Color(0xFF1565C0))
                               : null,
                           onTap: () {
-                            languageNotifier.value = lang;
+                            setAppLanguage(lang);
                             Navigator.of(sheetContext).pop();
                           },
                         );
@@ -4146,13 +4194,21 @@ class _CustomerLoginScreenState extends State<CustomerLoginScreen> {
   Future<void> _continueWithPhone() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final phoneNumber = '+91${_phoneController.text.trim()}';
+    final phone = _phoneController.text.trim();
     setState(() => _isLoading = true);
 
-    try {
-      await FirebaseAuth.instance.verifyPhoneNumber(
-        phoneNumber: phoneNumber,
-        verificationCompleted: (PhoneAuthCredential credential) async {
+    void fail(String key) {
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(tr(context, key)), behavior: SnackBarBehavior.floating),
+      );
+    }
+
+    await sendPhoneOtp(
+      phone,
+      OtpCallbacks(
+        onAutoVerified: (credential) async {
           try {
             await FirebaseAuth.instance.signInWithCredential(credential);
             if (!mounted) return;
@@ -4163,6 +4219,7 @@ class _CustomerLoginScreenState extends State<CustomerLoginScreen> {
             );
 
             await UserService.markRoleSelected('customer');
+            await syncLanguageAfterLogin();
             final next = await resolveCustomerStart();
 
             if (!mounted) return;
@@ -4171,48 +4228,27 @@ class _CustomerLoginScreenState extends State<CustomerLoginScreen> {
               (route) => false,
             );
           } on FirebaseAuthException catch (e) {
-            if (!mounted) return;
-            setState(() => _isLoading = false);
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(e.message ?? tr(context, 'otpFailed')), behavior: SnackBarBehavior.floating),
-            );
+            fail(authErrorKey(e.code));
           } catch (_) {
-            if (!mounted) return;
-            setState(() => _isLoading = false);
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(tr(context, 'otpFailed')), behavior: SnackBarBehavior.floating),
-            );
+            fail('otpFailed');
           }
         },
-        verificationFailed: (FirebaseAuthException e) {
-          if (!mounted) return;
-          setState(() => _isLoading = false);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(e.message ?? tr(context, 'otpFailed')), behavior: SnackBarBehavior.floating),
-          );
-        },
-        codeSent: (String verificationId, int? resendToken) {
+        onError: fail,
+        onCodeSent: (verificationId, resendToken) {
           if (!mounted) return;
           setState(() => _isLoading = false);
           Navigator.of(context).push(
             MaterialPageRoute(
               builder: (_) => OtpVerificationScreen(
-                phoneNumber: _phoneController.text.trim(),
+                phoneNumber: phone,
                 verificationId: verificationId,
+                resendToken: resendToken,
               ),
             ),
           );
         },
-        codeAutoRetrievalTimeout: (String verificationId) {},
-        timeout: const Duration(seconds: 60),
-      );
-    } catch (e) {
-      if (!mounted) return;
-      setState(() => _isLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(tr(context, 'otpFailed')), behavior: SnackBarBehavior.floating),
-      );
-    }
+      ),
+    );
   }
 
   @override
@@ -4273,6 +4309,7 @@ class _CustomerLoginScreenState extends State<CustomerLoginScreen> {
                   controller: _phoneController,
                   keyboardType: TextInputType.phone,
                   maxLength: 10,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                   decoration: InputDecoration(
                     counterText: '',
                     prefixIcon: const Padding(
@@ -4381,12 +4418,14 @@ class _CustomerLoginScreenState extends State<CustomerLoginScreen> {
 class OtpVerificationScreen extends StatefulWidget {
   final String phoneNumber;
   final String verificationId;
+  final int? resendToken;
   final bool isDriver;
 
   const OtpVerificationScreen({
     super.key,
     required this.phoneNumber,
     required this.verificationId,
+    this.resendToken,
     this.isDriver = false,
   });
 
@@ -4395,13 +4434,68 @@ class OtpVerificationScreen extends StatefulWidget {
 }
 
 class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
+  static const resendSeconds = 60;
+
   final _otpController = TextEditingController();
   bool _isLoading = false;
+  late String _verificationId = widget.verificationId;
+  late int? _resendToken = widget.resendToken;
+  int _secondsLeft = resendSeconds;
+  bool _resending = false;
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _startTimer();
+  }
+
+  void _startTimer() {
+    _timer?.cancel();
+    setState(() => _secondsLeft = resendSeconds);
+    _timer = Timer.periodic(const Duration(seconds: 1), (t) {
+      if (!mounted) return;
+      setState(() => _secondsLeft--);
+      if (_secondsLeft <= 0) t.cancel();
+    });
+  }
 
   @override
   void dispose() {
+    _timer?.cancel();
     _otpController.dispose();
     super.dispose();
+  }
+
+  void _snack(String key) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(tr(context, key)), behavior: SnackBarBehavior.floating),
+    );
+  }
+
+  Future<void> _resend() async {
+    setState(() => _resending = true);
+    await sendPhoneOtp(
+      widget.phoneNumber,
+      OtpCallbacks(
+        onCodeSent: (verificationId, resendToken) {
+          if (!mounted) return;
+          _verificationId = verificationId;
+          _resendToken = resendToken ?? _resendToken;
+          setState(() => _resending = false);
+          _startTimer();
+          _snack('otpResent');
+        },
+        onError: (key) {
+          if (!mounted) return;
+          setState(() => _resending = false);
+          _snack(key);
+        },
+        onAutoVerified: (credential) => _signIn(credential),
+      ),
+      resendToken: _resendToken,
+    );
   }
 
   Future<void> _verifyOtp() async {
@@ -4414,16 +4508,16 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
       return;
     }
 
+    await _signIn(PhoneAuthProvider.credential(verificationId: _verificationId, smsCode: otp));
+  }
+
+  Future<void> _signIn(PhoneAuthCredential credential) async {
     setState(() => _isLoading = true);
 
     try {
-      final credential = PhoneAuthProvider.credential(
-        verificationId: widget.verificationId,
-        smsCode: otp,
-      );
-
       await FirebaseAuth.instance.signInWithCredential(credential);
       if (!mounted) return;
+      await syncLanguageAfterLogin();
 
       Widget next;
       if (widget.isDriver) {
@@ -4445,16 +4539,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
       if (!mounted) return;
       setState(() => _isLoading = false);
 
-      String message = tr(context, 'otpFailed');
-      if (e.code == 'invalid-verification-code') {
-        message = tr(context, 'invalidOtp');
-      } else if (e.code == 'session-expired') {
-        message = tr(context, 'otpExpired');
-      }
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(message), behavior: SnackBarBehavior.floating),
-      );
+      _snack(authErrorKey(e.code));
     } catch (_) {
       if (!mounted) return;
       setState(() => _isLoading = false);
@@ -4498,7 +4583,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
               ),
               const SizedBox(height: 10),
               Text(
-                '${tr(context, 'otpText')}\n+91 ${widget.phoneNumber}',
+                '${tr(context, 'otpText')}\n${maskPhone('+91${widget.phoneNumber}')}',
                 textAlign: TextAlign.center,
                 style: const TextStyle(fontSize: 15, height: 1.5, color: Color(0xFF667085)),
               ),
@@ -4507,6 +4592,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                 controller: _otpController,
                 keyboardType: TextInputType.number,
                 maxLength: 6,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                 textAlign: TextAlign.center,
                 style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w700, letterSpacing: 10),
                 decoration: const InputDecoration(counterText: '', hintText: '••••••'),
@@ -4541,14 +4627,14 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
               ),
               const SizedBox(height: 20),
               TextButton(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(tr(context, 'otpResendSoon')), behavior: SnackBarBehavior.floating),
-                  );
-                },
+                key: const Key('resendOtp'),
+                onPressed: _secondsLeft > 0 || _resending ? null : _resend,
                 child: Text(
-                  tr(context, 'resendOtp'),
-                  style: const TextStyle(color: Color(0xFF1565C0), fontWeight: FontWeight.w700),
+                  _secondsLeft > 0 ? trf(context, 'resendIn', {'s': _secondsLeft}) : tr(context, 'resendOtp'),
+                  style: TextStyle(
+                    color: _secondsLeft > 0 ? const Color(0xFF98A2B3) : const Color(0xFF1565C0),
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
             ],

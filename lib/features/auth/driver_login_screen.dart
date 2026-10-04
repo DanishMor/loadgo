@@ -1,6 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
+import '../../core/services/auth_helpers.dart';
 import '../../core/services/user_service.dart';
 import '../../main.dart';
 
@@ -25,17 +27,26 @@ class _DriverLoginScreenState extends State<DriverLoginScreen> {
   Future<void> _continueWithPhone() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final phoneNumber = '+91${_phoneController.text.trim()}';
+    final phone = _phoneController.text.trim();
     setState(() => _isLoading = true);
 
-    try {
-      await FirebaseAuth.instance.verifyPhoneNumber(
-        phoneNumber: phoneNumber,
-        verificationCompleted: (PhoneAuthCredential credential) async {
+    void fail(String key) {
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(tr(context, key)), behavior: SnackBarBehavior.floating),
+      );
+    }
+
+    await sendPhoneOtp(
+      phone,
+      OtpCallbacks(
+        onAutoVerified: (credential) async {
           try {
             await FirebaseAuth.instance.signInWithCredential(credential);
             if (!mounted) return;
             await UserService.markRoleSelected('driver');
+            await syncLanguageAfterLogin();
             final next = await resolveDriverStart();
             if (!mounted) return;
             setState(() => _isLoading = false);
@@ -43,44 +54,29 @@ class _DriverLoginScreenState extends State<DriverLoginScreen> {
               MaterialPageRoute(builder: (_) => next),
               (route) => false,
             );
+          } on FirebaseAuthException catch (e) {
+            fail(authErrorKey(e.code));
           } catch (_) {
-            if (!mounted) return;
-            setState(() => _isLoading = false);
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(tr(context, 'otpFailed')), behavior: SnackBarBehavior.floating),
-            );
+            fail('otpFailed');
           }
         },
-        verificationFailed: (FirebaseAuthException e) {
-          if (!mounted) return;
-          setState(() => _isLoading = false);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(e.message ?? tr(context, 'otpFailed')), behavior: SnackBarBehavior.floating),
-          );
-        },
-        codeSent: (String verificationId, int? resendToken) {
+        onError: fail,
+        onCodeSent: (verificationId, resendToken) {
           if (!mounted) return;
           setState(() => _isLoading = false);
           Navigator.of(context).push(
             MaterialPageRoute(
               builder: (_) => OtpVerificationScreen(
-                phoneNumber: _phoneController.text.trim(),
+                phoneNumber: phone,
                 verificationId: verificationId,
+                resendToken: resendToken,
                 isDriver: true,
               ),
             ),
           );
         },
-        codeAutoRetrievalTimeout: (String verificationId) {},
-        timeout: const Duration(seconds: 60),
-      );
-    } catch (_) {
-      if (!mounted) return;
-      setState(() => _isLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(tr(context, 'otpFailed')), behavior: SnackBarBehavior.floating),
-      );
-    }
+      ),
+    );
   }
 
   @override
@@ -127,6 +123,7 @@ class _DriverLoginScreenState extends State<DriverLoginScreen> {
                   controller: _phoneController,
                   keyboardType: TextInputType.phone,
                   maxLength: 10,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                   decoration: InputDecoration(
                     counterText: '',
                     prefixIcon: const Padding(

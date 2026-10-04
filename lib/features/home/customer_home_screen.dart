@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import '../../core/services/auth_helpers.dart';
 import '../../core/services/booking_service.dart';
 import '../../main.dart';
 import '../bookings/booking_tracking_screen.dart';
@@ -98,7 +99,7 @@ class _CustomerHomeContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
     final phone = user?.phoneNumber ?? '';
-    final displayPhone = phone.isNotEmpty ? phone : tr(context, 'customer');
+    final displayPhone = phone.isNotEmpty ? maskPhone(phone) : tr(context, 'customer');
 
     return SafeArea(
       child: SingleChildScrollView(

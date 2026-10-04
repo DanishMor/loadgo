@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/models/rating.dart';
+import '../../core/services/auth_helpers.dart';
 import '../../core/services/backend.dart';
 import '../../core/services/rating_service.dart';
 import '../../core/services/user_service.dart';
@@ -113,7 +114,7 @@ class _ProfileViewState extends State<ProfileView> {
               AppCard(
                 child: Column(
                   children: [
-                    _detail(Icons.phone_outlined, tr(context, 'phone'), data['phone'] as String?),
+                    _detail(Icons.phone_outlined, tr(context, 'phone'), maskPhone(data['phone'] as String?)),
                     _detail(Icons.email_outlined, tr(context, 'email'), data['email'] as String?),
                     _detail(Icons.business_outlined, tr(context, 'company'), data['companyName'] as String?),
                     ListTile(

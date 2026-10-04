@@ -108,7 +108,7 @@ void main() {
     await tester.pumpWidget(const MaterialApp(home: Scaffold(body: ProfileView(isDriver: true))));
     await settle(tester);
     expect(find.text('Ramesh'), findsOneWidget);
-    expect(find.text('+919800000000'), findsOneWidget);
+    expect(find.text('+91 98•••••000'), findsOneWidget);
     expect(find.text('4.5 (2 ratings)'), findsOneWidget);
   });
 }
