@@ -379,7 +379,7 @@ service cloud.firestore {
     }
 
     // Shipper edits/cancels a load that nobody has accepted yet.
-    function shipperEdit(loadId) {
+    function shipperEdit() {
       return resource.data.shipperId == request.auth.uid
           && resource.data.status == 'open'
           && request.resource.data.status in ['open', 'closed']
@@ -408,7 +408,7 @@ service cloud.firestore {
     }
 
     // Driver delivers: matched -> closed, together with booking -> delivered.
-    function driverClose(loadId) {
+    function driverClose() {
       return resource.data.status == 'matched'
           && resource.data.driverId == request.auth.uid
           && request.resource.data.status == 'closed'
@@ -418,7 +418,7 @@ service cloud.firestore {
 
     // Driver backs out before pickup: matched -> open, clearing the match,
     // together with booking -> cancelled.
-    function driverReopen(loadId) {
+    function driverReopen() {
       return resource.data.status == 'matched'
           && resource.data.driverId == request.auth.uid
           && request.resource.data.status == 'open'
@@ -451,7 +451,7 @@ service cloud.firestore {
           && !request.resource.data.keys().hasAny(['driverId', 'bookingId'])
           && validLoad(request.resource.data);
       allow update: if signedIn()
-          && (shipperEdit(loadId) || driverMatch(loadId) || driverClose(loadId) || driverReopen(loadId) || adminReassignLoad());
+          && (shipperEdit() || driverMatch(loadId) || driverClose() || driverReopen() || adminReassignLoad());
       allow delete: if signedIn()
           && resource.data.shipperId == request.auth.uid
           && resource.data.status == 'open';
