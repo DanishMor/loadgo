@@ -23,7 +23,8 @@ Future<void> settle(WidgetTester tester) async {
 Future<void> tapButton(WidgetTester tester, String label) async {
   await tester.pump(const Duration(seconds: 5));
   await tester.pumpAndSettle();
-  await tester.ensureVisible(find.text(label));
+  // The trip screen is a lazy list; scroll until the button is built.
+  await tester.scrollUntilVisible(find.text(label), 200, scrollable: find.byType(Scrollable).first);
   await tester.tap(find.text(label));
 }
 
@@ -57,9 +58,14 @@ void main() {
   }
 
   test('BookingStatus.next follows the lifecycle', () {
-    expect(BookingStatus.next(BookingStatus.accepted), BookingStatus.pickedUp);
+    expect(BookingStatus.next(BookingStatus.accepted), BookingStatus.driverArriving);
+    expect(BookingStatus.next(BookingStatus.driverArriving), BookingStatus.loading);
+    expect(BookingStatus.next(BookingStatus.loading), BookingStatus.pickedUp);
     expect(BookingStatus.next(BookingStatus.pickedUp), BookingStatus.inTransit);
-    expect(BookingStatus.next(BookingStatus.inTransit), BookingStatus.delivered);
+    expect(BookingStatus.next(BookingStatus.inTransit), BookingStatus.unloading);
+    expect(BookingStatus.next(BookingStatus.unloading), BookingStatus.delivered);
+    expect(BookingStatus.needsOtp(BookingStatus.pickedUp), isTrue);
+    expect(BookingStatus.needsOtp(BookingStatus.inTransit), isFalse);
     expect(BookingStatus.next(BookingStatus.delivered), isNull);
     expect(BookingStatus.next('bogus'), isNull);
   });
@@ -68,10 +74,20 @@ void main() {
     final id = await createBooking();
     final loadId = (await db.collection('bookings').doc(id).get())['loadId'] as String;
 
-    expect(await BookingService.advance(id), BookingStatus.pickedUp);
+    expect(await BookingService.advance(id), BookingStatus.driverArriving);
+    expect(await BookingService.advance(id), BookingStatus.loading);
+    await expectLater(BookingService.advance(id), throwsA(isA<OtpRequiredException>()), reason: 'pickup needs the OTP');
+    await expectLater(BookingService.advance(id, otp: '12'), throwsA(isA<OtpRequiredException>()));
+    expect(
+      await BookingService.advance(id, otp: '482913', pickup: const PickupProof(packages: 40, weightTons: 7.5, sealNumber: 'S9')),
+      BookingStatus.pickedUp,
+    );
     expect(await BookingService.advance(id), BookingStatus.inTransit);
+    expect(await BookingService.advance(id), BookingStatus.unloading);
     expect((await db.collection('loads').doc(loadId).get())['status'], LoadStatus.matched);
-    expect(await BookingService.advance(id), BookingStatus.delivered);
+    await expectLater(BookingService.advance(id, otp: '771204'), throwsA(isA<OtpRequiredException>()), reason: 'receiver missing');
+    expect(await BookingService.advance(id, otp: '771204', delivery: const DeliveryProof(receiverName: 'Anil')),
+        BookingStatus.delivered);
 
     final booking = Booking.fromDoc(await db.collection('bookings').doc(id).get());
     expect(booking.status, BookingStatus.delivered);
@@ -98,19 +114,35 @@ void main() {
     await tester.pumpWidget(MaterialApp(home: DriverTripScreen(bookingId: id)));
     await settle(tester);
     expect(find.text('Delhi → Mumbai'), findsOneWidget);
-    expect(find.text('Mark Picked Up'), findsOneWidget);
 
-    await tapButton(tester, 'Mark Picked Up');
+    await tapButton(tester, 'Start: going to pickup');
     await settle(tester);
-    expect(find.text('Start Trip (In Transit)'), findsOneWidget);
+    await tapButton(tester, 'Arrived: start loading');
+    await settle(tester);
+
+    // Pickup asks for the customer's OTP and the cargo details.
+    await tapButton(tester, 'Mark Picked Up');
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byKey(const ValueKey('otpField')), '482913');
+    await tester.enterText(find.byKey(const ValueKey('packagesField')), '40');
+    await tester.enterText(find.byKey(const ValueKey('weightField')), '7.5');
+    await tester.tap(find.byKey(const ValueKey('proofSubmit')));
+    await settle(tester);
+    expect(find.byKey(const ValueKey('viewPod')), findsOneWidget);
 
     await tapButton(tester, 'Start Trip (In Transit)');
     await settle(tester);
+    await tapButton(tester, 'Arrived: start unloading');
+    await settle(tester);
     await tapButton(tester, 'Mark Delivered');
     await tester.pumpAndSettle();
-    // Confirmation dialog, then confirm.
+    // Confirmation dialog, then OTP + receiver.
     expect(find.byType(AlertDialog), findsOneWidget);
     await tester.tap(find.descendant(of: find.byType(AlertDialog), matching: find.byType(FilledButton)));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byKey(const ValueKey('otpField')), '771204');
+    await tester.enterText(find.byKey(const ValueKey('receiverField')), 'Anil');
+    await tester.tap(find.byKey(const ValueKey('proofSubmit')));
     await settle(tester);
     expect(find.text('Trip completed'), findsOneWidget);
 
@@ -139,6 +171,6 @@ void main() {
     });
     await settle(tester);
     // Chip in the summary shows the new status.
-    expect(find.text('Picked up'), findsNWidgets(2));
+    expect(find.text('Driver on the way'), findsNWidgets(2));
   });
 }

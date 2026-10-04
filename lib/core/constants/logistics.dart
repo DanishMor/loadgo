@@ -71,15 +71,28 @@ class LoadStatus {
 class BookingStatus {
   BookingStatus._();
   static const accepted = 'accepted';
+  static const driverArriving = 'driver_arriving';
+  static const loading = 'loading';
+
+  /// Reached only with the customer's pickup OTP.
   static const pickedUp = 'picked_up';
   static const inTransit = 'in_transit';
+  static const unloading = 'unloading';
+
+  /// Reached only with the customer's delivery OTP.
   static const delivered = 'delivered';
 
   /// Driver backed out before pickup; the load reopens. Not part of [flow].
   static const cancelled = 'cancelled';
 
   /// Ordered lifecycle of a booking. Must stay in sync with firestore.rules.
-  static const flow = [accepted, pickedUp, inTransit, delivered];
+  static const flow = [accepted, driverArriving, loading, pickedUp, inTransit, unloading, delivered];
+
+  /// Steps that need an OTP from the customer.
+  static bool needsOtp(String next) => next == pickedUp || next == delivered;
+
+  /// The driver may back out until loading starts.
+  static const driverCancellable = [accepted, driverArriving];
 
   /// Returns the status that follows [status], or null when the trip is done.
   static String? next(String status) {

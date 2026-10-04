@@ -11,8 +11,8 @@ Paid/manual items are marked `// LATER(paid): ...` in code and listed in docs/MA
 | 4 | Pricing engine + fare estimate + cancellation policy | done | lib/core/pricing, config/pricing, TODO(functions) for server fare |
 | 5 | Load posting upgrade (multi-stop, saved places, prohibited cargo, slot, repost) | done | lib/customer/saved_place_picker.dart, rules regex for prohibited goods |
 | 6 | Offers & negotiation | done | offers/{loadId}_{driverId}, double confirmation in the booking transaction |
-| 7 | Trip lifecycle + OTPs + POD + LR | in-progress | |
-| 8 | Booking chat | todo | |
+| 7 | Trip lifecycle + OTPs + POD + LR | done | bookings/{id}/secrets/otp (customer-only), rules compare driver input; lib/core/documents |
+| 8 | Booking chat | in-progress | |
 | 9 | Support tickets & safety (SOS, contacts, breakdown) | todo | |
 | 10 | Payment records & documents center | todo | |
 | 11 | Anti-fraud basics | todo | |
@@ -38,3 +38,4 @@ Paid/manual items are marked `// LATER(paid): ...` in code and listed in docs/MA
 - 2026-10-04 Task 4 done: FareCalculator (paise, basis-point rounding, min fare, loading/unloading, waiting per started hour, extra stops, platform fee %, GST %), config/pricing with category + type rate cards, 64-city offline table (haversine x road factor 1.25) + manual km override, estimate card + breakdown sheet on Post Load, estimate stored on load and copied to booking, config-driven cancellation charge recorded on driver cancel (record only).
 - 2026-10-04 Task 5 done: up to 3 pickups/3 drops (extraPickups/extraDrops, leg-by-leg distance, per-stop charge), saved places (users/{uid}/saved_places, max 20), prohibited goods list (client + rules regex), pickup time slot, Repost on closed loads. core/widgets/vehicle_type_widgets.dart renamed logistics_labels.dart.
 - 2026-10-04 Task 6 done: drivers send a price (Make offer next to Accept); customer sees Offers (n) on open loads, counters once, selects/rejects; selected driver confirms and the booking is created with agreedFarePaise in the same transaction (rules check the offer is selected, price matches, offer becomes confirmed). My Offers screen for drivers.
+- 2026-10-04 Task 7 done: statuses accepted→driver_arriving→loading→picked_up→in_transit→unloading→delivered; customer creates 6-digit pickup/delivery OTPs in bookings/{id}/secrets/otp (only they can read); driver's entered OTP must equal the secret (rules); pickup proof (packages, weight, seal, damage) and delivery proof (receiver name/phone, damage); POD packet screen (photos LATER(paid)); digital LR/bilty screen with 12-digit e-way bill field. Driver can cancel until loading. TODO(functions): OTP attempt rate-limit.

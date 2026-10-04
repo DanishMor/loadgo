@@ -33,9 +33,7 @@ void main() {
     uid = 'driver1';
     await VehicleService.add(number: 'MH12AB1234', type: '20ft', capacity: 10, rcNumber: 'RC1');
     final id = await BookingService.accept(loadId: loadId, vehicle: (await VehicleService.fetchMyActive()).first);
-    while ((await db.collection('bookings').doc(id).get())['status'] != status) {
-      await BookingService.advance(id);
-    }
+    await advanceTo(id, status);
     return id;
   }
 

@@ -17,6 +17,12 @@ class LoadUnavailableException implements Exception {
   String toString() => 'LoadUnavailableException';
 }
 
+/// Picking up / delivering needs the customer's OTP and the proof details.
+class OtpRequiredException implements Exception {}
+
+/// The rules rejected the OTP (it does not match the customer's code).
+class WrongOtpException implements Exception {}
+
 /// The chosen vehicle is on another trip, in maintenance, suspended or off.
 class VehicleBusyException implements Exception {
   @override
@@ -124,10 +130,22 @@ class BookingService {
       _col.doc(bookingId).snapshots().map((s) => s.exists ? Booking.fromDoc(s) : null);
 
   /// Moves the driver's booking to the next status in [BookingStatus.flow].
-  /// Delivering also closes the load. Returns the new status.
-  static Future<String> advance(String bookingId) async {
+  /// Pickup needs [otp] + [pickup]; delivery needs [otp] + [delivery]
+  /// (the rules compare the OTP with the customer's secret). Delivering also
+  /// closes the load. Returns the new status.
+  static Future<String> advance(String bookingId, {String? otp, PickupProof? pickup, DeliveryProof? delivery}) async {
     final uid = Backend.requireUid();
     final ref = _col.doc(bookingId);
+    try {
+      return await _advance(ref, uid, otp: otp, pickup: pickup, delivery: delivery);
+    } on FirebaseException catch (e) {
+      if (e.code == 'permission-denied' && otp != null) throw WrongOtpException();
+      rethrow;
+    }
+  }
+
+  static Future<String> _advance(DocumentReference<Map<String, dynamic>> ref, String uid,
+      {String? otp, PickupProof? pickup, DeliveryProof? delivery}) {
     return Backend.db.runTransaction((tx) async {
       final snap = await tx.get(ref);
       if (!snap.exists) throw StateError('Booking not found');
@@ -135,12 +153,17 @@ class BookingService {
       if (booking.driverId != uid) throw StateError('Only the assigned driver can update this booking');
       final next = booking.nextStatus;
       if (next == null) throw StateError('Booking already delivered');
+      final otpOk = otp != null && RegExp(r'^\d{6}$').hasMatch(otp);
+      if (next == BookingStatus.pickedUp && (!otpOk || pickup == null)) throw OtpRequiredException();
+      if (next == BookingStatus.delivered && (!otpOk || delivery == null)) throw OtpRequiredException();
       final freeVehicle = next == BookingStatus.delivered ? await _freeVehicleLater(tx, booking.vehicleId) : () {};
 
       tx.update(ref, {
         'status': next,
         'timeline.$next': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp(),
+        if (next == BookingStatus.pickedUp) ...{'pickupOtp': otp, 'pickupProof': pickup!.toMap()},
+        if (next == BookingStatus.delivered) ...{'deliveryOtp': otp, 'deliveryProof': delivery!.toMap()},
       });
       if (next == BookingStatus.delivered) {
         tx.update(Backend.db.collection('loads').doc(booking.loadId), {
@@ -218,6 +241,13 @@ class BookingService {
   static int cancellationCharge(Booking booking, DateTime now) {
     final accepted = booking.timeline[BookingStatus.accepted] ?? now;
     return PricingService.config.cancellation.chargeFor(elapsed: now.difference(accepted), farePaise: booking.agreedFarePaise ?? booking.fareEstimate);
+  }
+
+  /// Either party records the e-way bill number (12 digits, or empty to clear).
+  static Future<void> setEwayBill(String bookingId, String number) {
+    final n = number.replaceAll(RegExp(r'\s'), '');
+    if (n.isNotEmpty && !RegExp(r'^\d{12}$').hasMatch(n)) throw ArgumentError.value(number, 'number');
+    return _col.doc(bookingId).update({'ewayBillNo': n, 'updatedAt': FieldValue.serverTimestamp()});
   }
 
   /// Reads the booking's vehicle inside [tx] (reads must precede writes) and

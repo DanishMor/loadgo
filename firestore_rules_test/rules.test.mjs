@@ -84,6 +84,10 @@ async function seedOpenLoad() {
   });
 }
 
+const OTPS = { pickupOtp: '482913', deliveryOtp: '771204' };
+const PICKUP = { packages: 40, weightTons: 7.5, sealNumber: 'SL-9', damageNote: '' };
+const DELIVERY = { receiverName: 'Anil', receiverPhone: '+919811111111', damageNote: '' };
+
 async function seedBooking(status = 'accepted') {
   await seedOpenLoad();
   await seed(async (db) => {
@@ -289,13 +293,18 @@ describe('bookings', () => {
 
   test('driver advances one step at a time; nobody else can', async () => {
     await seedBooking();
-    const step = (db, status) =>
-      updateDoc(doc(db, 'bookings', 'L1'), { status, [`timeline.${status}`]: serverTimestamp(), updatedAt: serverTimestamp() });
+    const step = (db, status, extra = {}) =>
+      updateDoc(doc(db, 'bookings', 'L1'), { status, [`timeline.${status}`]: serverTimestamp(), updatedAt: serverTimestamp(), ...extra });
     await assertFails(step(as('driver1'), 'delivered'));
-    await assertFails(step(as('customer1'), 'picked_up'));
-    await assertFails(step(as('driver2'), 'picked_up'));
-    await assertSucceeds(step(as('driver1'), 'picked_up'));
+    await assertFails(step(as('driver1'), 'loading'), 'no skipping');
+    await assertFails(step(as('customer1'), 'driver_arriving'));
+    await assertFails(step(as('driver2'), 'driver_arriving'));
+    await assertSucceeds(step(as('driver1'), 'driver_arriving'));
     await assertFails(step(as('driver1'), 'accepted'));
+    await assertSucceeds(step(as('driver1'), 'loading'));
+    await seed((db) => setDoc(doc(db, 'bookings', 'L1', 'secrets', 'otp'), OTPS));
+    await assertFails(step(as('driver1'), 'picked_up'), 'needs OTP');
+    await assertSucceeds(step(as('driver1'), 'picked_up', { pickupOtp: OTPS.pickupOtp, pickupProof: PICKUP }));
     await assertSucceeds(step(as('driver1'), 'in_transit'));
     await assertFails(updateDoc(doc(as('driver1'), 'bookings', 'L1'), { budget: 1 }));
     await assertFails(deleteDoc(doc(as('driver1'), 'bookings', 'L1')));
@@ -314,11 +323,15 @@ describe('bookings', () => {
   });
 
   test('delivering closes the load; closing early fails', async () => {
-    await seedBooking('in_transit');
+    await seedBooking('unloading');
+    await seed((s) => setDoc(doc(s, 'bookings', 'L1', 'secrets', 'otp'), OTPS));
     const db = as('driver1');
     await assertFails(updateDoc(doc(db, 'loads', 'L1'), { status: 'closed', closedAt: serverTimestamp() }));
     const b = writeBatch(db);
-    b.update(doc(db, 'bookings', 'L1'), { status: 'delivered', 'timeline.delivered': serverTimestamp(), updatedAt: serverTimestamp() });
+    b.update(doc(db, 'bookings', 'L1'), {
+      status: 'delivered', 'timeline.delivered': serverTimestamp(), updatedAt: serverTimestamp(),
+      deliveryOtp: OTPS.deliveryOtp, deliveryProof: DELIVERY,
+    });
     b.update(doc(db, 'loads', 'L1'), { status: 'closed', closedAt: serverTimestamp() });
     await assertSucceeds(b.commit());
     await assertFails(updateDoc(doc(as('customer1'), 'loads', 'L1'), { status: 'open' }));
@@ -610,5 +623,78 @@ describe('offers', () => {
     await assertSucceeds(updateDoc(ref(as('customer1')), { status: 'rejected' }));
     await assertFails(updateDoc(ref(as('driver1')), { status: 'pending' }));
     await assertFails(deleteDoc(ref(as('driver1'))));
+  });
+});
+
+describe('trip OTPs, proof of delivery and e-way bill', () => {
+  const otpRef = (db) => doc(db, 'bookings', 'L1', 'secrets', 'otp');
+  const step = (db, status, extra = {}) =>
+    updateDoc(doc(db, 'bookings', 'L1'), { status, [`timeline.${status}`]: serverTimestamp(), updatedAt: serverTimestamp(), ...extra });
+
+  test('only the customer creates and reads the OTPs; nobody changes them', async () => {
+    await seedBooking();
+    await assertFails(setDoc(otpRef(as('driver1')), OTPS));
+    await assertFails(setDoc(otpRef(as('customer1')), { pickupOtp: '12345', deliveryOtp: '123456' }));
+    await assertFails(setDoc(doc(as('customer1'), 'bookings', 'L1', 'secrets', 'other'), OTPS));
+    await assertSucceeds(setDoc(otpRef(as('customer1')), OTPS));
+    await assertSucceeds(getDoc(otpRef(as('customer1'))));
+    await assertFails(getDoc(otpRef(as('driver1'))));
+    await assertFails(setDoc(otpRef(as('customer1')), { pickupOtp: '000000', deliveryOtp: '000000' }));
+    await assertFails(deleteDoc(otpRef(as('customer1'))));
+  });
+
+  test('pickup needs the right OTP and valid cargo details', async () => {
+    await seedBooking('loading');
+    await seed((s) => setDoc(otpRef(s), OTPS));
+    const d = as('driver1');
+    await assertFails(step(d, 'picked_up', { pickupOtp: '000000', pickupProof: PICKUP }));
+    await assertFails(step(d, 'picked_up', { pickupOtp: OTPS.deliveryOtp, pickupProof: PICKUP }));
+    await assertFails(step(d, 'picked_up', { pickupOtp: OTPS.pickupOtp, pickupProof: { ...PICKUP, packages: 0 } }));
+    await assertFails(step(d, 'picked_up', { pickupOtp: OTPS.pickupOtp, pickupProof: { ...PICKUP, extra: 1 } }));
+    await assertFails(step(d, 'picked_up', { pickupOtp: OTPS.pickupOtp, pickupProof: PICKUP, budget: 1 }));
+    await assertSucceeds(step(d, 'picked_up', { pickupOtp: OTPS.pickupOtp, pickupProof: PICKUP }));
+  });
+
+  test('delivery needs the delivery OTP and a receiver name', async () => {
+    await seedBooking('unloading');
+    await seed((s) => setDoc(otpRef(s), OTPS));
+    const d = as('driver1');
+    const close = (extra) => {
+      const b = writeBatch(d);
+      b.update(doc(d, 'bookings', 'L1'), { status: 'delivered', 'timeline.delivered': serverTimestamp(), updatedAt: serverTimestamp(), ...extra });
+      b.update(doc(d, 'loads', 'L1'), { status: 'closed', closedAt: serverTimestamp() });
+      return b.commit();
+    };
+    await assertFails(close({ deliveryOtp: OTPS.pickupOtp, deliveryProof: DELIVERY }));
+    await assertFails(close({ deliveryOtp: OTPS.deliveryOtp, deliveryProof: { ...DELIVERY, receiverName: '' } }));
+    await assertFails(close({ deliveryOtp: OTPS.deliveryOtp, deliveryProof: { ...DELIVERY, receiverPhone: 'abc' } }));
+    await assertSucceeds(close({ deliveryOtp: OTPS.deliveryOtp, deliveryProof: DELIVERY }));
+  });
+
+  test('without the customer secret nobody can pick up', async () => {
+    await seedBooking('loading');
+    await assertFails(step(as('driver1'), 'picked_up', { pickupOtp: '123456', pickupProof: PICKUP }));
+  });
+
+  test('driver may cancel while arriving but not once loading', async () => {
+    await seedBooking('driver_arriving');
+    const cancel = (db) => {
+      const b = writeBatch(db);
+      b.update(doc(db, 'bookings', 'L1'), { status: 'cancelled', 'timeline.cancelled': serverTimestamp(), cancellation: { by: 'driver', chargePaise: 0 }, updatedAt: serverTimestamp() });
+      b.update(doc(db, 'loads', 'L1'), { status: 'open', driverId: deleteField(), bookingId: deleteField(), matchedAt: deleteField(), reopenedAt: serverTimestamp() });
+      return b.commit();
+    };
+    await assertSucceeds(cancel(as('driver1')));
+    await seedBooking('loading');
+    await assertFails(cancel(as('driver1')));
+  });
+
+  test('either party records a 12-digit e-way bill number', async () => {
+    await seedBooking('in_transit');
+    await assertSucceeds(updateDoc(doc(as('customer1'), 'bookings', 'L1'), { ewayBillNo: '123456789012', updatedAt: serverTimestamp() }));
+    await assertSucceeds(updateDoc(doc(as('driver1'), 'bookings', 'L1'), { ewayBillNo: '', updatedAt: serverTimestamp() }));
+    await assertFails(updateDoc(doc(as('customer1'), 'bookings', 'L1'), { ewayBillNo: 'EWB-1' }));
+    await assertFails(updateDoc(doc(as('customer1'), 'bookings', 'L1'), { ewayBillNo: '123456789012', status: 'delivered' }));
+    await assertFails(updateDoc(doc(as('driver2'), 'bookings', 'L1'), { ewayBillNo: '123456789012' }));
   });
 });

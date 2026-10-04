@@ -9,6 +9,8 @@ import '../ratings/rating_widgets.dart';
 import 'booking_widgets.dart';
 import 'location_widgets.dart';
 import '../../core/services/pricing_service.dart';
+import '../../driver/trip_proof_dialogs.dart';
+import '../../core/documents/trip_document_buttons.dart';
 
 void openDriverTrip(BuildContext context, String bookingId) {
   Navigator.of(context).push(MaterialPageRoute(builder: (_) => DriverTripScreen(bookingId: bookingId)));
@@ -36,6 +38,8 @@ class DriverTripScreen extends StatelessWidget {
           ],
           const SizedBox(height: 14),
           BookingTimeline(booking: booking),
+          const SizedBox(height: 12),
+          TripDocumentButtons(booking: booking),
           const SizedBox(height: 20),
           _NextStatusButton(booking: booking),
           if (booking.canDriverCancel) ...[
@@ -64,8 +68,11 @@ class _NextStatusButtonState extends State<_NextStatusButton> {
   bool _busy = false;
 
   static String _labelKey(String next) => switch (next) {
+        BookingStatus.driverArriving => 'markArriving',
+        BookingStatus.loading => 'markLoading',
         BookingStatus.pickedUp => 'markPickedUp',
         BookingStatus.inTransit => 'markInTransit',
+        BookingStatus.unloading => 'markUnloading',
         _ => 'markDelivered',
       };
 
@@ -85,13 +92,27 @@ class _NextStatusButtonState extends State<_NextStatusButton> {
   }
 
   Future<void> _advance(String next) async {
-    // Delivery closes the load and can't be undone, so ask first.
-    if (next == BookingStatus.delivered && !await _confirmDelivered()) return;
+    String? otp;
+    PickupProof? pickup;
+    DeliveryProof? delivery;
+    if (next == BookingStatus.pickedUp) {
+      final r = await askPickupProof(context);
+      if (r == null) return;
+      (otp, pickup) = r;
+    } else if (next == BookingStatus.delivered) {
+      // Delivery closes the load and can't be undone, so ask first.
+      if (!await _confirmDelivered() || !mounted) return;
+      final r = await askDeliveryProof(context);
+      if (r == null) return;
+      (otp, delivery) = r;
+    }
     if (!mounted) return;
     setState(() => _busy = true);
     try {
-      await BookingService.advance(widget.booking.id);
+      await BookingService.advance(widget.booking.id, otp: otp, pickup: pickup, delivery: delivery);
       if (mounted) showSnack(context, tr(context, 'statusUpdated'));
+    } on WrongOtpException {
+      if (mounted) showSnack(context, tr(context, 'wrongOtp'));
     } catch (_) {
       if (mounted) showSnack(context, tr(context, 'somethingWrong'));
     } finally {

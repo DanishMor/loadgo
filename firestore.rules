@@ -259,8 +259,56 @@ service cloud.firestore {
     // own vehicle), advance status one step at a time, or cancel before
     // pickup (which must reopen the load).
     // ------------------------------------------------------------------
+    // accepted -> driver_arriving -> loading -> picked_up (pickup OTP)
+    //   -> in_transit -> unloading -> delivered (delivery OTP)
     function nextBookingStatus(s) {
-      return {'accepted': 'picked_up', 'picked_up': 'in_transit', 'in_transit': 'delivered'}.get(s, 'none');
+      return {'accepted': 'driver_arriving', 'driver_arriving': 'loading', 'loading': 'picked_up',
+              'picked_up': 'in_transit', 'in_transit': 'unloading', 'unloading': 'delivered'}.get(s, 'none');
+    }
+
+    function tripOtps(bookingId) {
+      return get(/databases/$(database)/documents/bookings/$(bookingId)/secrets/otp).data;
+    }
+
+    function validPickupProof(p) {
+      return p is map && p.keys().hasOnly(['packages', 'weightTons', 'sealNumber', 'damageNote'])
+          && p.packages is int && p.packages > 0 && p.packages <= 100000
+          && p.weightTons is number && p.weightTons > 0 && p.weightTons <= 100
+          && p.sealNumber is string && p.sealNumber.size() <= 40
+          && p.damageNote is string && p.damageNote.size() <= 300;
+    }
+
+    function validDeliveryProof(p) {
+      return p is map && p.keys().hasOnly(['receiverName', 'receiverPhone', 'damageNote'])
+          && p.receiverName is string && p.receiverName.size() >= 2 && p.receiverName.size() <= 60
+          && p.receiverPhone is string && p.receiverPhone.matches('^$|^[+]?[0-9]{10,13}$')
+          && p.damageNote is string && p.damageNote.size() <= 300;
+    }
+
+    // One status step by the assigned driver. Pickup and delivery carry the
+    // customer's OTP, which must equal the secret only the customer can read.
+    // TODO(functions): rate-limit wrong OTP attempts.
+    function driverStep(bookingId) {
+      let before = resource.data.status;
+      let after = request.resource.data;
+      return after.status == nextBookingStatus(before)
+          && ((!(after.status in ['picked_up', 'delivered'])
+                  && changedKeys().hasOnly(['status', 'timeline', 'updatedAt']))
+              || (after.status == 'picked_up'
+                  && changedKeys().hasOnly(['status', 'timeline', 'updatedAt', 'pickupOtp', 'pickupProof'])
+                  && after.pickupOtp == tripOtps(bookingId).pickupOtp
+                  && validPickupProof(after.pickupProof))
+              || (after.status == 'delivered'
+                  && changedKeys().hasOnly(['status', 'timeline', 'updatedAt', 'deliveryOtp', 'deliveryProof'])
+                  && after.deliveryOtp == tripOtps(bookingId).deliveryOtp
+                  && validDeliveryProof(after.deliveryProof)));
+    }
+
+    // Either party records the e-way bill number (12 digits) or clears it.
+    function ewayBillUpdate() {
+      return changedKeys().hasOnly(['ewayBillNo', 'updatedAt'])
+          && request.resource.data.ewayBillNo is string
+          && request.resource.data.ewayBillNo.matches('^$|^[0-9]{12}$');
     }
 
     function validBookingCreate(bookingId) {
@@ -322,16 +370,30 @@ service cloud.firestore {
               || resource.data.customerId == request.auth.uid);
       allow create: if signedIn() && validBookingCreate(bookingId);
       allow update: if signedIn()
-          && resource.data.driverId == request.auth.uid
+          && ((resource.data.customerId == request.auth.uid && ewayBillUpdate())
+          || (resource.data.driverId == request.auth.uid
           && (driverLocationUpdate()
-              || (changedKeys().hasOnly(['status', 'timeline', 'updatedAt'])
-                  && request.resource.data.status == nextBookingStatus(resource.data.status))
+              || ewayBillUpdate()
+              || driverStep(bookingId)
               || (changedKeys().hasOnly(['status', 'timeline', 'updatedAt', 'cancellation'])
-                  && resource.data.status == 'accepted'
+                  && resource.data.status in ['accepted', 'driver_arriving']
                   && request.resource.data.status == 'cancelled'
                   && validCancellation(request.resource.data.get('cancellation', null))
-                  && getAfter(docPath('loads', resource.data.loadId)).data.status == 'open'));
+                  && getAfter(docPath('loads', resource.data.loadId)).data.status == 'open'))));
       allow delete: if false;
+
+      // secrets/otp: pickup and delivery codes. Only the customer creates and
+      // reads them; nobody can change them afterwards.
+      match /secrets/{secretId} {
+        allow get: if signedIn() && get(docPath('bookings', bookingId)).data.customerId == request.auth.uid;
+        allow create: if signedIn()
+            && secretId == 'otp'
+            && get(docPath('bookings', bookingId)).data.customerId == request.auth.uid
+            && request.resource.data.keys().hasOnly(['pickupOtp', 'deliveryOtp', 'createdAt'])
+            && request.resource.data.pickupOtp is string && request.resource.data.pickupOtp.matches('^[0-9]{6}$')
+            && request.resource.data.deliveryOtp is string && request.resource.data.deliveryOtp.matches('^[0-9]{6}$');
+        allow list, update, delete: if false;
+      }
     }
 
     // ------------------------------------------------------------------

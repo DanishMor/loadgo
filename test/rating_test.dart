@@ -1,6 +1,7 @@
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:transport_app/core/constants/logistics.dart';
 import 'package:transport_app/core/models/booking.dart';
 import 'package:transport_app/core/models/rating.dart';
 import 'package:transport_app/core/services/backend.dart';
@@ -35,9 +36,7 @@ void main() {
     final vehicleId = await VehicleService.add(number: 'MH12AB${1000 + vehicleCount++}', type: '20ft', capacity: 10, rcNumber: 'RC1');
     final vehicle = (await VehicleService.fetchMyActive()).firstWhere((v) => v.id == vehicleId);
     final id = await BookingService.accept(loadId: loadId, vehicle: vehicle);
-    for (var i = 0; i < steps; i++) {
-      await BookingService.advance(id);
-    }
+    await advanceTo(id, steps >= 3 ? BookingStatus.delivered : BookingStatus.inTransit);
     return Booking.fromDoc(await db.collection('bookings').doc(id).get());
   }
 

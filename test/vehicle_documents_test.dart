@@ -100,9 +100,7 @@ void main() {
     test('accept -> on_trip; delivered -> available', () async {
       final (bookingId, v) = await book();
       expect((await vehicle(v.id)).availability, VehicleAvailability.onTrip);
-      for (var i = 0; i < 3; i++) {
-        await BookingService.advance(bookingId);
-      }
+      await advanceTo(bookingId, BookingStatus.delivered);
       expect((await vehicle(v.id)).availability, VehicleAvailability.available);
     });
 

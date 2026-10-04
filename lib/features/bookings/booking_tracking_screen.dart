@@ -5,6 +5,8 @@ import '../../main.dart';
 import '../ratings/rating_widgets.dart';
 import 'booking_widgets.dart';
 import 'location_widgets.dart';
+import '../../customer/trip_otp_card.dart';
+import '../../core/documents/trip_document_buttons.dart';
 
 void openBookingTracking(BuildContext context, String bookingId) {
   Navigator.of(context).push(MaterialPageRoute(builder: (_) => BookingTrackingScreen(bookingId: bookingId)));
@@ -25,6 +27,10 @@ class BookingTrackingScreen extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(20, 10, 20, 30),
         children: [
           BookingSummary(booking: booking, showDriver: true),
+          if (booking.isActive) ...[
+            const SizedBox(height: 8),
+            TripOtpCard(key: ValueKey('otp_${booking.id}'), booking: booking),
+          ],
           const SizedBox(height: 8),
           Align(alignment: Alignment.centerLeft, child: RatingBadge(userId: booking.driverId)),
           if (booking.isInTransit) ...[
@@ -33,6 +39,8 @@ class BookingTrackingScreen extends StatelessWidget {
           ],
           const SizedBox(height: 8),
           BookingTimeline(booking: booking),
+          const SizedBox(height: 12),
+          TripDocumentButtons(booking: booking),
           if (booking.status == BookingStatus.delivered) ...[
             const SizedBox(height: 14),
             RatingPrompt(booking: booking, titleKey: 'rateDriver'),

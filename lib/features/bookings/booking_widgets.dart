@@ -9,22 +9,6 @@ import '../../main.dart';
 import '../../core/widgets/live_stream.dart';
 import '../../core/widgets/logistics_labels.dart';
 
-String bookingStatusLabel(BuildContext context, String status) => switch (status) {
-      BookingStatus.accepted => tr(context, 'statusAccepted'),
-      BookingStatus.pickedUp => tr(context, 'statusPickedUp'),
-      BookingStatus.inTransit => tr(context, 'statusInTransit'),
-      BookingStatus.delivered => tr(context, 'statusDelivered'),
-      BookingStatus.cancelled => tr(context, 'statusCancelled'),
-      _ => status,
-    };
-
-Color bookingStatusColor(String status) => switch (status) {
-      BookingStatus.accepted => AppColors.primary,
-      BookingStatus.pickedUp || BookingStatus.inTransit => AppColors.warning,
-      BookingStatus.cancelled => Colors.redAccent,
-      _ => AppColors.success,
-    };
-
 /// Compact list card used by the driver Trips tab and customer Bookings tab.
 class BookingCard extends StatelessWidget {
   final Booking booking;

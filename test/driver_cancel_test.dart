@@ -66,7 +66,9 @@ void main() {
     expect(() => BookingService.cancelByDriver(id), throwsStateError);
     uid = 'driver1';
     await BookingService.advance(id);
-    expect(() => BookingService.cancelByDriver(id), throwsStateError);
+    expect((await db.collection('bookings').doc(id).get())['status'], BookingStatus.driverArriving);
+    await BookingService.advance(id);
+    expect(() => BookingService.cancelByDriver(id), throwsStateError, reason: 'not once loading started');
     expect((await db.collection('loads').doc(loadId).get())['status'], LoadStatus.matched);
   });
 

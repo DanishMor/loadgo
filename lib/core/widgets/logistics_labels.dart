@@ -152,3 +152,23 @@ class _PriceDialogState extends State<_PriceDialog> {
     );
   }
 }
+
+/// Translated [BookingStatus] value.
+String bookingStatusLabel(BuildContext context, String status) => switch (status) {
+      BookingStatus.accepted => tr(context, 'statusAccepted'),
+      BookingStatus.driverArriving => tr(context, 'statusDriverArriving'),
+      BookingStatus.loading => tr(context, 'statusLoading'),
+      BookingStatus.pickedUp => tr(context, 'statusPickedUp'),
+      BookingStatus.inTransit => tr(context, 'statusInTransit'),
+      BookingStatus.unloading => tr(context, 'statusUnloading'),
+      BookingStatus.delivered => tr(context, 'statusDelivered'),
+      BookingStatus.cancelled => tr(context, 'statusCancelled'),
+      _ => status,
+    };
+
+Color bookingStatusColor(String status) => switch (status) {
+      BookingStatus.accepted => AppColors.primary,
+      BookingStatus.delivered => AppColors.success,
+      BookingStatus.cancelled => Colors.redAccent,
+      _ => AppColors.warning,
+    };

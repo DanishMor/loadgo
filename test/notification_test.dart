@@ -1,6 +1,7 @@
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:transport_app/core/constants/logistics.dart';
 import 'package:transport_app/core/models/app_notification.dart';
 import 'package:transport_app/core/models/booking.dart';
 import 'package:transport_app/core/services/backend.dart';
@@ -43,12 +44,10 @@ void main() {
     expect(customer.single['message'], 'Delhi → Mumbai');
     expect(customer.single['read'], isFalse);
 
-    for (var i = 0; i < 3; i++) {
-      await BookingService.advance(id);
-    }
+    await advanceTo(id, BookingStatus.delivered);
     customer = await notificationsFor('customer1');
     expect(customer.where((n) => n['type'] == NotificationType.statusChanged).map((n) => n['status']),
-        unorderedEquals(['picked_up', 'in_transit', 'delivered']));
+        unorderedEquals(['driver_arriving', 'loading', 'picked_up', 'in_transit', 'unloading', 'delivered']));
     expect(await notificationsFor('driver1'), isEmpty, reason: 'actors are not notified of their own actions');
 
     uid = 'customer1';
@@ -88,9 +87,9 @@ void main() {
     await tester.tap(find.byType(NotificationBell));
     await settle(tester);
     expect(find.text('A driver accepted your load'), findsOneWidget);
-    expect(find.text('Trip update: Picked up'), findsOneWidget);
+    expect(find.text('Trip update: Driver on the way'), findsOneWidget);
 
-    await tester.tap(find.text('Trip update: Picked up'));
+    await tester.tap(find.text('Trip update: Driver on the way'));
     await settle(tester);
     expect(opened, bookingId);
     final unread = (await tester.runAsync(() => notificationsFor('customer1')))!.where((n) => n['read'] == false);

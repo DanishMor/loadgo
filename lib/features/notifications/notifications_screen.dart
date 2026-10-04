@@ -5,7 +5,7 @@ import '../../core/services/notification_service.dart';
 import '../../core/widgets/common.dart';
 import '../../main.dart';
 import '../../core/widgets/live_stream.dart';
-import '../bookings/booking_widgets.dart';
+import '../../core/widgets/logistics_labels.dart';
 
 /// Title for a notification in the current language.
 String notificationTitle(BuildContext context, AppNotification n) => switch (n.type) {

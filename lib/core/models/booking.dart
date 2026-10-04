@@ -45,6 +45,20 @@ class Booking {
   /// Load's estimated total (paise), copied at acceptance.
   final int? fareEstimate;
 
+  /// Cargo details captured at pickup / receiver details at delivery.
+  final PickupProof? pickupProof;
+  final DeliveryProof? deliveryProof;
+
+  /// True once the matching OTP was accepted (the rules check it).
+  final bool pickupOtpVerified;
+  final bool deliveryOtpVerified;
+
+  /// E-way bill number (12 digits), entered by either party.
+  final String ewayBillNo;
+
+  /// Digital LR / bilty number derived from the booking id.
+  String get lrNumber => 'LG-${id.length > 10 ? id.substring(0, 10) : id}'.toUpperCase();
+
   /// Recorded when the booking is cancelled (no money moves).
   final BookingCancellation? cancellation;
 
@@ -74,6 +88,11 @@ class Booking {
     this.agreedFarePaise,
     this.offerId,
     this.cancellation,
+    this.pickupProof,
+    this.deliveryProof,
+    this.pickupOtpVerified = false,
+    this.deliveryOtpVerified = false,
+    this.ewayBillNo = '',
     this.extraPickups = const [],
     this.extraDrops = const [],
     this.pickupSlot = PickupSlot.any,
@@ -85,8 +104,8 @@ class Booking {
 
   bool get isActive => status != BookingStatus.delivered && status != BookingStatus.cancelled;
 
-  /// Drivers may back out only until pickup.
-  bool get canDriverCancel => status == BookingStatus.accepted;
+  /// Drivers may back out only until loading starts.
+  bool get canDriverCancel => BookingStatus.driverCancellable.contains(status);
   String? get nextStatus => BookingStatus.next(status);
 
   factory Booking.fromDoc(DocumentSnapshot<Map<String, dynamic>> doc) {
@@ -120,12 +139,63 @@ class Booking {
       fareEstimate: (d['fareEstimate'] as num?)?.round(),
       agreedFarePaise: (d['agreedFarePaise'] as num?)?.round(),
       offerId: d['offerId'] as String?,
+      pickupProof: d['pickupProof'] is Map ? PickupProof.fromMap(Map<String, dynamic>.from(d['pickupProof'] as Map)) : null,
+      deliveryProof:
+          d['deliveryProof'] is Map ? DeliveryProof.fromMap(Map<String, dynamic>.from(d['deliveryProof'] as Map)) : null,
+      pickupOtpVerified: d['pickupOtp'] is String,
+      deliveryOtpVerified: d['deliveryOtp'] is String,
+      ewayBillNo: d['ewayBillNo'] as String? ?? '',
       extraPickups: [for (final s in (d['extraPickups'] as List?) ?? const []) s.toString()],
       extraDrops: [for (final s in (d['extraDrops'] as List?) ?? const []) s.toString()],
       pickupSlot: d['pickupSlot'] as String? ?? PickupSlot.any,
       cancellation: d['cancellation'] is Map ? BookingCancellation.fromMap(Map<String, dynamic>.from(d['cancellation'] as Map)) : null,
     );
   }
+}
+
+/// What the driver records when loading is done (with the pickup OTP).
+class PickupProof {
+  final int packages;
+  final num weightTons;
+  final String sealNumber;
+  final String damageNote;
+
+  const PickupProof({required this.packages, required this.weightTons, this.sealNumber = '', this.damageNote = ''});
+
+  factory PickupProof.fromMap(Map<String, dynamic> m) => PickupProof(
+        packages: (m['packages'] as num?)?.round() ?? 0,
+        weightTons: m['weightTons'] as num? ?? 0,
+        sealNumber: m['sealNumber'] as String? ?? '',
+        damageNote: m['damageNote'] as String? ?? '',
+      );
+
+  Map<String, Object> toMap() => {
+        'packages': packages,
+        'weightTons': weightTons,
+        'sealNumber': sealNumber.trim(),
+        'damageNote': damageNote.trim(),
+      };
+}
+
+/// Receiver details recorded at delivery (with the delivery OTP).
+class DeliveryProof {
+  final String receiverName;
+  final String receiverPhone;
+  final String damageNote;
+
+  const DeliveryProof({required this.receiverName, this.receiverPhone = '', this.damageNote = ''});
+
+  factory DeliveryProof.fromMap(Map<String, dynamic> m) => DeliveryProof(
+        receiverName: m['receiverName'] as String? ?? '',
+        receiverPhone: m['receiverPhone'] as String? ?? '',
+        damageNote: m['damageNote'] as String? ?? '',
+      );
+
+  Map<String, Object> toMap() => {
+        'receiverName': receiverName.trim(),
+        'receiverPhone': receiverPhone.trim(),
+        'damageNote': damageNote.trim(),
+      };
 }
 
 /// Who cancelled and the policy charge recorded for it (paise).
