@@ -19,6 +19,8 @@ import '../../core/widgets/live_stream.dart';
 import '../vehicle/my_vehicles_screen.dart';
 import '../../driver/vehicle_alerts_banner.dart';
 import '../../driver/my_offers_screen.dart';
+import '../../driver/wallet_screen.dart';
+import '../../core/documents/documents_center_screen.dart';
 
 class DriverHomeScreen extends StatefulWidget {
   const DriverHomeScreen({super.key});
@@ -225,6 +227,31 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                   tr(context, 'myOffers'),
                   onTap: () => Navigator.of(context).push(MaterialPageRoute(
                     builder: (_) => MyOffersScreen(onOpenBooking: (id) => openDriverTrip(context, id)),
+                  )),
+                ),
+                const SizedBox(width: 12),
+                _tile(
+                  Icons.account_balance_wallet_outlined,
+                  tr(context, 'wallet'),
+                  onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const WalletScreen())),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                _tile(
+                  Icons.folder_copy_outlined,
+                  tr(context, 'documentsCenter'),
+                  onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                    builder: (_) => DocumentsCenterScreen(
+                      asDriver: true,
+                      header: OutlinedButton.icon(
+                        onPressed: _openVehicles,
+                        icon: const Icon(Icons.assignment_outlined),
+                        label: Text(tr(context, 'vehiclePapers')),
+                      ),
+                    ),
                   )),
                 ),
                 const SizedBox(width: 12),

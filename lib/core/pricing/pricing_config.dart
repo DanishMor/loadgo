@@ -10,6 +10,9 @@ class PricingConfig {
   final Map<String, PricingRule> types;
   final num platformFeePercent;
   final num gstPercent;
+
+  /// Recorded on the driver's ledger when they confirm payment received.
+  final num commissionPercent;
   final double roadFactor;
   final CancellationPolicy cancellation;
 
@@ -18,6 +21,7 @@ class PricingConfig {
     this.types = const {},
     this.platformFeePercent = 5,
     this.gstPercent = 5,
+    this.commissionPercent = 5,
     this.roadFactor = 1.25,
     this.cancellation = const CancellationPolicy(),
   });
@@ -45,6 +49,7 @@ class PricingConfig {
       types: rules(m['types'], const {}),
       platformFeePercent: m['platformFeePercent'] as num? ?? defaultPricing.platformFeePercent,
       gstPercent: m['gstPercent'] as num? ?? defaultPricing.gstPercent,
+      commissionPercent: m['commissionPercent'] as num? ?? defaultPricing.commissionPercent,
       roadFactor: (m['roadFactor'] as num?)?.toDouble() ?? defaultPricing.roadFactor,
       cancellation: CancellationPolicy.fromMap(m['cancellation'] as Map<String, dynamic>?),
     );
@@ -55,6 +60,7 @@ class PricingConfig {
         'types': {for (final e in types.entries) e.key: e.value.toMap()},
         'platformFeePercent': platformFeePercent,
         'gstPercent': gstPercent,
+        'commissionPercent': commissionPercent,
         'roadFactor': roadFactor,
         'cancellation': cancellation.toMap(),
       };

@@ -838,3 +838,51 @@ describe('safety', () => {
     await assertFails(updateDoc(doc(d, 'bookings', 'L1'), { breakdown: { note: 'again', replacementRequested: false, reportedAt: serverTimestamp() } }));
   });
 });
+
+describe('payment records and ledger', () => {
+  const mark = (db, amount = 2500000, extra = {}) =>
+    updateDoc(doc(db, 'bookings', 'L1'), { paymentStatus: 'customer_marked_paid', paidAmountPaise: amount, paymentMarkedAt: serverTimestamp(), updatedAt: serverTimestamp(), ...extra });
+  const confirm = (db, earning = 2500000, commission = -125000) => {
+    const b = writeBatch(db);
+    b.update(doc(db, 'bookings', 'L1'), { paymentStatus: 'driver_confirmed', paymentConfirmedAt: serverTimestamp(), updatedAt: serverTimestamp() });
+    b.set(doc(db, 'ledger', 'L1_trip_earning'), { driverId: 'driver1', bookingId: 'L1', type: 'trip_earning', amountPaise: earning, createdAt: serverTimestamp() });
+    b.set(doc(db, 'ledger', 'L1_platform_commission'), { driverId: 'driver1', bookingId: 'L1', type: 'platform_commission', amountPaise: commission, createdAt: serverTimestamp() });
+    return b.commit();
+  };
+
+  test('customer marks paid once; driver cannot mark for them', async () => {
+    await seedBooking('delivered');
+    await assertFails(mark(as('driver1')));
+    await assertFails(mark(as('customer1'), 0));
+    await assertFails(mark(as('customer1'), 99.5));
+    await assertSucceeds(mark(as('customer1')));
+    await assertFails(mark(as('customer1'), 100), 'already marked');
+  });
+
+  test('driver confirms with matching ledger lines; ledger is append-only', async () => {
+    await seedBooking('delivered');
+    await assertFails(confirm(as('driver1')), 'customer has not marked paid');
+    await mark(as('customer1'));
+    await assertFails(confirm(as('driver1'), 9999999), 'earning must equal the paid amount');
+    await assertFails(confirm(as('driver1'), 2500000, 125000), 'commission is negative');
+    await assertFails(confirm(as('driver1'), 2500000, -2000000), 'commission at most half');
+    await assertFails(confirm(as('customer1')));
+    await assertSucceeds(confirm(as('driver1')));
+    await assertSucceeds(getDoc(doc(as('driver1'), 'ledger', 'L1_trip_earning')));
+    await assertFails(getDoc(doc(as('customer1'), 'ledger', 'L1_trip_earning')));
+    await assertSucceeds(getDoc(doc(asAdmin(), 'ledger', 'L1_trip_earning')));
+    await assertFails(updateDoc(doc(as('driver1'), 'ledger', 'L1_trip_earning'), { amountPaise: 1 }));
+    await assertFails(deleteDoc(doc(as('driver1'), 'ledger', 'L1_platform_commission')));
+  });
+
+  test('loads carry a payment mode the booking must copy', async () => {
+    await assertFails(setDoc(doc(as('customer1'), 'loads', 'X'), { ...LOAD, paymentMode: 'bitcoin' }));
+    await seed(async (s) => {
+      await setDoc(doc(s, 'loads', 'L1'), { ...LOAD, paymentMode: 'upi_direct' });
+      await setDoc(doc(s, 'vehicles', 'v1'), VEHICLE);
+    });
+    await assertFails(acceptBatch(as('driver1'), 'L1'));
+    await assertFails(acceptBatch(as('driver1'), 'L1', 'driver1', { paymentMode: 'upi_direct', paymentStatus: 'driver_confirmed' }));
+    await assertSucceeds(acceptBatch(as('driver1'), 'L1', 'driver1', { paymentMode: 'upi_direct', paymentStatus: 'pending' }));
+  });
+});

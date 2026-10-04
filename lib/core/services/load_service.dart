@@ -41,6 +41,7 @@ class LoadService {
     List<String> extraPickups = const [],
     List<String> extraDrops = const [],
     String pickupSlot = PickupSlot.any,
+    String paymentMode = 'cash',
   }) async {
     final uid = Backend.requireUid();
     final banned = prohibitedCargoMatch('$notes $cargoType');
@@ -51,6 +52,7 @@ class LoadService {
       if (clean(extraPickups).isNotEmpty) 'extraPickups': clean(extraPickups),
       if (clean(extraDrops).isNotEmpty) 'extraDrops': clean(extraDrops),
       'pickupSlot': pickupSlot,
+      'paymentMode': paymentMode,
       if (estimate != null) 'estimate': {...estimate.toMap(), 'distanceSource': ?distanceSource},
       'shipperId': uid,
       'pickup': pickup.trim(),

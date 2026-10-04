@@ -178,6 +178,7 @@ service cloud.firestore {
           && validStops(d.get('extraPickups', []))
           && validStops(d.get('extraDrops', []))
           && d.get('pickupSlot', 'any') in ['any', 'morning', 'midday', 'afternoon', 'evening']
+          && d.get('paymentMode', 'cash') in ['cash', 'upi_direct']
           && !prohibitedText(d.get('notes', ''))
           && !prohibitedText(d.cargoType);
     }
@@ -320,6 +321,28 @@ service cloud.firestore {
                   && validDeliveryProof(after.deliveryProof)));
     }
 
+    // Payment records (no money moves): customer marks paid with the amount,
+    // then the driver confirms and writes the two ledger lines in the same
+    // batch. LATER(paid): gateway. TODO(functions): commission server-side.
+    function customerMarksPaid() {
+      let after = request.resource.data;
+      return resource.data.status != 'cancelled'
+          && resource.data.get('paymentStatus', 'pending') == 'pending'
+          && changedKeys().hasOnly(['paymentStatus', 'paidAmountPaise', 'paymentMarkedAt', 'updatedAt'])
+          && after.paymentStatus == 'customer_marked_paid'
+          && after.paidAmountPaise is int && after.paidAmountPaise > 0 && after.paidAmountPaise <= 100000000
+          && after.paymentMarkedAt == request.time;
+    }
+
+    function driverConfirmsPayment(bookingId) {
+      return resource.data.get('paymentStatus', 'pending') == 'customer_marked_paid'
+          && changedKeys().hasOnly(['paymentStatus', 'paymentConfirmedAt', 'updatedAt'])
+          && request.resource.data.paymentStatus == 'driver_confirmed'
+          && request.resource.data.paymentConfirmedAt == request.time
+          && existsAfter(docPath('ledger', bookingId + '_trip_earning'))
+          && existsAfter(docPath('ledger', bookingId + '_platform_commission'));
+    }
+
     // Driver reports a breakdown once on an active trip.
     function breakdownReport() {
       let b = request.resource.data.breakdown;
@@ -356,6 +379,9 @@ service cloud.firestore {
           && b.get('fareEstimate', null) == load.get('estimate', {}).get('total', null)
           && b.get('extraPickups', []) == load.get('extraPickups', [])
           && b.get('extraDrops', []) == load.get('extraDrops', [])
+          && b.get('paymentMode', 'cash') == load.get('paymentMode', 'cash')
+          && b.get('paymentStatus', 'pending') == 'pending'
+          && !('paidAmountPaise' in b)
           && loadAfter.status == 'matched'
           && loadAfter.driverId == request.auth.uid
           && loadAfter.bookingId == bookingId
@@ -398,10 +424,11 @@ service cloud.firestore {
               || resource.data.customerId == request.auth.uid);
       allow create: if signedIn() && validBookingCreate(bookingId);
       allow update: if signedIn()
-          && ((resource.data.customerId == request.auth.uid && ewayBillUpdate())
+          && ((resource.data.customerId == request.auth.uid && (ewayBillUpdate() || customerMarksPaid()))
           || (resource.data.driverId == request.auth.uid
           && (driverLocationUpdate()
               || ewayBillUpdate()
+              || driverConfirmsPayment(bookingId)
               || breakdownReport()
               || driverStep(bookingId)
               || (changedKeys().hasOnly(['status', 'timeline', 'updatedAt', 'cancellation'])
@@ -518,6 +545,31 @@ service cloud.firestore {
       allow create: if signedIn() && validOfferCreate(offerId);
       allow update: if signedIn() && (driverOfferUpdate(offerId) || customerOfferUpdate());
       allow delete: if false;
+    }
+
+    // ------------------------------------------------------------------
+    // ledger/{bookingId}_{type}: append-only driver wallet lines, written by
+    // the booking's driver together with confirming payment received. The
+    // earning equals the amount the customer marked paid; the commission is
+    // negative and at most half of it.
+    // ------------------------------------------------------------------
+    function validLedgerLine(entryId) {
+      let e = request.resource.data;
+      let b = getAfter(docPath('bookings', e.bookingId)).data;
+      return e.keys().hasOnly(['driverId', 'bookingId', 'type', 'amountPaise', 'createdAt'])
+          && entryId == e.bookingId + '_' + e.type
+          && e.driverId == request.auth.uid
+          && b.driverId == request.auth.uid
+          && b.paymentStatus == 'driver_confirmed'
+          && e.amountPaise is int
+          && ((e.type == 'trip_earning' && e.amountPaise == b.paidAmountPaise)
+              || (e.type == 'platform_commission' && e.amountPaise <= 0 && e.amountPaise * -2 <= b.paidAmountPaise));
+    }
+
+    match /ledger/{entryId} {
+      allow read: if signedIn() && (resource.data.driverId == request.auth.uid || isAdmin());
+      allow create: if signedIn() && validLedgerLine(entryId);
+      allow update, delete: if false;
     }
 
     // ------------------------------------------------------------------

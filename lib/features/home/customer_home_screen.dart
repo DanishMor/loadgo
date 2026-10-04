@@ -6,11 +6,12 @@ import '../../core/services/booking_service.dart';
 import '../../main.dart';
 import '../bookings/booking_tracking_screen.dart';
 import '../bookings/customer_bookings_view.dart';
-import '../bookings/invoice_screen.dart';
+import '../../core/documents/invoice_screen.dart';
 import '../loads/my_loads_view.dart';
 import '../notifications/notifications_screen.dart';
 import '../loads/post_load_screen.dart';
 import '../profile/profile_view.dart';
+import '../../core/documents/documents_center_screen.dart';
 
 // ============================================================
 // CUSTOMER HOME DASHBOARD
@@ -254,10 +255,11 @@ class _CustomerHomeContent extends StatelessWidget {
                 const SizedBox(width: 12),
                 Expanded(
                   child: _QuickActionCard(
-                    icon: Icons.receipt_long_rounded,
-                    title: tr(context, 'bookings'),
-                    subtitle: tr(context, 'viewBookings'),
-                    onTap: () => onOpenTab(_CustomerHomeScreenState._bookingsTab),
+                    icon: Icons.folder_copy_outlined,
+                    title: tr(context, 'documentsCenter'),
+                    subtitle: tr(context, 'invoice'),
+                    onTap: () => Navigator.of(context)
+                        .push(MaterialPageRoute(builder: (_) => const DocumentsCenterScreen(asDriver: false))),
                   ),
                 ),
               ],

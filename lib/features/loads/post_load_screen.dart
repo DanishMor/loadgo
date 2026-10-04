@@ -13,6 +13,8 @@ import '../../core/widgets/fare_breakdown.dart';
 import '../../core/constants/prohibited_cargo.dart';
 import '../../core/models/load.dart';
 import '../../customer/saved_place_picker.dart';
+import '../../core/models/ledger_entry.dart';
+import '../../core/documents/payment_card.dart';
 
 /// Customer form to post a load. Pops with `true` once posted.
 /// [repostFrom] prefills everything except the pickup date.
@@ -37,6 +39,7 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
   String _vehicleType = '14ft';
   DateTime? _pickupDate;
   String _slot = PickupSlot.any;
+  String _paymentMode = PaymentMode.cash;
   bool _saving = false;
   final List<TextEditingController> _extraPickups = [];
   final List<TextEditingController> _extraDrops = [];
@@ -66,6 +69,7 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
     if (cargoTypes.contains(l.cargoType)) _cargoType = l.cargoType;
     _vehicleType = l.vehicleType;
     _slot = l.pickupSlot;
+    _paymentMode = l.paymentMode;
     if (l.distanceSource == DistanceSource.manual && l.estimate != null) _distanceCtrl.text = '${l.estimate!.distanceKm}';
     _extraPickups.addAll(l.extraPickups.map(_stopCtrl));
     _extraDrops.addAll(l.extraDrops.map(_stopCtrl));
@@ -247,6 +251,7 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
         extraPickups: [for (final c in _extraPickups) c.text],
         extraDrops: [for (final c in _extraDrops) c.text],
         pickupSlot: _slot,
+        paymentMode: _paymentMode,
       );
       if (!mounted) return;
       showSnack(context, tr(context, 'loadPosted'));
@@ -387,6 +392,15 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
                   decoration: const InputDecoration(prefixIcon: Icon(Icons.schedule_rounded)),
                   items: [for (final x in PickupSlot.all) DropdownMenuItem(value: x, child: Text(pickupSlotLabel(context, x)))],
                   onChanged: (v) => setState(() => _slot = v ?? _slot),
+                ),
+                const SizedBox(height: 18),
+                FieldLabel(tr(context, 'paymentMode')),
+                DropdownButtonFormField<String>(
+                  key: const ValueKey('paymentMode'),
+                  initialValue: _paymentMode,
+                  decoration: const InputDecoration(prefixIcon: Icon(Icons.payments_outlined)),
+                  items: [for (final m in PaymentMode.all) DropdownMenuItem(value: m, child: Text(paymentModeLabel(context, m)))],
+                  onChanged: (v) => setState(() => _paymentMode = v ?? _paymentMode),
                 ),
                 const SizedBox(height: 18),
                 FieldLabel(tr(context, 'notesOptional')),

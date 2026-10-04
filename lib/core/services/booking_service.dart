@@ -83,6 +83,8 @@ class BookingService {
           if (load.extraPickups.isNotEmpty) 'extraPickups': load.extraPickups,
           if (load.extraDrops.isNotEmpty) 'extraDrops': load.extraDrops,
           'pickupSlot': load.pickupSlot,
+          'paymentMode': load.paymentMode,
+          'paymentStatus': 'pending',
           'pickupDate': snap.data()!['pickupDate'],
           'notes': load.notes,
           'vehicleNumber': vehicle.number,

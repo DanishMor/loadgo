@@ -12,6 +12,7 @@ import '../../core/services/pricing_service.dart';
 import '../../driver/trip_proof_dialogs.dart';
 import '../../core/documents/trip_document_buttons.dart';
 import '../../driver/trip_safety_card.dart';
+import '../../core/documents/payment_card.dart';
 
 void openDriverTrip(BuildContext context, String bookingId) {
   Navigator.of(context).push(MaterialPageRoute(builder: (_) => DriverTripScreen(bookingId: bookingId)));
@@ -41,6 +42,8 @@ class DriverTripScreen extends StatelessWidget {
             const SizedBox(height: 14),
             LocationSharingCard(booking: booking),
           ],
+          const SizedBox(height: 14),
+          PaymentCard(booking: booking),
           const SizedBox(height: 14),
           BookingTimeline(booking: booking),
           const SizedBox(height: 12),

@@ -6,7 +6,7 @@ import 'package:transport_app/core/models/booking.dart';
 import 'package:transport_app/core/services/backend.dart';
 import 'package:transport_app/core/services/booking_service.dart';
 import 'package:transport_app/features/bookings/customer_bookings_view.dart';
-import 'package:transport_app/features/bookings/invoice_screen.dart';
+import 'package:transport_app/core/documents/invoice_screen.dart';
 
 import 'test_utils.dart';
 
@@ -92,7 +92,11 @@ void main() {
     expect(find.text('Toabcdefghij'), findsOneWidget);
     expect(find.text('Ramesh'), findsOneWidget);
     expect(find.text('MH12AB1234 (20 ft truck)'), findsOneWidget);
-    expect(find.text('₹ 25000'), findsOneWidget);
+    // Budget ₹25,000 is billed GST-inclusive (5%): taxable ₹23,809.52 + CGST/SGST.
+    expect(find.byKey(const ValueKey('invoiceTotal')), findsOneWidget);
+    expect(find.text('₹ 25,000'), findsOneWidget);
+    expect(find.text('₹ 23,809.52'), findsOneWidget);
+    expect(find.text('CGST (2.5%)'), findsOneWidget);
   });
 
   testWidgets('invoice is unavailable before delivery', (tester) async {

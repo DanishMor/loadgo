@@ -7,6 +7,7 @@ import 'booking_widgets.dart';
 import 'location_widgets.dart';
 import '../../customer/trip_otp_card.dart';
 import '../../core/documents/trip_document_buttons.dart';
+import '../../core/documents/payment_card.dart';
 
 void openBookingTracking(BuildContext context, String bookingId) {
   Navigator.of(context).push(MaterialPageRoute(builder: (_) => BookingTrackingScreen(bookingId: bookingId)));
@@ -37,6 +38,8 @@ class BookingTrackingScreen extends StatelessWidget {
             const SizedBox(height: 8),
             DriverLocationCard(booking: booking),
           ],
+          const SizedBox(height: 8),
+          PaymentCard(booking: booking),
           const SizedBox(height: 8),
           BookingTimeline(booking: booking),
           const SizedBox(height: 12),

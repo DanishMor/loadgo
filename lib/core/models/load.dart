@@ -36,6 +36,9 @@ class Load {
   /// [PickupSlot] value.
   final String pickupSlot;
 
+  /// `PaymentMode` value (cash / upi_direct).
+  final String paymentMode;
+
   const Load({
     required this.id,
     required this.shipperId,
@@ -57,6 +60,7 @@ class Load {
     this.extraPickups = const [],
     this.extraDrops = const [],
     this.pickupSlot = PickupSlot.any,
+    this.paymentMode = 'cash',
   });
 
   bool get isOpen => status == LoadStatus.open;
@@ -89,6 +93,7 @@ class Load {
       extraPickups: [for (final s in (d['extraPickups'] as List?) ?? const []) s.toString()],
       extraDrops: [for (final s in (d['extraDrops'] as List?) ?? const []) s.toString()],
       pickupSlot: d['pickupSlot'] as String? ?? PickupSlot.any,
+      paymentMode: d['paymentMode'] as String? ?? 'cash',
     );
   }
 }

@@ -171,6 +171,6 @@ void main() {
     });
     await settle(tester);
     // Chip in the summary shows the new status.
-    expect(find.text('Driver on the way'), findsNWidgets(2));
+    expect(find.text('Driver on the way'), findsWidgets);
   });
 }

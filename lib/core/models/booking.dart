@@ -53,6 +53,17 @@ class Booking {
   final bool pickupOtpVerified;
   final bool deliveryOtpVerified;
 
+  /// Payment record: mode from the load, status pending ->
+  /// customer_marked_paid -> driver_confirmed, and the amount the customer
+  /// says they paid (paise). Records only; no gateway yet.
+  final String paymentMode;
+  final String paymentStatus;
+  final int? paidAmountPaise;
+
+  /// Amount to bill: paid > agreed > estimate > budget (paise).
+  int? get billAmountPaise =>
+      paidAmountPaise ?? agreedFarePaise ?? fareEstimate ?? (budget == null ? null : (budget! * 100).round());
+
   /// Set when the driver reported a breakdown on this trip.
   final BookingBreakdown? breakdown;
 
@@ -97,6 +108,9 @@ class Booking {
     this.deliveryOtpVerified = false,
     this.ewayBillNo = '',
     this.breakdown,
+    this.paymentMode = 'cash',
+    this.paymentStatus = 'pending',
+    this.paidAmountPaise,
     this.extraPickups = const [],
     this.extraDrops = const [],
     this.pickupSlot = PickupSlot.any,
@@ -149,6 +163,9 @@ class Booking {
       pickupOtpVerified: d['pickupOtp'] is String,
       deliveryOtpVerified: d['deliveryOtp'] is String,
       ewayBillNo: d['ewayBillNo'] as String? ?? '',
+      paymentMode: d['paymentMode'] as String? ?? 'cash',
+      paymentStatus: d['paymentStatus'] as String? ?? 'pending',
+      paidAmountPaise: (d['paidAmountPaise'] as num?)?.round(),
       breakdown: d['breakdown'] is Map ? BookingBreakdown.fromMap(Map<String, dynamic>.from(d['breakdown'] as Map)) : null,
       extraPickups: [for (final s in (d['extraPickups'] as List?) ?? const []) s.toString()],
       extraDrops: [for (final s in (d['extraDrops'] as List?) ?? const []) s.toString()],
