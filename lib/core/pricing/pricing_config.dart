@@ -1,3 +1,4 @@
+import '../scheduling/schedule.dart';
 import 'fare_calculator.dart';
 
 /// `config/pricing`: rate cards per vehicle category with optional
@@ -17,6 +18,9 @@ class PricingConfig {
   /// Minutes of waiting at the points that are free before detention is charged.
   final int detentionFreeMinutes;
 
+  /// Advance booking limits and activation lead time.
+  final ScheduleRules schedule;
+
   /// Commission for drivers on the Pro plan.
   final num proCommissionPercent;
   final double roadFactor;
@@ -30,6 +34,7 @@ class PricingConfig {
     this.commissionPercent = 5,
     this.proCommissionPercent = 2,
     this.detentionFreeMinutes = 60,
+    this.schedule = const ScheduleRules(),
     this.roadFactor = 1.25,
     this.cancellation = const CancellationPolicy(),
   });
@@ -60,6 +65,10 @@ class PricingConfig {
       commissionPercent: m['commissionPercent'] as num? ?? defaultPricing.commissionPercent,
       proCommissionPercent: m['proCommissionPercent'] as num? ?? defaultPricing.proCommissionPercent,
       detentionFreeMinutes: (m['detentionFreeMinutes'] as num?)?.round() ?? defaultPricing.detentionFreeMinutes,
+      schedule: ScheduleRules.fromMap(
+        m['schedule'] as Map<String, dynamic>?,
+        freeCancelHours: ((m['cancellation'] as Map?)?['scheduledFreeHours'] as num?)?.round() ?? 2,
+      ),
       roadFactor: (m['roadFactor'] as num?)?.toDouble() ?? defaultPricing.roadFactor,
       cancellation: CancellationPolicy.fromMap(m['cancellation'] as Map<String, dynamic>?),
     );
@@ -73,6 +82,7 @@ class PricingConfig {
         'commissionPercent': commissionPercent,
         'proCommissionPercent': proCommissionPercent,
         'detentionFreeMinutes': detentionFreeMinutes,
+        'schedule': schedule.toMap(),
         'roadFactor': roadFactor,
         'cancellation': cancellation.toMap(),
       };

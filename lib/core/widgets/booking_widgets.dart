@@ -85,6 +85,7 @@ class BookingSummary extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           _row(Icons.calendar_today_outlined, tr(context, 'pickupDate'), formatDate(b.pickupDate)),
+          if (b.scheduledAt != null) _row(Icons.schedule_rounded, tr(context, 'pickupTime'), formatDateTime(b.scheduledAt!)),
           _row(Icons.inventory_2_outlined, tr(context, 'cargo'), '${b.cargoType} • ${formatNum(b.weight)} T'),
           _row(Icons.local_shipping_outlined, tr(context, 'vehicle'), '${b.vehicleNumber} (${vehicleTypeLabel(context, b.vehicleType)})'),
           _row(Icons.currency_rupee_rounded, tr(context, 'budget'),

@@ -20,6 +20,7 @@ import '../core/models/ledger_entry.dart';
 import '../core/documents/payment_card.dart';
 import 'trade_details_section.dart';
 import 'offers_section.dart';
+import '../core/scheduling/schedule.dart';
 import '../core/offers/promo.dart';
 import '../core/services/rewards_service.dart';
 
@@ -52,6 +53,7 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
   String _paymentMode = PaymentMode.cash;
   bool _saving = false;
   OffersChoice _offers = const OffersChoice();
+  TimeOfDay? _pickupTime;
   bool _fragile = false;
   bool _highValue = false;
   String _bookingType = BookingType.freight;
@@ -299,8 +301,31 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
     field.didChange(picked);
   }
 
+  Future<void> _pickTime() async {
+    final soon = DateTime.now().add(const Duration(hours: 2));
+    final t = await showTimePicker(context: context, initialTime: _pickupTime ?? TimeOfDay(hour: soon.hour, minute: 0));
+    if (t != null && mounted) setState(() => _pickupTime = t);
+  }
+
+  /// Pickup date + chosen time, or null when no exact time is set.
+  DateTime? get _scheduledAt {
+    final d = _pickupDate, t = _pickupTime;
+    return d == null || t == null ? null : DateTime(d.year, d.month, d.day, t.hour, t.minute);
+  }
+
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
+    final when = _scheduledAt;
+    if (_pickupTime != null && when != null) {
+      final rules = PricingService.config.schedule;
+      final problem = Schedule.check(when, DateTime.now(), rules);
+      if (problem != null) {
+        showSnack(context, problem == ScheduleProblem.tooSoon
+            ? trf(context, 'scheduleTooSoon', {'m': rules.minMinutes})
+            : trf(context, 'scheduleTooFar', {'d': rules.maxDays}));
+        return;
+      }
+    }
     setState(() => _saving = true);
     try {
       final budgetText = _budgetCtrl.text.trim();
@@ -320,6 +345,7 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
         creditsUsedPaise: credits,
         fragile: _fragile,
         highValue: _highValue,
+        scheduledAt: _scheduledAt,
         pickup: _pickupCtrl.text,
         drop: _dropCtrl.text.trim().isEmpty ? _pickupCtrl.text : _dropCtrl.text,
         cargoType: _cargoType,
@@ -523,6 +549,28 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
                   ),
                 ),
                 const SizedBox(height: 18),
+                SwitchListTile(
+                  key: const ValueKey('scheduleSwitch'),
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(tr(context, 'scheduleExactTime')),
+                  subtitle: Text(tr(context, 'scheduleExactTimeHint')),
+                  value: _pickupTime != null,
+                  onChanged: (v) {
+                    if (v) {
+                      _pickTime();
+                    } else {
+                      setState(() => _pickupTime = null);
+                    }
+                  },
+                ),
+                if (_pickupTime != null)
+                  OutlinedButton.icon(
+                    key: const ValueKey('pickupTimeButton'),
+                    onPressed: _pickTime,
+                    icon: const Icon(Icons.schedule_rounded),
+                    label: Text(_pickupTime!.format(context)),
+                  )
+                else ...[
                 FieldLabel(tr(context, 'pickupSlot')),
                 DropdownButtonFormField<String>(
                   key: const ValueKey('pickupSlot'),
@@ -531,6 +579,7 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
                   items: [for (final x in PickupSlot.all) DropdownMenuItem(value: x, child: Text(pickupSlotLabel(context, x)))],
                   onChanged: (v) => setState(() => _slot = v ?? _slot),
                 ),
+                ],
                 const SizedBox(height: 18),
                 FieldLabel(tr(context, 'paymentMode')),
                 DropdownButtonFormField<String>(

@@ -62,6 +62,9 @@ class BookingService {
         final vehicleRef = Backend.db.collection('vehicles').doc(vehicle.id);
         final vehicleSnap = await tx.get(vehicleRef);
         if (vehicleSnap.exists && !Vehicle.fromDoc(vehicleSnap).canTakeBooking) throw VehicleBusyException();
+        final rules = PricingService.config.schedule;
+        final deferVehicle = load.scheduledAt != null && load.scheduledAt!.isAfter(DateTime.now().add(Duration(minutes: rules.leadMinutes)));
+        if (deferVehicle && await _vehicleHasClash(vehicle.id, load.scheduledAt!)) throw VehicleBusyException();
         final offerRef = offerId == null ? null : Backend.db.collection('offers').doc(offerId);
         final offer = offerRef == null ? null : Offer.fromDoc(await tx.get(offerRef));
         if (offer != null && (offer.status != OfferStatus.selected || offer.driverId != uid || offer.loadId != loadId)) {
@@ -86,6 +89,7 @@ class BookingService {
           if (load.extraPickups.isNotEmpty) 'extraPickups': load.extraPickups,
           if (load.extraDrops.isNotEmpty) 'extraDrops': load.extraDrops,
           'pickupSlot': load.pickupSlot,
+          if (load.scheduledAt != null) 'scheduledAt': Timestamp.fromDate(load.scheduledAt!),
           'bookingType': load.bookingType,
           'helpers': load.helpers,
           'rentalHours': ?load.rentalHours,
@@ -102,7 +106,8 @@ class BookingService {
           'createdAt': FieldValue.serverTimestamp(),
           'updatedAt': FieldValue.serverTimestamp(),
         });
-        if (vehicleSnap.exists) tx.update(vehicleRef, {'availability': VehicleAvailability.onTrip});
+        // An advance booking does not block the vehicle until the driver starts it.
+        if (vehicleSnap.exists && !deferVehicle) tx.update(vehicleRef, {'availability': VehicleAvailability.onTrip});
         if (offerRef != null) {
           tx.update(offerRef, {
             'status': OfferStatus.confirmed,
@@ -135,6 +140,18 @@ class BookingService {
       rethrow;
     }
     return bookingRef.id;
+  }
+
+  /// True when [vehicleId] already has an advance booking within 12 hours of
+  /// [at] (client check only; the rules cannot see other bookings).
+  static Future<bool> _vehicleHasClash(String vehicleId, DateTime at) async {
+    final s = await _col.where('vehicleId', isEqualTo: vehicleId).get();
+    for (final d in s.docs) {
+      final b = Booking.fromDoc(d);
+      if (b.status != BookingStatus.accepted || b.scheduledAt == null) continue;
+      if (b.scheduledAt!.difference(at).abs() < const Duration(hours: 12)) return true;
+    }
+    return false;
   }
 
   /// Live single booking; emits null if it doesn't exist.
@@ -198,6 +215,22 @@ class BookingService {
       if (next == BookingStatus.delivered && (!otpOk || delivery == null)) throw OtpRequiredException();
       final freeVehicle = next == BookingStatus.delivered ? await _freeVehicleLater(tx, booking.vehicleId) : () {};
 
+      // Starting an advance booking is the moment the vehicle becomes busy.
+      void Function()? markBusy;
+      if (booking.status == BookingStatus.accepted && booking.scheduledAt != null) {
+        final vref = Backend.db.collection('vehicles').doc(booking.vehicleId);
+        final vsnap = await tx.get(vref);
+        if (vsnap.exists) {
+          final av = vsnap.data()?['availability'] as String? ?? VehicleAvailability.available;
+          if (av == VehicleAvailability.available) {
+            markBusy = () => tx.update(vref, {'availability': VehicleAvailability.onTrip, 'updatedAt': FieldValue.serverTimestamp()});
+          } else if (av != VehicleAvailability.onTrip) {
+            throw VehicleBusyException();
+          }
+        }
+      }
+
+      markBusy?.call();
       tx.update(ref, {
         'status': next,
         'timeline.$next': FieldValue.serverTimestamp(),
@@ -278,6 +311,51 @@ class BookingService {
         message: '${booking.pickup} → ${booking.drop}',
         relatedId: booking.id,
       );
+    });
+  }
+
+  /// Customer cancels an advance booking the driver has not started. The
+  /// load is closed as cancelled (not reopened). Returns the recorded charge
+  /// (paise): free until the configured hours before pickup. Record only.
+  static Future<int> cancelScheduledByCustomer(String bookingId, {DateTime? now}) async {
+    final uid = Backend.requireUid();
+    final ref = _col.doc(bookingId);
+    final at = now ?? DateTime.now();
+    return Backend.db.runTransaction((tx) async {
+      final snap = await tx.get(ref);
+      if (!snap.exists) throw StateError('Booking not found');
+      final booking = Booking.fromDoc(snap);
+      if (booking.customerId != uid) throw StateError('Only the customer can cancel');
+      if (!booking.canCustomerCancelScheduled) throw StateError('Only an advance booking that has not started can be cancelled');
+      final charge = PricingService.config.cancellation.chargeForScheduled(
+        now: at,
+        scheduledAt: booking.scheduledAt!,
+        farePaise: booking.agreedFarePaise ?? booking.fareEstimate,
+      );
+      final freeVehicle = await _freeVehicleLater(tx, booking.vehicleId);
+      tx.update(ref, {
+        'status': BookingStatus.cancelled,
+        'timeline.${BookingStatus.cancelled}': FieldValue.serverTimestamp(),
+        'cancellation': {'by': 'customer', 'chargePaise': charge},
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+      tx.update(Backend.db.collection('loads').doc(booking.loadId), {
+        'status': LoadStatus.closed,
+        'cancelled': true,
+        'cancelledAt': FieldValue.serverTimestamp(),
+      });
+      freeVehicle();
+      RiskService.countCancel(tx);
+      AuditService.inTransaction(tx, AuditType.cancel,
+          targetId: booking.driverId, bookingId: booking.id, loadId: booking.loadId, data: {'by': 'customer', 'from': booking.status});
+      NotificationService.addInTransaction(
+        tx,
+        userId: booking.driverId,
+        type: NotificationType.bookingCancelled,
+        message: '${booking.pickup} → ${booking.drop}',
+        relatedId: booking.id,
+      );
+      return charge;
     });
   }
 

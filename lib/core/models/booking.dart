@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../constants/logistics.dart';
+import '../scheduling/schedule.dart';
 
 /// A driver's acceptance of a load. A load has at most one live booking at a
 /// time (its `bookingId`); cancelled bookings stay as history.
@@ -37,6 +38,9 @@ class Booking {
   final List<String> extraPickups;
   final List<String> extraDrops;
   final String pickupSlot;
+
+  /// Exact pickup time of an advance booking (copied from the load).
+  final DateTime? scheduledAt;
 
   /// GPS evidence at pickup / delivery and odometer readings (km).
   final GeoPoint? pickupGps;
@@ -136,6 +140,7 @@ class Booking {
     this.helpers = 0,
     this.rentalHours,
     this.detention = const Detention(),
+    this.scheduledAt,
     this.pickupGps,
     this.deliveryGps,
     this.odometerStart,
@@ -151,6 +156,14 @@ class Booking {
   bool get isActive => status != BookingStatus.delivered && status != BookingStatus.cancelled;
 
   /// Drivers may back out only until loading starts.
+  /// Advance booking that is not due yet: shown in the upcoming list, not
+  /// as the current trip.
+  bool isUpcoming(DateTime now, ScheduleRules rules) =>
+      Schedule.isUpcoming(scheduledAt: scheduledAt, status: status, now: now, r: rules);
+
+  /// The customer may cancel an advance booking until the driver starts it.
+  bool get canCustomerCancelScheduled => scheduledAt != null && status == BookingStatus.accepted;
+
   bool get canDriverCancel => BookingStatus.driverCancellable.contains(status);
   String? get nextStatus => BookingStatus.next(status);
 
@@ -202,6 +215,7 @@ class Booking {
       helpers: (d['helpers'] as num?)?.toInt() ?? 0,
       rentalHours: (d['rentalHours'] as num?)?.toInt(),
       detention: Detention.fromMap(d['detention']),
+      scheduledAt: (d['scheduledAt'] as Timestamp?)?.toDate(),
       pickupGps: d['pickupGps'] as GeoPoint?,
       deliveryGps: d['deliveryGps'] as GeoPoint?,
       odometerStart: (d['odometerStart'] as num?)?.toInt(),

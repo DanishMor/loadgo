@@ -24,6 +24,7 @@ import 'pricing_strings.dart';
 import 'profile_strings.dart';
 import 'reminder_strings.dart';
 import 'risk_strings.dart';
+import 'schedule_strings.dart';
 import 'security_strings.dart';
 import 'settings_strings.dart';
 import 'support_strings.dart';
@@ -54,6 +55,7 @@ const List<Map<String, List<String>>> stringTables = [
   evidenceStrings,
   securityStrings,
   tripWatchStrings,
+  scheduleStrings,
   adminStrings,
   matchStrings,
   settingsStrings,

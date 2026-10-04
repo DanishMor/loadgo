@@ -147,7 +147,7 @@ class LoadRanker {
     LoadMatch? best;
     for (final v in ctx.vehicles) {
       if (!vehicleFits(v,
-          vehicleType: load.vehicleType, weight: load.weight, now: ctx.now, allowOnTrip: ctx.anchorIsActiveTrip)) {
+          vehicleType: load.vehicleType, weight: load.weight, now: ctx.now, allowOnTrip: ctx.anchorIsActiveTrip || _farAhead(load, ctx.now))) {
         continue;
       }
       final m = _score(load, v, ctx);
@@ -155,6 +155,10 @@ class LoadRanker {
     }
     return best;
   }
+
+  /// A load scheduled more than a day ahead can use a vehicle that is busy
+  /// now (SM10): it will be free again by then.
+  static bool _farAhead(Load load, DateTime now) => load.scheduledAt != null && load.scheduledAt!.isAfter(now.add(const Duration(hours: 24)));
 
   /// Only normal and review accounts may take loads (same as the rules).
   static bool canTransactTier(String tier) => tier == 'normal' || tier == 'review';

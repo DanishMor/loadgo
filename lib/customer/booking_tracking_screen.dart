@@ -6,6 +6,7 @@ import '../core/widgets/rating_widgets.dart';
 import '../core/widgets/tip_card.dart';
 import '../core/widgets/detention_card.dart';
 import '../core/widgets/evidence_cards.dart';
+import 'cancel_scheduled_button.dart';
 import '../core/widgets/booking_widgets.dart';
 import '../core/widgets/location_widgets.dart';
 import 'trip_otp_card.dart';
@@ -31,6 +32,7 @@ class BookingTrackingScreen extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(20, 10, 20, 30),
         children: [
           BookingSummary(booking: booking, showDriver: true),
+          if (booking.canCustomerCancelScheduled) CancelScheduledButton(booking: booking),
           if (booking.isActive) ...[
             const SizedBox(height: 8),
             TripOtpCard(key: ValueKey('otp_${booking.id}'), booking: booking),

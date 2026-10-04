@@ -18,7 +18,7 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | L Load marketplace | 14 | 11 | 2 | 1 | 0 | 0 |
 | P Booking + pricing | 14 | 10 | 2 | 1 | 1 | 0 |
 | M Map | 16 | 1 | 5 | 0 | 9 | 1 |
-| SM Smart matching | 14 | 9 | 2 | 3 | 0 | 0 |
+| SM Smart matching | 14 | 10 | 2 | 2 | 0 | 0 |
 | D Driver app | 16 | 8 | 5 | 3 | 0 | 0 |
 | CH Chat | 14 | 3 | 2 | 5 | 4 | 0 |
 | T Trip lifecycle | 14 | 9 | 4 | 0 | 1 | 0 |
@@ -33,7 +33,7 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | AI AI | 14 | 0 | 0 | 0 | 14 | 0 |
 | BE Backend | 18 | 4 | 6 | 1 | 7 | 0 |
 | TEST Testing | 14 | 4 | 3 | 0 | 7 | 0 |
-| **Total** | **347** | **152** | **82** | **36** | **76** | **1** |
+| **Total** | **347** | **153** | **82** | **35** | **76** | **1** |
 
 ## P0 Principles
 
@@ -176,7 +176,7 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | Code | Item | Status | Where / why |
 |---|---|---|---|
 | P1 | Book Now Immediate vehicle search and booking. | Done | Post load + accept |
-| P2 | Schedule Future pickup date/time. | Done | Pickup date/slot |
+| P2 | Schedule Future pickup date/time. | Done | Exact pickup date and time, upcoming list, activation lead time and cancel window from config/pricing |
 | P3 | Recurring Repeat route/shipments. | Todo-free | No recurring shipments |
 | P4 | Multi-stop Multiple pickup/drop points. | Done | 3 pickups/3 drops with per-stop charge |
 | P5 | Fare estimate Distance + vehicle + cargo + weight + demand factors. | Done | FareCalculator + estimate card |
@@ -224,7 +224,7 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | SM7 | Verification filter Required KYC/document status valid. | Done | Verified driver + no expired papers |
 | SM8 | Risk filter High-risk/suspended accounts exclude/hold. | Done | LoadRanker returns nothing for restricted or suspended drivers |
 | SM9 | Fleet matching Fleet ke available vehicles se auto allocation. | Todo-free | No fleet auto allocation |
-| SM10 | Scheduled matching Pickup slot ke according. | Todo-free | Slot is stored, not used in matching |
+| SM10 | Scheduled matching Pickup slot ke according. | Done | A vehicle that is busy now can match a load scheduled more than 24 h ahead; advance bookings do not block the vehicle until started |
 | SM11 | Multi-stop matching Compatible route and capacity. | Todo-free | No multi-stop matching |
 | SM12 | Emergency replacement Breakdown/cancellation ke baad replacement. | Partial | Breakdown flag; manual replacement |
 | SM13 | Load ranking Distance, ETA, route fit and operational factors. | Done | LoadRanker score + reason chips |

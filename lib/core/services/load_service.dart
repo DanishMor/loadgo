@@ -9,6 +9,8 @@ import '../models/load.dart';
 import '../constants/prohibited_cargo.dart';
 import '../matching/nearest.dart';
 import '../risk/risk_rules.dart';
+import '../scheduling/schedule.dart';
+import 'pricing_service.dart';
 import '../models/paged.dart';
 import '../enterprise/validators.dart';
 import '../offers/promo.dart';
@@ -17,6 +19,15 @@ import 'rewards_service.dart';
 import 'risk_service.dart';
 import '../pricing/fare_calculator.dart';
 import 'backend.dart';
+
+/// The chosen pickup time breaks the advance-booking limits.
+class ScheduleException implements Exception {
+  final ScheduleProblem problem;
+  const ScheduleException(this.problem);
+
+  @override
+  String toString() => 'ScheduleException($problem)';
+}
 
 class LoadNotCancellableException implements Exception {
   @override
@@ -66,7 +77,12 @@ class LoadService {
     int creditsUsedPaise = 0,
     bool fragile = false,
     bool highValue = false,
+    DateTime? scheduledAt,
   }) async {
+    if (scheduledAt != null) {
+      final problem = Schedule.check(scheduledAt, DateTime.now(), PricingService.config.schedule);
+      if (problem != null) throw ScheduleException(problem);
+    }
     if (creditsUsedPaise < 0) throw ArgumentError.value(creditsUsedPaise, 'creditsUsedPaise');
     if (!BookingType.all.contains(bookingType)) throw ArgumentError.value(bookingType, 'bookingType');
     if (helpers < 0 || helpers > maxHelpers) throw ArgumentError.value(helpers, 'helpers');
@@ -87,6 +103,7 @@ class LoadService {
     final data = <String, Object?>{
       'pickupGeohash': ?geohash,
       'bookingType': bookingType,
+      if (scheduledAt != null) 'scheduledAt': Timestamp.fromDate(scheduledAt),
       if (fragile) 'fragile': true,
       if (highValue) 'highValue': true,
       'helpers': helpers,
@@ -94,7 +111,7 @@ class LoadService {
       if (bookingType == BookingType.movers) 'movers': movers!.toMap(),
       if (clean(extraPickups).isNotEmpty) 'extraPickups': clean(extraPickups),
       if (clean(extraDrops).isNotEmpty) 'extraDrops': clean(extraDrops),
-      'pickupSlot': pickupSlot,
+      'pickupSlot': scheduledAt == null ? pickupSlot : Schedule.slotFor(scheduledAt),
       'paymentMode': paymentMode,
       if (containerNumber.trim().isNotEmpty) 'containerNumber': normaliseContainer(containerNumber),
       if (sealNumber.trim().isNotEmpty) 'sealNumber': sealNumber.trim(),
@@ -109,7 +126,7 @@ class LoadService {
       'weight': weight,
       'vehicleType': vehicleType,
       'budget': budget,
-      'pickupDate': Timestamp.fromDate(DateTime(pickupDate.year, pickupDate.month, pickupDate.day)),
+      'pickupDate': Timestamp.fromDate(DateTime((scheduledAt ?? pickupDate).year, (scheduledAt ?? pickupDate).month, (scheduledAt ?? pickupDate).day)),
       'notes': notes.trim(),
       'status': LoadStatus.open,
       'createdAt': FieldValue.serverTimestamp(),

@@ -165,7 +165,17 @@ class CancellationPolicy {
   final int minCharge;
   final int maxCharge;
 
-  const CancellationPolicy({this.freeMinutes = 15, this.chargePercent = 10, this.minCharge = 5000, this.maxCharge = 100000});
+  /// For scheduled bookings: cancelling is free until this many hours before
+  /// the pickup time.
+  final int scheduledFreeHours;
+
+  const CancellationPolicy({
+    this.freeMinutes = 15,
+    this.chargePercent = 10,
+    this.minCharge = 5000,
+    this.maxCharge = 100000,
+    this.scheduledFreeHours = 2,
+  });
 
   factory CancellationPolicy.fromMap(Map<String, dynamic>? m) {
     const d = CancellationPolicy();
@@ -175,16 +185,32 @@ class CancellationPolicy {
       chargePercent: m['chargePercent'] as num? ?? d.chargePercent,
       minCharge: (m['minCharge'] as num?)?.round() ?? d.minCharge,
       maxCharge: (m['maxCharge'] as num?)?.round() ?? d.maxCharge,
+      scheduledFreeHours: (m['scheduledFreeHours'] as num?)?.round() ?? d.scheduledFreeHours,
     );
   }
 
   Map<String, num> toMap() =>
-      {'freeMinutes': freeMinutes, 'chargePercent': chargePercent, 'minCharge': minCharge, 'maxCharge': maxCharge};
+      {
+        'freeMinutes': freeMinutes,
+        'chargePercent': chargePercent,
+        'minCharge': minCharge,
+        'maxCharge': maxCharge,
+        'scheduledFreeHours': scheduledFreeHours,
+      };
 
   /// Charge in paise for cancelling [elapsed] after acceptance on a trip
   /// worth [farePaise] (null = no estimate, the minimum applies).
   int chargeFor({required Duration elapsed, int? farePaise}) {
     if (elapsed.inMinutes < freeMinutes) return 0;
+    return _charge(farePaise);
+  }
+
+  /// Charge for cancelling a scheduled booking: free until
+  /// [scheduledFreeHours] before the pickup, the normal charge after.
+  int chargeForScheduled({required DateTime now, required DateTime scheduledAt, int? farePaise}) =>
+      now.isAfter(scheduledAt.subtract(Duration(hours: scheduledFreeHours))) ? _charge(farePaise) : 0;
+
+  int _charge(int? farePaise) {
     final raw = farePaise == null ? minCharge : _pct(farePaise, chargePercent);
     return raw.clamp(minCharge, maxCharge < minCharge ? minCharge : maxCharge);
   }

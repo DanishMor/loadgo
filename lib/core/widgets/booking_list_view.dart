@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../models/booking.dart';
+import '../services/pricing_service.dart';
 import 'common.dart';
 import 'live_stream.dart';
 import 'paged_live_stream.dart';
@@ -71,7 +72,9 @@ class ActiveTripCard extends StatelessWidget {
       stream: bookings,
       compact: true,
       builder: (context, all) {
-        final active = all.where((b) => b.isActive).toList();
+        final rules = PricingService.config.schedule;
+        final now = DateTime.now();
+        final active = all.where((b) => b.isActive && !b.isUpcoming(now, rules)).toList();
         if (active.isEmpty) return empty;
         return Column(
           children: [

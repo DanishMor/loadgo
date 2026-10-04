@@ -74,7 +74,7 @@ class ReminderEngine {
     for (final b in i.bookings) {
       final date = b.pickupDate;
       if (date == null || !notYetPickedUp.contains(b.status)) continue;
-      final at = pickupMoment(date, b.pickupSlot);
+      final at = b.scheduledAt ?? pickupMoment(date, b.pickupSlot);
       if (_inWindow(i.now, at)) {
         out.add(Reminder(
           kind: ReminderKind.pickupSoon,
@@ -91,7 +91,7 @@ class ReminderEngine {
       for (final l in i.loads) {
         final date = l.pickupDate;
         if (date == null || !l.isOpen) continue;
-        final at = pickupMoment(date, l.pickupSlot);
+        final at = l.scheduledAt ?? pickupMoment(date, l.pickupSlot);
         if (_inWindow(i.now, at)) {
           out.add(Reminder(
             kind: ReminderKind.noDriverYet,

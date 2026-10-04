@@ -22,6 +22,7 @@ import 'driver_trip_screen.dart';
 import '../core/reminders/reminders.dart';
 import '../core/widgets/reminder_widgets.dart';
 import 'city_demand_screen.dart';
+import 'upcoming_trips.dart';
 import 'earnings_view.dart';
 import 'available_loads_view.dart';
 import '../core/widgets/load_card.dart';
@@ -273,6 +274,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
             ),
             _noVehiclePrompt(),
             RemindersBanner(isDriver: true, onOpen: _openReminder),
+            UpcomingTripsCard(onOpen: (id) => openDriverTrip(context, id)),
             VehicleAlertsBanner(vehicles: _vehicles, onTap: _openVehicles),
             const SizedBox(height: 16),
             Container(

@@ -960,6 +960,69 @@ describe('devices and risk signals', () => {
   });
 });
 
+describe('scheduled bookings', () => {
+  const inDays = (d) => Timestamp.fromMillis(Date.now() + d * 86400000);
+  const inMinutes = (m) => Timestamp.fromMillis(Date.now() + m * 60000);
+  const post = (at) => addDoc(collection(as('customer1'), 'loads'), { ...LOAD, scheduledAt: at });
+
+  test('a load may be scheduled between 30 minutes and 90 days ahead', async () => {
+    await assertSucceeds(post(inDays(3)));
+    await assertSucceeds(post(inMinutes(90)));
+    await assertFails(post(inMinutes(5)), 'too soon');
+    await assertFails(post(inDays(120)), 'too far');
+    await assertFails(post(Timestamp.fromDate(new Date('2020-01-01'))));
+    await assertFails(addDoc(collection(as('customer1'), 'loads'), { ...LOAD, scheduledAt: 'tomorrow' }));
+  });
+
+  test('the booking must carry the load\'s scheduled time', async () => {
+    const at = inDays(2);
+    await seed(async (db) => {
+      await setDoc(doc(db, 'loads', 'L1'), { ...LOAD, scheduledAt: at });
+      await setDoc(doc(db, 'vehicles', 'v1'), VEHICLE);
+    });
+    await assertFails(acceptBatch(as('driver1'), 'L1'), 'missing scheduledAt');
+    await assertFails(acceptBatch(as('driver1'), 'L1', 'driver1', { scheduledAt: inDays(5) }));
+    await assertSucceeds(acceptBatch(as('driver1'), 'L1', 'driver1', { scheduledAt: at }));
+  });
+
+  describe('customer cancels an advance booking', () => {
+    const seedMatched = (extra = {}, status = 'accepted') =>
+      seed(async (db) => {
+        const at = inDays(2);
+        await setDoc(doc(db, 'loads', 'S1'), { ...LOAD, status: 'matched', driverId: 'driver1', bookingId: 'S1', scheduledAt: at });
+        await setDoc(doc(db, 'bookings', 'S1'), { ...bookingFor('S1'), scheduledAt: at, status, timeline: {}, ...extra });
+        await setDoc(doc(db, 'users', 'customer1'), { role: 'customer', selectedRole: 'customer', cancelCount: 0 });
+      });
+    const cancel = (uid, { by = 'customer', charge = 0, loadCancelled = true, count = 1, closeLoad = true } = {}) => {
+      const db = as(uid);
+      const b = writeBatch(db);
+      b.update(doc(db, 'bookings', 'S1'), { status: 'cancelled', 'timeline.cancelled': serverTimestamp(), cancellation: { by, chargePaise: charge }, updatedAt: serverTimestamp() });
+      if (closeLoad) b.update(doc(db, 'loads', 'S1'), { status: 'closed', cancelled: loadCancelled, cancelledAt: serverTimestamp() });
+      b.set(doc(db, 'users', uid), { cancelCount: increment(count) }, { merge: true });
+      return b.commit();
+    };
+
+    test('works before the driver starts, with a counted cancellation', async () => {
+      await seedMatched();
+      await assertSucceeds(cancel('customer1', { charge: 30000 }));
+    });
+
+    test('refused: not an advance booking, already started, wrong party, wrong charge shape', async () => {
+      await seedMatched({}, 'driver_arriving');
+      await assertFails(cancel('customer1'), 'driver already started');
+      await seedMatched();
+      await assertFails(cancel('customer2'), 'not the customer');
+      await assertFails(cancel('customer1', { by: 'driver' }), 'by must be customer');
+      await assertFails(cancel('customer1', { charge: -5 }));
+      await assertFails(cancel('customer1', { closeLoad: false }), 'load must close in the same batch');
+      await assertFails(cancel('customer1', { loadCancelled: false }), 'load must be marked cancelled');
+      await assertFails(cancel('customer1', { count: 0 }), 'cancellation must be counted');
+      await seed((db) => setDoc(doc(db, 'bookings', 'S1'), { ...bookingFor('S1'), status: 'accepted', timeline: {} }));
+      await assertFails(cancel('customer1'), 'booking has no scheduled time');
+    });
+  });
+});
+
 describe('admin verification', () => {
   const seedDriver = () => seed((db) => setDoc(doc(db, 'users', 'd1'), { driverName: 'R', verified: false, verificationStatus: 'pending' }));
 

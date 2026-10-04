@@ -438,6 +438,7 @@ service cloud.firestore {
           && d.get('paymentMode', 'cash') in ['cash', 'upi_direct']
           && validTradeFields(d)
           && validBookingType(d)
+          && (!('scheduledAt' in d) || d.scheduledAt is timestamp)
           && (!('fragile' in d) || d.fragile is bool)
           && (!('highValue' in d) || d.highValue is bool)
           && validPromoShape(d)
@@ -570,6 +571,19 @@ service cloud.firestore {
           && request.resource.data.pickupGeohash.matches('^[0-9b-hjkmnp-z]{4,12}$');
     }
 
+    // Shipper closes a matched advance-booking load as cancelled, together
+    // with the booking being cancelled by the customer.
+    function shipperCancelsMatchedScheduled() {
+      return resource.data.shipperId == request.auth.uid
+          && resource.data.status == 'matched'
+          && 'scheduledAt' in resource.data
+          && request.resource.data.status == 'closed'
+          && request.resource.data.get('cancelled', false) == true
+          && changedKeys().hasOnly(['status', 'cancelled', 'cancelledAt'])
+          && getAfter(docPath('bookings', resource.data.bookingId)).data.status == 'cancelled'
+          && getAfter(docPath('bookings', resource.data.bookingId)).data.get('cancellation', {}).get('by', '') == 'customer';
+    }
+
     match /loads/{loadId} {
       allow read: if signedIn()
           && (resource.data.status == 'open'
@@ -582,9 +596,12 @@ service cloud.firestore {
           && canTransact(request.auth.uid)
           && !request.resource.data.keys().hasAny(['driverId', 'bookingId'])
           && validLoad(request.resource.data)
+          && (!('scheduledAt' in request.resource.data)
+              || (request.resource.data.scheduledAt >= request.time + duration.value(30, 'm')
+                  && request.resource.data.scheduledAt <= request.time + duration.value(90, 'd')))
           && offersCreateOk(loadId, request.resource.data);
       allow update: if signedIn()
-          && (shipperEdit() || driverMatch(loadId) || driverClose() || driverReopen() || adminReassignLoad() || adminGeohashBackfill());
+          && (shipperEdit() || driverMatch(loadId) || driverClose() || driverReopen() || adminReassignLoad() || adminGeohashBackfill() || shipperCancelsMatchedScheduled());
       allow delete: if signedIn()
           && resource.data.shipperId == request.auth.uid
           && resource.data.status == 'open';
@@ -734,7 +751,7 @@ service cloud.firestore {
       let loadAfter = getAfter(docPath('loads', b.loadId)).data;
       return b.keys().hasOnly(['loadId', 'driverId', 'vehicleId', 'customerId', 'status', 'pickup', 'drop', 'cargoType', 'weight',
                                'vehicleType', 'budget', 'fareEstimate', 'offerId', 'agreedFarePaise', 'extraPickups', 'extraDrops',
-                               'pickupSlot', 'bookingType', 'helpers', 'rentalHours', 'paymentMode', 'paymentStatus', 'containerNumber', 'sealNumber', 'pickupDate', 'notes',
+                               'pickupSlot', 'scheduledAt', 'bookingType', 'helpers', 'rentalHours', 'paymentMode', 'paymentStatus', 'containerNumber', 'sealNumber', 'pickupDate', 'notes',
                                'vehicleNumber', 'driverName', 'driverPhone', 'timeline', 'createdAt', 'updatedAt'])
           && b.timeline.keys().hasOnly(['accepted'])
           && b.driverId == request.auth.uid
@@ -752,6 +769,7 @@ service cloud.firestore {
           && b.get('extraPickups', []) == load.get('extraPickups', [])
           && b.get('extraDrops', []) == load.get('extraDrops', [])
           && b.get('paymentMode', 'cash') == load.get('paymentMode', 'cash')
+          && b.get('scheduledAt', null) == load.get('scheduledAt', null)
           && b.get('bookingType', 'freight') == load.get('bookingType', 'freight')
           && b.get('helpers', 0) == load.get('helpers', 0)
           && b.get('rentalHours', null) == load.get('rentalHours', null)
@@ -792,7 +810,22 @@ service cloud.firestore {
     // Recorded policy charge for a driver cancellation. No money moves.
     function validCancellation(c) {
       return c == null || (c is map && c.keys().hasOnly(['by', 'chargePaise'])
-          && c.by == 'driver' && c.chargePaise is int && c.chargePaise >= 0 && c.chargePaise <= 10000000);
+          && c.by in ['driver', 'customer'] && c.chargePaise is int && c.chargePaise >= 0 && c.chargePaise <= 10000000);
+    }
+
+    // Customer cancels an advance booking the driver has not started: the
+    // booking is cancelled, with the load closed as cancelled in the same batch.
+    function customerCancelsScheduled() {
+      return resource.data.status == 'accepted'
+          && 'scheduledAt' in resource.data
+          && changedKeys().hasOnly(['status', 'timeline', 'updatedAt', 'cancellation'])
+          && request.resource.data.status == 'cancelled'
+          && request.resource.data.get('cancellation', null) != null
+          && request.resource.data.cancellation.by == 'customer'
+          && validCancellation(request.resource.data.cancellation)
+          && cancelCounted()
+          && getAfter(docPath('loads', resource.data.loadId)).data.status == 'closed'
+          && getAfter(docPath('loads', resource.data.loadId)).data.get('cancelled', false) == true;
     }
 
     // Admin reassigns a not-yet-picked-up booking to another driver and
@@ -815,7 +848,7 @@ service cloud.firestore {
               || isAdmin());
       allow create: if signedIn() && validBookingCreate(bookingId);
       allow update: if signedIn()
-          && (adminReassignBooking() || (resource.data.customerId == request.auth.uid && (ewayBillUpdate() || customerMarksPaid()))
+          && (adminReassignBooking() || (resource.data.customerId == request.auth.uid && (ewayBillUpdate() || customerMarksPaid() || customerCancelsScheduled()))
           || (resource.data.driverId == request.auth.uid
           && (driverLocationUpdate()
               || ewayBillUpdate()
@@ -828,6 +861,7 @@ service cloud.firestore {
                   && resource.data.status in ['accepted', 'driver_arriving']
                   && request.resource.data.status == 'cancelled'
                   && validCancellation(request.resource.data.get('cancellation', null))
+                  && request.resource.data.get('cancellation', {'by': 'driver'}).by == 'driver'
                   && cancelCounted()
                   && getAfter(docPath('loads', resource.data.loadId)).data.status == 'open'))));
       allow delete: if false;
