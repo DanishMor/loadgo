@@ -11,7 +11,7 @@ void main() {
 
   test('fallback list covers every roadmap type with sane ranges', () {
     final ids = defaultVehicleTypes.map((t) => t.id).toSet();
-    for (final id in ['Bike', 'Scooter', 'EV 2W', '3-Wheeler', 'Mini', '14ft', '17ft', '19ft', '20ft', '22ft', '24ft',
+    for (final id in ['Cycle', 'Bike', 'Scooter', 'EV 2W', '3-Wheeler', 'Mini', '14ft', '17ft', '19ft', '20ft', '22ft', '24ft',
         '32ft', 'Container', 'Trailer', 'Open body']) {
       expect(ids, contains(id));
     }

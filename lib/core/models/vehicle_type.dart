@@ -61,6 +61,7 @@ const List<VehicleTypeInfo> defaultVehicleTypes = [
   VehicleTypeInfo(id: 'Bike', name: 'Bike', labelKey: 'vtBike', minTons: 0, maxTons: 0.02, category: 'two_wheeler'),
   VehicleTypeInfo(id: 'Scooter', name: 'Scooter', labelKey: 'vtScooter', minTons: 0, maxTons: 0.03, category: 'two_wheeler'),
   VehicleTypeInfo(id: 'EV 2W', name: 'EV 2W', labelKey: 'vtEv2w', minTons: 0, maxTons: 0.03, category: 'two_wheeler'),
+  VehicleTypeInfo(id: 'Cycle', name: 'Cycle', labelKey: 'vtCycle', minTons: 0, maxTons: 0.015, category: 'two_wheeler'),
   VehicleTypeInfo(id: '3-Wheeler', name: '3W goods auto', labelKey: 'vt3w', minTons: 0.3, maxTons: 1, category: 'three_wheeler'),
   VehicleTypeInfo(id: 'Mini', name: 'Mini truck', labelKey: 'vtMini', minTons: 0.75, maxTons: 2, category: 'lcv'),
   VehicleTypeInfo(id: '14ft', name: '14 ft', minTons: 2.5, maxTons: 4, category: 'lcv'),

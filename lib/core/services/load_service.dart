@@ -8,6 +8,7 @@ import '../constants/logistics.dart';
 import '../models/load.dart';
 import '../constants/prohibited_cargo.dart';
 import '../matching/nearest.dart';
+import '../risk/risk_rules.dart';
 import '../models/paged.dart';
 import '../enterprise/validators.dart';
 import '../offers/promo.dart';
@@ -121,6 +122,16 @@ class LoadService {
     // documents, and the credits spend line (the rules check all of them).
     if (promo != null) RewardsService.addRedemption(batch, promo, loadId: ref.id, uid: uid);
     if (creditsUsedPaise > 0) RewardsService.addSpend(batch, uid: uid, loadId: ref.id, paise: creditsUsedPaise);
+    // High-value load: tell admins (a signal, not a block).
+    if (estimate != null && RiskRules.isHighValue(estimate.total)) {
+      batch.set(Backend.db.collection('risk_signals').doc(), {
+        'uid': uid,
+        'type': 'high_value',
+        'amountPaise': estimate.total,
+        'note': 'load ${ref.id}',
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+    }
     await batch.commit();
     return ref.id;
   }

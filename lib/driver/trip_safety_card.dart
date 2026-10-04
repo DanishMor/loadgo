@@ -4,6 +4,7 @@ import '../core/l10n/l10n.dart';
 import '../core/models/booking.dart';
 import '../core/safety/call.dart';
 import '../core/services/safety_service.dart';
+import '../core/services/trip_evidence_service.dart';
 import '../core/services/user_service.dart';
 import '../core/widgets/common.dart';
 
@@ -79,8 +80,50 @@ class _TripSafetyCardState extends State<TripSafetyCard> {
     }
   }
 
+  Future<void> _accident() async {
+    final ctrl = TextEditingController();
+    final text = await showDialog<String>(
+      context: context,
+      builder: (c) => AlertDialog(
+        title: Text(tr(c, 'reportAccident')),
+        content: TextField(key: const ValueKey('accidentText'), controller: ctrl, maxLength: 500, maxLines: 3, decoration: InputDecoration(labelText: tr(c, 'accidentDescribe'))),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(c).pop(), child: Text(tr(c, 'cancel'))),
+          FilledButton(key: const ValueKey('accidentSubmit'), onPressed: () => Navigator.of(c).pop(ctrl.text), child: Text(tr(c, 'reportAccident'))),
+        ],
+      ),
+    );
+    if (text == null || !mounted) return;
+    setState(() => _busy = true);
+    try {
+      await TripEvidenceService.reportAccident(widget.booking, text);
+      if (mounted) showSnack(context, tr(context, 'accidentReported'));
+    } on EvidenceException {
+      if (mounted) showSnack(context, tr(context, 'accidentTooShort'));
+    } catch (_) {
+      if (mounted) showSnack(context, tr(context, 'somethingWrong'));
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    return Column(children: [
+      _buttons(),
+      Align(
+        alignment: Alignment.centerLeft,
+        child: TextButton.icon(
+          key: const ValueKey('accidentButton'),
+          onPressed: _busy ? null : _accident,
+          icon: const Icon(Icons.warning_amber_rounded, size: 18),
+          label: Text(tr(context, 'reportAccident')),
+        ),
+      ),
+    ]);
+  }
+
+  Widget _buttons() {
     return Row(
       children: [
         Expanded(

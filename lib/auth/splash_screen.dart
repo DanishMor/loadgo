@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../core/l10n/l10n.dart';
+import '../core/services/device_service.dart';
 import '../core/services/user_service.dart';
 import 'start_resolvers.dart';
 import 'role_selection_screen.dart';
@@ -36,6 +37,13 @@ class _SplashScreenState extends State<SplashScreen> {
 
     if (user != null) {
       try {
+        // Revoked device or "log out everywhere": start from the login screen.
+        if (await DeviceService.sessionRevoked()) {
+          await UserService.logout();
+          if (!mounted) return;
+          Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => const RoleSelectionScreen()));
+          return;
+        }
         final data = await UserService.getUser();
         final selectedRole = (data?['role'] ?? data?['selectedRole']) as String?;
         next = selectedRole == 'driver'

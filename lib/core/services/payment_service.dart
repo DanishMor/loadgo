@@ -1,9 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import '../models/app_notification.dart';
 import '../models/booking.dart';
 import '../models/driver_extras.dart';
 import '../models/ledger_entry.dart';
 import 'backend.dart';
+import 'notification_service.dart';
+import '../widgets/common.dart' show formatPaise;
 import 'pricing_service.dart';
 
 /// Payment *records* between customer and driver: the customer marks a
@@ -28,12 +31,21 @@ class PaymentService {
   static Future<void> markPaid(Booking b, int amountPaise) {
     if (amountPaise <= 0 || amountPaise > 100000000) throw ArgumentError.value(amountPaise, 'amountPaise');
     if (b.paymentStatus != PaymentStatus.pending) throw StateError('Already marked');
-    return Backend.db.collection('bookings').doc(b.id).update({
+    final batch = Backend.db.batch();
+    batch.update(Backend.db.collection('bookings').doc(b.id), {
       'paymentStatus': PaymentStatus.customerMarkedPaid,
       'paidAmountPaise': amountPaise,
       'paymentMarkedAt': FieldValue.serverTimestamp(),
       'updatedAt': FieldValue.serverTimestamp(),
     });
+    NotificationService.addInBatch(
+      batch,
+      userId: b.driverId,
+      type: NotificationType.paymentMarked,
+      message: '${b.pickup} → ${b.drop}: ${formatPaise(amountPaise)}',
+      relatedId: b.id,
+    );
+    return batch.commit();
   }
 
   /// Driver: "I received it" — also writes the ledger lines.
@@ -58,6 +70,13 @@ class PaymentService {
           'amountPaise': paise,
           'createdAt': FieldValue.serverTimestamp(),
         });
+    NotificationService.addInBatch(
+      batch,
+      userId: b.customerId,
+      type: NotificationType.paymentConfirmed,
+      message: '${b.pickup} → ${b.drop}',
+      relatedId: b.id,
+    );
     line(LedgerType.tripEarning, amount);
     line(LedgerType.platformCommission, commissionFor(amount, pro: pro));
     await batch.commit();

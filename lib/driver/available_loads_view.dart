@@ -17,6 +17,7 @@ import 'favourite_routes_screen.dart';
 import 'make_offer.dart';
 import 'recommended_loads.dart';
 import '../core/services/match_service.dart';
+import '../core/matching/load_ranker.dart' show PlannedRoute;
 
 /// Accept button wired to the full accept flow, with its own busy state.
 class AcceptLoadButton extends StatefulWidget {
@@ -185,6 +186,37 @@ class _AvailableLoadsViewState extends State<AvailableLoadsView> {
     setState(() => _filter = LoadFilter.none);
   }
 
+  Future<void> _planRoute() async {
+    final user = await UserService.getUser();
+    if (!mounted) return;
+    final current = PlannedRoute.fromUser(user);
+    final from = TextEditingController(text: current?.from ?? '');
+    final to = TextEditingController(text: current?.to ?? '');
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (c) => AlertDialog(
+        title: Text(tr(c, 'plannedRoute')),
+        content: Column(mainAxisSize: MainAxisSize.min, children: [
+          TextField(key: const ValueKey('routeFrom'), controller: from, decoration: InputDecoration(labelText: tr(c, 'routeFrom'))),
+          TextField(key: const ValueKey('routeTo'), controller: to, decoration: InputDecoration(labelText: tr(c, 'routeTo'))),
+        ]),
+        actions: [
+          if (current != null) TextButton(key: const ValueKey('routeClear'), onPressed: () => Navigator.pop(c, false), child: Text(tr(c, 'remove'))),
+          TextButton(onPressed: () => Navigator.pop(c), child: Text(tr(c, 'cancel'))),
+          FilledButton(key: const ValueKey('routeSave'), onPressed: () => Navigator.pop(c, true), child: Text(tr(c, 'save'))),
+        ],
+      ),
+    );
+    final f = from.text, t = to.text;
+    if (result == null || !mounted) return;
+    try {
+      await MatchService.setPlannedRoute(from: result ? f : null, to: result ? t : null);
+      if (mounted) showSnack(context, tr(context, 'settingsSaved'));
+    } catch (_) {
+      if (mounted) showSnack(context, tr(context, 'invalidRoute'));
+    }
+  }
+
   Future<void> _openFilters() async {
     final result = await showModalBottomSheet<LoadFilter>(
       context: context,
@@ -229,6 +261,12 @@ class _AvailableLoadsViewState extends State<AvailableLoadsView> {
               Expanded(
                 child: Text(tr(context, 'availableLoads'),
                     style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: AppColors.title)),
+              ),
+              IconButton(
+                key: const ValueKey('plannedRoute'),
+                tooltip: tr(context, 'plannedRoute'),
+                icon: const Icon(Icons.alt_route_rounded, color: AppColors.primary),
+                onPressed: _planRoute,
               ),
               IconButton(
                 key: const ValueKey('openFavourites'),

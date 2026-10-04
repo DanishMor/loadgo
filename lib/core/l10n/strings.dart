@@ -13,6 +13,7 @@ import 'auth_strings.dart';
 import 'chat_strings.dart';
 import 'driver_extras_strings.dart';
 import 'enterprise_strings.dart';
+import 'evidence_strings.dart';
 import 'load_strings.dart';
 import 'match_strings.dart';
 import 'offer_strings.dart';
@@ -23,9 +24,11 @@ import 'pricing_strings.dart';
 import 'profile_strings.dart';
 import 'reminder_strings.dart';
 import 'risk_strings.dart';
+import 'security_strings.dart';
 import 'settings_strings.dart';
 import 'support_strings.dart';
 import 'trip_strings.dart';
+import 'trip_watch_strings.dart';
 import 'vehicle_strings.dart';
 
 const List<Map<String, List<String>>> stringTables = [
@@ -48,6 +51,9 @@ const List<Map<String, List<String>>> stringTables = [
   profileFieldStrings,
   badgeStrings,
   opsStrings,
+  evidenceStrings,
+  securityStrings,
+  tripWatchStrings,
   adminStrings,
   matchStrings,
   settingsStrings,

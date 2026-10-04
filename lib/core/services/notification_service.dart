@@ -31,6 +31,26 @@ class NotificationService {
     });
   }
 
+  /// Same as [addInTransaction], for a batch.
+  static void addInBatch(
+    WriteBatch batch, {
+    required String userId,
+    required String type,
+    required String message,
+    required String relatedId,
+    String? status,
+  }) {
+    batch.set(_col.doc(), {
+      'userId': userId,
+      'type': type,
+      'message': message,
+      'relatedId': relatedId,
+      'status': ?status,
+      'read': false,
+      'createdAt': FieldValue.serverTimestamp(),
+    });
+  }
+
   /// The signed-in user's notifications, newest first.
   static Stream<List<AppNotification>> watchMine() {
     final uid = Backend.uid;

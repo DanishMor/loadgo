@@ -9,10 +9,13 @@ import '../core/widgets/rating_widgets.dart';
 import '../core/widgets/booking_widgets.dart';
 import '../core/widgets/location_widgets.dart';
 import '../core/widgets/detention_card.dart';
+import '../core/widgets/evidence_cards.dart';
+import '../core/services/trip_evidence_service.dart';
 import '../core/services/pricing_service.dart';
 import 'trip_proof_dialogs.dart';
 import '../core/documents/trip_document_buttons.dart';
 import 'trip_safety_card.dart';
+import 'trip_geofence_banner.dart';
 import '../core/documents/payment_card.dart';
 
 void openDriverTrip(BuildContext context, String bookingId) {
@@ -41,10 +44,15 @@ class DriverTripScreen extends StatelessWidget {
           ],
           if (booking.isInTransit) ...[
             const SizedBox(height: 14),
+            TripGeofenceBanner(dropPlace: booking.drop),
             LocationSharingCard(booking: booking),
           ],
           const SizedBox(height: 14),
           DetentionCard(booking: booking, isDriver: true),
+          const SizedBox(height: 14),
+          DriverEvidenceCard(booking: booking),
+          const SizedBox(height: 14),
+          CargoDocsCard(booking: booking),
           const SizedBox(height: 14),
           PaymentCard(booking: booking),
           const SizedBox(height: 14),
@@ -121,6 +129,10 @@ class _NextStatusButtonState extends State<_NextStatusButton> {
     setState(() => _busy = true);
     try {
       await BookingService.advance(widget.booking.id, otp: otp, pickup: pickup, delivery: delivery);
+      // GPS evidence with the event (best effort; needs the location permission).
+      if (next == BookingStatus.pickedUp || next == BookingStatus.delivered) {
+        TripEvidenceService.saveGps(widget.booking.id, pickup: next == BookingStatus.pickedUp).then((_) {}, onError: (_) {});
+      }
       if (mounted) showSnack(context, tr(context, 'statusUpdated'));
     } on WrongOtpException {
       if (mounted) showSnack(context, tr(context, 'wrongOtp'));

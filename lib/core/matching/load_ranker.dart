@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 import '../constants/logistics.dart';
 import '../models/load.dart';
 import '../models/vehicle.dart';
@@ -5,7 +7,7 @@ import '../pricing/cities.dart';
 import 'nearest.dart';
 
 /// Why a load was recommended. Shown as chips on the driver's card.
-enum MatchReason { nearPickup, returnLoad, favouriteRoute, bestFit }
+enum MatchReason { nearPickup, returnLoad, favouriteRoute, bestFit, onYourRoute }
 
 /// A route the driver saved (city names as typed).
 class FavouriteRoute {
@@ -29,6 +31,39 @@ bool _sameCity(String a, String b) {
   final ca = findCity(a), cb = findCity(b);
   if (ca != null && cb != null) return ca.name == cb.name;
   return a.trim().toLowerCase() == b.trim().toLowerCase();
+}
+
+/// Where the driver is going next. Free text places matched against the
+/// offline city table; [date] is only shown, not used for ranking.
+class PlannedRoute {
+  final String from;
+  final String to;
+  final DateTime? date;
+
+  const PlannedRoute({required this.from, required this.to, this.date});
+
+  /// A load is on the route when its pickup is within [radiusKm] of [from]
+  /// and its drop within [radiusKm] of [to] (same city counts).
+  static const radiusKm = 100.0;
+
+  bool fits(Load load) {
+    final a = findCity(from), b = findCity(to), p = findCity(load.pickup), d = findCity(load.drop);
+    if (a == null || b == null || p == null || d == null) return false;
+    return haversineKm(a.lat, a.lng, p.lat, p.lng) <= radiusKm && haversineKm(b.lat, b.lng, d.lat, d.lng) <= radiusKm;
+  }
+
+  factory PlannedRoute.fromMap(Map<dynamic, dynamic> m) => PlannedRoute(
+        from: m['from']?.toString() ?? '',
+        to: m['to']?.toString() ?? '',
+        date: (m['date'] as Timestamp?)?.toDate(),
+      );
+
+  Map<String, Object> toMap() => {'from': from.trim(), 'to': to.trim(), if (date != null) 'date': Timestamp.fromDate(date!)};
+
+  static PlannedRoute? fromUser(Map<String, dynamic>? user) {
+    final m = user?['plannedRoute'];
+    return m is Map && (m['from']?.toString().isNotEmpty ?? false) && (m['to']?.toString().isNotEmpty ?? false) ? PlannedRoute.fromMap(m) : null;
+  }
 }
 
 /// What the ranker knows about the driver.
@@ -56,6 +91,10 @@ class DriverContext {
   /// the starting point for "near pickup", instead of [anchorPlace].
   final LatLng? origin;
 
+  /// The route the driver plans to drive (`users.plannedRoute`, L5). Loads
+  /// that start near its start and end near its end rank higher.
+  final PlannedRoute? plannedRoute;
+
   const DriverContext({
     required this.vehicles,
     this.verified = true,
@@ -65,6 +104,7 @@ class DriverContext {
     required this.now,
     this.riskTier = 'normal',
     this.origin,
+    this.plannedRoute,
   });
 }
 
@@ -154,6 +194,11 @@ class LoadRanker {
       }
     } else {
       score += 10;
+    }
+
+    if (ctx.plannedRoute?.fits(load) == true) {
+      score += 35;
+      reasons.add(MatchReason.onYourRoute);
     }
 
     if (ctx.favourites.any((f) => f.matches(load))) {

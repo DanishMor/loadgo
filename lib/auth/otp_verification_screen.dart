@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import '../core/l10n/l10n.dart';
 import '../core/l10n/language_widgets.dart';
 import '../core/services/auth_helpers.dart';
+import '../core/services/device_service.dart';
 import '../core/services/user_service.dart';
 import 'start_resolvers.dart';
 
@@ -110,6 +111,13 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     await _signIn(PhoneAuthProvider.credential(verificationId: _verificationId, smsCode: otp));
   }
 
+  /// Records this device (new-device signals for admins). Never blocks login.
+  Future<void> _registerDevice() async {
+    try {
+      await DeviceService.register();
+    } catch (_) {}
+  }
+
   Future<void> _signIn(PhoneAuthCredential credential) async {
     setState(() => _isLoading = true);
 
@@ -121,9 +129,11 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
       Widget next;
       if (widget.isDriver) {
         await UserService.markRoleSelected('driver');
+        await _registerDevice();
         next = await resolveDriverStart();
       } else {
         await UserService.markRoleSelected('customer');
+        await _registerDevice();
         next = await resolveCustomerStart();
       }
 

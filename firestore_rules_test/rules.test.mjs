@@ -835,6 +835,131 @@ describe('payouts, fraud cases, detention and config audit', () => {
   });
 });
 
+describe('trip evidence', () => {
+  const seedB = (status, extra = {}) => seed((db) => setDoc(doc(db, 'bookings', 'E1'), { ...bookingFor('L1'), status, timeline: {}, ...extra }));
+  const upd = (uid, data) => updateDoc(doc(as(uid), 'bookings', 'E1'), { ...data, updatedAt: serverTimestamp() });
+
+  test('GPS evidence: once, by the driver, at the right stage, stamped now', async () => {
+    await seedB('loading');
+    await assertFails(upd('driver1', { pickupGps: new GeoPoint(28.6, 77.2), pickupGpsAt: serverTimestamp() }), 'not picked up yet');
+    await seedB('picked_up');
+    await assertFails(upd('customer1', { pickupGps: new GeoPoint(28.6, 77.2), pickupGpsAt: serverTimestamp() }));
+    await assertFails(upd('driver1', { pickupGps: new GeoPoint(28.6, 77.2) }), 'needs the timestamp');
+    await assertFails(upd('driver1', { pickupGps: 'Delhi', pickupGpsAt: serverTimestamp() }));
+    await assertFails(upd('driver1', { pickupGps: new GeoPoint(28.6, 77.2), pickupGpsAt: Timestamp.fromDate(new Date('2020-01-01')) }));
+    await assertSucceeds(upd('driver1', { pickupGps: new GeoPoint(28.6, 77.2), pickupGpsAt: serverTimestamp() }));
+    await seedB('picked_up', { pickupGps: new GeoPoint(1, 1), pickupGpsAt: Timestamp.now() });
+    await assertFails(upd('driver1', { pickupGps: new GeoPoint(28.6, 77.2), pickupGpsAt: serverTimestamp() }), 'cannot be replaced');
+    await seedB('in_transit');
+    await assertFails(upd('driver1', { deliveryGps: new GeoPoint(26.9, 75.8), deliveryGpsAt: serverTimestamp() }), 'too early');
+    await seedB('unloading');
+    await assertSucceeds(upd('driver1', { deliveryGps: new GeoPoint(26.9, 75.8), deliveryGpsAt: serverTimestamp() }));
+  });
+
+  test('odometer: start before pickup, end after, never below start, once each', async () => {
+    await seedB('loading');
+    await assertSucceeds(upd('driver1', { odometerStart: 120500 }));
+    await assertFails(upd('driver1', { odometerStart: -5 }));
+    await assertFails(upd('driver1', { odometerStart: 12.5 }));
+    await assertFails(upd('driver1', { odometerEnd: 120600 }), 'trip has not started');
+    await seedB('in_transit', { odometerStart: 120500 });
+    await assertFails(upd('driver1', { odometerEnd: 120400 }), 'below the start');
+    await assertFails(upd('customer1', { odometerEnd: 120900 }));
+    await assertSucceeds(upd('driver1', { odometerEnd: 120900 }));
+    await seedB('in_transit', { odometerStart: 120500, odometerEnd: 120900 });
+    await assertFails(upd('driver1', { odometerEnd: 121000 }), 'once');
+    await assertFails(upd('driver1', { odometerStart: 1 }), 'once');
+  });
+
+  test('signature: driver only, once, while unloading or delivered', async () => {
+    const sig = (over = {}) => ({ strokes: [{ p: [0.1, 0.2, 0.5, 0.6] }], driverId: 'driver1', createdAt: serverTimestamp(), ...over });
+    const ref = (uid) => doc(as(uid), 'bookings', 'E1', 'signatures', 'receiver');
+    await seedB('in_transit');
+    await assertFails(setDoc(ref('driver1'), sig()));
+    await seedB('unloading');
+    await assertFails(setDoc(ref('customer1'), sig({ driverId: 'customer1' })));
+    await assertFails(setDoc(ref('driver1'), sig({ strokes: [] })));
+    await assertFails(setDoc(ref('driver1'), sig({ extra: 1 })));
+    await assertFails(setDoc(doc(as('driver1'), 'bookings', 'E1', 'signatures', 'other'), sig()));
+    await assertSucceeds(setDoc(ref('driver1'), sig()));
+    await assertFails(setDoc(ref('driver1'), sig()), 'second signature');
+    await assertSucceeds(getDoc(ref('customer1')));
+    await assertFails(getDoc(ref('driver2')));
+    await assertFails(deleteDoc(ref('driver1')));
+  });
+
+  test('cargo documents: either party appends, nobody edits or deletes', async () => {
+    await seedB('in_transit');
+    const d = (uid, over = {}) => ({ type: 'invoice', number: 'INV-1', addedBy: uid, createdAt: serverTimestamp(), ...over });
+    const col = (uid) => collection(as(uid), 'bookings', 'E1', 'cargo_docs');
+    await assertSucceeds(addDoc(col('customer1'), d('customer1')));
+    await assertSucceeds(addDoc(col('driver1'), d('driver1', { type: 'eway_bill', number: '123456789012', leg: 2, note: 'leg two' })));
+    await assertFails(addDoc(col('driver2'), d('driver2')), 'not a party');
+    await assertFails(addDoc(col('customer1'), d('driver1')), 'addedBy must be the caller');
+    await assertFails(addDoc(col('customer1'), d('customer1', { type: 'passport' })));
+    await assertFails(addDoc(col('customer1'), d('customer1', { number: '' })));
+    await assertFails(addDoc(col('customer1'), d('customer1', { number: 'x'.repeat(41) })));
+    await assertFails(addDoc(col('customer1'), d('customer1', { leg: 3 })));
+    await assertFails(addDoc(col('customer1'), d('customer1', { note: 'n'.repeat(201) })));
+    const snap = await getDocs(col('customer1'));
+    await assertFails(updateDoc(snap.docs[0].ref, { number: 'CHANGED' }));
+    await assertFails(deleteDoc(snap.docs[0].ref));
+    await assertFails(getDocs(col('driver2')));
+  });
+
+  test('new notification types are accepted for the booking parties', async () => {
+    await seedB('delivered');
+    const n = (type, userId) => ({ userId, type, message: 'x', relatedId: 'E1', read: false, createdAt: serverTimestamp() });
+    const db = as('customer1');
+    const b = writeBatch(db);
+    b.update(doc(db, 'bookings', 'E1'), { paymentStatus: 'customer_marked_paid', paidAmountPaise: 25000, paymentMarkedAt: serverTimestamp(), updatedAt: serverTimestamp() });
+    b.set(doc(db, 'notifications', 'n1'), n('payment_marked', 'driver1'));
+    await assertSucceeds(b.commit());
+    await assertSucceeds(addDoc(collection(as('driver1'), 'notifications'), n('accident_reported', 'customer1')));
+    await assertFails(addDoc(collection(as('driver1'), 'notifications'), n('made_up', 'customer1')));
+  });
+});
+
+describe('devices and risk signals', () => {
+  const dev = (over = {}) => ({ label: 'android', trusted: true, revoked: false, firstSeenAt: serverTimestamp(), lastSeenAt: serverTimestamp(), lastLoginAt: serverTimestamp(), ...over });
+  const DID = 'abcdefgh12345678';
+
+  test('a user keeps their own device list', async () => {
+    const ref = (uid) => doc(as(uid), 'users', 'u1', 'devices', DID);
+    await assertSucceeds(setDoc(ref('u1'), dev()));
+    await assertFails(setDoc(ref('u2'), dev()));
+    await assertFails(setDoc(doc(as('u1'), 'users', 'u1', 'devices', 'x'), dev()), 'id too short');
+    await assertFails(setDoc(ref('u1'), dev({ trusted: 'yes' })));
+    await assertFails(setDoc(ref('u1'), dev({ label: 'x'.repeat(41) })));
+    await assertFails(setDoc(ref('u1'), dev({ imei: '123' })));
+    await assertSucceeds(updateDoc(ref('u1'), { revoked: true, trusted: false }));
+    await assertSucceeds(getDoc(ref('u1')));
+    await assertFails(getDoc(ref('u2')));
+    await assertSucceeds(getDoc(doc(asAdmin(), 'users', 'u1', 'devices', DID)));
+  });
+
+  test('device links: own uid only, id from device and uid, admins read', async () => {
+    const link = (uid, over = {}) => ({ deviceId: DID, uid, createdAt: serverTimestamp(), ...over });
+    await assertSucceeds(setDoc(doc(as('u1'), 'device_links', `${DID}_u1`), link('u1')));
+    await assertFails(setDoc(doc(as('u1'), 'device_links', `${DID}_u2`), link('u2')));
+    await assertFails(setDoc(doc(as('u1'), 'device_links', 'wrongid'), link('u1')));
+    await assertFails(updateDoc(doc(as('u1'), 'device_links', `${DID}_u1`), { uid: 'u2' }));
+    await assertSucceeds(getDocs(collection(asAdmin(), 'device_links')));
+    await assertFails(getDocs(collection(as('u1'), 'device_links')));
+  });
+
+  test('risk signals: written for yourself, read by admins', async () => {
+    const sig = (uid, over = {}) => ({ uid, type: 'new_device', deviceId: DID, createdAt: serverTimestamp(), ...over });
+    await assertSucceeds(addDoc(collection(as('u1'), 'risk_signals'), sig('u1')));
+    await assertSucceeds(addDoc(collection(as('u1'), 'risk_signals'), sig('u1', { type: 'high_value', amountPaise: 6000000, note: 'load X' })));
+    await assertFails(addDoc(collection(as('u1'), 'risk_signals'), sig('u2')));
+    await assertFails(addDoc(collection(as('u1'), 'risk_signals'), sig('u1', { type: 'hacked' })));
+    await assertFails(addDoc(collection(as('u1'), 'risk_signals'), sig('u1', { extra: 1 })));
+    await assertSucceeds(getDocs(collection(asAdmin(), 'risk_signals')));
+    await assertFails(getDocs(collection(as('u1'), 'risk_signals')));
+  });
+});
+
 describe('admin verification', () => {
   const seedDriver = () => seed((db) => setDoc(doc(db, 'users', 'd1'), { driverName: 'R', verified: false, verificationStatus: 'pending' }));
 

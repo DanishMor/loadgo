@@ -38,6 +38,12 @@ class Booking {
   final List<String> extraDrops;
   final String pickupSlot;
 
+  /// GPS evidence at pickup / delivery and odometer readings (km).
+  final GeoPoint? pickupGps;
+  final GeoPoint? deliveryGps;
+  final int? odometerStart;
+  final int? odometerEnd;
+
   /// Time the driver waited at loading / unloading (record only).
   final Detention detention;
 
@@ -130,6 +136,10 @@ class Booking {
     this.helpers = 0,
     this.rentalHours,
     this.detention = const Detention(),
+    this.pickupGps,
+    this.deliveryGps,
+    this.odometerStart,
+    this.odometerEnd,
     this.containerNumber = '',
     this.sealNumber = '',
   });
@@ -192,6 +202,10 @@ class Booking {
       helpers: (d['helpers'] as num?)?.toInt() ?? 0,
       rentalHours: (d['rentalHours'] as num?)?.toInt(),
       detention: Detention.fromMap(d['detention']),
+      pickupGps: d['pickupGps'] as GeoPoint?,
+      deliveryGps: d['deliveryGps'] as GeoPoint?,
+      odometerStart: (d['odometerStart'] as num?)?.toInt(),
+      odometerEnd: (d['odometerEnd'] as num?)?.toInt(),
       containerNumber: d['containerNumber'] as String? ?? '',
       sealNumber: d['sealNumber'] as String? ?? '',
       cancellation: d['cancellation'] is Map ? BookingCancellation.fromMap(Map<String, dynamic>.from(d['cancellation'] as Map)) : null,

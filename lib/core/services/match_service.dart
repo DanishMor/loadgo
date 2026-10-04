@@ -45,6 +45,18 @@ class MatchService {
 
   static Future<void> removeFavourite(String id) => _routes.doc(id).delete();
 
+  // ---- planned route (L5) ----
+
+  /// Saves the route the driver plans to drive, or clears it with null.
+  static Future<void> setPlannedRoute({String? from, String? to, DateTime? date}) {
+    final uid = Backend.requireUid();
+    final clear = from == null || to == null;
+    if (!clear && (from.trim().length < 2 || to.trim().length < 2)) throw ArgumentError('A route needs a start and an end');
+    return Backend.db.collection('users').doc(uid).set({
+      'plannedRoute': clear ? FieldValue.delete() : PlannedRoute(from: from, to: to, date: date).toMap(),
+    }, SetOptions(merge: true));
+  }
+
   // ---- driver context ----
 
   /// Everything [LoadRanker] needs about the signed-in driver.
@@ -72,6 +84,7 @@ class MatchService {
       verified: user['verified'] == true,
       riskTier: user['riskTier'] as String? ?? 'normal',
       origin: UserService.lastLocationOf(user),
+      plannedRoute: PlannedRoute.fromUser(user),
       anchorPlace: active.isNotEmpty ? active.first.drop : (delivered.isNotEmpty ? delivered.first.drop : null),
       anchorIsActiveTrip: active.isNotEmpty,
       favourites: favourites,

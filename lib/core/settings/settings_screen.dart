@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'devices_screen.dart';
 
 import '../app_info.dart';
 import '../l10n/l10n.dart';
@@ -142,6 +143,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
               _switch('consentLocation', 'consentLocation', c.location, (v) => _setConsents(c.copyWith(location: v))),
               _switch('consentAnalytics', 'consentAnalytics', c.analytics, (v) => _setConsents(c.copyWith(analytics: v))),
               _switch('consentMarketing', 'consentMarketing', c.marketing, (v) => _setConsents(c.copyWith(marketing: v))),
+              ListTile(
+                key: const ValueKey('settingsDevices'),
+                leading: const Icon(Icons.devices_rounded),
+                title: Text(tr(context, 'myDevices')),
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const DevicesScreen())),
+              ),
               const Divider(),
               ListTile(
                 key: const ValueKey('settingsTerms'),

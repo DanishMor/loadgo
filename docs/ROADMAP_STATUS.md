@@ -9,31 +9,31 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | Module | Items | Done | Partial | Todo-free | Paid-or-Later | Unsure |
 |---|---|---|---|---|---|---|
 | P0 Principles | 6 | 1 | 5 | 0 | 0 | 0 |
-| A Authentication | 10 | 3 | 2 | 4 | 1 | 0 |
+| A Authentication | 10 | 5 | 2 | 2 | 1 | 0 |
 | K Identity, KYC | 14 | 3 | 4 | 1 | 6 | 0 |
-| R Re-KYC | 12 | 0 | 1 | 7 | 4 | 0 |
+| R Re-KYC | 12 | 5 | 1 | 2 | 4 | 0 |
 | C Customer app | 14 | 8 | 6 | 0 | 0 | 0 |
-| B Bike | 14 | 7 | 4 | 2 | 1 | 0 |
+| B Bike | 14 | 8 | 4 | 1 | 1 | 0 |
 | V Truck + fleet | 12 | 5 | 2 | 4 | 1 | 0 |
-| L Load marketplace | 14 | 10 | 2 | 2 | 0 | 0 |
+| L Load marketplace | 14 | 11 | 2 | 1 | 0 | 0 |
 | P Booking + pricing | 14 | 10 | 2 | 1 | 1 | 0 |
-| M Map | 16 | 0 | 5 | 1 | 9 | 1 |
+| M Map | 16 | 1 | 5 | 0 | 9 | 1 |
 | SM Smart matching | 14 | 9 | 2 | 3 | 0 | 0 |
 | D Driver app | 16 | 8 | 5 | 3 | 0 | 0 |
 | CH Chat | 14 | 3 | 2 | 5 | 4 | 0 |
-| T Trip lifecycle | 14 | 6 | 4 | 3 | 1 | 0 |
-| S Pickup, cargo, POD | 15 | 7 | 2 | 3 | 3 | 0 |
+| T Trip lifecycle | 14 | 9 | 4 | 0 | 1 | 0 |
+| S Pickup, cargo, POD | 15 | 10 | 2 | 0 | 3 | 0 |
 | PAY Payments | 14 | 4 | 4 | 1 | 5 | 0 |
-| DOC Documents | 14 | 6 | 6 | 2 | 0 | 0 |
-| IE Import/export | 14 | 10 | 2 | 2 | 0 | 0 |
+| DOC Documents | 14 | 8 | 6 | 0 | 0 | 0 |
+| IE Import/export | 14 | 11 | 2 | 1 | 0 | 0 |
 | BIZ Business | 15 | 4 | 1 | 7 | 3 | 0 |
-| F Anti-fraud | 18 | 3 | 8 | 2 | 5 | 0 |
-| SAFE Safety | 12 | 7 | 2 | 1 | 2 | 0 |
-| N Notifications | 15 | 8 | 1 | 4 | 2 | 0 |
+| F Anti-fraud | 18 | 4 | 9 | 0 | 5 | 0 |
+| SAFE Safety | 12 | 8 | 2 | 0 | 2 | 0 |
+| N Notifications | 15 | 9 | 1 | 3 | 2 | 0 |
 | AI AI | 14 | 0 | 0 | 0 | 14 | 0 |
-| BE Backend | 18 | 3 | 6 | 2 | 7 | 0 |
+| BE Backend | 18 | 4 | 6 | 1 | 7 | 0 |
 | TEST Testing | 14 | 3 | 3 | 1 | 7 | 0 |
-| **Total** | **347** | **128** | **81** | **61** | **76** | **1** |
+| **Total** | **347** | **151** | **82** | **37** | **76** | **1** |
 
 ## P0 Principles
 
@@ -55,8 +55,8 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | A3 | Driver mobile OTP Driver signup/login with dedicated role. | Done | lib/auth/driver_login_screen.dart |
 | A4 | Business accounts Company owner, manager, dispatch, accounts, viewer roles. | Todo-free | No manager/dispatch/accounts/viewer roles |
 | A5 | Role-based access Customer, driver, transporter, fleet, shipper, importer, exporter, trader, | Partial | Customer and driver roles are locked once set (users.role, rules); admin = admins/{uid}; no transporter/fleet/importer roles |
-| A6 | New-device verification Naye device par extra verification / risk challenge. | Todo-free | No device id / new-device check |
-| A7 | Session management Trusted devices, logout all, session revoke. | Todo-free | No trusted devices, logout-all or revoke |
+| A6 | New-device verification Naye device par extra verification / risk challenge. | Done | Device id kept per installation; a new device on an account with other devices raises a risk signal and shows as New in Settings > My devices |
+| A7 | Session management Trusted devices, logout all, session revoke. | Done | My devices: trust, sign out a device, log out everywhere (checked when the app starts; token revoke is TODO(functions)) |
 | A8 | Account recovery Secure recovery workflow; identity checks required for sensitive changes. | Paid-or-Later | No recovery flow; identity checks need KYC provider |
 | A9 | Account linking Individual se business role / fleet / company profiles link karna. | Partial | users.business profile on a customer; no fleet/company linking |
 | A10 | Consent center Privacy, location, document, face-verification aur communication | Done | Settings > consent center (users.consents), core/settings/settings_screen.dart |
@@ -85,14 +85,14 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | Code | Item | Status | Where / why |
 |---|---|---|---|
 | R1 | Scheduled re-KYC Configured policy interval par face/identity re-check. | Paid-or-Later | Needs face-KYC provider |
-| R2 | New device trigger Naya phone/device detect ho to re-verification. | Todo-free | Needs a device-id record in Firestore |
+| R2 | New device trigger Naya phone/device detect ho to re-verification. | Done | New-device detection writes a `new_device` risk signal for admins (re-verification is manual) |
 | R3 | SIM/mobile change Sensitive mobile change par stronger authentication. | Todo-free | No mobile-change flow or extra challenge |
 | R4 | Payout/bank change Payout account change se pehle re-KYC/risk challenge. | Paid-or-Later | No payout/bank profile exists yet |
-| R5 | High-value transaction High-value shipment/payout par additional verification. | Todo-free | No high-value rule; amounts are in paise so a threshold flag is buildable |
-| R6 | Suspicious activity trigger Behavioural risk score high ho to re-KYC/manual review. | Todo-free | Only cancelCount; no behavioural score |
+| R5 | High-value transaction High-value shipment/payout par additional verification. | Done | Loads of Rs 50,000 or more write a high_value risk signal for admins |
+| R6 | Suspicious activity trigger Behavioural risk score high ho to re-KYC/manual review. | Done | RiskRules.score (cancels, reports, new devices, expired papers, tier) shown in the flagged list with a review suggestion |
 | R7 | Document expiry trigger Expired/changed document ke baad verification refresh. | Todo-free | Expired papers only filter recommendations; no re-verify trigger |
-| R8 | Random verification Selected accounts par periodic random checks. | Todo-free | No random checks |
-| R9 | Trusted device list Device history + revoke access. | Todo-free | No device list |
+| R8 | Random verification Selected accounts par periodic random checks. | Done | Admin > Risk signals > Random check draws 5 approved drivers and can send them to re-verification |
+| R9 | Trusted device list Device history + revoke access. | Done | Device list with revoke in Settings > My devices |
 | R10 | Face-KYC freshness Current verification timestamp aur next verification due date track karna. | Paid-or-Later | Needs face-KYC |
 | R11 | Recovery protection Passwordless ecosystem mein identity-sensitive recovery ko KYC se | Paid-or-Later | Needs KYC |
 | R12 | Manual review Auto check fail hone par human verification queue. | Partial | Admin verification queue + flagged users list; no auto-check to fail |
@@ -123,7 +123,7 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | B1 | Bike Local parcel and small goods transport. | Done | Vehicle type "Bike" (config/vehicle_types) |
 | B2 | Scooter City delivery where suitable. | Done | Vehicle type "Scooter" |
 | B3 | EV two-wheeler Eligible electric fleet category. | Done | Vehicle type "EV 2W" |
-| B4 | Cycle Optional low-cost local delivery. | Todo-free | Cycle not in the vehicle type list |
+| B4 | Cycle Optional low-cost local delivery. | Done | Cycle is a vehicle type (two-wheeler category, 15 kg) |
 | B5 | Goods auto 3-wheeler category. | Done | Vehicle type "3-Wheeler" |
 | B6 | Mini truck Tata Ace / similar category. | Done | Vehicle type "Mini" |
 | B7 | Instant local booking Pickup now -> nearby rider/vehicle -> ETA -> delivery. | Partial | Post load + driver accept; no nearby-rider ETA |
@@ -160,7 +160,7 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | L2 | Browse Loads Driver/transporter ko searchable marketplace. | Done | driver/available_loads_view.dart |
 | L3 | Load filters Route, distance, vehicle, weight, freight, pickup time. | Done | core/models/load_filter.dart |
 | L4 | Nearby loads Current location ke aas-paas. | Partial | Driver position saved with a geohash; Loads tab sorts by estimated km from it and shows "X km away"; city-table distance, not road distance, and only the loaded page is sorted |
-| L5 | Route loads Driver ke planned route ke aas-paas. | Todo-free | No planned-route input |
+| L5 | Route loads Driver ke planned route ke aas-paas. | Done | Driver sets a planned route (Loads tab); loads along it rank higher with an On your route chip |
 | L6 | Return loads Destination par pahunchne ke baad reverse-direction opportunities. | Done | LoadRanker return-load bonus (within 200 km of active trip drop) |
 | L7 | Favourite routes Regular route alerts. | Done | favourite_routes_screen.dart |
 | L8 | Load alerts Matching load par push notification. | Partial | In-app new-load badge (device-local); push needs Blaze |
@@ -207,7 +207,7 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | M11 | Navigation Turn-by-turn driver navigation. | Paid-or-Later | Needs Maps SDK |
 | M12 | Rerouting Route change/off-route handling. | Paid-or-Later | Needs Maps |
 | M13 | Traffic-aware ETA Where provider data and plan permit. | Paid-or-Later | Needs provider data |
-| M14 | Geofencing Pickup/drop/warehouse/port boundaries. | Todo-free | Geolocator exists; no geofence logic |
+| M14 | Geofencing Pickup/drop/warehouse/port boundaries. | Done | Geofence circles (pure logic) used for the drop; boundaries for warehouses and ports can reuse it |
 | M15 | Route deviation Planned vs actual route comparison. | Paid-or-Later | Needs planned route from Maps |
 | M16 | Offline/poor-network support Essential route/trip information cached where technically feasible. | Unsure | Firestore default cache only; no explicit offline handling found |
 
@@ -281,10 +281,10 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | T5 | Loading complete Cargo confirmation. | Done | Pickup proof (packages, weight, seal, damage) |
 | T6 | Trip started Live location begins. | Done | picked_up / in_transit, location sharing starts |
 | T7 | In transit Route, ETA, stops, alerts. | Partial | in_transit status; no route/ETA/stops alerts |
-| T8 | Long halt Operational alert if configured. | Todo-free | No long halt detection |
+| T8 | Long halt Operational alert if configured. | Done | Long halt alert after 30 minutes without moving while in transit (in-app) |
 | T9 | Route deviation Off-route alert. | Paid-or-Later | Needs planned route |
-| T10 | Near destination Receiver preparation. | Todo-free | No near-destination state |
-| T11 | Destination reached Drop geofence. | Todo-free | No drop geofence; unloading is manual |
+| T10 | Near destination Receiver preparation. | Done | Near-destination alert within 25 km of the drop city |
+| T11 | Destination reached Drop geofence. | Done | Drop-reached alert within 5 km of the drop city; unloading stays manual |
 | T12 | Unloading Unloading state. | Done | unloading status |
 | T13 | Delivered POD requirements completed. | Done | Delivery OTP + proof + POD screen (photos missing) |
 | T14 | Settlement Payment/payout workflow after conditions. | Partial | Payment record and ledger; no payout workflow |
@@ -294,18 +294,18 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | Code | Item | Status | Where / why |
 |---|---|---|---|
 | S1 | Pickup OTP Shipper + driver pickup confirmation. | Done | trip_otp_service.dart, secrets/otp compared in rules |
-| S2 | Pickup GPS Location evidence. | Todo-free | Only last-known location on booking; not saved with pickup event |
+| S2 | Pickup GPS Location evidence. | Done | GPS saved with the pickup and delivery events (best effort, needs location permission) |
 | S3 | Pickup timestamp Time evidence. | Done | Booking timeline timestamps |
 | S4 | Cargo photos Condition and loading evidence. | Paid-or-Later | Needs Storage |
 | S5 | Vehicle photo Vehicle-at-pickup evidence. | Paid-or-Later | Needs Storage |
-| S6 | Odometer Optional trip start reading. | Todo-free | No odometer field |
+| S6 | Odometer Optional trip start reading. | Done | Odometer start and end readings per trip with distance driven |
 | S7 | Cargo count/weight Recorded shipment details. | Done | Packages/weight in pickup proof |
 | S8 | Seal number Container/sealed cargo. | Done | Seal number (loads, bookings, LR) |
 | S9 | Damage report Condition exception flow. | Done | Damage flag in pickup/delivery proof |
 | S10 | Delivery OTP Receiver confirmation. | Done | Delivery OTP |
 | S11 | Receiver details Name/contact where appropriate. | Done | Receiver name/phone |
 | S12 | Delivery photo Delivered cargo evidence. | Paid-or-Later | Needs Storage |
-| S13 | Signature Optional digital signature. | Todo-free | No signature capture |
+| S13 | Signature Optional digital signature. | Done | Receiver signature captured as strokes and shown in the POD packet |
 | S14 | POD Final proof-of-delivery packet. | Partial | pod_screen.dart text + timeline; no photos/signature |
 | S15 | Evidence audit Who/when/where for evidence events. | Partial | audit_events for status changes; not every evidence event |
 
@@ -338,9 +338,9 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | DOC4 | E-way bill reference Official workflow/reference integration where permitted. | Partial | 12-digit e-way bill text field; not validated against portal |
 | DOC5 | Driver documents KYC docs and expiry. | Partial | Vehicle papers only; no driver KYC docs |
 | DOC6 | Vehicle documents RC/insurance/PUC/fitness/permit. | Done | vehicle_documents_screen.dart |
-| DOC7 | Cargo documents Shipment specific docs. | Todo-free | No cargo documents per shipment |
+| DOC7 | Cargo documents Shipment specific docs. | Done | Cargo document records per booking (type, number, note), either party can add |
 | DOC8 | POD packet Delivery evidence bundle. | Partial | POD packet is text + timeline |
-| DOC9 | Versioning Changed document history. | Todo-free | No version history |
+| DOC9 | Versioning Changed document history. | Done | Cargo documents are append-only: every change is a new version and the history stays |
 | DOC10 | Access control Customer/driver/admin/enterprise role based. | Partial | Rules: owner/party/admin; no enterprise roles |
 | DOC11 | Masking Sensitive identifiers partially masked on UI. | Done | Phone, PAN, licence, RC, GST masked on the profile; admins can reveal in the verification queue |
 | DOC12 | Verification source Document source and verification status. | Partial | "Unverified" label only |
@@ -363,7 +363,7 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | IE10 | Handover Leg1 -> Leg2 controlled handover. | Todo-free | No controlled handover step |
 | IE11 | Warehouse/factory stops Structured logistics locations. | Partial | Branches (warehouse/factory/port/CFS) |
 | IE12 | Shipment timeline End-to-end milestone timeline. | Done | shipment_timeline.dart 8-step timeline |
-| IE13 | Documents Relevant cargo/compliance docs per leg. | Todo-free | No per-leg documents |
+| IE13 | Documents Relevant cargo/compliance docs per leg. | Done | Cargo document records can be tagged leg 1 or leg 2 |
 | IE14 | Enterprise shipment view Business ko complete chain ka single view. | Done | shipments_screen.dart single view of both legs |
 
 ## BIZ Business
@@ -393,8 +393,8 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | F1 | Duplicate identity patterns Same identity-related signals se duplicate accounts detect. | Partial | identity_index/{sha256(type+number)}: one licence, PAN, RC or GST per account, create-only rules, translated error; phone/name/device patterns not compared |
 | F2 | Duplicate PAN patterns Authorised verification data ke basis par risk check. | Paid-or-Later | Needs PAN data |
 | F3 | Duplicate DL/RC Vehicle/driver relationship anomalies. | Partial | Duplicate vehicle number blocked (vehicle_numbers) and duplicate DL/RC/PAN blocked at onboarding (identity_index); no DL/RC relationship anomaly checks |
-| F4 | Same-device clusters Multiple suspicious accounts from same device. | Todo-free | No device id |
-| F5 | Account takeover New device, SIM/mobile change, unusual login. | Todo-free | No new-device/login signals |
+| F4 | Same-device clusters Multiple suspicious accounts from same device. | Done | device_links groups accounts per device; admins see devices with 3+ accounts |
+| F5 | Account takeover New device, SIM/mobile change, unusual login. | Partial | New-device signal only; SIM/mobile change and unusual-login timing are not detected |
 | F6 | Payout risk Bank/payout changes + high-value activity. | Paid-or-Later | No payout yet |
 | F7 | Behavioural risk Abnormal cancellations, bookings, profile changes. | Partial | cancelCount only |
 | F8 | Impossible travel Location sequence inconsistency. | Paid-or-Later | Needs continuous GPS history |
@@ -416,7 +416,7 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | SAFE1 | SOS Driver safety escalation. | Done | sos_alerts + trip_safety_card.dart |
 | SAFE2 | Emergency contacts Trip share and emergency contact flow. | Partial | Up to 3 emergency contacts; no trip share, SMS needs provider |
 | SAFE3 | Breakdown Roadside/replacement process. | Done | Breakdown report |
-| SAFE4 | Accident workflow Incident report + support escalation. | Todo-free | No accident workflow |
+| SAFE4 | Accident workflow Incident report + support escalation. | Done | Driver accident report opens an urgent safety ticket and notifies the customer |
 | SAFE5 | Customer support Booking/payment/delivery issues. | Done | Tickets from bookings |
 | SAFE6 | Driver support Load/payment/vehicle issues. | Done | Tickets for drivers |
 | SAFE7 | Ticketing Case ID, priority, status. | Done | Case id, priority, status |
@@ -438,7 +438,7 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | N6 | KYC reminder Re-KYC due. | Paid-or-Later | Needs re-KYC |
 | N7 | Document expiry DL/RC/insurance/etc. | Done | Vehicle paper, licence, service and tyre reminders in the Home banner and the notification list (no push) |
 | N8 | Return load alert Driver route related opportunity. | Todo-free | No return load alert |
-| N9 | Payment notification Payment/payout/refund. | Todo-free | No payment notifications |
+| N9 | Payment notification Payment/payout/refund. | Done | In-app notifications when the customer marks payment and when the driver confirms it |
 | N10 | Chat notification Message/group alerts. | Partial | Unread badge on Chat; no notification |
 | N11 | Customer analytics Shipments, spend, routes, delivery success. | Done | customer_analytics_screen.dart |
 | N12 | Driver analytics Trips, earnings, acceptance, empty km. | Done | driver_analytics_screen.dart (no empty km) |
@@ -485,7 +485,7 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | BE14 | Analytics pipeline Operational and business analytics. | Partial | Admin counters + stats classes; no pipeline |
 | BE15 | Backup/recovery Firestore/storage backups, disaster recovery and operational restore plan. | Paid-or-Later | Backups need Blaze |
 | BE16 | Secrets management API keys, service credentials and signing secrets not embedded in app. | Paid-or-Later | Needs Functions/secret manager |
-| BE17 | Data retention Sensitive data ke liye explicit retention/deletion policy. | Todo-free | Retention policy not written (docs/MANUAL_TODO.md) |
+| BE17 | Data retention Sensitive data ke liye explicit retention/deletion policy. | Done | docs/DATA_RETENTION.md (what is kept, how long, who removes it); in-app text comes with the legal screens |
 | BE18 | Privacy controls Consent, purpose limitation, access minimisation, masking. | Partial | Consent center, masking of phone, deletion request |
 
 ## TEST Testing

@@ -5,6 +5,9 @@ import '../l10n/l10n.dart';
 import '../models/booking.dart';
 import '../widgets/common.dart';
 import '../widgets/logistics_labels.dart';
+import '../models/trip_evidence.dart';
+import '../services/trip_evidence_service.dart';
+import '../widgets/signature_pad.dart';
 
 /// Proof-of-delivery packet: timeline with times, OTP checks, cargo details
 /// at pickup and receiver details at delivery. Same view for both parties.
@@ -94,6 +97,19 @@ class PodScreen extends StatelessWidget {
                   if (d.receiverPhone.isNotEmpty) row(tr(context, 'receiverPhone'), d.receiverPhone),
                   if (d.damageNote.isNotEmpty) row(tr(context, 'damageNote'), d.damageNote),
                 ],
+              ]),
+              const SizedBox(height: 12),
+              _section(tr(context, 'tripEvidence'), [
+                row(tr(context, 'pickupGpsLabel'), b.pickupGps == null ? '—' : '${b.pickupGps!.latitude.toStringAsFixed(5)}, ${b.pickupGps!.longitude.toStringAsFixed(5)}'),
+                row(tr(context, 'deliveryGpsLabel'), b.deliveryGps == null ? '—' : '${b.deliveryGps!.latitude.toStringAsFixed(5)}, ${b.deliveryGps!.longitude.toStringAsFixed(5)}'),
+                row(tr(context, 'odometerStartLabel'), b.odometerStart == null ? '—' : '${b.odometerStart} km'),
+                row(tr(context, 'odometerEndLabel'), b.odometerEnd == null ? '—' : '${b.odometerEnd} km'),
+                StreamBuilder<SignatureStrokes?>(
+                  stream: TripEvidenceService.watchSignature(b.id),
+                  builder: (context, snap) => snap.data == null
+                      ? row(tr(context, 'receiverSignature'), '—')
+                      : Padding(padding: const EdgeInsets.only(top: 6), child: SignatureView(signature: snap.data!)),
+                ),
               ]),
               const SizedBox(height: 12),
               // LATER(paid): pickup/delivery photos need Firebase Storage (Blaze plan).

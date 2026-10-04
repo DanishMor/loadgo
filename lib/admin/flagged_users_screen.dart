@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../core/l10n/l10n.dart';
 import '../core/models/risk.dart';
+import '../core/risk/risk_rules.dart';
 import '../core/services/risk_service.dart';
 import '../core/widgets/common.dart';
 
@@ -95,6 +96,8 @@ class _FlaggedUsersScreenState extends State<FlaggedUsersScreen> {
                   riskTierLabel(context, u.riskTier),
                   trf(context, 'cancelsCount', {'n': u.cancelCount}),
                   trf(context, 'openReportsCount', {'n': u.openReports}),
+                  trf(context, 'riskScoreN', {'n': u.assessment.score}),
+                  if (RiskRules.suggestReview(u.assessment.score)) tr(context, 'riskSuggestReview'),
                 ].join(' · ')),
                 trailing: const Icon(Icons.edit_outlined),
                 onTap: () => _edit(u),

@@ -700,6 +700,26 @@ service cloud.firestore {
           && (!isRunning || wasRunning || resource.data.status == stage);
     }
 
+    // GPS evidence and odometer readings, each set once by the driver.
+    function evidenceUpdate() {
+      let b = resource.data;
+      let a = request.resource.data;
+      let k = changedKeys();
+      return k.hasOnly(['pickupGps', 'pickupGpsAt', 'deliveryGps', 'deliveryGpsAt', 'odometerStart', 'odometerEnd', 'updatedAt'])
+          && (!k.hasAny(['pickupGps', 'pickupGpsAt'])
+              || (k.hasAll(['pickupGps', 'pickupGpsAt']) && !('pickupGps' in b) && a.pickupGps is latlng
+                  && a.pickupGpsAt == request.time && b.status in ['picked_up', 'in_transit', 'unloading', 'delivered']))
+          && (!k.hasAny(['deliveryGps', 'deliveryGpsAt'])
+              || (k.hasAll(['deliveryGps', 'deliveryGpsAt']) && !('deliveryGps' in b) && a.deliveryGps is latlng
+                  && a.deliveryGpsAt == request.time && b.status in ['unloading', 'delivered']))
+          && (!k.hasAny(['odometerStart'])
+              || (!('odometerStart' in b) && a.odometerStart is int && a.odometerStart >= 0 && a.odometerStart <= 9999999
+                  && b.status in ['accepted', 'driver_arriving', 'loading', 'picked_up']))
+          && (!k.hasAny(['odometerEnd'])
+              || (!('odometerEnd' in b) && a.odometerEnd is int && a.odometerEnd >= b.get('odometerStart', 0) && a.odometerEnd <= 9999999
+                  && b.status in ['in_transit', 'unloading', 'delivered']));
+    }
+
     function detentionUpdate() {
       return changedKeys().hasOnly(['detention', 'updatedAt'])
           && resource.data.status in ['loading', 'unloading']
@@ -800,6 +820,7 @@ service cloud.firestore {
           && (driverLocationUpdate()
               || ewayBillUpdate()
               || detentionUpdate()
+              || evidenceUpdate()
               || driverConfirmsPayment(bookingId)
               || breakdownReport()
               || driverStep(bookingId)
@@ -840,6 +861,40 @@ service cloud.firestore {
         allow read, write: if isUser(userId)
             && isParty(get(docPath('bookings', bookingId)).data)
             && (request.resource == null || request.resource.data.keys().hasOnly(['lastReadAt']));
+      }
+
+      // signatures/receiver: the receiver's signature as stroke data, saved
+      // once by the driver at unloading / delivery.
+      match /signatures/{sigId} {
+        allow read: if signedIn() && isParty(get(docPath('bookings', bookingId)).data);
+        allow create: if signedIn()
+            && sigId == 'receiver'
+            && get(docPath('bookings', bookingId)).data.driverId == request.auth.uid
+            && get(docPath('bookings', bookingId)).data.status in ['unloading', 'delivered']
+            && request.resource.data.keys().hasOnly(['strokes', 'driverId', 'createdAt'])
+            && request.resource.data.driverId == request.auth.uid
+            && request.resource.data.strokes is list
+            && request.resource.data.strokes.size() >= 1 && request.resource.data.strokes.size() <= 30
+            && request.resource.data.strokes[0] is map
+            && request.resource.data.strokes[0].p is list && request.resource.data.strokes[0].p.size() <= 400
+            && request.resource.data.createdAt == request.time;
+        allow update, delete: if false;
+      }
+
+      // cargo_docs: append-only references to cargo documents (a changed
+      // document is a new record, so the history is kept).
+      match /cargo_docs/{docId} {
+        allow read: if signedIn() && isParty(get(docPath('bookings', bookingId)).data);
+        allow create: if signedIn()
+            && isParty(get(docPath('bookings', bookingId)).data)
+            && request.resource.data.keys().hasOnly(['type', 'number', 'note', 'leg', 'addedBy', 'createdAt'])
+            && request.resource.data.type in ['invoice', 'packing_list', 'bill_of_lading', 'shipping_bill', 'bill_of_entry', 'certificate', 'eway_bill', 'other']
+            && request.resource.data.number is string && request.resource.data.number.size() >= 1 && request.resource.data.number.size() <= 40
+            && request.resource.data.get('note', '') is string && request.resource.data.get('note', '').size() <= 200
+            && (!('leg' in request.resource.data) || request.resource.data.leg in [1, 2])
+            && request.resource.data.addedBy == request.auth.uid
+            && request.resource.data.createdAt == request.time;
+        allow update, delete: if false;
       }
 
       // secrets/otp: pickup and delivery codes. Only the customer creates and
@@ -1133,6 +1188,44 @@ service cloud.firestore {
     match /admins/{uid} {
       allow read: if isUser(uid);
       allow write: if false;
+    }
+
+    // ------------------------------------------------------------------
+    // Devices: users/{uid}/devices/{deviceId} (the owner's list), device_links
+    // (who signed in on which device, for admins) and risk_signals (written
+    // when an account appears on a new device). The device id is a random
+    // value kept on the phone, not a hardware id.
+    // TODO(functions): revoke refresh tokens when a device is revoked.
+    // ------------------------------------------------------------------
+    match /users/{userId}/devices/{deviceId} {
+      allow read: if isUser(userId) || isAdmin();
+      allow create, update: if isUser(userId)
+          && request.resource.data.keys().hasOnly(['label', 'trusted', 'revoked', 'firstSeenAt', 'lastSeenAt', 'lastLoginAt'])
+          && request.resource.data.label is string && request.resource.data.label.size() <= 40
+          && request.resource.data.trusted is bool && request.resource.data.revoked is bool
+          && deviceId.matches('^[a-z0-9-]{8,40}$');
+      allow delete: if isUser(userId);
+    }
+
+    match /device_links/{linkId} {
+      allow read: if isAdmin();
+      allow create: if signedIn()
+          && request.resource.data.keys().hasOnly(['deviceId', 'uid', 'createdAt'])
+          && request.resource.data.uid == request.auth.uid
+          && linkId == request.resource.data.deviceId + '_' + request.auth.uid
+          && request.resource.data.createdAt == request.time;
+      allow update, delete: if false;
+    }
+
+    match /risk_signals/{signalId} {
+      allow read: if isAdmin();
+      allow create: if signedIn()
+          && request.resource.data.keys().hasOnly(['uid', 'type', 'deviceId', 'amountPaise', 'bookingId', 'note', 'createdAt'])
+          && request.resource.data.uid == request.auth.uid
+          && request.resource.data.type in ['new_device', 'phone_change', 'high_value', 'random_check']
+          && request.resource.data.createdAt == request.time;
+      allow update: if isAdmin() && changedKeys().hasOnly(['reviewed', 'reviewedBy', 'reviewedAt']);
+      allow delete: if false;
     }
 
     // ------------------------------------------------------------------
@@ -1474,7 +1567,7 @@ service cloud.firestore {
       let n = request.resource.data;
       let b = getAfter(docPath('bookings', n.relatedId)).data;
       return n.keys().hasOnly(['userId', 'type', 'message', 'relatedId', 'status', 'read', 'createdAt'])
-          && n.type in ['load_accepted', 'status_changed', 'rating_received', 'booking_cancelled', 'breakdown_reported']
+          && n.type in ['load_accepted', 'status_changed', 'rating_received', 'booking_cancelled', 'breakdown_reported', 'payment_marked', 'payment_confirmed', 'accident_reported']
           && n.message is string && n.message.size() <= 200
           && n.read == false
           && n.userId != request.auth.uid

@@ -58,7 +58,7 @@ void main() {
     tester.view.physicalSize = const Size(800, 1800);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
-    final positions = StreamController<Coordinates>();
+    final positions = StreamController<Coordinates>.broadcast();
     addTearDown(positions.close);
     LocationService.useFake(() => positions.stream);
     late String id;

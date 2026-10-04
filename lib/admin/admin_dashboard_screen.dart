@@ -11,6 +11,7 @@ import 'admin_fraud_cases_screen.dart';
 import 'admin_lists.dart';
 import 'admin_offers_screen.dart';
 import 'admin_payouts_screen.dart';
+import 'admin_signals_screen.dart';
 import 'admin_verification_screen.dart';
 import 'flagged_users_screen.dart';
 
@@ -31,6 +32,7 @@ class AdminDashboardScreen extends StatelessWidget {
       ('adminTickets', 'adminTickets', Icons.support_agent_rounded, const AdminTicketsScreen()),
       ('adminSos', 'adminSos', Icons.sos_rounded, const AdminSosScreen()),
       ('adminReports', 'adminReports', Icons.flag_outlined, const AdminReportsScreen()),
+      ('adminSignals', 'adminSignals', Icons.shield_outlined, const AdminSignalsScreen()),
       ('adminFraudCases', 'adminFraudCases', Icons.gavel_rounded, const AdminFraudCasesScreen()),
       ('flaggedUsers', 'flaggedUsers', Icons.warning_amber_rounded, const FlaggedUsersScreen()),
       ('adminDeletionRequests', 'adminDeletionRequests', Icons.person_remove_outlined, const AdminDeletionRequestsScreen()),

@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../models/risk.dart';
 import 'audit_service.dart';
+import '../risk/risk_rules.dart';
 import 'backend.dart';
 
 /// A user an admin should look at.
@@ -12,6 +13,10 @@ class FlaggedUser {
   final String riskTier;
   final int cancelCount;
   final int openReports;
+
+  /// Behavioural score and what contributed (see [RiskRules.score]).
+  ({int score, List<String> reasons}) get assessment =>
+      RiskRules.score(cancelCount: cancelCount, openReports: openReports, tier: riskTier);
 
   const FlaggedUser({
     required this.uid,

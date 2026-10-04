@@ -1,89 +1,65 @@
-# Next tasks (Todo-free items)
+# Next tasks
 
-The 61 items marked **Todo-free** in `docs/ROADMAP_STATUS.md`, grouped into tasks 1-8, plus tasks 9 and 10 for features that common competitor apps have but the roadmap does not (see the competitor audit at the end of `docs/ROADMAP_STATUS.md`). All of them fit the free stack (Flutter + Auth + Firestore, no Blaze, no paid API). Not started. Same rules as before: `flutter analyze` 0 issues, `flutter test`, rules tests when rules change, 12-language strings, money in paise, `// TODO(functions)` / `// LATER(paid)` for server or paid parts.
+Written 2026-10-04 after run 3, Task 9. The items still marked **Todo-free** in `docs/ROADMAP_STATUS.md`, with where they will be done. Queue: `docs/TASK_QUEUE.md` (Tasks 10 to 30); blocked items: `docs/BLOCKED.md`.
 
-| # | Task | Items |
-|---|---|---|
-| 1 | Sign-in methods and device security | A2, A6, A7, R2, R3, R9, F4, F5 |
-| 2 | Business roles and approvals | A4, BIZ4, BIZ5, BIZ6, BIZ9, BIZ12 |
-| 3 | Fleet and vehicle management | B14, V4, V5, V6, V10, BIZ8, BIZ10, SM9 |
-| 4 | Risk rules and manual review | K13, R5, R6, R7, R8, F1, BE5, BE17 |
-| 5 | Driver network and chat | D11, D12, D13, CH2, CH3, CH7, CH13, CH14 |
-| 6 | Trip events and evidence | T8, T10, T11, M14, S2, S6, S13, SAFE4, IE10 |
-| 7 | Marketplace, recurring and scheduled matching | B4, L5, L13, P3, SM10, SM11, PAY3 |
-| 8 | Documents, notifications, fleet analytics, integration tests | DOC7, DOC9, IE13, N2, N8, N9, N13, TEST3 |
-| 9 | Competitor gaps: money and driver motivation (not in roadmap) | helper add-on, customer credits, referral, promo codes, driver incentives, tips, pickup reminder, licence expiry reminder |
-| 10 | Competitor gaps: demand and packages (not in roadmap) | demand by city, driver plan record, hourly packages, packers and movers checklist |
+| Code | Item | Gap | Planned in |
+|---|---|---|---|
+| A2 | Google login Optional secondary auth; Firebase identity link | Google button only shows "coming soon" (customer_login_screen.dart); google_sign_in is fre | BLOCKED (Console SHA-1) |
+| A4 | Business accounts Company owner, manager, dispatch, accounts | No manager/dispatch/accounts/viewer roles | Task 14 |
+| K13 | Mismatch workflow Name/entity/vehicle relationship mismatch  | Admin approves manually; no mismatch workflow | later (see below) |
+| R3 | SIM/mobile change Sensitive mobile change par stronger authe | No mobile-change flow or extra challenge | later (see below) |
+| R7 | Document expiry trigger Expired/changed document ke baad ver | Expired papers only filter recommendations; no re-verify trigger | later (see below) |
+| B14 | Fleet mode Multiple bikes/scooters under one fleet owner. | No fleet owner with multiple vehicles/drivers | Task 13 |
+| V4 | Owner relationship Owner, authorised operator or fleet relat | Only ownerId on vehicle | Task 13 |
+| V5 | Driver assignment Vehicle-to-driver mapping with active assi | Driver owns vehicle; no assignment | Task 13 |
+| V6 | Fleet dashboard Vehicles, drivers, online/offline, active tr | No fleet dashboard | Task 13 |
+| V10 | Fuel layer Fuel station map, expense tracking, future partne | Expense tracking buildable; fuel station map is paid | later (see below) |
+| L13 | Load visibility controls Public marketplace, selected networ | Loads are public only | Task 15 |
+| P3 | Recurring Repeat route/shipments. | No recurring shipments | Task 15 |
+| SM9 | Fleet matching Fleet ke available vehicles se auto allocatio | No fleet auto allocation | Task 13 |
+| SM10 | Scheduled matching Pickup slot ke according. | Slot is stored, not used in matching | Task 11 |
+| SM11 | Multi-stop matching Compatible route and capacity. | No multi-stop matching | later (see below) |
+| D11 | Nearby drivers Privacy-controlled network map/list. | No driver network | later (see below) |
+| D12 | Connect Driver-to-driver connection request. | No driver connections | later (see below) |
+| D13 | Groups Trip/route/convoy/fleet groups. | No groups | later (see below) |
+| CH2 | Driver-driver chat 1-to-1 conversation. | Chat only per booking | later (see below) |
+| CH3 | Group chat Trip/route/fleet group. | No group chat | later (see below) |
+| CH7 | Load card share Chat mein load detail card. | Load card not sendable in chat | later (see below) |
+| CH13 | Location privacy modes Nearby only / connections / trip memb | No privacy modes | later (see below) |
+| CH14 | Location expiry Temporary share automatically expire. | No expiry on location share | later (see below) |
+| PAY3 | Advance payment Booking time advance. | No advance payment record | later (see below) |
+| IE10 | Handover Leg1 -> Leg2 controlled handover. | No controlled handover step | later (see below) |
+| BIZ4 | Users Owner, admin, manager, dispatch, accounts, viewer. | No multi-user company | Task 14 |
+| BIZ5 | Permissions Role-based access. | No business roles | Task 14 |
+| BIZ6 | Approval workflow Large bookings ke liye manager approval. | No approval workflow | Task 14 |
+| BIZ8 | Fleet management Company-owned/contracted vehicles. | No company fleet | Task 13 |
+| BIZ9 | Driver pool Assigned/approved drivers. | No driver pool | Task 13 |
+| BIZ10 | Expense dashboard Transport spend, fuel, toll etc. | No expense dashboard | Task 14 |
+| BIZ12 | Transporter dashboard Multiple vehicles/drivers/customers. | No transporter dashboard | Task 13 |
+| N2 | Driver arriving ETA alert. | No ETA alerts | Task 22 |
+| N8 | Return load alert Driver route related opportunity. | No return load alert | Task 12 |
+| N13 | Fleet analytics Utilisation, idle time, revenue, maintenance | No fleet analytics | Task 13 |
+| BE5 | App Check Untrusted app requests ko reduce/deny karne ke liy | App Check not set up; free | BLOCKED (Play Integrity setup) |
+| TEST3 | Integration tests Firebase/KYC/payment/map/provider flows. | No integration_test folder | Task 10 |
 
-## 1. Sign-in methods and device security
-- A2 Google login with `google_sign_in` and account linking (needs the SHA-1 added in the Firebase Console).
-- A6, R2, F4 Device id stored per user (`users/{uid}/devices`), new-device challenge, same-device cluster flag for admins.
-- A7, R9 Trusted device list, revoke a device, "log out everywhere" (marks devices revoked; the app checks on start).
-- R3 Extra confirmation when the phone number or sensitive profile fields change.
-- F5 Unusual login signal (new device + recent change) written to the risk queue.
+## Left for later (too big for one step, split)
 
-## 2. Business roles and approvals
-- A4, BIZ4, BIZ5 Company users (owner, manager, dispatch, accounts, viewer) under one business, with a permission map used by screens and rules.
-- BIZ6 Approval workflow: bookings or bulk posts above a configured amount wait for a manager.
-- BIZ9 Approved driver pool for a business.
-- BIZ12 Transporter dashboard: many vehicles, drivers and customers in one view.
+- **K13** Mismatch workflow: compare driver name, RC owner name and vehicle relationship; needs a free-text review form for admins first, then an automatic "needs review" state.
+- **R3** Extra confirmation when the phone number changes: needs a Firebase re-authentication flow (`updatePhoneNumber`) and a signal; build as: (1) re-auth screen, (2) `phone_change` risk signal, (3) admin review.
+- **R7** Expired or changed document sends the account back to verification: do with Task 20 (document expiry auto-actions).
+- **V10** Fuel and toll expense entries per vehicle with a monthly total (the station map is paid).
+- **SM11** Multi-stop matching: rank a load by how many of its stops lie along the driver planned route.
+- **D11** Driver network, in three steps: (1) nearby drivers list with a privacy mode, (2) connection requests, (3) groups.
+- **D12** See D11 step 2.
+- **D13** See D11 step 3.
+- **CH2** Driver-to-driver chat: reuse the booking chat code with a `chats/{pairId}` collection; needs D12 first.
+- **CH3** Group chat: after CH2.
+- **CH7** Load card inside a chat message: after CH2 (message type `load_ref`).
+- **CH13** Location privacy modes (nearby only / connections / trip members / hidden): after D11.
+- **CH14** Automatic expiry of temporary location shares: after CH13 (expiry field + a check when reading).
+- **PAY3** Advance payment record at booking: add `advancePaise` to the payment card and ledger; settle the balance on delivery (PAY4).
+- **IE10** Controlled leg 1 to leg 2 handover step with both drivers confirming.
 
-## 3. Fleet and vehicle management
-- B14, V4, V5 Fleet owner with several vehicles, owner/operator relationship and vehicle-to-driver assignment.
-- V6 Fleet dashboard: vehicles, drivers, online/offline, active trips, idle vehicles.
-- V10, BIZ10 Fuel and toll expense entries and an expense dashboard (station map stays paid).
-- BIZ8 Company-owned and contracted vehicles.
-- SM9 Auto-allocate a load to an available fleet vehicle.
+## Still needs a paid service or a server (not on this list)
 
-## 4. Risk rules and manual review
-- K13 Name/vehicle mismatch sends the driver to a manual review state instead of approval.
-- R5, R6, R7, R8 Rule-based triggers: high-value booking, behavioural score from cancellations and changes, expired papers, random selection; each creates a review item.
-- F1 (remaining part; documents are already blocked by identity_index) Duplicate patterns on phone, name and device.
-- BE5 App Check with Play Integrity (free).
-- BE17 Written data retention policy plus an in-app note and admin checklist.
-
-## 5. Driver network and chat
-- D11, D12, D13 Nearby/connected drivers list with privacy setting, connection requests, groups.
-- CH2, CH3 Driver-to-driver and group chat.
-- CH7 Share a load card inside a chat.
-- CH13, CH14 Location privacy modes and automatic expiry of temporary location shares.
-
-## 6. Trip events and evidence
-- T8, T10, T11, M14 Geofence logic with Geolocator: near destination, drop reached, long halt alert.
-- S2 Save GPS with the pickup and delivery events.
-- S6 Optional odometer at trip start.
-- S13 Signature capture stored as strokes in Firestore (image upload stays Storage/paid).
-- SAFE4 Accident report and escalation to support.
-- IE10 Controlled leg 1 to leg 2 handover step.
-
-## 7. Marketplace, recurring and scheduled matching
-- B4 Add Cycle to vehicle types.
-- L5 Driver enters a planned route; loads along it are ranked.
-- L13 Load visibility: public, selected network, direct invite.
-- P3 Recurring shipments (repeat a route on a schedule, creating loads in the app).
-- SM10, SM11 Matching by pickup slot and compatible multi-stop capacity.
-- PAY3 Advance payment record at booking.
-
-## 8. Documents, notifications, fleet analytics, integration tests
-- DOC7, IE13 Cargo documents per shipment and per leg (text and reference records).
-- DOC9 Version history for changed documents.
-- N2, N8, N9 In-app ETA, return-load and payment notifications (push still needs Blaze).
-- N13 Fleet analytics: utilisation, idle time, revenue, maintenance.
-- TEST3 `integration_test/` flows with the Firebase emulator.
-
-## 9. Competitor gaps: money and driver motivation (not in the roadmap)
-All records and rules only; real money movement stays `// LATER(paid)`, server-side enforcement `// TODO(functions)`.
-- Helper / labour add-on: 0-3 helpers on a load, fixed charge per helper in `config/pricing`, shown in the fare breakdown; the driver sees it on the load card before accepting.
-- Customer credits: `users/{uid}/credits` append-only ledger (refund to credits, promo credit, spend on a booking); balance is the sum. Top-up through a gateway is LATER(paid).
-- Referral: each user gets a short code; a new user enters it once at signup; both sides get a credit line after the referred user's first delivered booking. Self-referral and duplicate use blocked by rules.
-- Promo codes: `config/promos` (percent or flat, cap, expiry, per-user limit), applied in the fare breakdown, redeemed once per user (`promo_redemptions/{uid}_{code}`, create-only).
-- Driver incentives: admin-set weekly targets in `config/incentives` (for example 10 trips = bonus); progress bar on Earnings from delivered trips; bonus lines in the driver ledger. Payout is a record only.
-- Tip to driver after delivery: amount record on the booking, shown in the driver's earnings.
-- Pickup reminder notification for scheduled loads and a licence-expiry reminder on Home (same banner as vehicle papers).
-
-## 10. Competitor gaps: demand and packages (not in the roadmap)
-- Demand by city: driver Home card with the count of open loads per pickup city (from the loaded page) so drivers know where work is; a real heat map needs Maps (paid).
-- Driver plan: a plan record (free, monthly) on the profile and a banner; charging for it is LATER(paid).
-- Hourly packages: a load type with included hours and km, extra hour/km rates in `config/pricing`.
-- Packers and movers: a checklist form (rooms, large items, floors, lift) that creates a load with notes and a higher helper count.
-- Deliberately left out: credit / pay-later for businesses (needs a regulated lender), live public trip-share link (needs hosting or Functions), masked calling and instant payout (paid).
+See `docs/BLOCKED.md` and the Paid-or-Later rows in `docs/ROADMAP_STATUS.md`.
