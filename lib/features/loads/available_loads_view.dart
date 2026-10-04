@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../core/constants/logistics.dart';
 import '../../core/models/load.dart';
 import '../../core/models/load_filter.dart';
 import '../../core/widgets/common.dart';
@@ -8,6 +7,8 @@ import '../../main.dart';
 import '../shared/paged_live_stream.dart';
 import 'accept_load.dart';
 import 'load_card.dart';
+import '../../core/services/vehicle_type_service.dart';
+import '../shared/vehicle_type_widgets.dart';
 
 /// Accept button wired to the full accept flow, with its own busy state.
 class AcceptLoadButton extends StatefulWidget {
@@ -242,7 +243,7 @@ class _FilterSheetState extends State<_FilterSheet> {
               initialValue: _type,
               items: [
                 DropdownMenuItem(value: null, child: Text(tr(context, 'allTypes'))),
-                for (final t in vehicleTypes) DropdownMenuItem(value: t, child: Text(t)),
+                for (final t in VehicleTypeService.ids) DropdownMenuItem(value: t, child: Text(vehicleTypeLabel(context, t))),
               ],
               onChanged: (v) => setState(() => _type = v),
             ),

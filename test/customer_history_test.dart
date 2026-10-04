@@ -91,7 +91,7 @@ void main() {
     expect(find.text('Fromabcdefghij'), findsOneWidget);
     expect(find.text('Toabcdefghij'), findsOneWidget);
     expect(find.text('Ramesh'), findsOneWidget);
-    expect(find.text('MH12AB1234 (20ft)'), findsOneWidget);
+    expect(find.text('MH12AB1234 (20 ft truck)'), findsOneWidget);
     expect(find.text('₹ 25000'), findsOneWidget);
   });
 

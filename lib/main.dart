@@ -22,6 +22,7 @@ import 'package:flutter/services.dart';
 
 import 'firebase_options.dart';
 import 'l10n/strings.dart';
+import 'core/services/vehicle_type_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -36,7 +37,10 @@ Future<void> main() async {
   applyLanguageName(await LanguageStore.loadLocal());
   // Register for push whenever a user is signed in (also after app restarts).
   FirebaseAuth.instance.authStateChanges().listen((user) {
-    if (user != null) PushService.register();
+    if (user != null) {
+      PushService.register();
+      VehicleTypeService.refresh();
+    }
   });
   runApp(const LoadGoApp());
 }

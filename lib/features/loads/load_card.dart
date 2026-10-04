@@ -5,6 +5,7 @@ import '../../core/models/load.dart';
 import '../../core/share_text.dart';
 import '../../core/widgets/common.dart';
 import '../../main.dart';
+import '../shared/vehicle_type_widgets.dart';
 
 String loadStatusLabel(BuildContext context, String status, {bool cancelled = false}) => switch (status) {
       LoadStatus.closed when cancelled => tr(context, 'statusCancelled'),
@@ -69,7 +70,7 @@ class LoadCard extends StatelessWidget {
             runSpacing: 6,
             children: [
               _meta(Icons.scale_outlined, '${formatNum(load.weight)} T'),
-              _meta(Icons.local_shipping_outlined, load.vehicleType),
+              _meta(Icons.local_shipping_outlined, vehicleTypeLabel(context, load.vehicleType)),
               _meta(Icons.inventory_2_outlined, load.cargoType),
               _meta(Icons.calendar_today_outlined, formatDate(load.pickupDate)),
             ],

@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 
-import '../../core/constants/logistics.dart';
 import '../../core/services/user_service.dart';
 import '../../main.dart';
+import '../../core/services/vehicle_type_service.dart';
+import '../shared/vehicle_type_widgets.dart';
 
 class DriverProfileSetupScreen extends StatefulWidget {
   const DriverProfileSetupScreen({super.key});
@@ -115,10 +116,10 @@ class _DriverProfileSetupScreenState extends State<DriverProfileSetupScreen> {
                   Wrap(
                     spacing: 8,
                     runSpacing: 8,
-                    children: vehicleTypes.map((t) {
+                    children: VehicleTypeService.ids.map((t) {
                       final selected = t == _vehicleType;
                       return ChoiceChip(
-                        label: Text(t),
+                        label: Text(vehicleTypeLabel(context, t)),
                         selected: selected,
                         onSelected: (_) => setState(() => _vehicleType = t),
                         selectedColor: const Color(0xFFE8F1FF),

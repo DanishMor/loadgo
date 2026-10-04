@@ -2,12 +2,13 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
-import '../../core/constants/logistics.dart';
 import '../../core/models/vehicle.dart';
 import '../../core/services/user_service.dart';
 import '../../core/services/vehicle_service.dart';
 import '../../core/widgets/common.dart';
 import '../../main.dart';
+import '../../core/services/vehicle_type_service.dart';
+import '../shared/vehicle_type_widgets.dart';
 
 /// Lets the driver pick an RC photo from camera or gallery (compressed).
 Future<Uint8List?> pickRcImageFromDevice(BuildContext context) async {
@@ -74,7 +75,7 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
       _numberCtrl.text = v.number;
       _capacityCtrl.text = formatNum(v.capacity);
       _rcCtrl.text = v.rcNumber;
-      if (vehicleTypes.contains(v.type)) _type = v.type;
+      _type = v.type;
     } else if (widget.prefillFromProfile) {
       _prefill();
     }
@@ -131,7 +132,7 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
       final type = (data['vehicleType'] as String?)?.replaceAll(' ', '');
       setState(() {
         if (number != null && _numberCtrl.text.isEmpty) _numberCtrl.text = number;
-        if (type != null && vehicleTypes.contains(type)) _type = type;
+        if (type != null && VehicleTypeService.byId(type) != null) _type = type;
       });
     } catch (_) {
       // Prefill is best-effort; the form still works empty.
@@ -215,9 +216,14 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
                 DropdownButtonFormField<String>(
                   initialValue: _type,
                   decoration: const InputDecoration(prefixIcon: Icon(Icons.local_shipping_outlined)),
-                  items: [for (final t in vehicleTypes) DropdownMenuItem(value: t, child: Text(t))],
+                  items: vehicleTypeItems(context, keep: _type),
                   onChanged: (v) => setState(() => _type = v ?? _type),
                 ),
+                if (VehicleTypeService.byId(_type) case final info?)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 6, left: 4),
+                    child: Text(vehicleTypeRange(context, info), style: const TextStyle(color: AppColors.muted, fontSize: 12)),
+                  ),
                 const SizedBox(height: 18),
                 FieldLabel(tr(context, 'capacityTons')),
                 TextFormField(

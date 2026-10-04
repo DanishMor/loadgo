@@ -4,6 +4,8 @@ import '../../core/constants/logistics.dart';
 import '../../core/services/load_service.dart';
 import '../../core/widgets/common.dart';
 import '../../main.dart';
+import '../../core/services/vehicle_type_service.dart';
+import '../shared/vehicle_type_widgets.dart';
 
 /// Customer form to post a load. Pops with `true` once posted.
 class PostLoadScreen extends StatefulWidget {
@@ -125,7 +127,10 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
                   decoration: InputDecoration(prefixIcon: const Icon(Icons.scale_outlined), hintText: '${tr(context, 'exampleShort')} 8'),
                   validator: (v) {
                     final n = num.tryParse(v?.trim() ?? '');
-                    return (n == null || n <= 0 || n > 100) ? tr(context, 'invalidNumber') : null;
+                    if (n == null || n <= 0 || n > 100) return tr(context, 'invalidNumber');
+                    final info = VehicleTypeService.byId(_vehicleType);
+                    if (info != null && !info.fits(n)) return trf(context, 'vtTooHeavy', {'max': formatNum(info.maxTons)});
+                    return null;
                   },
                 ),
                 const SizedBox(height: 18),
@@ -133,8 +138,11 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
                 DropdownButtonFormField<String>(
                   initialValue: _vehicleType,
                   decoration: const InputDecoration(prefixIcon: Icon(Icons.local_shipping_outlined)),
-                  items: [for (final t in vehicleTypes) DropdownMenuItem(value: t, child: Text(t))],
-                  onChanged: (v) => setState(() => _vehicleType = v ?? _vehicleType),
+                  items: vehicleTypeItems(context, keep: _vehicleType),
+                  onChanged: (v) {
+                    setState(() => _vehicleType = v ?? _vehicleType);
+                    _formKey.currentState?.validate();
+                  },
                 ),
                 const SizedBox(height: 18),
                 FieldLabel(tr(context, 'budgetOptional')),

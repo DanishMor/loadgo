@@ -7,6 +7,7 @@ import '../../core/share_text.dart';
 import '../../core/widgets/common.dart';
 import '../../main.dart';
 import '../shared/live_stream.dart';
+import '../shared/vehicle_type_widgets.dart';
 
 String bookingStatusLabel(BuildContext context, String status) => switch (status) {
       BookingStatus.accepted => tr(context, 'statusAccepted'),
@@ -101,7 +102,7 @@ class BookingSummary extends StatelessWidget {
           const SizedBox(height: 4),
           _row(Icons.calendar_today_outlined, tr(context, 'pickupDate'), formatDate(b.pickupDate)),
           _row(Icons.inventory_2_outlined, tr(context, 'cargo'), '${b.cargoType} • ${formatNum(b.weight)} T'),
-          _row(Icons.local_shipping_outlined, tr(context, 'vehicle'), '${b.vehicleNumber} (${b.vehicleType})'),
+          _row(Icons.local_shipping_outlined, tr(context, 'vehicle'), '${b.vehicleNumber} (${vehicleTypeLabel(context, b.vehicleType)})'),
           _row(Icons.currency_rupee_rounded, tr(context, 'budget'),
               b.budget == null ? tr(context, 'budgetNegotiable') : formatRupees(b.budget!)),
           if (showDriver)

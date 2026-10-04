@@ -1,17 +1,6 @@
 /// Shared domain constants for vehicles, loads and bookings.
 library;
 
-const List<String> vehicleTypes = [
-  'Bike',
-  '3-Wheeler',
-  'Mini',
-  '14ft',
-  '20ft',
-  '32ft',
-  'Container',
-  'Trailer',
-];
-
 const List<String> cargoTypes = [
   'General',
   'FMCG',

@@ -15,6 +15,7 @@ void main() {
     await tester.pumpWidget(const MaterialApp(home: AddVehicleScreen()));
 
     // Empty submit shows validation errors and writes nothing.
+    await tester.ensureVisible(find.text('Save'));
     await tester.tap(find.text('Save'));
     await tester.pumpAndSettle();
     expect(find.text('This field is required'), findsWidgets);

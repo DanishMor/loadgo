@@ -76,7 +76,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('vehicleTypeFilter')));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('14ft').last);
+    await tester.tap(find.text('14 ft truck').last);
     await tester.pumpAndSettle();
     await tester.enterText(find.byKey(const ValueKey('minBudgetFilter')), '1');
     await tester.tap(find.text('Apply'));

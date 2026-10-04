@@ -6,6 +6,7 @@ import '../../core/widgets/common.dart';
 import '../../main.dart';
 import '../shared/live_stream.dart';
 import 'add_vehicle_screen.dart';
+import '../shared/vehicle_type_widgets.dart';
 
 void openEditVehicle(BuildContext context, Vehicle vehicle) {
   Navigator.of(context).push<bool>(MaterialPageRoute(builder: (_) => AddVehicleScreen(vehicle: vehicle)));
@@ -112,7 +113,7 @@ class _VehicleCardState extends State<_VehicleCard> {
               children: [
                 Text(v.number, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: AppColors.title)),
                 const SizedBox(height: 4),
-                Text('${v.type} • ${formatNum(v.capacity)} T • RC ${v.rcNumber}',
+                Text('${vehicleTypeLabel(context, v.type)} • ${formatNum(v.capacity)} T • RC ${v.rcNumber}',
                     style: const TextStyle(color: AppColors.muted, fontSize: 13)),
                 const SizedBox(height: 8),
                 Wrap(

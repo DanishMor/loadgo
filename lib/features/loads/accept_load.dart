@@ -7,6 +7,7 @@ import '../../core/services/vehicle_service.dart';
 import '../../core/widgets/common.dart';
 import '../../main.dart';
 import '../vehicle/my_vehicles_screen.dart';
+import '../shared/vehicle_type_widgets.dart';
 
 /// Lets the driver pick one of their active vehicles and confirm. Returns null
 /// when cancelled.
@@ -25,7 +26,7 @@ Future<Vehicle?> _chooseVehicle(BuildContext context, Load load, List<Vehicle> v
           children: [
             RouteText(pickup: load.pickup, drop: load.drop),
             const SizedBox(height: 4),
-            Text('${formatNum(load.weight)} T • ${load.vehicleType} • ${formatDate(load.pickupDate)}',
+            Text('${formatNum(load.weight)} T • ${vehicleTypeLabel(context, load.vehicleType)} • ${formatDate(load.pickupDate)}',
                 style: const TextStyle(color: AppColors.muted)),
             const SizedBox(height: 16),
             Text(tr(sheetContext, 'chooseVehicle'), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
@@ -39,7 +40,7 @@ Future<Vehicle?> _chooseVehicle(BuildContext context, Load load, List<Vehicle> v
                       contentPadding: EdgeInsets.zero,
                       leading: const Icon(Icons.local_shipping_rounded, color: AppColors.primary),
                       title: Text(v.number, style: const TextStyle(fontWeight: FontWeight.w700)),
-                      subtitle: Text('${v.type} • ${formatNum(v.capacity)} T'),
+                      subtitle: Text('${vehicleTypeLabel(context, v.type)} • ${formatNum(v.capacity)} T'),
                       trailing: FilledButton(
                         onPressed: () => Navigator.of(sheetContext).pop(v),
                         child: Text(tr(sheetContext, 'accept')),

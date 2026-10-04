@@ -377,3 +377,21 @@ describe('driver cancels before pickup', () => {
     await assertFails(b.commit());
   });
 });
+
+describe('config', () => {
+  const TYPES = { types: [{ id: 'Mini', name: 'Mini truck', minTons: 0.75, maxTons: 2, category: 'lcv', active: true }] };
+
+  test('signed-in users read config, anonymous users cannot', async () => {
+    await seed((db) => setDoc(doc(db, 'config', 'vehicle_types'), TYPES));
+    await assertSucceeds(getDoc(doc(as('driver1'), 'config', 'vehicle_types')));
+    await assertFails(getDoc(doc(anon(), 'config', 'vehicle_types')));
+  });
+
+  test('only admins write config, with a valid shape', async () => {
+    await assertFails(setDoc(doc(as('driver1'), 'config', 'vehicle_types'), TYPES));
+    await assertSucceeds(setDoc(doc(asAdmin(), 'config', 'vehicle_types'), TYPES));
+    await assertFails(setDoc(doc(asAdmin(), 'config', 'vehicle_types'), { types: [] }));
+    await assertFails(setDoc(doc(asAdmin(), 'config', 'vehicle_types'), { ...TYPES, extra: 1 }));
+    await assertFails(deleteDoc(doc(asAdmin(), 'config', 'vehicle_types')));
+  });
+});

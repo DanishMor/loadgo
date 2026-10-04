@@ -242,6 +242,24 @@ service cloud.firestore {
     }
 
     // ------------------------------------------------------------------
+    // config/{docId}: app configuration (vehicle_types, pricing, ...).
+    // Every signed-in user reads it; only admins write.
+    // ------------------------------------------------------------------
+    function validConfig(docId) {
+      let d = request.resource.data;
+      return (docId == 'vehicle_types'
+              && d.keys().hasOnly(['types', 'updatedAt'])
+              && d.types is list && d.types.size() > 0 && d.types.size() <= 50)
+          || (docId != 'vehicle_types' && d.size() <= 100);
+    }
+
+    match /config/{docId} {
+      allow read: if signedIn();
+      allow create, update: if isAdmin() && validConfig(docId);
+      allow delete: if false;
+    }
+
+    // ------------------------------------------------------------------
     // notifications: in-app messages between the two parties of a booking.
     // Created by one party for the other (same transaction as the event);
     // only the recipient reads them and may only mark them read.

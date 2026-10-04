@@ -7,6 +7,7 @@ import '../../core/widgets/common.dart';
 import '../../main.dart';
 import 'booking_tracking_screen.dart';
 import 'booking_widgets.dart';
+import '../shared/vehicle_type_widgets.dart';
 
 void openInvoice(BuildContext context, String bookingId) {
   Navigator.of(context).push(MaterialPageRoute(builder: (_) => InvoiceScreen(bookingId: bookingId)));
@@ -56,7 +57,7 @@ class InvoiceScreen extends StatelessWidget {
                   _InvoiceRow(tr(context, 'dropLocation'), b.drop),
                   _InvoiceRow(tr(context, 'cargo'), b.cargoType),
                   _InvoiceRow(tr(context, 'weightTons'), formatNum(b.weight)),
-                  _InvoiceRow(tr(context, 'vehicle'), '${b.vehicleNumber} (${b.vehicleType})'),
+                  _InvoiceRow(tr(context, 'vehicle'), '${b.vehicleNumber} (${vehicleTypeLabel(context, b.vehicleType)})'),
                   _InvoiceRow(tr(context, 'driver'), b.driverName.isEmpty ? '--' : b.driverName),
                   const Divider(height: 28),
                   Row(

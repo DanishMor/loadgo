@@ -6,8 +6,8 @@ Paid/manual items are marked `// LATER(paid): ...` in code and listed in docs/MA
 | # | Task | Status | Notes |
 |---|---|---|---|
 | 1 | Auth fixes (resend OTP, error map, language persist, masked phone, digits only) | done | auth_helpers.dart, language_store.dart, lib/l10n/ split |
-| 2 | Vehicle types config | in-progress | |
-| 3 | Vehicle documents, availability, duplicates | todo | |
+| 2 | Vehicle types config | done | config/vehicle_types + fallback, rules: signed-in read, admin write |
+| 3 | Vehicle documents, availability, duplicates | in-progress | |
 | 4 | Pricing engine + fare estimate + cancellation policy | todo | |
 | 5 | Load posting upgrade (multi-stop, saved places, prohibited cargo, slot, repost) | todo | |
 | 6 | Offers & negotiation | todo | |
@@ -32,3 +32,4 @@ Paid/manual items are marked `// LATER(paid): ...` in code and listed in docs/MA
 
 ## Log
 - 2026-10-04 Task 1 done: resend OTP (60s, forceResendingToken), Firebase error-code map, language saved to device + users.language, masked phone on OTP/profile/home, digits-only inputs.
+- 2026-10-04 Task 2 done: VehicleTypeService (config/vehicle_types, 15 fallback types with tonne ranges), translated labels, used by add vehicle, post load (weight vs max check), filters, driver setup.

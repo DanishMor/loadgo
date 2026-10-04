@@ -68,7 +68,7 @@ void main() {
     final fields = find.byType(TextFormField);
     await tester.enterText(fields.at(0), 'Delhi');
     await tester.enterText(fields.at(1), 'Mumbai');
-    await tester.enterText(fields.at(2), '8');
+    await tester.enterText(fields.at(2), '3');
     // Pick a date via the date picker.
     await tester.ensureVisible(find.byIcon(Icons.calendar_today_rounded));
     await tester.tap(find.byIcon(Icons.calendar_today_rounded));
