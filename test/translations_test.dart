@@ -1,7 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:transport_app/core/l10n/strings.dart';
-import 'package:transport_app/main.dart';
-
+import 'package:transport_app/core/l10n/l10n.dart';
 void main() {
   test('every translation key has all 12 languages', () {
     final incomplete = <String>[

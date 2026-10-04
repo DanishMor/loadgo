@@ -6,9 +6,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:transport_app/core/models/booking.dart';
 import 'package:transport_app/core/models/load.dart';
 import 'package:transport_app/core/models/paged.dart';
-import 'package:transport_app/features/bookings/booking_list_view.dart';
-import 'package:transport_app/features/bookings/customer_bookings_view.dart';
-import 'package:transport_app/features/loads/available_loads_view.dart';
+import 'package:transport_app/core/widgets/booking_list_view.dart';
+import 'package:transport_app/customer/customer_bookings_view.dart';
+import 'package:transport_app/driver/available_loads_view.dart';
 import 'package:transport_app/core/services/connectivity_service.dart';
 import 'package:transport_app/core/widgets/live_stream.dart';
 

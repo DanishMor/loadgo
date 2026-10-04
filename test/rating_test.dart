@@ -9,8 +9,8 @@ import 'package:transport_app/core/services/booking_service.dart';
 import 'package:transport_app/core/services/load_service.dart';
 import 'package:transport_app/core/services/rating_service.dart';
 import 'package:transport_app/core/services/vehicle_service.dart';
-import 'package:transport_app/features/bookings/booking_tracking_screen.dart';
-import 'package:transport_app/features/profile/profile_view.dart';
+import 'package:transport_app/customer/booking_tracking_screen.dart';
+import 'package:transport_app/core/profile/profile_view.dart';
 
 import 'test_utils.dart';
 

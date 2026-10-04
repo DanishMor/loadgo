@@ -1,19 +1,23 @@
 # Code structure rules
 
 One app for now; Admin is a role-gated part of it (not a separate app). Code is laid out so the
-Customer and Driver apps can be published separately later (see docs/SPLIT_PLAN.md, Task 17).
+Customer and Driver apps can be published separately later (see docs/SPLIT_PLAN.md).
+`test/structure_test.dart` enforces the import rules below and fails the build when they are broken.
 
-- `lib/core/`   shared: models, services, l10n, theme, widgets, chat, notifications
-- `lib/auth/`   login, OTP, profile setup
+- `lib/core/`     shared: models, services, l10n, pricing, matching, analytics, enterprise helpers, theme, widgets, chat, documents, notifications, profile
+- `lib/auth/`     splash, role selection, login, OTP, profile setup, driver pending, start resolvers
 - `lib/customer/` customer-only screens
 - `lib/driver/`   driver-only screens
 - `lib/admin/`    admin-only screens
+- `lib/main.dart` app shell only (`main()` and `LoadGoApp`); no feature code, and nothing imports it
 
 Import rules
-- `customer/`, `driver/` and `admin/` never import each other. They import only `core/` (and `auth/`).
+- `customer/`, `driver/` and `admin/` never import each other. They import `core/` (and `auth/` if they must).
+- `core/` imports nothing from `auth/`, `customer/`, `driver/` or `admin/`. When core needs a screen from
+  those folders it takes a builder or a widget list instead (`AppRoutes` in `core/navigation`, `ProfileView.extraTiles`).
+- `auth/` may import the role folders (it routes people into the right home screen).
 - Admin views are built from `core/` models and widgets, not customer/driver screens.
 - A feature both roles use goes in `core/`; a one-role feature goes in that role's folder.
-- New code does not go into `main.dart`, and new files never import `main.dart`
-  (older files still do; Task 17 removes that). `lib/features/` is legacy and is moved in Task 17.
+- Nothing imports `main.dart`. Shared things that used to live there are in `core/`.
 - Firestore field names (`customerId`, `shipperId`, `driverId`, ...) do not change.
 - Admin screens appear only when `admins/{uid}` exists; Firestore rules are the real gate.

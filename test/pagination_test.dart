@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:transport_app/core/models/paged.dart';
 import 'package:transport_app/core/services/backend.dart';
 import 'package:transport_app/core/services/load_service.dart';
-import 'package:transport_app/features/loads/available_loads_view.dart';
+import 'package:transport_app/driver/available_loads_view.dart';
 
 import 'test_utils.dart';
 

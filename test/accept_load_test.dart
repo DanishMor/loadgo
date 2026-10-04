@@ -7,8 +7,8 @@ import 'package:transport_app/core/services/backend.dart';
 import 'package:transport_app/core/services/booking_service.dart';
 import 'package:transport_app/core/services/load_service.dart';
 import 'package:transport_app/core/services/vehicle_service.dart';
-import 'package:transport_app/features/loads/available_loads_view.dart';
-import 'package:transport_app/features/vehicle/add_vehicle_screen.dart';
+import 'package:transport_app/driver/available_loads_view.dart';
+import 'package:transport_app/driver/add_vehicle_screen.dart';
 
 /// Fake Firestore futures complete on real async while a spinner keeps
 /// animating, so give them real time before settling.

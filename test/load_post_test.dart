@@ -5,8 +5,8 @@ import 'package:transport_app/core/constants/logistics.dart';
 import 'package:transport_app/core/services/backend.dart';
 import 'package:transport_app/core/services/load_service.dart';
 import 'package:transport_app/core/widgets/common.dart';
-import 'package:transport_app/features/loads/my_loads_view.dart';
-import 'package:transport_app/features/loads/post_load_screen.dart';
+import 'package:transport_app/customer/my_loads_view.dart';
+import 'package:transport_app/customer/post_load_screen.dart';
 
 void main() {
   late FakeFirebaseFirestore db;

@@ -10,8 +10,8 @@ import 'package:transport_app/core/services/booking_service.dart';
 import 'package:transport_app/core/services/load_service.dart';
 import 'package:transport_app/core/services/location_service.dart';
 import 'package:transport_app/core/services/vehicle_service.dart';
-import 'package:transport_app/features/bookings/booking_tracking_screen.dart';
-import 'package:transport_app/features/bookings/driver_trip_screen.dart';
+import 'package:transport_app/customer/booking_tracking_screen.dart';
+import 'package:transport_app/driver/driver_trip_screen.dart';
 
 import 'test_utils.dart';
 

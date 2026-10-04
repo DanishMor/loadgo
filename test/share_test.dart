@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:transport_app/core/models/load.dart';
 import 'package:transport_app/core/share_text.dart';
-import 'package:transport_app/features/loads/load_card.dart';
+import 'package:transport_app/core/widgets/load_card.dart';
 
 void main() {
   final load = Load(

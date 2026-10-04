@@ -10,7 +10,7 @@ import 'package:transport_app/core/services/load_service.dart';
 import 'package:transport_app/core/services/notification_service.dart';
 import 'package:transport_app/core/services/rating_service.dart';
 import 'package:transport_app/core/services/vehicle_service.dart';
-import 'package:transport_app/features/notifications/notifications_screen.dart';
+import 'package:transport_app/core/notifications/notifications_screen.dart';
 
 import 'test_utils.dart';
 

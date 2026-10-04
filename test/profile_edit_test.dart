@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:transport_app/core/services/backend.dart';
 import 'package:transport_app/core/services/user_service.dart';
-import 'package:transport_app/features/profile/profile_view.dart';
+import 'package:transport_app/core/profile/profile_view.dart';
 
 import 'test_utils.dart';
 

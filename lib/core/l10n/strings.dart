@@ -1,4 +1,4 @@
-/// Per-feature translation tables, merged into `T.data` in main.dart.
+/// Per-feature translation tables, merged into `T.data` in core/l10n/l10n.dart.
 ///
 /// Each value is a 12-item list in `AppLanguage` order:
 /// en, hi, hinglish, kn, ta, te, mr, gu, bn, pa, ks, ur.

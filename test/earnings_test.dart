@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:transport_app/core/models/booking.dart';
 import 'package:transport_app/core/models/earnings.dart';
-import 'package:transport_app/features/earnings/earnings_view.dart';
+import 'package:transport_app/driver/earnings_view.dart';
 
 import 'test_utils.dart';
 

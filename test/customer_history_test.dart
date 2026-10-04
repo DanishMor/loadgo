@@ -5,7 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:transport_app/core/models/booking.dart';
 import 'package:transport_app/core/services/backend.dart';
 import 'package:transport_app/core/services/booking_service.dart';
-import 'package:transport_app/features/bookings/customer_bookings_view.dart';
+import 'package:transport_app/customer/customer_bookings_view.dart';
 import 'package:transport_app/core/documents/invoice_screen.dart';
 
 import 'test_utils.dart';

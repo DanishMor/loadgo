@@ -5,8 +5,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:transport_app/core/services/auth_helpers.dart';
 import 'package:transport_app/core/services/backend.dart';
 import 'package:transport_app/core/services/language_store.dart';
-import 'package:transport_app/main.dart';
-
+import 'package:transport_app/core/l10n/l10n.dart';
+import 'package:transport_app/auth/otp_verification_screen.dart';
 void main() {
   group('authErrorKey', () {
     test('maps Firebase codes to translated keys', () {

@@ -6,7 +6,7 @@ import 'package:transport_app/core/services/backend.dart';
 import 'package:transport_app/core/services/booking_service.dart';
 import 'package:transport_app/core/services/load_service.dart';
 import 'package:transport_app/core/services/vehicle_service.dart';
-import 'package:transport_app/features/loads/my_loads_view.dart';
+import 'package:transport_app/customer/my_loads_view.dart';
 
 import 'test_utils.dart';
 

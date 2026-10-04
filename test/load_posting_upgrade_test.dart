@@ -15,8 +15,8 @@ import 'package:transport_app/core/services/saved_place_service.dart';
 import 'package:transport_app/core/services/vehicle_service.dart';
 import 'package:transport_app/core/share_text.dart';
 import 'package:transport_app/core/widgets/common.dart';
-import 'package:transport_app/features/loads/my_loads_view.dart';
-import 'package:transport_app/features/loads/post_load_screen.dart';
+import 'package:transport_app/customer/my_loads_view.dart';
+import 'package:transport_app/customer/post_load_screen.dart';
 
 import 'test_utils.dart';
 

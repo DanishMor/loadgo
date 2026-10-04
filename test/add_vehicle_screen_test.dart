@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:transport_app/core/services/backend.dart';
 import 'package:transport_app/core/models/vehicle.dart';
-import 'package:transport_app/features/vehicle/add_vehicle_screen.dart';
+import 'package:transport_app/driver/add_vehicle_screen.dart';
 
 void main() {
   testWidgets('validates input and saves a vehicle', (tester) async {
