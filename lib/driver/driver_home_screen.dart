@@ -326,7 +326,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
   Widget build(BuildContext context) {
     final pages = [
       _homeTab(),
-      AvailableLoadsView(loads: LoadService.watchOpenPage, onAccepted: _onAccepted),
+      AvailableLoadsView(loads: LoadService.watchOpenPage, nearby: LoadService.watchNearby, onAccepted: _onAccepted),
       BookingListView(
         title: tr(context, 'trips'),
         bookings: BookingService.watchForDriverPage,

@@ -4,6 +4,7 @@ import '../constants/logistics.dart';
 import '../models/booking.dart';
 import 'audit_service.dart';
 import 'backend.dart';
+import 'load_service.dart';
 
 /// Counters shown on the admin dashboard.
 class AdminCounters {
@@ -193,6 +194,9 @@ class AdminConsoleService {
   }
 
   // ---- config ----
+
+  /// Adds `pickupGeohash` to older loads (see docs/MIGRATIONS.md).
+  static Future<int> backfillPickupGeohash() => LoadService.backfillPickupGeohash();
 
   static Future<Map<String, dynamic>?> readConfig(String docId) async =>
       (await _db.collection('config').doc(docId).get()).data();

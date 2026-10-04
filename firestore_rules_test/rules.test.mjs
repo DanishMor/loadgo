@@ -317,6 +317,24 @@ describe('location consent', () => {
   });
 });
 
+describe('pickup geohash', () => {
+  test('optional, must look like a geohash', async () => {
+    await assertSucceeds(addDoc(collection(as('customer1'), 'loads'), { ...LOAD, pickupGeohash: 'ttnfv2u' }));
+    await assertFails(addDoc(collection(as('customer1'), 'loads'), { ...LOAD, pickupGeohash: 'NOT A HASH' }));
+    await assertFails(addDoc(collection(as('customer1'), 'loads'), { ...LOAD, pickupGeohash: 12 }));
+  });
+
+  test('admin can backfill an old load, but not change anything else or overwrite', async () => {
+    await seed((db) => setDoc(doc(db, 'loads', 'old'), LOAD));
+    await seed((db) => setDoc(doc(db, 'loads', 'new'), { ...LOAD, pickupGeohash: 'ttnfv2u' }));
+    await assertFails(updateDoc(doc(as('customer2'), 'loads', 'old'), { pickupGeohash: 'ttnfv2u' }));
+    await assertFails(updateDoc(doc(asAdmin(), 'loads', 'old'), { pickupGeohash: 'ttnfv2u', budget: 1 }));
+    await assertFails(updateDoc(doc(asAdmin(), 'loads', 'old'), { pickupGeohash: 'BAD' }));
+    await assertSucceeds(updateDoc(doc(asAdmin(), 'loads', 'old'), { pickupGeohash: 'ttnfv2u' }));
+    await assertFails(updateDoc(doc(asAdmin(), 'loads', 'new'), { pickupGeohash: 'ttnfv2v' }));
+  });
+});
+
 describe('admin verification', () => {
   const seedDriver = () => seed((db) => setDoc(doc(db, 'users', 'd1'), { driverName: 'R', verified: false, verificationStatus: 'pending' }));
 

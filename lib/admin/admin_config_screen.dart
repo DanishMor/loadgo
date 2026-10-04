@@ -34,6 +34,17 @@ class AdminConfigScreen extends StatelessWidget {
           trailing: const Icon(Icons.chevron_right_rounded),
           onTap: () => open('vehicle_types', 'adminVehicleTypes'),
         ),
+        ListTile(
+          key: const ValueKey('backfillGeohash'),
+          title: Text(tr(context, 'adminBackfillGeohash')),
+          subtitle: Text(tr(context, 'adminBackfillGeohashSub')),
+          trailing: const Icon(Icons.sync_rounded),
+          onTap: () async {
+            final n = await AdminConsoleService.backfillPickupGeohash();
+            if (!context.mounted) return;
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(trf(context, 'adminBackfilled', {'n': n}))));
+          },
+        ),
       ]),
     );
   }

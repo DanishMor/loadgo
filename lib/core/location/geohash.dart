@@ -40,3 +40,38 @@ String geohashEncode(double lat, double lng, {int precision = 9}) {
   }
   return out.toString();
 }
+
+/// Size in degrees of one geohash cell of [precision] characters.
+({double lat, double lng}) geohashCellSize(int precision) {
+  final bits = precision * 5;
+  final lngBits = (bits + 1) ~/ 2;
+  final latBits = bits ~/ 2;
+  return (lat: 180 / (1 << latBits), lng: 360 / (1 << lngBits));
+}
+
+/// The cell containing the point plus its neighbours (up to 9 prefixes).
+/// A prefix range query over these cells finds everything within roughly one
+/// cell width of the point, whichever side of a cell border it sits on.
+List<String> geohashCells(double lat, double lng, int precision) {
+  final size = geohashCellSize(precision);
+  final out = <String>{};
+  for (final dLat in [-1, 0, 1]) {
+    for (final dLng in [-1, 0, 1]) {
+      final la = lat + dLat * size.lat;
+      var lo = lng + dLng * size.lng;
+      if (la < -90 || la > 90) continue;
+      if (lo > 180) lo -= 360;
+      if (lo < -180) lo += 360;
+      out.add(geohashEncode(la, lo, precision: precision));
+    }
+  }
+  return out.toList()..sort();
+}
+
+/// Cell length (characters) whose cell is at least [radiusKm] wide, so the
+/// 3 x 3 block around the driver covers that radius. Capped to 3..5.
+int geohashPrecisionForKm(double radiusKm) {
+  if (radiusKm <= 4) return 5;
+  if (radiusKm <= 39) return 4;
+  return 3;
+}

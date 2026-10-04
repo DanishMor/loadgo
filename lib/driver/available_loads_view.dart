@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../core/matching/nearest.dart';
@@ -95,7 +97,12 @@ class AvailableLoadsView extends StatefulWidget {
   /// saved location; without either the list keeps its newest-first order.
   final LatLng? origin;
 
-  const AvailableLoadsView({super.key, required this.loads, this.onAccepted, this.origin});
+  /// Live loads around the driver (geohash range queries). They are merged
+  /// into the page and the whole list is sorted by distance, so close loads
+  /// show first even if they are not among the newest.
+  final Stream<List<Load>> Function(LatLng origin)? nearby;
+
+  const AvailableLoadsView({super.key, required this.loads, this.onAccepted, this.origin, this.nearby});
 
   @override
   State<AvailableLoadsView> createState() => _AvailableLoadsViewState();
@@ -105,17 +112,42 @@ class _AvailableLoadsViewState extends State<AvailableLoadsView> {
   final _searchCtrl = TextEditingController();
   LoadFilter _filter = LoadFilter.none;
   late LatLng? _origin = widget.origin;
+  StreamSubscription<List<Load>>? _nearSub;
+  List<Load> _nearby = const [];
 
   @override
   void initState() {
     super.initState();
-    if (_origin == null) _loadOrigin();
+    if (_origin == null) {
+      _loadOrigin();
+    } else {
+      _watchNearby();
+    }
+  }
+
+  void _watchNearby() {
+    final o = _origin;
+    if (o == null || widget.nearby == null) return;
+    _nearSub?.cancel();
+    _nearSub = widget.nearby!(o).listen((l) {
+      if (mounted) setState(() => _nearby = l);
+    }, onError: (_) {});
+  }
+
+  /// The loaded page plus the nearby loads, without duplicates.
+  List<Load> _withNearby(List<Load> page) {
+    if (_nearby.isEmpty) return page;
+    final ids = {for (final l in page) l.id};
+    return [...page, for (final l in _nearby) if (ids.add(l.id)) l];
   }
 
   Future<void> _loadOrigin() async {
     try {
       final here = UserService.lastLocationOf(await UserService.getUser());
-      if (here != null && mounted) setState(() => _origin = here);
+      if (here != null && mounted) {
+        setState(() => _origin = here);
+        _watchNearby();
+      }
     } catch (_) {
       // No profile yet: keep the default order.
     }
@@ -143,6 +175,7 @@ class _AvailableLoadsViewState extends State<AvailableLoadsView> {
 
   @override
   void dispose() {
+    _nearSub?.cancel();
     _searchCtrl.dispose();
     super.dispose();
   }
@@ -239,7 +272,8 @@ class _AvailableLoadsViewState extends State<AvailableLoadsView> {
           Expanded(
             child: PagedLiveStream<Load>(
               stream: widget.loads,
-              builder: (context, all, loadMore) {
+              builder: (context, page, loadMore) {
+                final all = _withNearby(page);
                 final list = _ordered(_filter.apply(all));
                 if (all.isEmpty) {
                   return EmptyState(icon: Icons.inventory_2_rounded, title: tr(context, 'noAvailableLoads'));

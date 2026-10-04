@@ -392,6 +392,7 @@ service cloud.firestore {
           && d.get('pickupSlot', 'any') in ['any', 'morning', 'midday', 'afternoon', 'evening']
           && d.get('paymentMode', 'cash') in ['cash', 'upi_direct']
           && validTradeFields(d)
+          && (!('pickupGeohash' in d) || (d.pickupGeohash is string && d.pickupGeohash.matches('^[0-9b-hjkmnp-z]{4,12}$')))
           && !prohibitedText(d.get('notes', ''))
           && !prohibitedText(d.cargoType);
     }
@@ -486,6 +487,14 @@ service cloud.firestore {
           && request.resource.data.driverId != resource.data.driverId;
     }
 
+    // Admin backfills pickupGeohash on loads posted before the field existed.
+    function adminGeohashBackfill() {
+      return isAdmin()
+          && !('pickupGeohash' in resource.data)
+          && changedKeys().hasOnly(['pickupGeohash'])
+          && request.resource.data.pickupGeohash.matches('^[0-9b-hjkmnp-z]{4,12}$');
+    }
+
     match /loads/{loadId} {
       allow read: if signedIn()
           && (resource.data.status == 'open'
@@ -499,7 +508,7 @@ service cloud.firestore {
           && !request.resource.data.keys().hasAny(['driverId', 'bookingId'])
           && validLoad(request.resource.data);
       allow update: if signedIn()
-          && (shipperEdit() || driverMatch(loadId) || driverClose() || driverReopen() || adminReassignLoad());
+          && (shipperEdit() || driverMatch(loadId) || driverClose() || driverReopen() || adminReassignLoad() || adminGeohashBackfill());
       allow delete: if signedIn()
           && resource.data.shipperId == request.auth.uid
           && resource.data.status == 'open';

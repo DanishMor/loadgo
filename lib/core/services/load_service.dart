@@ -1,8 +1,13 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
+
+import '../location/geohash.dart';
 
 import '../constants/logistics.dart';
 import '../models/load.dart';
 import '../constants/prohibited_cargo.dart';
+import '../matching/nearest.dart';
 import '../models/paged.dart';
 import '../enterprise/validators.dart';
 import 'audit_service.dart';
@@ -57,7 +62,9 @@ class LoadService {
     if (banned != null) throw ProhibitedCargoException(banned);
     List<String> clean(List<String> l) =>
         [for (final s in l) if (s.trim().isNotEmpty) s.trim()].take(maxStopsPerSide - 1).toList();
+    final geohash = pickupGeohashFor(pickup);
     final ref = await _col.add({
+      'pickupGeohash': ?geohash,
       if (clean(extraPickups).isNotEmpty) 'extraPickups': clean(extraPickups),
       if (clean(extraDrops).isNotEmpty) 'extraDrops': clean(extraDrops),
       'pickupSlot': pickupSlot,
@@ -141,6 +148,60 @@ class LoadService {
           _sorted(snap).where((l) => l.shipperId != uid).toList(),
           hasMore: snap.docs.length >= limit,
         ));
+  }
+
+  /// Open loads whose pickup city is in the driver's geohash cell or the
+  /// cells around it, found with prefix range queries on `pickupGeohash`
+  /// (no need to page through everything). Merged from up to 9 live queries;
+  /// own loads are hidden. Sort the result by distance.
+  static Stream<List<Load>> watchNearby(LatLng origin, {double radiusKm = 150}) {
+    final uid = Backend.uid;
+    final precision = geohashPrecisionForKm(radiusKm);
+    final cells = geohashCells(origin.lat, origin.lng, precision);
+    late StreamController<List<Load>> out;
+    final latest = <String, List<Load>>{};
+    final subs = <StreamSubscription>[];
+    void emit() => out.add([for (final l in latest.values.expand((x) => x)) if (l.shipperId != uid) l]);
+
+    out = StreamController<List<Load>>(
+      onListen: () {
+        for (final cell in cells) {
+          subs.add(_col
+              .where('status', isEqualTo: LoadStatus.open)
+              .where('pickupGeohash', isGreaterThanOrEqualTo: cell)
+              .where('pickupGeohash', isLessThan: '$cell~')
+              .limit(50)
+              .snapshots()
+              .listen((snap) {
+            latest[cell] = snap.docs.map(Load.fromDoc).toList();
+            emit();
+          }, onError: out.addError));
+        }
+      },
+      onCancel: () async {
+        for (final s in subs) {
+          await s.cancel();
+        }
+      },
+    );
+    return out.stream;
+  }
+
+  /// Sets `pickupGeohash` on loads that were posted before the field existed
+  /// (admin tool, see docs/MIGRATIONS.md). Returns how many were updated.
+  static Future<int> backfillPickupGeohash({int limit = 400}) async {
+    final snap = await _col.limit(limit).get();
+    var n = 0;
+    var batch = Backend.db.batch();
+    for (final d in snap.docs) {
+      if (d.data().containsKey('pickupGeohash')) continue;
+      final g = pickupGeohashFor(d.data()['pickup'] as String? ?? '');
+      if (g == null) continue;
+      batch.update(d.reference, {'pickupGeohash': g});
+      n++;
+    }
+    if (n > 0) await batch.commit();
+    return n;
   }
 
   static List<Load> _sorted(QuerySnapshot<Map<String, dynamic>> snap) {

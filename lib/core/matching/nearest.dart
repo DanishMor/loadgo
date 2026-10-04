@@ -1,3 +1,4 @@
+import '../location/geohash.dart';
 import '../models/load.dart';
 import '../pricing/cities.dart';
 
@@ -34,4 +35,13 @@ List<NearLoad> sortNearestFirst(List<Load> loads, LatLng origin) {
     return c != 0 ? c : a.$1.compareTo(b.$1);
   });
   return [for (final e in indexed) e.$2];
+}
+
+/// Geohash of the city a free-text pickup names (7 characters, ~150 m, the
+/// city centre), or null when the place is not in the offline city table.
+/// Loads store it as `pickupGeohash` for the driver's nearby query.
+/// LATER(paid): geocode the exact address with a Maps API.
+String? pickupGeohashFor(String place) {
+  final c = findCity(place);
+  return c == null ? null : geohashEncode(c.lat, c.lng, precision: 7);
 }
