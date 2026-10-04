@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../core/models/booking.dart';
 import '../../core/widgets/common.dart';
-import '../shared/live_stream.dart';
-import '../shared/paged_live_stream.dart';
+import '../../core/widgets/live_stream.dart';
+import '../../core/widgets/paged_live_stream.dart';
 import 'booking_widgets.dart';
 
 /// Titled live list of bookings; used for the driver Trips tab and the

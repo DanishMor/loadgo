@@ -15,6 +15,12 @@ class LoadUnavailableException implements Exception {
   String toString() => 'LoadUnavailableException';
 }
 
+/// The chosen vehicle is on another trip, in maintenance, suspended or off.
+class VehicleBusyException implements Exception {
+  @override
+  String toString() => 'VehicleBusyException';
+}
+
 class BookingService {
   BookingService._();
 
@@ -38,6 +44,9 @@ class BookingService {
         if (!snap.exists) throw LoadUnavailableException();
         final load = Load.fromDoc(snap);
         if (!load.isOpen || load.shipperId == uid) throw LoadUnavailableException();
+        final vehicleRef = Backend.db.collection('vehicles').doc(vehicle.id);
+        final vehicleSnap = await tx.get(vehicleRef);
+        if (vehicleSnap.exists && !Vehicle.fromDoc(vehicleSnap).canTakeBooking) throw VehicleBusyException();
 
         tx.set(bookingRef, {
           'loadId': load.id,
@@ -60,6 +69,7 @@ class BookingService {
           'createdAt': FieldValue.serverTimestamp(),
           'updatedAt': FieldValue.serverTimestamp(),
         });
+        if (vehicleSnap.exists) tx.update(vehicleRef, {'availability': VehicleAvailability.onTrip});
         tx.update(loadRef, {
           'status': LoadStatus.matched,
           'driverId': uid,
@@ -101,6 +111,7 @@ class BookingService {
       if (booking.driverId != uid) throw StateError('Only the assigned driver can update this booking');
       final next = booking.nextStatus;
       if (next == null) throw StateError('Booking already delivered');
+      final freeVehicle = next == BookingStatus.delivered ? await _freeVehicleLater(tx, booking.vehicleId) : () {};
 
       tx.update(ref, {
         'status': next,
@@ -112,6 +123,7 @@ class BookingService {
           'status': LoadStatus.closed,
           'closedAt': FieldValue.serverTimestamp(),
         });
+        freeVehicle();
       }
       NotificationService.addInTransaction(
         tx,
@@ -151,6 +163,7 @@ class BookingService {
       final booking = Booking.fromDoc(snap);
       if (booking.driverId != uid) throw StateError('Only the assigned driver can cancel');
       if (!booking.canDriverCancel) throw StateError('Booking can no longer be cancelled');
+      final freeVehicle = await _freeVehicleLater(tx, booking.vehicleId);
 
       tx.update(ref, {
         'status': BookingStatus.cancelled,
@@ -164,6 +177,7 @@ class BookingService {
         'matchedAt': FieldValue.delete(),
         'reopenedAt': FieldValue.serverTimestamp(),
       });
+      freeVehicle();
       NotificationService.addInTransaction(
         tx,
         userId: booking.customerId,
@@ -172,6 +186,16 @@ class BookingService {
         relatedId: booking.id,
       );
     });
+  }
+
+  /// Reads the booking's vehicle inside [tx] (reads must precede writes) and
+  /// returns a write that frees it again, if it is still marked on_trip.
+  static Future<void Function()> _freeVehicleLater(Transaction tx, String vehicleId) async {
+    if (vehicleId.isEmpty) return () {};
+    final ref = Backend.db.collection('vehicles').doc(vehicleId);
+    final snap = await tx.get(ref);
+    if (snap.data()?['availability'] != VehicleAvailability.onTrip) return () {};
+    return () => tx.update(ref, {'availability': VehicleAvailability.available});
   }
 
   static Stream<List<Booking>> watchForDriver() => _watchWhere('driverId');

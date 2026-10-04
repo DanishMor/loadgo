@@ -3,7 +3,7 @@ import 'core/services/connectivity_service.dart';
 import 'core/services/language_store.dart';
 import 'core/services/push_service.dart';
 import 'core/services/user_service.dart';
-import 'features/shared/live_stream.dart' show OfflineBanner;
+import 'core/widgets/live_stream.dart' show OfflineBanner;
 import 'features/auth/driver_login_screen.dart';
 import 'features/home/customer_home_screen.dart';
 import 'features/home/driver_home_screen.dart';

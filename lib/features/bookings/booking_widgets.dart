@@ -6,7 +6,7 @@ import '../../core/services/booking_service.dart';
 import '../../core/share_text.dart';
 import '../../core/widgets/common.dart';
 import '../../main.dart';
-import '../shared/live_stream.dart';
+import '../../core/widgets/live_stream.dart';
 import '../../core/widgets/vehicle_type_widgets.dart';
 
 String bookingStatusLabel(BuildContext context, String status) => switch (status) {

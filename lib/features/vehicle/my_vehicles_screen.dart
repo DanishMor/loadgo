@@ -4,9 +4,10 @@ import '../../core/models/vehicle.dart';
 import '../../core/services/vehicle_service.dart';
 import '../../core/widgets/common.dart';
 import '../../main.dart';
-import '../shared/live_stream.dart';
+import '../../core/widgets/live_stream.dart';
 import 'add_vehicle_screen.dart';
 import '../../core/widgets/vehicle_type_widgets.dart';
+import '../../driver/vehicle_documents_screen.dart';
 
 void openEditVehicle(BuildContext context, Vehicle vehicle) {
   Navigator.of(context).push<bool>(MaterialPageRoute(builder: (_) => AddVehicleScreen(vehicle: vehicle)));
@@ -96,6 +97,7 @@ class _VehicleCardState extends State<_VehicleCard> {
   @override
   Widget build(BuildContext context) {
     final v = widget.vehicle;
+    final now = DateTime.now();
     return AppCard(
       onTap: () => openEditVehicle(context, v),
       child: Row(
@@ -124,11 +126,25 @@ class _VehicleCardState extends State<_VehicleCard> {
                       label: tr(context, v.isActive ? 'active' : 'inactive'),
                       color: v.isActive ? AppColors.success : AppColors.faint,
                     ),
+                    StatusChip(label: availabilityLabel(context, v.availability), color: availabilityColor(v.availability)),
                     StatusChip(
                       label: tr(context, v.rcImageUrl != null ? 'rcUploaded' : 'rcMissing'),
                       color: v.rcImageUrl != null ? AppColors.success : AppColors.warning,
                     ),
+                    if (v.expiredDocs(now).isNotEmpty)
+                      StatusChip(label: tr(context, 'docExpired'), color: Colors.redAccent)
+                    else if (v.docsExpiringWithin(now).isNotEmpty)
+                      StatusChip(label: trf(context, 'docsExpiringBanner', {'n': v.docsExpiringWithin(now).length}), color: AppColors.warning),
+                    if (v.serviceDue(now)) StatusChip(label: tr(context, 'serviceDue'), color: AppColors.warning),
                   ],
+                ),
+                TextButton.icon(
+                  key: ValueKey('docs_${v.id}'),
+                  style: TextButton.styleFrom(padding: EdgeInsets.zero),
+                  onPressed: () => Navigator.of(context)
+                      .push(MaterialPageRoute(builder: (_) => VehicleDocumentsScreen(vehicle: v))),
+                  icon: const Icon(Icons.assignment_outlined, size: 18),
+                  label: Text(tr(context, 'vehicleDocs')),
                 ),
               ],
             ),

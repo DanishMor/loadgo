@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/services/admin_service.dart';
 import '../../core/widgets/common.dart';
 import '../../main.dart';
-import '../shared/live_stream.dart';
+import '../../core/widgets/live_stream.dart';
 
 /// Driver verification queue for admins.
 ///

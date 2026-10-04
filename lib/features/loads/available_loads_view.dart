@@ -4,7 +4,7 @@ import '../../core/models/load.dart';
 import '../../core/models/load_filter.dart';
 import '../../core/widgets/common.dart';
 import '../../main.dart';
-import '../shared/paged_live_stream.dart';
+import '../../core/widgets/paged_live_stream.dart';
 import 'accept_load.dart';
 import 'load_card.dart';
 import '../../core/services/vehicle_type_service.dart';

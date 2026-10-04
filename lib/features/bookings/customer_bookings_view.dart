@@ -4,7 +4,7 @@ import '../../core/constants/logistics.dart';
 import '../../core/models/booking.dart';
 import '../../core/widgets/common.dart';
 import '../../main.dart';
-import '../shared/paged_live_stream.dart';
+import '../../core/widgets/paged_live_stream.dart';
 import 'booking_widgets.dart';
 
 /// Customer "Bookings" tab split into active and past (delivered/cancelled).

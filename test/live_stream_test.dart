@@ -10,7 +10,7 @@ import 'package:transport_app/features/bookings/booking_list_view.dart';
 import 'package:transport_app/features/bookings/customer_bookings_view.dart';
 import 'package:transport_app/features/loads/available_loads_view.dart';
 import 'package:transport_app/core/services/connectivity_service.dart';
-import 'package:transport_app/features/shared/live_stream.dart';
+import 'package:transport_app/core/widgets/live_stream.dart';
 
 Widget host(Widget child) => MaterialApp(home: Scaffold(body: child));
 

@@ -4,7 +4,7 @@ import '../../core/models/booking.dart';
 import '../../core/models/earnings.dart';
 import '../../core/widgets/common.dart';
 import '../../main.dart';
-import '../shared/live_stream.dart';
+import '../../core/widgets/live_stream.dart';
 
 /// Driver "Earnings" tab: totals from delivered trips plus recent payouts.
 class EarningsView extends StatelessWidget {

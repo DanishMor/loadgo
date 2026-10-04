@@ -3,9 +3,9 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
-import '../../core/services/connectivity_service.dart';
-import '../../core/widgets/common.dart';
-import '../../main.dart';
+import '../services/connectivity_service.dart';
+import 'common.dart';
+import '../l10n/l10n.dart';
 
 typedef StreamFactory<D> = Stream<D> Function();
 

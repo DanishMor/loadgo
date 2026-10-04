@@ -5,7 +5,7 @@ import '../../core/models/load.dart';
 import '../../core/services/load_service.dart';
 import '../../core/widgets/common.dart';
 import '../../main.dart';
-import '../shared/paged_live_stream.dart';
+import '../../core/widgets/paged_live_stream.dart';
 import 'load_card.dart';
 
 /// Customer "My Loads" tab: live list of the customer's posted loads.

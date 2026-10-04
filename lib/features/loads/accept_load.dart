@@ -40,9 +40,12 @@ Future<Vehicle?> _chooseVehicle(BuildContext context, Load load, List<Vehicle> v
                       contentPadding: EdgeInsets.zero,
                       leading: const Icon(Icons.local_shipping_rounded, color: AppColors.primary),
                       title: Text(v.number, style: const TextStyle(fontWeight: FontWeight.w700)),
-                      subtitle: Text('${vehicleTypeLabel(context, v.type)} • ${formatNum(v.capacity)} T'),
+                      subtitle: Text(
+                        '${vehicleTypeLabel(context, v.type)} • ${formatNum(v.capacity)} T'
+                        '${v.canTakeBooking ? '' : ' • ${availabilityLabel(context, v.availability)}'}',
+                      ),
                       trailing: FilledButton(
-                        onPressed: () => Navigator.of(sheetContext).pop(v),
+                        onPressed: v.canTakeBooking ? () => Navigator.of(sheetContext).pop(v) : null,
                         child: Text(tr(sheetContext, 'accept')),
                       ),
                     ),
@@ -88,6 +91,8 @@ Future<String?> acceptLoadFlow(BuildContext context, Load load, {ValueChanged<bo
     return bookingId;
   } on LoadUnavailableException {
     if (context.mounted) showSnack(context, tr(context, 'loadUnavailable'));
+  } on VehicleBusyException {
+    if (context.mounted) showSnack(context, tr(context, 'vehicleBusy'));
   } catch (_) {
     if (context.mounted) showSnack(context, tr(context, 'somethingWrong'));
   } finally {

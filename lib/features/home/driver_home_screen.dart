@@ -15,8 +15,9 @@ import '../loads/available_loads_view.dart';
 import '../loads/load_card.dart';
 import '../notifications/notifications_screen.dart';
 import '../profile/profile_view.dart';
-import '../shared/live_stream.dart';
+import '../../core/widgets/live_stream.dart';
 import '../vehicle/my_vehicles_screen.dart';
+import '../../driver/vehicle_alerts_banner.dart';
 
 class DriverHomeScreen extends StatefulWidget {
   const DriverHomeScreen({super.key});
@@ -30,7 +31,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
 
   int _index = 0;
   bool _isOnline = false;
-  final Stream<List<Vehicle>> _vehicles = VehicleService.watchMine();
+  final Stream<List<Vehicle>> _vehicles = VehicleService.watchMine().asBroadcastStream();
   final Stream<List<Booking>> _todayTrips = BookingService.watchForDriver();
 
   void _snack(String msg) {
@@ -100,6 +101,9 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
       },
     );
   }
+
+  void _openVehicles() =>
+      Navigator.of(context).push(MaterialPageRoute(builder: (_) => const MyVehiclesScreen()));
 
   void _onAccepted(String bookingId) => openDriverTrip(context, bookingId);
 
@@ -177,6 +181,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
               ),
             ),
             _noVehiclePrompt(),
+            VehicleAlertsBanner(vehicles: _vehicles, onTap: _openVehicles),
             const SizedBox(height: 16),
             Container(
               width: double.infinity,
@@ -206,13 +211,9 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
             const SizedBox(height: 24),
             Row(
               children: [
-                _tile(
-                  Icons.local_shipping_rounded,
-                  tr(context, 'myTruck'),
-                  onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const MyVehiclesScreen())),
-                ),
+                _tile(Icons.local_shipping_rounded, tr(context, 'myTruck'), onTap: _openVehicles),
                 const SizedBox(width: 12),
-                _tile(Icons.verified_user_rounded, tr(context, 'documentsKyc')),
+                _tile(Icons.verified_user_rounded, tr(context, 'documentsKyc'), onTap: _openVehicles),
               ],
             ),
           ],

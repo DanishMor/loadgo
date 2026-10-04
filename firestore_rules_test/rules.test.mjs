@@ -64,6 +64,15 @@ function acceptBatch(db, loadId, driver = 'driver1', bookingOverrides = {}) {
   const b = writeBatch(db);
   b.set(doc(db, 'bookings', loadId), bookingFor(loadId, { driverId: driver, ...bookingOverrides }));
   b.update(doc(db, 'loads', loadId), { status: 'matched', driverId: driver, bookingId: loadId, matchedAt: serverTimestamp() });
+  b.update(doc(db, 'vehicles', bookingOverrides.vehicleId ?? (driver === 'driver2' ? 'v2' : 'v1')), { availability: 'on_trip' });
+  return b.commit();
+}
+
+/** Same writes as VehicleService.add: vehicle + number reservation. */
+function addVehicle(db, id, data = VEHICLE) {
+  const b = writeBatch(db);
+  b.set(doc(db, 'vehicle_numbers', data.number), { ownerId: data.ownerId, vehicleId: id });
+  b.set(doc(db, 'vehicles', id), data);
   return b.commit();
 }
 
@@ -125,7 +134,7 @@ describe('admin verification', () => {
 
 describe('vehicles', () => {
   test('owner creates/updates; any signed-in user reads', async () => {
-    await assertSucceeds(setDoc(doc(as('driver1'), 'vehicles', 'v1'), VEHICLE));
+    await assertSucceeds(addVehicle(as('driver1'), 'v1'));
     await assertSucceeds(getDoc(doc(as('customer1'), 'vehicles', 'v1')));
     await assertFails(getDoc(doc(anon(), 'vehicles', 'v1')));
     await assertSucceeds(updateDoc(doc(as('driver1'), 'vehicles', 'v1'), { status: 'inactive' }));
@@ -135,7 +144,7 @@ describe('vehicles', () => {
   });
 
   test('rcImageUrl must point at Firebase Storage', async () => {
-    await assertSucceeds(setDoc(doc(as('driver1'), 'vehicles', 'v1'), {
+    await assertSucceeds(addVehicle(as('driver1'), 'v1', {
       ...VEHICLE,
       rcImageUrl: 'https://firebasestorage.googleapis.com/v0/b/loadgo-defc2.appspot.com/o/vehicles%2Fdriver1%2Fv1%2Frc.jpg',
     }));
@@ -143,9 +152,59 @@ describe('vehicles', () => {
   });
 
   test('cannot create for someone else or with invalid data', async () => {
-    await assertFails(setDoc(doc(as('driver2'), 'vehicles', 'v9'), VEHICLE));
-    await assertFails(setDoc(doc(as('driver1'), 'vehicles', 'v9'), { ...VEHICLE, status: 'flying' }));
-    await assertFails(setDoc(doc(as('driver1'), 'vehicles', 'v9'), { ...VEHICLE, capacity: 0 }));
+    await assertFails(addVehicle(as('driver2'), 'v9'));
+    await assertFails(addVehicle(as('driver1'), 'v9', { ...VEHICLE, status: 'flying' }));
+    await assertFails(addVehicle(as('driver1'), 'v9', { ...VEHICLE, capacity: 0 }));
+    await assertFails(addVehicle(as('driver1'), 'v9', { ...VEHICLE, availability: 'suspended' }));
+    await assertFails(setDoc(doc(as('driver1'), 'vehicles', 'v9'), VEHICLE), 'needs a number reservation');
+  });
+
+  test('the same number cannot be registered twice, even by another account', async () => {
+    await assertSucceeds(addVehicle(as('driver1'), 'v1'));
+    await assertFails(addVehicle(as('driver2'), 'v2', { ...VEHICLE, ownerId: 'driver2' }));
+    await assertFails(addVehicle(as('driver1'), 'v3'));
+    // Reservation can't be stolen or pointed at someone else's vehicle.
+    await assertFails(setDoc(doc(as('driver2'), 'vehicle_numbers', VEHICLE.number), { ownerId: 'driver2', vehicleId: 'v1' }));
+    await assertFails(deleteDoc(doc(as('driver2'), 'vehicle_numbers', VEHICLE.number)));
+  });
+
+  test('renumbering moves the reservation; deleting frees it', async () => {
+    await addVehicle(as('driver1'), 'v1');
+    const db = as('driver1');
+    await assertFails(updateDoc(doc(db, 'vehicles', 'v1'), { number: 'DL01ZZ0001' }), 'new number must be reserved');
+    const b = writeBatch(db);
+    b.set(doc(db, 'vehicle_numbers', 'DL01ZZ0001'), { ownerId: 'driver1', vehicleId: 'v1' });
+    b.delete(doc(db, 'vehicle_numbers', VEHICLE.number));
+    b.update(doc(db, 'vehicles', 'v1'), { number: 'DL01ZZ0001' });
+    await assertSucceeds(b.commit());
+    await assertSucceeds(addVehicle(as('driver2'), 'v2', { ...VEHICLE, ownerId: 'driver2' }));
+    const d = writeBatch(db);
+    d.delete(doc(db, 'vehicles', 'v1'));
+    d.delete(doc(db, 'vehicle_numbers', 'DL01ZZ0001'));
+    await assertSucceeds(d.commit());
+  });
+
+  test('documents, service date and availability', async () => {
+    await addVehicle(as('driver1'), 'v1');
+    const db = as('driver1');
+    await assertSucceeds(updateDoc(doc(db, 'vehicles', 'v1'), {
+      docs: { insurance: { number: 'POL1', expiry: Timestamp.fromDate(new Date('2027-01-01')) } },
+      nextServiceDate: Timestamp.fromDate(new Date('2026-11-01')),
+    }));
+    await assertFails(updateDoc(doc(db, 'vehicles', 'v1'), { docs: { passport: { number: 'X' } } }));
+    await assertFails(updateDoc(doc(db, 'vehicles', 'v1'), { nextServiceDate: 'soon' }));
+    await assertSucceeds(updateDoc(doc(db, 'vehicles', 'v1'), { availability: 'maintenance' }));
+    await assertFails(updateDoc(doc(db, 'vehicles', 'v1'), { availability: 'suspended' }));
+    await assertFails(updateDoc(doc(db, 'vehicles', 'v1'), { availability: 'parked' }));
+    await assertFails(updateDoc(doc(as('driver2'), 'vehicles', 'v1'), { availability: 'available' }));
+  });
+
+  test('only admins suspend or lift a suspension', async () => {
+    await addVehicle(as('driver1'), 'v1');
+    await assertSucceeds(updateDoc(doc(asAdmin(), 'vehicles', 'v1'), { availability: 'suspended' }));
+    await assertFails(updateDoc(doc(as('driver1'), 'vehicles', 'v1'), { availability: 'available' }));
+    await assertFails(updateDoc(doc(asAdmin(), 'vehicles', 'v1'), { capacity: 50 }));
+    await assertSucceeds(updateDoc(doc(asAdmin(), 'vehicles', 'v1'), { availability: 'available' }));
   });
 });
 
@@ -393,5 +452,19 @@ describe('config', () => {
     await assertFails(setDoc(doc(asAdmin(), 'config', 'vehicle_types'), { types: [] }));
     await assertFails(setDoc(doc(asAdmin(), 'config', 'vehicle_types'), { ...TYPES, extra: 1 }));
     await assertFails(deleteDoc(doc(asAdmin(), 'config', 'vehicle_types')));
+  });
+});
+
+describe('vehicle availability and bookings', () => {
+  test('a vehicle in maintenance, suspended or on another trip cannot be booked', async () => {
+    await seedOpenLoad();
+    for (const availability of ['maintenance', 'suspended', 'on_trip']) {
+      await seed((db) => updateDoc(doc(db, 'vehicles', 'v1'), { availability }));
+      await assertFails(acceptBatch(as('driver1'), 'L1'), availability);
+    }
+    await seed((db) => updateDoc(doc(db, 'vehicles', 'v1'), { availability: 'available', status: 'inactive' }));
+    await assertFails(acceptBatch(as('driver1'), 'L1'), 'inactive');
+    await seed((db) => updateDoc(doc(db, 'vehicles', 'v1'), { status: 'active' }));
+    await assertSucceeds(acceptBatch(as('driver1'), 'L1'));
   });
 });

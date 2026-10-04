@@ -173,6 +173,10 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
       if (!mounted) return;
       showSnack(context, tr(context, _isEdit ? 'vehicleUpdated' : 'vehicleAdded'));
       Navigator.of(context).pop(true);
+    } on DuplicateVehicleException {
+      if (!mounted) return;
+      setState(() => _saving = false);
+      showSnack(context, tr(context, 'duplicateVehicle'));
     } catch (_) {
       if (!mounted) return;
       setState(() => _saving = false);

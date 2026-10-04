@@ -4,7 +4,7 @@ import '../../core/models/app_notification.dart';
 import '../../core/services/notification_service.dart';
 import '../../core/widgets/common.dart';
 import '../../main.dart';
-import '../shared/live_stream.dart';
+import '../../core/widgets/live_stream.dart';
 import '../bookings/booking_widgets.dart';
 
 /// Title for a notification in the current language.

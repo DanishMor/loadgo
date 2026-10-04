@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../core/models/paged.dart';
-import '../../main.dart';
+import '../models/paged.dart';
+import '../l10n/l10n.dart';
 import 'live_stream.dart';
 
 typedef PagedStreamFactory<Item> = Stream<Paged<Item>> Function(int limit);

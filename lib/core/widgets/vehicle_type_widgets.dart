@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../constants/logistics.dart';
 import '../models/vehicle_type.dart';
 import '../services/vehicle_type_service.dart';
 import 'common.dart';
@@ -27,3 +28,26 @@ List<DropdownMenuItem<String>> vehicleTypeItems(BuildContext context, {String? k
     if (keep != null && !ids.contains(keep)) DropdownMenuItem(value: keep, child: Text(vehicleTypeLabel(context, keep))),
   ];
 }
+
+/// Translated [VehicleAvailability] value.
+String availabilityLabel(BuildContext context, String availability) => tr(context, switch (availability) {
+      VehicleAvailability.onTrip => 'availOnTrip',
+      VehicleAvailability.maintenance => 'availMaintenance',
+      VehicleAvailability.suspended => 'availSuspended',
+      _ => 'availAvailable',
+    });
+
+Color availabilityColor(String availability) => switch (availability) {
+      VehicleAvailability.onTrip => AppColors.primary,
+      VehicleAvailability.maintenance => AppColors.warning,
+      VehicleAvailability.suspended => Colors.redAccent,
+      _ => AppColors.success,
+    };
+
+/// Translated [VehicleDocKind] name.
+String vehicleDocLabel(BuildContext context, String kind) => tr(context, switch (kind) {
+      VehicleDocKind.insurance => 'docInsurance',
+      VehicleDocKind.puc => 'docPuc',
+      VehicleDocKind.fitness => 'docFitness',
+      _ => 'docPermit',
+    });

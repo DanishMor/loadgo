@@ -44,7 +44,7 @@ void main() {
   Future<Vehicle> addVehicleAs(String driver) async {
     uid = driver;
     await db.collection('users').doc(driver).set({'driverName': 'Ramesh', 'phone': '+919800000000'});
-    await VehicleService.add(number: 'MH12AB1234', type: '20ft', capacity: 10, rcNumber: 'RC1');
+    await VehicleService.add(number: driver == 'driver1' ? 'MH12AB1234' : 'KA01CD5678', type: '20ft', capacity: 10, rcNumber: 'RC1');
     return (await VehicleService.fetchMyActive()).single;
   }
 

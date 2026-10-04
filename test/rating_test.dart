@@ -22,6 +22,8 @@ void main() {
     Backend.useFakes(db: db, uid: () => uid);
   });
 
+  var vehicleCount = 0;
+
   /// Creates a booking between customer1 and driver1, advanced [steps] times.
   Future<Booking> booking({int steps = 3}) async {
     uid = 'customer1';
@@ -29,8 +31,10 @@ void main() {
         pickup: 'Delhi', drop: 'Mumbai', cargoType: 'FMCG', weight: 8, vehicleType: '20ft', budget: 25000,
         pickupDate: DateTime(2026, 10, 5), notes: '');
     uid = 'driver1';
-    await VehicleService.add(number: 'MH12AB1234', type: '20ft', capacity: 10, rcNumber: 'RC1');
-    final id = await BookingService.accept(loadId: loadId, vehicle: (await VehicleService.fetchMyActive()).first);
+    // A fresh vehicle per booking: the previous one may still be on a trip.
+    final vehicleId = await VehicleService.add(number: 'MH12AB${1000 + vehicleCount++}', type: '20ft', capacity: 10, rcNumber: 'RC1');
+    final vehicle = (await VehicleService.fetchMyActive()).firstWhere((v) => v.id == vehicleId);
+    final id = await BookingService.accept(loadId: loadId, vehicle: vehicle);
     for (var i = 0; i < steps; i++) {
       await BookingService.advance(id);
     }

@@ -19,6 +19,33 @@ class VehicleStatus {
   static const inactive = 'inactive';
 }
 
+/// Day-to-day state of a vehicle (separate from the active/inactive switch).
+/// Must stay in sync with firestore.rules.
+class VehicleAvailability {
+  VehicleAvailability._();
+  static const available = 'available';
+
+  /// Set automatically while the vehicle is on an accepted booking.
+  static const onTrip = 'on_trip';
+  static const maintenance = 'maintenance';
+
+  /// Admin only.
+  static const suspended = 'suspended';
+
+  static const all = [available, onTrip, maintenance, suspended];
+}
+
+/// Compliance papers tracked per vehicle (text only, never uploaded).
+class VehicleDocKind {
+  VehicleDocKind._();
+  static const insurance = 'insurance';
+  static const puc = 'puc';
+  static const fitness = 'fitness';
+  static const permit = 'permit';
+
+  static const all = [insurance, puc, fitness, permit];
+}
+
 class LoadStatus {
   LoadStatus._();
   static const open = 'open';

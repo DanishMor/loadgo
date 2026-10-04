@@ -8,7 +8,7 @@ import '../../core/services/user_service.dart';
 import '../../core/widgets/common.dart';
 import '../../main.dart';
 import '../ratings/rating_widgets.dart';
-import '../shared/live_stream.dart';
+import '../../core/widgets/live_stream.dart';
 import 'edit_profile_screen.dart';
 
 /// Profile tab for both roles: identity, contact details, average rating and
