@@ -10,7 +10,7 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 |---|---|---|---|---|---|---|
 | P0 Principles | 6 | 1 | 5 | 0 | 0 | 0 |
 | A Authentication | 10 | 3 | 2 | 4 | 1 | 0 |
-| K Identity, KYC | 14 | 0 | 6 | 1 | 7 | 0 |
+| K Identity, KYC | 14 | 0 | 7 | 1 | 6 | 0 |
 | R Re-KYC | 12 | 0 | 1 | 7 | 4 | 0 |
 | C Customer app | 14 | 8 | 6 | 0 | 0 | 0 |
 | B Bike | 14 | 6 | 5 | 2 | 1 | 0 |
@@ -27,22 +27,22 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | DOC Documents | 14 | 4 | 8 | 2 | 0 | 0 |
 | IE Import/export | 14 | 10 | 2 | 2 | 0 | 0 |
 | BIZ Business | 15 | 4 | 1 | 7 | 3 | 0 |
-| F Anti-fraud | 18 | 2 | 8 | 3 | 5 | 0 |
+| F Anti-fraud | 18 | 2 | 9 | 2 | 5 | 0 |
 | SAFE Safety | 12 | 6 | 3 | 1 | 2 | 0 |
 | N Notifications | 15 | 6 | 3 | 4 | 2 | 0 |
 | AI AI | 14 | 0 | 0 | 0 | 14 | 0 |
 | BE Backend | 18 | 3 | 6 | 2 | 7 | 0 |
 | TEST Testing | 14 | 3 | 3 | 1 | 7 | 0 |
-| **Total** | **347** | **108** | **99** | **62** | **77** | **1** |
+| **Total** | **347** | **108** | **101** | **61** | **76** | **1** |
 
 ## P0 Principles
 
 | Code | Item | Status | Where / why |
 |---|---|---|---|
 | P0-01 | Modular architecture Ek hi main.dart mein sab kuch bharne ke bajay auth, customer, driver, | Done | main.dart is only main()+LoadGoApp; lib/{core,auth,customer,driver,admin}; test/structure_test.dart enforces it |
-| P0-02 | Verification-first Sensitive role ko verification ke bina high-trust actions nahi milne chahiye. | Partial | Admin approves drivers; restricted/suspended blocked in rules; no KYC gate on other high-trust actions |
+| P0-02 | Verification-first Sensitive role ko verification ke bina high-trust actions nahi milne chahiye. | Partial | Admin approves drivers; drivers cannot reach Home/Loads without licence, RC, Aadhaar last 4 and PAN (router guard); restricted/suspended blocked in rules |
 | P0-03 | Server-authoritative Fare, booking status, payout, permissions aur risk decisions client app par | Partial | Rules check OTP, fields, state; fare is client-side (TODO(functions)) |
-| P0-04 | Privacy by design Aadhaar/PAN/face/address/location ko minimum required scope mein | Partial | Masked phone, consent center, OTPs in customer-only secrets doc; no field-level minimisation |
+| P0-04 | Privacy by design Aadhaar/PAN/face/address/location ko minimum required scope mein | Partial | Masked phone, consent center, OTPs in customer-only secrets doc; Aadhaar is stored as last 4 digits only (rules enforce it); identity index stores hashes, not numbers |
 | P0-05 | Auditability Critical changes ka event log - who, what, when, device/session context | Partial | audit_events append-only (rules) but client-written |
 | P0-06 | Indian logistics first UPI, GST, e-way bill workflow, vehicle docs, Indian mobile numbers, | Partial | INR paise, GST, e-way text field, ports/ICD list, 12 languages; no real UPI/e-way integration |
 
@@ -54,7 +54,7 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | A2 | Google login Optional secondary auth; Firebase identity linking ke saath. | Todo-free | Google button only shows "coming soon" (customer_login_screen.dart); google_sign_in is free |
 | A3 | Driver mobile OTP Driver signup/login with dedicated role. | Done | lib/auth/driver_login_screen.dart |
 | A4 | Business accounts Company owner, manager, dispatch, accounts, viewer roles. | Todo-free | No manager/dispatch/accounts/viewer roles |
-| A5 | Role-based access Customer, driver, transporter, fleet, shipper, importer, exporter, trader, | Partial | Only customer, driver, admin (admins/{uid}) |
+| A5 | Role-based access Customer, driver, transporter, fleet, shipper, importer, exporter, trader, | Partial | Customer and driver roles are locked once set (users.role, rules); admin = admins/{uid}; no transporter/fleet/importer roles |
 | A6 | New-device verification Naye device par extra verification / risk challenge. | Todo-free | No device id / new-device check |
 | A7 | Session management Trusted devices, logout all, session revoke. | Todo-free | No trusted devices, logout-all or revoke |
 | A8 | Account recovery Secure recovery workflow; identity checks required for sensitive changes. | Paid-or-Later | No recovery flow; identity checks need KYC provider |
@@ -67,16 +67,16 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 |---|---|---|---|
 | K1 | Aadhaar verification flow Authorised/approved Aadhaar authentication ecosystem ke through | Paid-or-Later | Aadhaar needs authorised provider |
 | K2 | PAN verification Authorised PAN verification service/path; name/DOB/status checks | Paid-or-Later | PAN verification needs provider |
-| K3 | Driving Licence DigiLocker/transport-authorised source se available document | Paid-or-Later | DL via DigiLocker/Parivahan; no DL field in the app |
+| K3 | Driving Licence DigiLocker/transport-authorised source se available document | Partial | Licence number + expiry are collected and format-checked in driver onboarding, never verified against a source (DigiLocker/Parivahan is the paid part) |
 | K4 | RC verification Vehicle registration record/document verification through permitted | Paid-or-Later | RC number is text only (vehicle.rcNumber), no source check |
 | K5 | DigiLocker consent User consent ke baad supported documents fetch/share/verify. | Paid-or-Later | DigiLocker needs registration |
 | K6 | Current + permanent address User/business profile mein structured address records; sensitive display | Partial | Address text in profile, saved_places, branches; no current/permanent split or masking |
 | K7 | Face verification Identity match workflow; liveness/provider controls as appropriate. | Paid-or-Later | Needs face-match provider |
-| K8 | Driver KYC pack Aadhaar, PAN, DL, address, photo, payout profile, vehicle relationship. | Partial | Driver profile setup + manual admin approval (admin_verification_screen.dart); no Aadhaar/PAN/DL/payout fields |
+| K8 | Driver KYC pack Aadhaar, PAN, DL, address, photo, payout profile, vehicle relationship. | Partial | Driver onboarding (lib/auth/driver_kyc_screen.dart): DL number + expiry, RC number, Aadhaar last 4, PAN, then admin approval; no photo, address or payout profile |
 | K9 | Business KYC GSTIN, PAN, business name, trade name, addresses, company | Partial | users.business with GSTIN format check, always "Not verified" |
 | K10 | MCA / EntityLocker path Eligible company/entity documents ke authorised verification workflow ke | Paid-or-Later | MCA/EntityLocker integration |
 | K11 | Verification badge Mobile/identity/PAN/DL/RC/GST/business/face status alag-alag visible. | Partial | Single driver verified flag + "Unverified"/"Not verified" labels; not per-type badges |
-| K12 | Expiry tracking DL, RC, insurance, PUC, fitness, permits and other relevant document | Partial | Vehicle insurance/PUC/fitness/permit expiry + Home banner (vehicle_alerts_banner.dart); no DL expiry, no push |
+| K12 | Expiry tracking DL, RC, insurance, PUC, fitness, permits and other relevant document | Partial | Vehicle insurance/PUC/fitness/permit expiry + Home banner; driving licence expiry is stored at onboarding but has no reminder; no push |
 | K13 | Mismatch workflow Name/entity/vehicle relationship mismatch -> pending/manual review, | Todo-free | Admin approves manually; no mismatch workflow |
 | K14 | Source + timestamp Har verification result ke saath source/type/status/timestamp/expiry | Partial | Verification change writes audit event + updatedAt; no source/type/expiry metadata |
 
@@ -159,7 +159,7 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | L1 | Post Load Pickup, drop, cargo, weight, vehicle, date, budget, notes. | Done | post_load_screen.dart |
 | L2 | Browse Loads Driver/transporter ko searchable marketplace. | Done | driver/available_loads_view.dart |
 | L3 | Load filters Route, distance, vehicle, weight, freight, pickup time. | Done | core/models/load_filter.dart |
-| L4 | Nearby loads Current location ke aas-paas. | Partial | Ranks by distance from anchor city; no live GPS |
+| L4 | Nearby loads Current location ke aas-paas. | Partial | Driver position saved with a geohash; Loads tab sorts by estimated km from it and shows "X km away"; city-table distance, not road distance, and only the loaded page is sorted |
 | L5 | Route loads Driver ke planned route ke aas-paas. | Todo-free | No planned-route input |
 | L6 | Return loads Destination par pahunchne ke baad reverse-direction opportunities. | Done | LoadRanker return-load bonus (within 200 km of active trip drop) |
 | L7 | Favourite routes Regular route alerts. | Done | favourite_routes_screen.dart |
@@ -236,13 +236,13 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 |---|---|---|---|
 | D1 | Driver Home Online/offline, map, loads, trips, earnings. | Partial | driver_home_screen.dart: online switch (local state only), loads, trips, earnings |
 | D2 | Online/offline Availability control. | Partial | Online/offline is a local widget state, not saved |
-| D3 | Nearby loads Location based marketplace. | Partial | Loads list; no location based query |
+| D3 | Nearby loads Location based marketplace. | Partial | Loads list sorted nearest first from the last saved position (users.lastLocation); no geohash range query yet (LATER(paid) wave dispatch) |
 | D4 | Route loads Planned route related opportunities. | Partial | Favourite routes |
 | D5 | Return loads Destination based reverse load suggestions. | Done | Recommended for you with return load reason |
 | D6 | Trip dashboard Current assignment and steps. | Done | driver_trip_screen.dart |
 | D7 | Earnings Day/week/month and trip level. | Done | earnings_view.dart + driver_analytics_screen.dart |
 | D8 | Wallet Pending/available/payout records. | Partial | wallet_screen.dart: earnings, commission, net; no pending/available/payout |
-| D9 | Documents KYC + vehicle docs + expiry. | Partial | Vehicle docs + expiry; no driver KYC docs |
+| D9 | Documents KYC + vehicle docs + expiry. | Partial | Vehicle docs + expiry; driver licence, RC, Aadhaar last 4 and PAN at onboarding; no document photos |
 | D10 | Driver profile Verified badges, vehicles, service info, languages. | Partial | Profile with rating; no badges/languages/vehicles |
 | D11 | Nearby drivers Privacy-controlled network map/list. | Todo-free | No driver network |
 | D12 | Connect Driver-to-driver connection request. | Todo-free | No driver connections |
@@ -390,9 +390,9 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 
 | Code | Item | Status | Where / why |
 |---|---|---|---|
-| F1 | Duplicate identity patterns Same identity-related signals se duplicate accounts detect. | Todo-free | No identity signal comparison |
+| F1 | Duplicate identity patterns Same identity-related signals se duplicate accounts detect. | Partial | identity_index/{sha256(type+number)}: one licence, PAN, RC or GST per account, create-only rules, translated error; phone/name/device patterns not compared |
 | F2 | Duplicate PAN patterns Authorised verification data ke basis par risk check. | Paid-or-Later | Needs PAN data |
-| F3 | Duplicate DL/RC Vehicle/driver relationship anomalies. | Partial | Duplicate vehicle number blocked (vehicle_numbers); no DL/RC relationship checks |
+| F3 | Duplicate DL/RC Vehicle/driver relationship anomalies. | Partial | Duplicate vehicle number blocked (vehicle_numbers) and duplicate DL/RC/PAN blocked at onboarding (identity_index); no DL/RC relationship anomaly checks |
 | F4 | Same-device clusters Multiple suspicious accounts from same device. | Todo-free | No device id |
 | F5 | Account takeover New device, SIM/mobile change, unusual login. | Todo-free | No new-device/login signals |
 | F6 | Payout risk Bank/payout changes + high-value activity. | Paid-or-Later | No payout yet |
@@ -506,3 +506,39 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | TEST12 | Scale-up More cities after operational readiness. | Paid-or-Later | After pilot |
 | TEST13 | Pan-India National coverage with route/city expansion. | Paid-or-Later | After pilot |
 | TEST14 | Import/export scale Ports/CFS/industrial clusters expansion. | Paid-or-Later | After pilot |
+
+
+## Competitor feature audit (Porter, Uber, Rapido, Vahak, BlackBuck)
+
+Written 2026-10-04. "Seen in" comes from general knowledge of how these apps are commonly described; it was not re-checked against the live apps, so treat it as a checklist to confirm, not as fact. "Roadmap" names the code in the 347 items above; **Not in roadmap** means no item covers it. Features that are not in the roadmap were added to `docs/NEXT_TASKS.md` (tasks 9 and 10).
+
+| Feature | Commonly seen in | Roadmap | LoadGo today | Next |
+|---|---|---|---|---|
+| Return load / backhaul | Vahak, BlackBuck, Porter | L6, D5, SM6 (done), N8 (todo-free alert) | Return-load bonus in recommendations | N8 alert is in task 8 |
+| Scheduled booking | Porter, Uber, Rapido | P2, B8, C3 | Pickup date + time slot on every load; no reminder before pickup | Reminder: task 9 |
+| Recurring booking | Porter business, BlackBuck | P3 | None | Task 7 |
+| Wallet (driver) | Porter, Rapido, BlackBuck | D8, PAY9 (partial) | Earnings/commission/net records | Pending/available/payout is in the partial row |
+| Wallet / credits (customer) | Porter, Uber, Rapido | **Not in roadmap** (PAY9 reads as the driver side) | None | Task 9 (records only; top-up is paid) |
+| Referral | Porter, Uber, Rapido, Vahak | **Not in roadmap** | None | Task 9 |
+| Promo / coupon codes | Porter, Uber, Rapido | **Not in roadmap** (P14 pricing admin only) | None | Task 9 |
+| Driver incentives (trip targets, streak, peak bonus) | Porter, Uber, Rapido | **Not in roadmap** | None | Task 9 |
+| Helper / labour add-on | Porter | **Not in roadmap** (P6 has loading/unloading charge only) | Loading/unloading charge in fare, no helper count or driver acceptance | Task 9 |
+| Tip to driver | Uber, Rapido | **Not in roadmap** | None | Task 9 |
+| Fleet owner with several drivers | Porter, BlackBuck | V4, V5, V6, B14, BIZ8, BIZ12, SM9 (all todo-free) | Driver owns the vehicle; no assignment | Task 3 |
+| Demand heat map / hot zones for drivers | Uber, Rapido, Porter | **Not in roadmap** (M-module has maps, no demand layer) | None | Task 10 (count of open loads per city; map is paid) |
+| Driver subscription / membership plan | Vahak, BlackBuck, Rapido | **Not in roadmap** | None | Task 10 (plan record; payment is paid) |
+| Hourly / rental packages | Uber, Porter | **Not in roadmap** | None | Task 10 |
+| Packers and movers / house shifting | Porter | **Not in roadmap** | None | Task 10 (checklist form only) |
+| Credit / pay-later for businesses | BlackBuck, Vahak | **Not in roadmap** (PAY14 is a ledger) | None | Left out on purpose: needs a lender (paid, regulated) |
+| Live trip share link | Uber, Rapido, Porter | SAFE2, D16 (partial) | Emergency contacts + SOS call; no public tracking link | Link page needs hosting (paid/Functions): LATER(paid) |
+| Masked calling | Uber, Rapido, Porter | SAFE8 (paid) | In-app chat only | LATER(paid) |
+| FASTag / toll, fuel | BlackBuck | V9 (paid), V10 (expense part todo-free) | Toll is not in the fare | Task 3 |
+| GPS vehicle tracking | BlackBuck, Porter | M-module, T-module | Phone GPS during trips (live_location) | Map is paid |
+| Dynamic / surge pricing | Uber, Rapido, Porter | AI9, P5 (demand factors) | Config rate cards, no demand factor | AI9 is paid-or-later |
+| Instant payout | BlackBuck, Rapido | PAY8 (paid) | Payment records only | LATER(paid) |
+| Goods insurance | Porter, BlackBuck | SAFE9, SAFE10 (paid) | None | Partner needed |
+| Ratings both ways | all | Trust profile (flow chart) | Done (rating_test) | none |
+| Fare estimate before booking | all | C7, P5, P6 | Done (FareCalculator) | none |
+| Pickup/delivery OTP | Porter, Rapido | S-module, F10, F11 | Done (trip OTPs) | none |
+| Driver KYC and document expiry | all | K8, K12 | Onboarding gate + vehicle paper alerts | Licence expiry reminder: task 9 |
+| Multilingual UI | Porter, Rapido, Vahak | P0-06 | 12 languages | none |

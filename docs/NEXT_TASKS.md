@@ -1,6 +1,6 @@
 # Next tasks (Todo-free items)
 
-The 62 items marked **Todo-free** in `docs/ROADMAP_STATUS.md`, grouped into 8 tasks. All of them fit the free stack (Flutter + Auth + Firestore, no Blaze, no paid API). Not started. Same rules as before: `flutter analyze` 0 issues, `flutter test`, rules tests when rules change, 12-language strings, money in paise, `// TODO(functions)` / `// LATER(paid)` for server or paid parts.
+The 61 items marked **Todo-free** in `docs/ROADMAP_STATUS.md`, grouped into tasks 1-8, plus tasks 9 and 10 for features that common competitor apps have but the roadmap does not (see the competitor audit at the end of `docs/ROADMAP_STATUS.md`). All of them fit the free stack (Flutter + Auth + Firestore, no Blaze, no paid API). Not started. Same rules as before: `flutter analyze` 0 issues, `flutter test`, rules tests when rules change, 12-language strings, money in paise, `// TODO(functions)` / `// LATER(paid)` for server or paid parts.
 
 | # | Task | Items |
 |---|---|---|
@@ -12,6 +12,8 @@ The 62 items marked **Todo-free** in `docs/ROADMAP_STATUS.md`, grouped into 8 ta
 | 6 | Trip events and evidence | T8, T10, T11, M14, S2, S6, S13, SAFE4, IE10 |
 | 7 | Marketplace, recurring and scheduled matching | B4, L5, L13, P3, SM10, SM11, PAY3 |
 | 8 | Documents, notifications, fleet analytics, integration tests | DOC7, DOC9, IE13, N2, N8, N9, N13, TEST3 |
+| 9 | Competitor gaps: money and driver motivation (not in roadmap) | helper add-on, customer credits, referral, promo codes, driver incentives, tips, pickup reminder, licence expiry reminder |
+| 10 | Competitor gaps: demand and packages (not in roadmap) | demand by city, driver plan record, hourly packages, packers and movers checklist |
 
 ## 1. Sign-in methods and device security
 - A2 Google login with `google_sign_in` and account linking (needs the SHA-1 added in the Firebase Console).
@@ -36,7 +38,7 @@ The 62 items marked **Todo-free** in `docs/ROADMAP_STATUS.md`, grouped into 8 ta
 ## 4. Risk rules and manual review
 - K13 Name/vehicle mismatch sends the driver to a manual review state instead of approval.
 - R5, R6, R7, R8 Rule-based triggers: high-value booking, behavioural score from cancellations and changes, expired papers, random selection; each creates a review item.
-- F1 Duplicate identity patterns on phone, name and vehicle number.
+- F1 (remaining part; documents are already blocked by identity_index) Duplicate patterns on phone, name and device.
 - BE5 App Check with Play Integrity (free).
 - BE17 Written data retention policy plus an in-app note and admin checklist.
 
@@ -68,3 +70,20 @@ The 62 items marked **Todo-free** in `docs/ROADMAP_STATUS.md`, grouped into 8 ta
 - N2, N8, N9 In-app ETA, return-load and payment notifications (push still needs Blaze).
 - N13 Fleet analytics: utilisation, idle time, revenue, maintenance.
 - TEST3 `integration_test/` flows with the Firebase emulator.
+
+## 9. Competitor gaps: money and driver motivation (not in the roadmap)
+All records and rules only; real money movement stays `// LATER(paid)`, server-side enforcement `// TODO(functions)`.
+- Helper / labour add-on: 0-3 helpers on a load, fixed charge per helper in `config/pricing`, shown in the fare breakdown; the driver sees it on the load card before accepting.
+- Customer credits: `users/{uid}/credits` append-only ledger (refund to credits, promo credit, spend on a booking); balance is the sum. Top-up through a gateway is LATER(paid).
+- Referral: each user gets a short code; a new user enters it once at signup; both sides get a credit line after the referred user's first delivered booking. Self-referral and duplicate use blocked by rules.
+- Promo codes: `config/promos` (percent or flat, cap, expiry, per-user limit), applied in the fare breakdown, redeemed once per user (`promo_redemptions/{uid}_{code}`, create-only).
+- Driver incentives: admin-set weekly targets in `config/incentives` (for example 10 trips = bonus); progress bar on Earnings from delivered trips; bonus lines in the driver ledger. Payout is a record only.
+- Tip to driver after delivery: amount record on the booking, shown in the driver's earnings.
+- Pickup reminder notification for scheduled loads and a licence-expiry reminder on Home (same banner as vehicle papers).
+
+## 10. Competitor gaps: demand and packages (not in the roadmap)
+- Demand by city: driver Home card with the count of open loads per pickup city (from the loaded page) so drivers know where work is; a real heat map needs Maps (paid).
+- Driver plan: a plan record (free, monthly) on the profile and a banner; charging for it is LATER(paid).
+- Hourly packages: a load type with included hours and km, extra hour/km rates in `config/pricing`.
+- Packers and movers: a checklist form (rooms, large items, floors, lift) that creates a load with notes and a higher helper count.
+- Deliberately left out: credit / pay-later for businesses (needs a regulated lender), live public trip-share link (needs hosting or Functions), masked calling and instant payout (paid).
