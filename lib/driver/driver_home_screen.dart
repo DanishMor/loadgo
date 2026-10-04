@@ -18,6 +18,9 @@ import '../core/l10n/language_widgets.dart';
 import '../core/widgets/booking_list_view.dart';
 import 'driver_location_sync.dart';
 import 'driver_trip_screen.dart';
+import '../core/reminders/reminders.dart';
+import '../core/widgets/reminder_widgets.dart';
+import 'city_demand_screen.dart';
 import 'earnings_view.dart';
 import 'available_loads_view.dart';
 import '../core/widgets/load_card.dart';
@@ -163,6 +166,20 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
     );
   }
 
+  /// Pickup reminders open the trip, offer reminders My Offers, papers My Truck.
+  void _openReminder(Reminder r) {
+    switch (r.kind) {
+      case ReminderKind.pickupSoon:
+        if (r.relatedId != null) openDriverTrip(context, r.relatedId!);
+      case ReminderKind.counterWaiting || ReminderKind.confirmWaiting:
+        Navigator.of(context).push(MaterialPageRoute(
+          builder: (_) => MyOffersScreen(onOpenBooking: (id) => openDriverTrip(context, id)),
+        ));
+      default:
+        _openVehicles();
+    }
+  }
+
   void _openVehicles() =>
       Navigator.of(context).push(MaterialPageRoute(builder: (_) => const MyVehiclesScreen()));
 
@@ -223,7 +240,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                   ),
                 ),
                 IconButton(onPressed: () => showLanguageSelector(context), icon: const Icon(Icons.language_rounded), color: const Color(0xFF1565C0)),
-                NotificationBell(onOpenBooking: (id) => openDriverTrip(context, id)),
+                NotificationBell(isDriver: true, onOpenBooking: (id) => openDriverTrip(context, id)),
               ],
             ),
             const SizedBox(height: 18),
@@ -242,6 +259,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
               ),
             ),
             _noVehiclePrompt(),
+            RemindersBanner(isDriver: true, onOpen: _openReminder),
             VehicleAlertsBanner(vehicles: _vehicles, onTap: _openVehicles),
             const SizedBox(height: 16),
             Container(
@@ -275,6 +293,18 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                 _tile(Icons.local_shipping_rounded, tr(context, 'myTruck'), onTap: _openVehicles),
                 const SizedBox(width: 12),
                 _tile(Icons.verified_user_rounded, tr(context, 'documentsKyc'), onTap: _openVehicles),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                _tile(
+                  Icons.insights_rounded,
+                  tr(context, 'cityDemand'),
+                  onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const CityDemandScreen())),
+                ),
+                const SizedBox(width: 12),
+                const Expanded(child: SizedBox.shrink()),
               ],
             ),
             const SizedBox(height: 12),

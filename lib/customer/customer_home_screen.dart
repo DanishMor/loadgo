@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import '../core/profile/profile_nav_tile.dart';
 import 'business_hub_screen.dart';
 import 'offers_screen.dart';
+import '../core/widgets/reminder_widgets.dart';
+import '../core/reminders/reminders.dart';
 import 'customer_analytics_screen.dart';
 
 import '../core/services/auth_helpers.dart';
@@ -121,6 +123,17 @@ class _CustomerHomeContent extends StatelessWidget {
 
   const _CustomerHomeContent({required this.onPostLoad, required this.onOpenTab});
 
+  static const _loadsTabIndex = 2;
+
+  /// Pickup reminders open the booking; offers and "no driver yet" go to My Loads.
+  void _openReminder(BuildContext context, Reminder r) {
+    if (r.kind == ReminderKind.pickupSoon && r.relatedId != null) {
+      openBookingTracking(context, r.relatedId!);
+    } else {
+      onOpenTab(_loadsTabIndex);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
@@ -200,6 +213,7 @@ class _CustomerHomeContent extends StatelessWidget {
                 ),
               ),
             ),
+            RemindersBanner(isDriver: false, onOpen: (r) => _openReminder(context, r)),
             const SizedBox(height: 25),
             Container(
               width: double.infinity,

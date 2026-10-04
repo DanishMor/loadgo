@@ -56,6 +56,16 @@ class PickupSlot {
   static const evening = 'evening';
 
   static const all = [any, morning, midday, afternoon, evening];
+
+  /// Hour (24 h) at which a slot starts. Reminders count from here; `any`
+  /// is treated as 9 in the morning.
+  static int startHour(String slot) => switch (slot) {
+        morning => 8,
+        midday => 12,
+        afternoon => 15,
+        evening => 18,
+        _ => 9,
+      };
 }
 
 /// What the customer is booking. Must stay in sync with firestore.rules.

@@ -696,6 +696,18 @@ describe('driver extras', () => {
   });
 });
 
+describe('reminder queries', () => {
+  test('a customer can list the offers made on their loads, a driver their own, nobody else\'s', async () => {
+    await seed(async (db) => {
+      await setDoc(doc(db, 'offers', 'L1_driver1'), { loadId: 'L1', driverId: 'driver1', customerId: 'customer1', status: 'pending' });
+      await setDoc(doc(db, 'offers', 'L2_driver2'), { loadId: 'L2', driverId: 'driver2', customerId: 'customer2', status: 'pending' });
+    });
+    await assertSucceeds(getDocs(query(collection(as('customer1'), 'offers'), where('customerId', '==', 'customer1'))));
+    await assertSucceeds(getDocs(query(collection(as('driver1'), 'offers'), where('driverId', '==', 'driver1'))));
+    await assertFails(getDocs(query(collection(as('customer1'), 'offers'), where('customerId', '==', 'customer2'))));
+  });
+});
+
 describe('admin verification', () => {
   const seedDriver = () => seed((db) => setDoc(doc(db, 'users', 'd1'), { driverName: 'R', verified: false, verificationStatus: 'pending' }));
 

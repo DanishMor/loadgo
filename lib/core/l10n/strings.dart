@@ -18,6 +18,7 @@ import 'offer_strings.dart';
 import 'offers_strings.dart';
 import 'payment_strings.dart';
 import 'pricing_strings.dart';
+import 'reminder_strings.dart';
 import 'risk_strings.dart';
 import 'settings_strings.dart';
 import 'support_strings.dart';
@@ -40,6 +41,7 @@ const List<Map<String, List<String>>> stringTables = [
   bookingTypeStrings,
   customerOffersStrings,
   driverExtrasStrings,
+  reminderStrings,
   adminStrings,
   matchStrings,
   settingsStrings,

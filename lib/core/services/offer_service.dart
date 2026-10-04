@@ -127,6 +127,17 @@ class OfferService {
     });
   }
 
+  /// Offers made on any of the signed-in customer's loads, newest first.
+  static Stream<List<Offer>> watchForCustomer() {
+    final uid = Backend.uid;
+    if (uid == null) return Stream.value(const []);
+    return _col.where('customerId', isEqualTo: uid).snapshots().map((s) {
+      final list = s.docs.map(Offer.fromDoc).toList();
+      list.sort((a, b) => newestFirst(a.createdAt, b.createdAt));
+      return list;
+    });
+  }
+
   /// The signed-in driver's offers, newest first.
   static Stream<List<Offer>> watchMine() {
     final uid = Backend.uid;
