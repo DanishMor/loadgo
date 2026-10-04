@@ -11,6 +11,7 @@ import '../ratings/rating_widgets.dart';
 import '../../core/widgets/live_stream.dart';
 import 'edit_profile_screen.dart';
 import '../../core/support/support_screens.dart';
+import '../../admin/admin_entry.dart';
 import '../../core/safety/emergency_contacts_screen.dart';
 
 /// Profile tab for both roles: identity, contact details, average rating and
@@ -126,6 +127,7 @@ class _ProfileViewState extends State<ProfileView> {
                       trailing: Text(trLanguageName(LanguageScope.of(context))),
                       onTap: () => showLanguageSelector(context),
                     ),
+                    const AdminEntryTile(),
                     ListTile(
                       key: const ValueKey('profileSupport'),
                       contentPadding: EdgeInsets.zero,

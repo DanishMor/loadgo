@@ -13,10 +13,14 @@ before(async () => {
   });
 });
 after(() => env.cleanup());
-beforeEach(() => env.clearFirestore());
+// admins/{uid} allowlist: admin1 is an admin (created by hand in the Console in real life).
+beforeEach(async () => {
+  await env.clearFirestore();
+  await env.withSecurityRulesDisabled((ctx) => setDoc(doc(ctx.firestore(), 'admins', 'admin1'), { createdBy: 'console' }));
+});
 
 const as = (uid) => env.authenticatedContext(uid).firestore();
-const asAdmin = () => env.authenticatedContext('admin1', { admin: true }).firestore();
+const asAdmin = () => env.authenticatedContext('admin1').firestore();
 const anon = () => env.unauthenticatedContext().firestore();
 const seed = (fn) => env.withSecurityRulesDisabled((ctx) => fn(ctx.firestore()));
 
@@ -967,5 +971,53 @@ describe('anti-fraud', () => {
     await assertSucceeds(getDocs(query(collection(asAdmin(), 'users'), where('cancelCount', '>=', 3))));
     await assertSucceeds(getDocs(query(collection(asAdmin(), 'reports'), where('status', '==', 'open'))));
     await assertFails(getDocs(query(collection(as('u1'), 'users'), where('cancelCount', '>=', 3))));
+  });
+});
+
+describe('admin allowlist and powers', () => {
+  const reassign = (db, extra = {}) => {
+    const b = writeBatch(db);
+    b.update(doc(db, 'bookings', 'L1'), { driverId: 'driver2', vehicleId: 'v2', vehicleNumber: 'KA01CD5678', vehicleType: '20ft', driverName: 'Suresh', driverPhone: '+91', reassignedAt: serverTimestamp(), updatedAt: serverTimestamp(), ...extra });
+    b.update(doc(db, 'loads', 'L1'), { driverId: 'driver2' });
+    return b.commit();
+  };
+
+  test('admins/{uid}: own read only, nobody writes; an admin claim alone is not enough', async () => {
+    await assertSucceeds(getDoc(doc(as('admin1'), 'admins', 'admin1')));
+    await assertFails(getDoc(doc(as('u1'), 'admins', 'admin1')));
+    await assertFails(setDoc(doc(as('u1'), 'admins', 'u1'), { x: 1 }));
+    await assertFails(setDoc(doc(asAdmin(), 'admins', 'u1'), { x: 1 }));
+    await assertFails(getDoc(doc(env.authenticatedContext('u1', { admin: true }).firestore(), 'users', 'admin1')));
+  });
+
+  test('admins read all loads and bookings; others cannot', async () => {
+    await seedBooking();
+    await assertSucceeds(getDoc(doc(asAdmin(), 'loads', 'L1')));
+    await assertSucceeds(getDoc(doc(asAdmin(), 'bookings', 'L1')));
+    await assertSucceeds(getDocs(query(collection(asAdmin(), 'bookings'), where('status', '==', 'accepted'))));
+    await assertFails(getDoc(doc(as('u1'), 'bookings', 'L1')));
+    await assertFails(updateDoc(doc(asAdmin(), 'bookings', 'L1'), { status: 'delivered' }));
+    await assertFails(updateDoc(doc(asAdmin(), 'loads', 'L1'), { budget: 1 }));
+  });
+
+  test('admin reassigns a booking before pickup, with the load and the new vehicle', async () => {
+    await seedBooking();
+    await assertFails(reassign(as('u1')));
+    await assertFails(reassign(asAdmin(), { vehicleId: 'v1' })); // v1 belongs to driver1
+    await assertFails(reassign(asAdmin(), { status: 'delivered' }));
+    await assertSucceeds(reassign(asAdmin()));
+    await seedBooking('picked_up');
+    await assertFails(reassign(asAdmin()));
+  });
+
+  test('admin audit event for reassign; users cannot forge it', async () => {
+    await assertSucceeds(addDoc(collection(asAdmin(), 'audit_events'), { type: 'reassign', actorId: 'admin1', data: {}, createdAt: serverTimestamp() }));
+    await assertFails(addDoc(collection(as('u1'), 'audit_events'), { type: 'reassign', actorId: 'u1', data: {}, createdAt: serverTimestamp() }));
+  });
+
+  test('admin edits pricing and vehicle_types config; users cannot', async () => {
+    await assertSucceeds(setDoc(doc(asAdmin(), 'config', 'pricing'), { platformFeePercent: 5, updatedAt: serverTimestamp() }));
+    await assertFails(setDoc(doc(as('u1'), 'config', 'pricing'), { platformFeePercent: 0 }));
+    await assertSucceeds(setDoc(doc(asAdmin(), 'config', 'vehicle_types'), { types: [{ id: 'x' }], updatedAt: serverTimestamp() }));
   });
 });

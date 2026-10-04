@@ -4,6 +4,7 @@
 /// en, hi, hinglish, kn, ta, te, mr, gu, bn, pa, ks, ur.
 library;
 
+import 'admin_strings.dart';
 import 'auth_strings.dart';
 import 'chat_strings.dart';
 import 'load_strings.dart';
@@ -26,6 +27,7 @@ const List<Map<String, List<String>>> stringTables = [
   supportStrings,
   paymentStrings,
   riskStrings,
+  adminStrings,
 ];
 
 final Map<String, List<String>> extraStrings = {

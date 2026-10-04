@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:transport_app/core/services/admin_service.dart';
 import 'package:transport_app/core/services/backend.dart';
-import 'package:transport_app/features/admin/admin_verification_screen.dart';
+import 'package:transport_app/admin/admin_verification_screen.dart';
 
 import 'test_utils.dart';
 

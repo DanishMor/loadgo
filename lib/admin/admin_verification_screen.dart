@@ -1,15 +1,12 @@
 import 'package:flutter/material.dart';
 
-import '../../core/services/admin_service.dart';
-import '../../core/widgets/common.dart';
-import '../../main.dart';
-import '../../core/widgets/live_stream.dart';
+import '../core/l10n/l10n.dart';
+import '../core/services/admin_service.dart';
+import '../core/widgets/common.dart';
+import '../core/widgets/live_stream.dart';
 
-/// Driver verification queue for admins.
-///
-/// TODO(admin): not reachable from the app UI on purpose. Before exposing it,
-/// gate it behind an admin role check (the `admin` custom claim that the
-/// Firestore rules already require) and add real admin login.
+/// Driver verification queue for admins (opened from the admin panel; the
+/// `admins/{uid}` rules are the real gate).
 class AdminVerificationScreen extends StatefulWidget {
   const AdminVerificationScreen({super.key});
 
