@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 import '../enterprise/validators.dart';
 import '../identity/identity_index.dart';
+import '../location/geohash.dart';
 import '../identity/kyc_validators.dart';
 import 'backend.dart';
 import 'push_service.dart';
@@ -161,6 +162,29 @@ class UserService {
     }
 
     await ref.set(data, SetOptions(merge: true));
+  }
+
+  /// Remembers where the driver last was (with a geohash) so loads can be
+  /// listed nearest-first. LATER(paid): a Cloud Function reads the geohash
+  /// for wave dispatch and FCM.
+  static Future<void> saveDriverLocation(double lat, double lng) async {
+    final uid = Backend.requireUid();
+    await _db.collection('users').doc(uid).set({
+      'lastLocation': {
+        'lat': lat,
+        'lng': lng,
+        'geohash': geohashEncode(lat, lng),
+        'updatedAt': FieldValue.serverTimestamp(),
+      },
+    }, SetOptions(merge: true));
+  }
+
+  /// Last saved driver position, or null if none yet.
+  static ({double lat, double lng})? lastLocationOf(Map<String, dynamic>? user) {
+    final m = user?['lastLocation'];
+    if (m is! Map) return null;
+    final lat = m['lat'], lng = m['lng'];
+    return lat is num && lng is num ? (lat: lat.toDouble(), lng: lng.toDouble()) : null;
   }
 
   /// Edits the signed-in user's profile after setup. Drivers keep their

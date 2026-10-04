@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../core/matching/nearest.dart';
 import '../core/models/load.dart';
+import '../core/services/user_service.dart';
 import '../core/models/load_filter.dart';
 import '../core/widgets/common.dart';
 import '../core/l10n/l10n.dart';
@@ -89,7 +91,11 @@ class AvailableLoadsView extends StatefulWidget {
   final PagedStreamFactory<Load> loads;
   final ValueChanged<String>? onAccepted;
 
-  const AvailableLoadsView({super.key, required this.loads, this.onAccepted});
+  /// Where the driver is. When null it is read from the profile's last
+  /// saved location; without either the list keeps its newest-first order.
+  final LatLng? origin;
+
+  const AvailableLoadsView({super.key, required this.loads, this.onAccepted, this.origin});
 
   @override
   State<AvailableLoadsView> createState() => _AvailableLoadsViewState();
@@ -98,6 +104,42 @@ class AvailableLoadsView extends StatefulWidget {
 class _AvailableLoadsViewState extends State<AvailableLoadsView> {
   final _searchCtrl = TextEditingController();
   LoadFilter _filter = LoadFilter.none;
+  late LatLng? _origin = widget.origin;
+
+  @override
+  void initState() {
+    super.initState();
+    if (_origin == null) _loadOrigin();
+  }
+
+  Future<void> _loadOrigin() async {
+    try {
+      final here = UserService.lastLocationOf(await UserService.getUser());
+      if (here != null && mounted) setState(() => _origin = here);
+    } catch (_) {
+      // No profile yet: keep the default order.
+    }
+  }
+
+  /// Nearest pickup first once the driver's position is known.
+  List<NearLoad> _ordered(List<Load> loads) {
+    final o = _origin;
+    return o == null ? [for (final l in loads) NearLoad(l, null)] : sortNearestFirst(loads, o);
+  }
+
+  Widget _distanceChip(int? km) {
+    if (km == null) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: Row(children: [
+        const Icon(Icons.near_me_rounded, size: 15, color: AppColors.primary),
+        const SizedBox(width: 4),
+        Text(trf(context, 'kmAway', {'n': km}),
+            key: ValueKey('kmAway_$km'),
+            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.primary)),
+      ]),
+    );
+  }
 
   @override
   void dispose() {
@@ -198,7 +240,7 @@ class _AvailableLoadsViewState extends State<AvailableLoadsView> {
             child: PagedLiveStream<Load>(
               stream: widget.loads,
               builder: (context, all, loadMore) {
-                final list = _filter.apply(all);
+                final list = _ordered(_filter.apply(all));
                 if (all.isEmpty) {
                   return EmptyState(icon: Icons.inventory_2_rounded, title: tr(context, 'noAvailableLoads'));
                 }
@@ -239,13 +281,19 @@ class _AvailableLoadsViewState extends State<AvailableLoadsView> {
                       );
                     }
                     final k = i - offset;
-                    return k == list.length
-                        ? loadMore!
-                        : LoadCard(
-                            key: ValueKey(list[k].id),
-                            load: list[k],
-                            action: AcceptLoadButton(load: list[k], onAccepted: widget.onAccepted),
-                          );
+                    if (k == list.length) return loadMore!;
+                    final item = list[k];
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _distanceChip(item.km),
+                        LoadCard(
+                          key: ValueKey(item.load.id),
+                          load: item.load,
+                          action: AcceptLoadButton(load: item.load, onAccepted: widget.onAccepted),
+                        ),
+                      ],
+                    );
                   },
                 );
               },

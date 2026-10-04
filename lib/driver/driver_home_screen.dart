@@ -15,6 +15,7 @@ import '../core/widgets/common.dart';
 import '../core/l10n/l10n.dart';
 import '../core/l10n/language_widgets.dart';
 import '../core/widgets/booking_list_view.dart';
+import 'driver_location_sync.dart';
 import 'driver_trip_screen.dart';
 import 'earnings_view.dart';
 import 'available_loads_view.dart';
@@ -49,6 +50,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
   @override
   void initState() {
     super.initState();
+    DriverLocationSync.refresh();
     MatchService.lastSeenLoads().then((t) {
       if (!mounted) return;
       if (t != null) {

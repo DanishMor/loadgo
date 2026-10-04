@@ -65,6 +65,19 @@ service cloud.firestore {
           && (d.get('kycComplete', false) == false || 'driverKyc' in d);
     }
 
+    // Driver's last known position, saved with a geohash for nearest-first
+    // lists. The timestamp must be the server time.
+    function validLastLocation(d) {
+      return !('lastLocation' in d)
+          || (d.lastLocation is map
+              && d.lastLocation.keys().hasOnly(['lat', 'lng', 'geohash', 'updatedAt'])
+              && d.lastLocation.lat is number && d.lastLocation.lat >= -90 && d.lastLocation.lat <= 90
+              && d.lastLocation.lng is number && d.lastLocation.lng >= -180 && d.lastLocation.lng <= 180
+              && d.lastLocation.geohash is string
+              && d.lastLocation.geohash.matches('^[0-9b-hjkmnp-z]{4,12}$')
+              && d.lastLocation.updatedAt == request.time);
+    }
+
     // Anti-fraud fields. riskTier/riskReason/riskUpdatedAt are admin-only;
     // cancelCount only goes up by one (see cancelCounted()).
     function riskFieldsAbsent(d) {
@@ -138,13 +151,13 @@ service cloud.firestore {
     match /users/{userId} {
       allow read: if isUser(userId) || isAdmin();
       allow create: if isUser(userId) && verificationInitOk(request.resource.data)
-          && validKyc(request.resource.data) && validRole(request.resource.data.get('role', null))
+          && validKyc(request.resource.data) && validLastLocation(request.resource.data) && validRole(request.resource.data.get('role', null))
           && (request.resource.data.get('role', null) == null
               || request.resource.data.get('selectedRole', request.resource.data.role) == request.resource.data.role)
           && validEmergencyContacts(request.resource.data) && riskFieldsAbsent(request.resource.data)
           && validPrefs(request.resource.data) && validBusiness(request.resource.data);
       allow update: if adminVerificationUpdate() || adminRiskUpdate() || (isUser(userId)
-          && roleLockOk() && validKyc(request.resource.data)
+          && roleLockOk() && validKyc(request.resource.data) && validLastLocation(request.resource.data)
           && validEmergencyContacts(request.resource.data)
           && validPrefs(request.resource.data) && validBusiness(request.resource.data)
           && ownerRiskFieldsUntouched()

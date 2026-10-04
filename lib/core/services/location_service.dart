@@ -31,6 +31,25 @@ class LocationService {
     ).map((p) => (lat: p.latitude, lng: p.longitude));
   }
 
+  /// One position fix, or null when location is off, denied or unavailable.
+  static Future<Coordinates?> current() async {
+    if (_fakeCurrent != null) return _fakeCurrent!();
+    if (!await ensurePermission()) return null;
+    try {
+      final p = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(accuracy: LocationAccuracy.medium, timeLimit: Duration(seconds: 10)),
+      );
+      return (lat: p.latitude, lng: p.longitude);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  static Future<Coordinates?> Function()? _fakeCurrent;
+
+  @visibleForTesting
+  static void useFakeCurrent(Future<Coordinates?> Function()? fake) => _fakeCurrent = fake;
+
   @visibleForTesting
   static void useFake(Stream<Coordinates> Function()? fake) => _fake = fake;
 }
