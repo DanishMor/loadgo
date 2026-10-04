@@ -8,6 +8,7 @@ import '../../main.dart';
 import '../../core/widgets/paged_live_stream.dart';
 import 'load_card.dart';
 import 'post_load_screen.dart';
+import '../../customer/load_offers_screen.dart';
 
 /// Customer "My Loads" tab: live list of the customer's posted loads.
 class MyLoadsView extends StatefulWidget {
@@ -34,7 +35,15 @@ class _MyLoadsViewState extends State<MyLoadsView> {
               label: Text(tr(context, 'viewBooking')),
             ),
           );
-    if (load.isOpen) return _CancelLoadButton(load: load);
+    if (load.isOpen) {
+      return Column(
+        children: [
+          LoadOffersButton(load: load, onOpenBooking: widget.onOpenBooking),
+          const SizedBox(height: 8),
+          _CancelLoadButton(load: load),
+        ],
+      );
+    }
     if (load.status == LoadStatus.closed) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,

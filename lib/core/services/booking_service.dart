@@ -5,6 +5,7 @@ import '../models/booking.dart';
 import '../models/load.dart';
 import '../models/paged.dart';
 import '../models/app_notification.dart';
+import '../models/offer.dart';
 import '../models/vehicle.dart';
 import 'pricing_service.dart';
 import 'backend.dart';
@@ -33,7 +34,11 @@ class BookingService {
   /// The load's open -> matched transition (checked in the transaction and by
   /// the rules) guarantees only one live booking per load. Returns the
   /// booking id.
-  static Future<String> accept({required String loadId, required Vehicle vehicle}) async {
+  ///
+  /// With [offerId] this is the driver's confirmation of a selected offer:
+  /// the offer must still be selected and the booking carries its price as
+  /// `agreedFarePaise`.
+  static Future<String> accept({required String loadId, required Vehicle vehicle, String? offerId}) async {
     final uid = Backend.requireUid();
     final profile = (await Backend.db.collection('users').doc(uid).get()).data() ?? const {};
     final loadRef = Backend.db.collection('loads').doc(loadId);
@@ -48,6 +53,11 @@ class BookingService {
         final vehicleRef = Backend.db.collection('vehicles').doc(vehicle.id);
         final vehicleSnap = await tx.get(vehicleRef);
         if (vehicleSnap.exists && !Vehicle.fromDoc(vehicleSnap).canTakeBooking) throw VehicleBusyException();
+        final offerRef = offerId == null ? null : Backend.db.collection('offers').doc(offerId);
+        final offer = offerRef == null ? null : Offer.fromDoc(await tx.get(offerRef));
+        if (offer != null && (offer.status != OfferStatus.selected || offer.driverId != uid || offer.loadId != loadId)) {
+          throw OfferStateException();
+        }
 
         tx.set(bookingRef, {
           'loadId': load.id,
@@ -62,6 +72,8 @@ class BookingService {
           'vehicleType': load.vehicleType,
           'budget': load.budget,
           'fareEstimate': ?load.estimate?.total,
+          if (offer != null) 'offerId': offer.id,
+          if (offer != null) 'agreedFarePaise': offer.pricePaise,
           if (load.extraPickups.isNotEmpty) 'extraPickups': load.extraPickups,
           if (load.extraDrops.isNotEmpty) 'extraDrops': load.extraDrops,
           'pickupSlot': load.pickupSlot,
@@ -75,6 +87,13 @@ class BookingService {
           'updatedAt': FieldValue.serverTimestamp(),
         });
         if (vehicleSnap.exists) tx.update(vehicleRef, {'availability': VehicleAvailability.onTrip});
+        if (offerRef != null) {
+          tx.update(offerRef, {
+            'status': OfferStatus.confirmed,
+            'bookingId': bookingRef.id,
+            'updatedAt': FieldValue.serverTimestamp(),
+          });
+        }
         tx.update(loadRef, {
           'status': LoadStatus.matched,
           'driverId': uid,
@@ -198,7 +217,7 @@ class BookingService {
   /// TODO(functions): compute server-side; rules only check the shape.
   static int cancellationCharge(Booking booking, DateTime now) {
     final accepted = booking.timeline[BookingStatus.accepted] ?? now;
-    return PricingService.config.cancellation.chargeFor(elapsed: now.difference(accepted), farePaise: booking.fareEstimate);
+    return PricingService.config.cancellation.chargeFor(elapsed: now.difference(accepted), farePaise: booking.agreedFarePaise ?? booking.fareEstimate);
   }
 
   /// Reads the booking's vehicle inside [tx] (reads must precede writes) and

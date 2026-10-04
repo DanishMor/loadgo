@@ -38,6 +38,10 @@ class Booking {
   final List<String> extraDrops;
   final String pickupSlot;
 
+  /// Price agreed through an offer (paise), and that offer's id.
+  final int? agreedFarePaise;
+  final String? offerId;
+
   /// Load's estimated total (paise), copied at acceptance.
   final int? fareEstimate;
 
@@ -67,6 +71,8 @@ class Booking {
     this.lastKnownLocation,
     this.locationUpdatedAt,
     this.fareEstimate,
+    this.agreedFarePaise,
+    this.offerId,
     this.cancellation,
     this.extraPickups = const [],
     this.extraDrops = const [],
@@ -112,6 +118,8 @@ class Booking {
       lastKnownLocation: d['lastKnownLocation'] as GeoPoint?,
       locationUpdatedAt: (d['locationUpdatedAt'] as Timestamp?)?.toDate(),
       fareEstimate: (d['fareEstimate'] as num?)?.round(),
+      agreedFarePaise: (d['agreedFarePaise'] as num?)?.round(),
+      offerId: d['offerId'] as String?,
       extraPickups: [for (final s in (d['extraPickups'] as List?) ?? const []) s.toString()],
       extraDrops: [for (final s in (d['extraDrops'] as List?) ?? const []) s.toString()],
       pickupSlot: d['pickupSlot'] as String? ?? PickupSlot.any,

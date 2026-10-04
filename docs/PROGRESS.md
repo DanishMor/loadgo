@@ -10,8 +10,8 @@ Paid/manual items are marked `// LATER(paid): ...` in code and listed in docs/MA
 | 3 | Vehicle documents, availability, duplicates | done | vehicle_numbers registry, lib/driver/vehicle_documents_screen.dart |
 | 4 | Pricing engine + fare estimate + cancellation policy | done | lib/core/pricing, config/pricing, TODO(functions) for server fare |
 | 5 | Load posting upgrade (multi-stop, saved places, prohibited cargo, slot, repost) | done | lib/customer/saved_place_picker.dart, rules regex for prohibited goods |
-| 6 | Offers & negotiation | in-progress | |
-| 7 | Trip lifecycle + OTPs + POD + LR | todo | |
+| 6 | Offers & negotiation | done | offers/{loadId}_{driverId}, double confirmation in the booking transaction |
+| 7 | Trip lifecycle + OTPs + POD + LR | in-progress | |
 | 8 | Booking chat | todo | |
 | 9 | Support tickets & safety (SOS, contacts, breakdown) | todo | |
 | 10 | Payment records & documents center | todo | |
@@ -37,3 +37,4 @@ Paid/manual items are marked `// LATER(paid): ...` in code and listed in docs/MA
 - 2026-10-04 Task 3 done: insurance/PUC/fitness/permit (number + expiry, 'Unverified'), next service date, availability (available/on_trip/maintenance/suspended; on_trip set by accept, freed on deliver/cancel; admin-only suspend), duplicate numbers blocked via vehicle_numbers/{number} (rules), Home banner for papers expiring within 30 days. LiveStream widgets moved to core/widgets.
 - 2026-10-04 Task 4 done: FareCalculator (paise, basis-point rounding, min fare, loading/unloading, waiting per started hour, extra stops, platform fee %, GST %), config/pricing with category + type rate cards, 64-city offline table (haversine x road factor 1.25) + manual km override, estimate card + breakdown sheet on Post Load, estimate stored on load and copied to booking, config-driven cancellation charge recorded on driver cancel (record only).
 - 2026-10-04 Task 5 done: up to 3 pickups/3 drops (extraPickups/extraDrops, leg-by-leg distance, per-stop charge), saved places (users/{uid}/saved_places, max 20), prohibited goods list (client + rules regex), pickup time slot, Repost on closed loads. core/widgets/vehicle_type_widgets.dart renamed logistics_labels.dart.
+- 2026-10-04 Task 6 done: drivers send a price (Make offer next to Accept); customer sees Offers (n) on open loads, counters once, selects/rejects; selected driver confirms and the booking is created with agreedFarePaise in the same transaction (rules check the offer is selected, price matches, offer becomes confirmed). My Offers screen for drivers.

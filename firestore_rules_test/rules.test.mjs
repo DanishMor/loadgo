@@ -544,3 +544,71 @@ describe('load posting upgrade', () => {
     await assertSucceeds(deleteDoc(mine));
   });
 });
+
+describe('offers', () => {
+  const OFFER = {
+    loadId: 'L1', driverId: 'driver1', customerId: 'customer1', vehicleId: 'v1', vehicleNumber: VEHICLE.number,
+    vehicleType: '20ft', driverName: 'Ramesh', pricePaise: 2400000, originalPaise: 2400000, status: 'pending',
+  };
+  const ref = (db, id = 'L1_driver1') => doc(db, 'offers', id);
+
+  async function seedOffer(overrides = {}) {
+    await seedOpenLoad();
+    await seed((db) => setDoc(doc(db, 'offers', 'L1_driver1'), { ...OFFER, ...overrides }));
+  }
+
+  /** Same writes as OfferService.confirm -> BookingService.accept with an offer. */
+  function confirmBatch(db, overrides = {}) {
+    const b = writeBatch(db);
+    b.set(doc(db, 'bookings', 'B1'), bookingFor('L1', { offerId: 'L1_driver1', agreedFarePaise: OFFER.pricePaise, ...overrides }));
+    b.update(doc(db, 'loads', 'L1'), { status: 'matched', driverId: 'driver1', bookingId: 'B1', matchedAt: serverTimestamp() });
+    b.update(doc(db, 'vehicles', 'v1'), { availability: 'on_trip' });
+    b.update(doc(db, 'offers', 'L1_driver1'), { status: 'confirmed', bookingId: 'B1', updatedAt: serverTimestamp() });
+    return b.commit();
+  }
+
+  test('driver offers on an open load with their own vehicle; parties read it', async () => {
+    await seedOpenLoad();
+    await assertSucceeds(setDoc(ref(as('driver1')), OFFER));
+    await assertSucceeds(getDoc(ref(as('customer1'))));
+    await assertFails(getDoc(ref(as('driver2'))));
+    // Wrong id, someone else's vehicle, bad price, own load.
+    await assertFails(setDoc(ref(as('driver1'), 'L1_x'), OFFER));
+    await assertFails(setDoc(ref(as('driver2'), 'L1_driver2'), { ...OFFER, driverId: 'driver2' }));
+    await assertFails(setDoc(ref(as('driver2'), 'L1_driver2'), { ...OFFER, driverId: 'driver2', vehicleId: 'v2', pricePaise: 10.5, originalPaise: 10.5 }));
+    await assertFails(setDoc(ref(as('customer1'), 'L1_customer1'), { ...OFFER, driverId: 'customer1' }));
+  });
+
+  test('customer counters once, driver accepts the counter at that price', async () => {
+    await seedOffer();
+    await assertFails(updateDoc(ref(as('driver1')), { status: 'countered', counterPaise: 1 }));
+    await assertSucceeds(updateDoc(ref(as('customer1')), { status: 'countered', counterPaise: 2000000 }));
+    await assertFails(updateDoc(ref(as('driver1')), { status: 'pending', pricePaise: 2100000 }));
+    await assertSucceeds(updateDoc(ref(as('driver1')), { status: 'pending', pricePaise: 2000000 }));
+    await assertFails(updateDoc(ref(as('customer1')), { status: 'countered', counterPaise: 1500000 }), 'only one counter');
+  });
+
+  test('select, then the driver confirms by creating the booking at the agreed price', async () => {
+    await seedOffer();
+    await assertFails(confirmBatch(as('driver1')), 'not selected yet');
+    await assertSucceeds(updateDoc(ref(as('customer1')), { status: 'selected' }));
+    await assertFails(confirmBatch(as('driver1'), { agreedFarePaise: 1 }));
+    await assertSucceeds(confirmBatch(as('driver1')));
+  });
+
+  test('a booking cannot claim an agreed fare without a confirmed offer', async () => {
+    await seedOpenLoad();
+    await assertFails(acceptBatch(as('driver1'), 'L1', 'driver1', { agreedFarePaise: 1 }));
+  });
+
+  test('withdraw and reject; terminal offers stay terminal', async () => {
+    await seedOffer();
+    await assertFails(updateDoc(ref(as('customer1')), { status: 'withdrawn' }));
+    await assertSucceeds(updateDoc(ref(as('driver1')), { status: 'withdrawn' }));
+    await assertFails(updateDoc(ref(as('customer1')), { status: 'selected' }));
+    await seedOffer({ status: 'selected' });
+    await assertSucceeds(updateDoc(ref(as('customer1')), { status: 'rejected' }));
+    await assertFails(updateDoc(ref(as('driver1')), { status: 'pending' }));
+    await assertFails(deleteDoc(ref(as('driver1'))));
+  });
+});

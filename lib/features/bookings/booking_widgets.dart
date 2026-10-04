@@ -108,6 +108,8 @@ class BookingSummary extends StatelessWidget {
           if (showDriver)
             _row(Icons.person_outline_rounded, tr(context, 'driver'),
                 [b.driverName, b.driverPhone].where((s) => s.isNotEmpty).join(' • ')),
+          if (b.agreedFarePaise != null)
+            _row(Icons.handshake_outlined, tr(context, 'agreedFare'), formatPaise(b.agreedFarePaise!)),
           if (b.fareEstimate != null)
             _row(Icons.calculate_outlined, tr(context, 'fareEstimate'), formatPaise(b.fareEstimate!)),
           if (b.notes.isNotEmpty) _row(Icons.notes_rounded, tr(context, 'notes'), b.notes),

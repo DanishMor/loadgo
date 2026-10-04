@@ -283,9 +283,22 @@ service cloud.firestore {
           && loadAfter.status == 'matched'
           && loadAfter.driverId == request.auth.uid
           && loadAfter.bookingId == bookingId
+          && offerConfirmOk(bookingId, b)
           && get(docPath('vehicles', b.vehicleId)).data.ownerId == request.auth.uid
           && get(docPath('vehicles', b.vehicleId)).data.get('status', 'active') == 'active'
           && availabilityOf(get(docPath('vehicles', b.vehicleId)).data) == 'available';
+    }
+
+    // A booking from an offer: the driver's own selected offer for this
+    // load, at its price, confirmed in the same batch. Without an offer the
+    // booking may not claim an agreed fare.
+    function offerConfirmOk(bookingId, b) {
+      return (!('offerId' in b) && !('agreedFarePaise' in b))
+          || (b.offerId == b.loadId + '_' + request.auth.uid
+              && get(docPath('offers', b.offerId)).data.status == 'selected'
+              && b.agreedFarePaise == get(docPath('offers', b.offerId)).data.pricePaise
+              && getAfter(docPath('offers', b.offerId)).data.status == 'confirmed'
+              && getAfter(docPath('offers', b.offerId)).data.bookingId == bookingId);
     }
 
     // Live location: the driver may refresh their position only while the
@@ -318,6 +331,70 @@ service cloud.firestore {
                   && request.resource.data.status == 'cancelled'
                   && validCancellation(request.resource.data.get('cancellation', null))
                   && getAfter(docPath('loads', resource.data.loadId)).data.status == 'open'));
+      allow delete: if false;
+    }
+
+    // ------------------------------------------------------------------
+    // offers/{loadId}_{driverId}: a driver's price for an open load. The
+    // driver creates/withdraws and accepts a counter; the load's shipper
+    // counters once, selects or rejects; the driver confirms a selected
+    // offer together with creating the booking. Only these two people read it.
+    // ------------------------------------------------------------------
+    function offerKeysSame(fields) {
+      return changedKeys().hasOnly(fields.concat(['status', 'updatedAt']));
+    }
+
+    function validOfferCreate(offerId) {
+      let o = request.resource.data;
+      let load = get(docPath('loads', o.loadId)).data;
+      let vehicle = get(docPath('vehicles', o.vehicleId)).data;
+      return offerId == o.loadId + '_' + request.auth.uid
+          && o.keys().hasOnly(['loadId', 'driverId', 'customerId', 'pickup', 'drop', 'vehicleId', 'vehicleNumber', 'vehicleType',
+                               'driverName', 'pricePaise', 'originalPaise', 'status', 'createdAt', 'updatedAt'])
+          && o.driverId == request.auth.uid
+          && o.status == 'pending'
+          && o.pricePaise is int && o.pricePaise > 0 && o.pricePaise <= 100000000
+          && o.originalPaise == o.pricePaise
+          && load.status == 'open'
+          && load.shipperId != request.auth.uid
+          && o.customerId == load.shipperId
+          && o.get('pickup', load.pickup) == load.pickup
+          && o.get('drop', load.drop) == load.drop
+          && vehicle.ownerId == request.auth.uid
+          && vehicle.number == o.vehicleNumber;
+    }
+
+    function driverOfferUpdate(offerId) {
+      let before = resource.data;
+      let after = request.resource.data;
+      return before.driverId == request.auth.uid
+          && ((before.status in ['pending', 'countered', 'selected'] && after.status == 'withdrawn' && offerKeysSame([]))
+              || (before.status == 'countered' && after.status == 'pending'
+                  && after.pricePaise == before.counterPaise && offerKeysSame(['pricePaise']))
+              || (before.status == 'selected' && after.status == 'confirmed'
+                  && offerKeysSame(['bookingId'])
+                  && existsAfter(docPath('bookings', after.bookingId))
+                  && getAfter(docPath('bookings', after.bookingId)).data.offerId == offerId));
+    }
+
+    function customerOfferUpdate() {
+      let before = resource.data;
+      let after = request.resource.data;
+      return before.customerId == request.auth.uid
+          && ((before.status == 'pending' && !('counterPaise' in before) && after.status == 'countered'
+                  && after.counterPaise is int && after.counterPaise > 0 && after.counterPaise <= 100000000
+                  && offerKeysSame(['counterPaise']))
+              || (before.status == 'pending' && after.status == 'selected' && offerKeysSame([])
+                  && get(docPath('loads', before.loadId)).data.status == 'open')
+              || (before.status == 'selected' && after.status == 'pending' && offerKeysSame([]))
+              || (before.status in ['pending', 'selected'] && after.status == 'rejected' && offerKeysSame([])));
+    }
+
+    match /offers/{offerId} {
+      allow read: if signedIn()
+          && (resource.data.driverId == request.auth.uid || resource.data.customerId == request.auth.uid);
+      allow create: if signedIn() && validOfferCreate(offerId);
+      allow update: if signedIn() && (driverOfferUpdate(offerId) || customerOfferUpdate());
       allow delete: if false;
     }
 

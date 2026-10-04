@@ -9,6 +9,7 @@ import 'accept_load.dart';
 import 'load_card.dart';
 import '../../core/services/vehicle_type_service.dart';
 import '../../core/widgets/logistics_labels.dart';
+import '../../driver/make_offer.dart';
 
 /// Accept button wired to the full accept flow, with its own busy state.
 class AcceptLoadButton extends StatefulWidget {
@@ -37,8 +38,17 @@ class _AcceptLoadButtonState extends State<AcceptLoadButton> {
 
   @override
   Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(child: _acceptButton()),
+        const SizedBox(width: 8),
+        MakeOfferButton(load: widget.load),
+      ],
+    );
+  }
+
+  Widget _acceptButton() {
     return SizedBox(
-      width: double.infinity,
       height: 46,
       child: FilledButton.icon(
         onPressed: _busy ? null : _accept,
