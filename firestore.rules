@@ -79,6 +79,17 @@ service cloud.firestore {
               && d.lastLocation.updatedAt == request.time);
     }
 
+    // identityHashes: type -> identity_index id (see identity_index below).
+    function validIdentityHashes(d) {
+      return !('identityHashes' in d)
+          || (d.identityHashes is map
+              && d.identityHashes.keys().hasOnly(['dl', 'pan', 'rc', 'gst'])
+              && d.identityHashes.get('dl', '0').matches('^[0-9a-f]{64}$|^0$')
+              && d.identityHashes.get('pan', '0').matches('^[0-9a-f]{64}$|^0$')
+              && d.identityHashes.get('rc', '0').matches('^[0-9a-f]{64}$|^0$')
+              && d.identityHashes.get('gst', '0').matches('^[0-9a-f]{64}$|^0$'));
+    }
+
     // Anti-fraud fields. riskTier/riskReason/riskUpdatedAt are admin-only;
     // cancelCount only goes up by one (see cancelCounted()).
     function riskFieldsAbsent(d) {
@@ -152,13 +163,13 @@ service cloud.firestore {
     match /users/{userId} {
       allow read: if isUser(userId) || isAdmin();
       allow create: if isUser(userId) && verificationInitOk(request.resource.data)
-          && validKyc(request.resource.data) && validLastLocation(request.resource.data) && validRole(request.resource.data.get('role', null))
+          && validKyc(request.resource.data) && validIdentityHashes(request.resource.data) && validLastLocation(request.resource.data) && validRole(request.resource.data.get('role', null))
           && (request.resource.data.get('role', null) == null
               || request.resource.data.get('selectedRole', request.resource.data.role) == request.resource.data.role)
           && validEmergencyContacts(request.resource.data) && riskFieldsAbsent(request.resource.data)
           && validPrefs(request.resource.data) && validBusiness(request.resource.data);
       allow update: if adminVerificationUpdate() || adminRiskUpdate() || (isUser(userId)
-          && roleLockOk() && validKyc(request.resource.data) && validLastLocation(request.resource.data)
+          && roleLockOk() && validKyc(request.resource.data) && validIdentityHashes(request.resource.data) && validLastLocation(request.resource.data)
           && validEmergencyContacts(request.resource.data)
           && validPrefs(request.resource.data) && validBusiness(request.resource.data)
           && ownerRiskFieldsUntouched()
@@ -288,23 +299,59 @@ service cloud.firestore {
       allow delete: if signedIn() && resource.data.ownerId == request.auth.uid;
     }
 
-    // identity_index/{sha256(type + number)} = {uid, role, createdAt}. One
-    // document (licence, PAN, RC, GST) can belong to one account only: the id
-    // is derived from the number, so a second create is an update and fails.
-    // Only admins change or free an entry. get is open to signed-in users so
-    // the app can show a clear "already registered" message; list is closed
-    // and the id is a hash, so it does not reveal the number.
+    // identity_index/{sha256(type + number)} = {uid, role, type, createdAt}.
+    // One document (licence, PAN, RC, GST) can belong to one account only: the
+    // id is derived from the number, so a second create is an update and
+    // fails. The profile points at its entries with users.identityHashes
+    // (type -> id); an entry can only be created for the hash the profile
+    // names in the same batch. The owner may delete an entry only when the
+    // profile now names another entry that exists and is theirs (a changed
+    // number), or - for the optional GST only - names none. Admins can change
+    // or free any entry. get is open to signed-in users so the app can show a
+    // clear "already registered" message; list is closed and the id is a
+    // hash, so it does not reveal the number.
     // LATER(paid): Cloud Function with an HMAC secret instead of a plain hash.
+    function identityHashAfter(type) {
+      return getAfter(docPath('users', request.auth.uid)).data.get('identityHashes', {}).get(type, '');
+    }
+
+    function ownsIdentityAfter(h) {
+      return h is string && h.matches('^[0-9a-f]{64}$')
+          && existsAfter(docPath('identity_index', h))
+          && getAfter(docPath('identity_index', h)).data.uid == request.auth.uid;
+    }
+
+    function identityReplaced(type, hash) {
+      let h = identityHashAfter(type);
+      return h != hash && (ownsIdentityAfter(h) || (type == 'gst' && h == ''));
+    }
+
+    // Entries written before the type field existed: the owner may drop one
+    // only while the profile names at least one other entry of theirs.
+    function legacyIdentityReplaced(hash) {
+      return (identityHashAfter('dl') != hash && ownsIdentityAfter(identityHashAfter('dl')))
+          || (identityHashAfter('pan') != hash && ownsIdentityAfter(identityHashAfter('pan')))
+          || (identityHashAfter('rc') != hash && ownsIdentityAfter(identityHashAfter('rc')))
+          || (identityHashAfter('gst') != hash && ownsIdentityAfter(identityHashAfter('gst')));
+    }
+
     match /identity_index/{hash} {
       allow get: if signedIn();
       allow list: if false;
       allow create: if signedIn()
-          && request.resource.data.keys().hasOnly(['uid', 'role', 'createdAt'])
+          && request.resource.data.keys().hasOnly(['uid', 'role', 'type', 'createdAt'])
           && request.resource.data.uid == request.auth.uid
           && request.resource.data.role in ['customer', 'driver']
+          && request.resource.data.type in ['dl', 'pan', 'rc', 'gst']
           && request.resource.data.role == getAfter(docPath('users', request.auth.uid)).data.get('role', request.resource.data.role)
-          && hash.matches('^[0-9a-f]{64}$');
-      allow update, delete: if isAdmin();
+          && hash.matches('^[0-9a-f]{64}$')
+          && identityHashAfter(request.resource.data.type) == hash;
+      allow update: if isAdmin();
+      allow delete: if isAdmin()
+          || (signedIn() && resource.data.uid == request.auth.uid
+              && (resource.data.get('type', null) == null
+                  ? legacyIdentityReplaced(hash)
+                  : identityReplaced(resource.data.type, hash)));
     }
 
     // vehicle_numbers/{number}: {ownerId, vehicleId}. Created next to the

@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -13,7 +14,11 @@ import 'start_resolvers.dart';
 /// digits only) and PAN. Home and Loads stay closed until this is saved
 /// (see [resolveDriverStart]). LATER(paid): verify with Parivahan / NSDL.
 class DriverKycScreen extends StatefulWidget {
-  const DriverKycScreen({super.key});
+  /// Edit mode (from Profile): fields start filled, the screen can be left,
+  /// and saving goes back instead of through the start router.
+  final bool edit;
+
+  const DriverKycScreen({super.key, this.edit = false});
 
   @override
   State<DriverKycScreen> createState() => _DriverKycScreenState();
@@ -33,8 +38,21 @@ class _DriverKycScreenState extends State<DriverKycScreen> {
   void initState() {
     super.initState();
     UserService.getUser().then((u) {
+      if (!mounted) return;
+      final k = u?['driverKyc'];
+      if (widget.edit && k is Map) {
+        final exp = k['dlExpiry'];
+        setState(() {
+          _dlCtrl.text = k['dlNumber']?.toString() ?? '';
+          _rcCtrl.text = k['rcNumber']?.toString() ?? '';
+          _aadhaarCtrl.text = k['aadhaarLast4']?.toString() ?? '';
+          _panCtrl.text = k['pan']?.toString() ?? '';
+          if (exp is Timestamp) _dlExpiry = exp.toDate();
+        });
+        return;
+      }
       final v = u?['vehicleNumber']?.toString() ?? '';
-      if (mounted && _rcCtrl.text.isEmpty) _rcCtrl.text = v;
+      if (_rcCtrl.text.isEmpty) _rcCtrl.text = v;
     }).catchError((_) {});
   }
 
@@ -74,6 +92,13 @@ class _DriverKycScreenState extends State<DriverKycScreen> {
         pan: _panCtrl.text,
       ));
       if (!mounted) return;
+      if (widget.edit) {
+        Navigator.of(context).pop(true);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(tr(context, 'kycUpdated')), behavior: SnackBarBehavior.floating),
+        );
+        return;
+      }
       final next = await resolveDriverStart();
       if (!mounted) return;
       Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (_) => next), (route) => false);
@@ -111,17 +136,17 @@ class _DriverKycScreenState extends State<DriverKycScreen> {
   Widget build(BuildContext context) {
     final upper = [UpperCaseTextFormatter(), FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z0-9 -]'))];
     return PopScope(
-      canPop: false,
+      canPop: widget.edit,
       child: Scaffold(
         backgroundColor: const Color(0xFFF6F8FC),
         appBar: AppBar(
           backgroundColor: const Color(0xFFF6F8FC),
           elevation: 0,
           scrolledUnderElevation: 0,
-          automaticallyImplyLeading: false,
+          automaticallyImplyLeading: widget.edit,
           actions: [
             const LanguageButton(),
-            TextButton(onPressed: _saving ? null : _logout, child: Text(tr(context, 'logout'))),
+            if (!widget.edit) TextButton(onPressed: _saving ? null : _logout, child: Text(tr(context, 'logout'))),
           ],
         ),
         body: SafeArea(

@@ -43,22 +43,50 @@ class IdentityIndex {
     }
   }
 
-  /// Adds create-only index writes for [claims] to [batch]. Call
-  /// [assertAvailable] first; the rules also refuse a second create, so a
-  /// race still fails the whole batch.
-  static Future<void> addClaims(
-    WriteBatch batch,
-    Map<IdentityType, String> claims, {
+  /// Registers [newNumbers] for [uid] and drops the entries of [oldNumbers]
+  /// that they replace, all inside [batch]. A null or empty new number clears
+  /// the claim (only GST may be cleared; the rules refuse the rest). Throws
+  /// [DuplicateIdentityException] if another account already holds a new
+  /// number. Returns the `identityHashes` patch to merge into the user
+  /// document in the same batch (the rules read it).
+  static Future<Map<String, Object?>> applyChanges(
+    WriteBatch batch, {
     required String uid,
     required String role,
+    required Map<IdentityType, String?> oldNumbers,
+    required Map<IdentityType, String?> newNumbers,
   }) async {
     final db = Backend.db;
-    for (final e in claims.entries) {
-      final ref = db.collection(collection).doc(docId(e.key, e.value));
-      final snap = await ref.get();
-      if (snap.exists) continue; // already ours (assertAvailable checked)
-      batch.set(ref, {'uid': uid, 'role': role, 'createdAt': FieldValue.serverTimestamp()});
+    String? clean(String? n) {
+      final v = n == null ? '' : normaliseDocNumber(n);
+      return v.isEmpty ? null : v;
     }
+
+    final patch = <String, Object?>{};
+    for (final e in newNumbers.entries) {
+      final type = e.key;
+      final next = clean(e.value);
+      final prev = clean(oldNumbers[type]);
+
+      if (next != null) {
+        final ref = db.collection(collection).doc(docId(type, next));
+        final snap = await ref.get();
+        if (snap.exists && snap.data()?['uid'] != uid) throw DuplicateIdentityException(type);
+        if (!snap.exists) {
+          batch.set(ref, {'uid': uid, 'role': role, 'type': type.name, 'createdAt': FieldValue.serverTimestamp()});
+        }
+        patch[type.name] = docId(type, next);
+      } else {
+        patch[type.name] = FieldValue.delete();
+      }
+
+      if (prev != null && prev != next) {
+        final oldRef = db.collection(collection).doc(docId(type, prev));
+        final oldSnap = await oldRef.get();
+        if (oldSnap.exists && oldSnap.data()?['uid'] == uid) batch.delete(oldRef);
+      }
+    }
+    return patch;
   }
 }
 

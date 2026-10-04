@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../core/profile/profile_nav_tile.dart';
+import '../auth/driver_kyc_screen.dart';
 import 'driver_analytics_screen.dart';
 
 import '../core/models/booking.dart';
@@ -339,6 +340,12 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
           icon: Icons.bar_chart_rounded,
           titleKey: 'myAnalytics',
           screen: (_) => const DriverAnalyticsScreen(),
+        ),
+        ProfileNavTile(
+          key: const ValueKey('profileEditDocuments'),
+          icon: Icons.badge_outlined,
+          titleKey: 'editDocuments',
+          screen: (_) => const DriverKycScreen(edit: true),
         ),
       ]),
     ];

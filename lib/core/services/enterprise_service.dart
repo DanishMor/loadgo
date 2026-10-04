@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../enterprise/bulk_loads.dart';
+import '../identity/identity_index.dart';
 import '../enterprise/route_report.dart';
 import '../enterprise/shipment_timeline.dart';
 import '../enterprise/validators.dart';
@@ -49,7 +50,18 @@ class EnterpriseService {
   static Future<void> saveBusiness(BusinessProfile b) async {
     final clean = BusinessProfile(legalName: b.legalName.trim(), gstin: normaliseGstin(b.gstin), address: b.address.trim());
     if (!clean.gstinOk) throw InvalidTradeFieldException('gstin');
-    await _user.set({'business': clean.toMap(), 'updatedAt': FieldValue.serverTimestamp()}, SetOptions(merge: true));
+    // One GSTIN per account: swap the identity_index entry in the same batch.
+    final snap = await _user.get();
+    final batch = Backend.db.batch();
+    final hashes = await IdentityIndex.applyChanges(
+      batch,
+      uid: Backend.requireUid(),
+      role: (snap.data()?['role'] as String?) ?? 'customer',
+      oldNumbers: {IdentityType.gst: (snap.data()?['business'] as Map?)?['gstin'] as String?},
+      newNumbers: {IdentityType.gst: clean.gstin},
+    );
+    batch.set(_user, {'business': clean.toMap(), 'identityHashes': hashes, 'updatedAt': FieldValue.serverTimestamp()}, SetOptions(merge: true));
+    await batch.commit();
   }
 
   // ---- branches ----

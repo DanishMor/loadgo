@@ -1,4 +1,5 @@
 // Security rules tests. Run with: npm test  (starts the Firestore emulator)
+import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { after, before, beforeEach, describe, test } from 'node:test';
 import { assertFails, assertSucceeds, initializeTestEnvironment } from '@firebase/rules-unit-testing';
@@ -171,12 +172,19 @@ describe('driver KYC and identity index', () => {
     await seedUser('d1', 'driver');
     await seedUser('d2', 'driver');
     await seedUser('c1', 'customer');
-    const entry = (uid, role) => ({ uid, role, createdAt: serverTimestamp() });
-    await assertSucceeds(setDoc(doc(as('d1'), 'identity_index', H1), entry('d1', 'driver')));
-    // the same document again: by another account, by the same account, as another role
-    await assertFails(setDoc(doc(as('d2'), 'identity_index', H1), entry('d2', 'driver')));
+    const entry = (uid, role) => ({ uid, role, type: 'dl', createdAt: serverTimestamp() });
+    const claim = async (uid, hash, role = 'driver') => {
+      const db = as(uid);
+      const b = writeBatch(db);
+      b.update(doc(db, 'users', uid), { identityHashes: { dl: hash } });
+      b.set(doc(db, 'identity_index', hash), { uid, role, type: 'dl', createdAt: serverTimestamp() });
+      return b.commit();
+    };
+    await assertSucceeds(claim('d1', H1));
+    await assertFails(claim('d2', H1));
+    // the same document again: by the same account, as another role
     await assertFails(setDoc(doc(as('d1'), 'identity_index', H1), entry('d1', 'driver')));
-    await assertFails(setDoc(doc(as('c1'), 'identity_index', H1), entry('c1', 'customer')));
+    await assertFails(claim('c1', H1, 'customer'));
     // cannot claim for someone else, with the wrong role, extra fields or a plain-text id
     await assertFails(setDoc(doc(as('d2'), 'identity_index', H2), entry('d1', 'driver')));
     await assertFails(setDoc(doc(as('d2'), 'identity_index', H2), entry('d2', 'customer')));
@@ -202,8 +210,82 @@ describe('driver KYC and identity index', () => {
     const db = as('d1');
     const batch = writeBatch(db);
     batch.set(doc(db, 'users', 'd1'), { driverKyc: KYC, kycComplete: true }, { merge: true });
-    batch.set(doc(db, 'identity_index', H1), { uid: 'd1', role: 'driver', createdAt: serverTimestamp() });
+    batch.update(doc(db, 'users', 'd1'), { identityHashes: { dl: H1 } });
+    batch.set(doc(db, 'identity_index', H1), { uid: 'd1', role: 'driver', type: 'dl', createdAt: serverTimestamp() });
     await assertSucceeds(batch.commit());
+  });
+});
+
+describe('identity edits', () => {
+  const H = (c) => c.repeat(64);
+  const seedDriver = (uid, hashes) =>
+    seed(async (db) => {
+      await setDoc(doc(db, 'users', uid), { role: 'driver', selectedRole: 'driver', identityHashes: hashes });
+      for (const [type, h] of Object.entries(hashes)) await setDoc(doc(db, 'identity_index', h), { uid, role: 'driver', type });
+    });
+  const edit = (uid, { hashes, create = [], del = [] }) => {
+    const db = as(uid);
+    const b = writeBatch(db);
+    b.update(doc(db, 'users', uid), { identityHashes: hashes });
+    for (const [type, h] of create) b.set(doc(db, 'identity_index', h), { uid, role: 'driver', type, createdAt: serverTimestamp() });
+    for (const h of del) b.delete(doc(db, 'identity_index', h));
+    return b.commit();
+  };
+
+  test('changing a number: delete old + create new in one batch works', async () => {
+    await seedDriver('d1', { dl: H('a'), pan: H('b') });
+    await assertSucceeds(edit('d1', { hashes: { dl: H('c'), pan: H('b') }, create: [['dl', H('c')]], del: [H('a')] }));
+    let gone;
+    await seed(async (db) => { gone = !(await getDoc(doc(db, 'identity_index', H('a')))).exists(); });
+    assert.equal(gone, true);
+  });
+
+  test('deleting without a replacement is refused (cannot free a number to reuse it elsewhere)', async () => {
+    await seedDriver('d1', { dl: H('a'), pan: H('b') });
+    await assertFails(deleteDoc(doc(as('d1'), 'identity_index', H('a'))));
+    await assertFails(edit('d1', { hashes: { dl: H('a'), pan: H('b') }, del: [H('a')] }));
+    await assertFails(edit('d1', { hashes: { dl: H('d'), pan: H('b') }, del: [H('a')] }));
+    await assertFails(edit('d1', { hashes: { pan: H('b') }, del: [H('a')] }));
+  });
+
+  test('a replacement that belongs to someone else does not count', async () => {
+    await seedDriver('d1', { dl: H('a') });
+    await seedDriver('d2', { dl: H('e') });
+    await assertFails(edit('d1', { hashes: { dl: H('e') }, del: [H('a')] }));
+  });
+
+  test('creating an entry the profile does not name is refused', async () => {
+    await seedDriver('d1', { dl: H('a') });
+    await assertFails(edit('d1', { hashes: { dl: H('a') }, create: [['pan', H('f')]] }));
+  });
+
+  test('GST can be cleared, other documents cannot', async () => {
+    await seed(async (db) => {
+      await setDoc(doc(db, 'users', 'c1'), { role: 'customer', selectedRole: 'customer', identityHashes: { gst: H('9') } });
+      await setDoc(doc(db, 'identity_index', H('9')), { uid: 'c1', role: 'customer', type: 'gst' });
+    });
+    const db = as('c1');
+    const b = writeBatch(db);
+    b.update(doc(db, 'users', 'c1'), { identityHashes: {} });
+    b.delete(doc(db, 'identity_index', H('9')));
+    await assertSucceeds(b.commit());
+  });
+
+  test('entries made before the type field existed can be replaced, not just dropped', async () => {
+    await seed(async (db) => {
+      await setDoc(doc(db, 'users', 'd1'), { role: 'driver', selectedRole: 'driver' });
+      await setDoc(doc(db, 'identity_index', H('1')), { uid: 'd1', role: 'driver' });
+    });
+    await assertFails(deleteDoc(doc(as('d1'), 'identity_index', H('1'))));
+    await assertSucceeds(edit('d1', { hashes: { dl: H('2') }, create: [['dl', H('2')]], del: [H('1')] }));
+  });
+
+  test('identityHashes must be known keys with hash values', async () => {
+    await seed((db) => setDoc(doc(db, 'users', 'd1'), { role: 'driver', selectedRole: 'driver' }));
+    const ref = doc(as('d1'), 'users', 'd1');
+    await assertFails(updateDoc(ref, { identityHashes: { aadhaar: H('a') } }));
+    await assertFails(updateDoc(ref, { identityHashes: { dl: '1234' } }));
+    await assertSucceeds(updateDoc(ref, { identityHashes: { dl: H('a') } }));
   });
 });
 

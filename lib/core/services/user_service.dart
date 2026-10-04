@@ -80,8 +80,7 @@ class UserService {
 
     // GST is optional; when given it must not belong to another account.
     final gst = normaliseGstin(gstin);
-    final claims = {if (gst.isNotEmpty) IdentityType.gst: gst};
-    await IdentityIndex.assertAvailable(claims, uid: user.uid);
+    final before = (await ref.get()).data();
 
     final data = <String, dynamic>{
       'phone': user.phoneNumber,
@@ -99,35 +98,57 @@ class UserService {
     if (gst.isNotEmpty) data['business'] = {'legalName': companyName, 'gstin': gst};
 
     final batch = _db.batch();
+    final hashes = await IdentityIndex.applyChanges(
+      batch,
+      uid: user.uid,
+      role: 'customer',
+      oldNumbers: {IdentityType.gst: (before?['business'] as Map?)?['gstin'] as String?},
+      newNumbers: {IdentityType.gst: gst},
+    );
+    data['identityHashes'] = hashes;
     batch.set(ref, data, SetOptions(merge: true));
-    await IdentityIndex.addClaims(batch, claims, uid: user.uid, role: 'customer');
     await batch.commit();
   }
 
-  /// Driver onboarding documents. Saved together with their identity index
-  /// entries, so a document already used by another account is refused
-  /// ([DuplicateIdentityException]) and nothing is written. Only the last four
+  /// Driver onboarding documents (also used to edit them later). Saved
+  /// together with their identity index entries, so a document already used
+  /// by another account is refused ([DuplicateIdentityException]) and nothing
+  /// is written. Only the last four
   /// Aadhaar digits ever reach Firestore.
   static Future<void> saveDriverKyc(DriverKyc kyc) async {
     final uid = Backend.requireUid();
-    final claims = {
-      IdentityType.dl: kyc.dlNumber,
-      IdentityType.pan: kyc.pan,
-      IdentityType.rc: kyc.rcNumber,
-    };
-    await IdentityIndex.assertAvailable(claims, uid: uid);
+    final ref = _db.collection('users').doc(uid);
+    final before = ((await ref.get()).data()?['driverKyc'] as Map?) ?? const {};
 
+    // First save and later edits go the same way: the new numbers are
+    // claimed and the ones they replace are released in one batch.
     final batch = _db.batch();
+    final hashes = await IdentityIndex.applyChanges(
+      batch,
+      uid: uid,
+      role: 'driver',
+      oldNumbers: {
+        IdentityType.dl: before['dlNumber'] as String?,
+        IdentityType.pan: before['pan'] as String?,
+        IdentityType.rc: before['rcNumber'] as String?,
+      },
+      newNumbers: {
+        IdentityType.dl: kyc.dlNumber,
+        IdentityType.pan: kyc.pan,
+        IdentityType.rc: kyc.rcNumber,
+      },
+    );
     batch.set(
-      _db.collection('users').doc(uid),
+      ref,
       {
         'driverKyc': kyc.toMap(),
         'kycComplete': true,
+        'identityHashes': hashes,
+        if (before.isNotEmpty) 'kycEditedAt': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp(),
       },
       SetOptions(merge: true),
     );
-    await IdentityIndex.addClaims(batch, claims, uid: uid, role: 'driver');
     await batch.commit();
   }
 

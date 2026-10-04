@@ -10,6 +10,8 @@ import 'package:transport_app/core/identity/identity_index.dart';
 import 'package:transport_app/core/identity/kyc_validators.dart';
 import 'package:transport_app/core/l10n/l10n.dart';
 import 'package:transport_app/core/services/backend.dart';
+import 'package:transport_app/core/services/enterprise_service.dart';
+import 'package:transport_app/core/models/enterprise.dart';
 import 'package:transport_app/core/services/user_service.dart';
 import 'package:transport_app/driver/driver_home_screen.dart';
 
@@ -113,6 +115,84 @@ void main() {
           expect(msg.contains('{doc}'), isFalse, reason: '${lang.name} $k');
         }
       }
+    });
+  });
+
+  group('editing a document', () {
+    test('changing the DL frees the old entry and claims the new one in one go', () async {
+      await UserService.saveDriverKyc(kyc());
+      final oldId = IdentityIndex.docId(IdentityType.dl, 'MH1220110012345');
+      expect((await db.collection('identity_index').doc(oldId).get()).exists, isTrue);
+
+      await UserService.saveDriverKyc(kyc(dl: 'KA01 2015 0099999'));
+      expect((await db.collection('identity_index').doc(oldId).get()).exists, isFalse);
+      final newId = IdentityIndex.docId(IdentityType.dl, 'KA0120150099999');
+      final entry = (await db.collection('identity_index').doc(newId).get()).data()!;
+      expect(entry['uid'], 'd1');
+      expect(entry['type'], 'dl');
+      expect((await db.collection('identity_index').get()).docs.length, 3);
+      final user = (await db.collection('users').doc('d1').get()).data()!;
+      expect((user['identityHashes'] as Map)['dl'], newId);
+      expect(user['kycEditedAt'], isNotNull);
+    });
+
+    test('the freed number can be used by someone else, the new one cannot', () async {
+      await UserService.saveDriverKyc(kyc());
+      await UserService.saveDriverKyc(kyc(dl: 'KA01 2015 0099999'));
+      uid = 'd2';
+      await UserService.saveDriverKyc(kyc(dl: 'MH12 2011 0012345', pan: 'PPPPP1111P', rc: 'GJ01AB1111'));
+      uid = 'd3';
+      await expectLater(
+        UserService.saveDriverKyc(kyc(dl: 'KA01 2015 0099999', pan: 'QQQQQ2222Q', rc: 'GJ01AB2222')),
+        throwsA(isA<DuplicateIdentityException>().having((e) => e.type, 'type', IdentityType.dl)),
+      );
+    });
+
+    test('a duplicate on edit changes nothing', () async {
+      await UserService.saveDriverKyc(kyc());
+      uid = 'd2';
+      await UserService.saveDriverKyc(kyc(dl: 'KA01 2015 0099999', pan: 'PPPPP1111P', rc: 'GJ01AB1111'));
+      await expectLater(
+        UserService.saveDriverKyc(kyc(dl: 'KA01 2015 0099999', pan: 'ABCDE1234F', rc: 'GJ01AB1111')),
+        throwsA(isA<DuplicateIdentityException>().having((e) => e.type, 'type', IdentityType.pan)),
+      );
+      expect(((await db.collection('users').doc('d2').get()).data()!['driverKyc'] as Map)['pan'], 'PPPPP1111P');
+      expect((await db.collection('identity_index').get()).docs.length, 6);
+    });
+
+    test('GSTIN edits move the entry, clearing it frees it, another account is blocked', () async {
+      await db.collection('users').doc('c1').set({'role': 'customer'});
+      uid = 'c1';
+      await EnterpriseService.saveBusiness(const BusinessProfile(legalName: 'A', gstin: '27ABCDE1234F1Z5', address: ''));
+      final id1 = IdentityIndex.docId(IdentityType.gst, '27ABCDE1234F1Z5');
+      expect((await db.collection('identity_index').doc(id1).get()).data()!['type'], 'gst');
+
+      await EnterpriseService.saveBusiness(const BusinessProfile(legalName: 'A', gstin: '29ABCDE1234F1Z3', address: ''));
+      expect((await db.collection('identity_index').doc(id1).get()).exists, isFalse);
+
+      await db.collection('users').doc('c2').set({'role': 'customer'});
+      uid = 'c2';
+      await expectLater(
+        EnterpriseService.saveBusiness(const BusinessProfile(legalName: 'B', gstin: '29ABCDE1234F1Z3', address: '')),
+        throwsA(isA<DuplicateIdentityException>()),
+      );
+
+      uid = 'c1';
+      await EnterpriseService.saveBusiness(const BusinessProfile(legalName: 'A', gstin: '', address: ''));
+      expect((await db.collection('identity_index').get()).docs, isEmpty);
+      expect(((await db.collection('users').doc('c1').get()).data()!['identityHashes'] as Map).containsKey('gst'), isFalse);
+    });
+
+    testWidgets('edit screen is prefilled and saves changes back', (tester) async {
+      languageNotifier.value = AppLanguage.english;
+      await tester.runAsync(() => UserService.saveDriverKyc(kyc()));
+      await tester.pumpWidget(LanguageScope(
+        notifier: languageNotifier,
+        child: const MaterialApp(home: DriverKycScreen(edit: true)),
+      ));
+      await settle(tester);
+      expect(tester.widget<TextFormField>(find.byKey(const ValueKey('kycDl'))).controller!.text, 'MH1220110012345');
+      expect(tester.widget<TextFormField>(find.byKey(const ValueKey('kycPan'))).controller!.text, 'ABCDE1234F');
     });
   });
 
