@@ -11,6 +11,7 @@ import 'location_widgets.dart';
 import '../../core/services/pricing_service.dart';
 import '../../driver/trip_proof_dialogs.dart';
 import '../../core/documents/trip_document_buttons.dart';
+import '../../driver/trip_safety_card.dart';
 
 void openDriverTrip(BuildContext context, String bookingId) {
   Navigator.of(context).push(MaterialPageRoute(builder: (_) => DriverTripScreen(bookingId: bookingId)));
@@ -32,6 +33,10 @@ class DriverTripScreen extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(20, 10, 20, 100),
         children: [
           BookingSummary(booking: booking),
+          if (booking.isActive) ...[
+            const SizedBox(height: 14),
+            TripSafetyCard(booking: booking),
+          ],
           if (booking.isInTransit) ...[
             const SizedBox(height: 14),
             LocationSharingCard(booking: booking),

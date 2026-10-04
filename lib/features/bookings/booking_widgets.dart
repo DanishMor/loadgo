@@ -97,6 +97,9 @@ class BookingSummary extends StatelessWidget {
           if (b.fareEstimate != null)
             _row(Icons.calculate_outlined, tr(context, 'fareEstimate'), formatPaise(b.fareEstimate!)),
           if (b.notes.isNotEmpty) _row(Icons.notes_rounded, tr(context, 'notes'), b.notes),
+          if (b.breakdown case final bd?)
+            _row(Icons.car_crash_outlined, tr(context, 'notifBreakdown'),
+                [if (bd.note.isNotEmpty) bd.note, if (bd.replacementRequested) tr(context, 'replacementRequested')].join(' • ')),
           if (b.cancellation case final c? when c.chargePaise > 0)
             _row(Icons.receipt_long_outlined, tr(context, 'statusCancelled'),
                 trf(context, 'cancelChargeRecorded', {'amount': formatPaise(c.chargePaise)})),

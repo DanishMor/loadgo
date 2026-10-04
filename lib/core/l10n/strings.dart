@@ -9,6 +9,7 @@ import 'chat_strings.dart';
 import 'load_strings.dart';
 import 'offer_strings.dart';
 import 'pricing_strings.dart';
+import 'support_strings.dart';
 import 'trip_strings.dart';
 import 'vehicle_strings.dart';
 
@@ -20,6 +21,7 @@ const List<Map<String, List<String>>> stringTables = [
   offerStrings,
   tripStrings,
   chatStrings,
+  supportStrings,
 ];
 
 final Map<String, List<String>> extraStrings = {

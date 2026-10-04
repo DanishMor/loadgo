@@ -9,6 +9,7 @@ import '../../core/widgets/paged_live_stream.dart';
 import 'load_card.dart';
 import 'post_load_screen.dart';
 import '../../customer/load_offers_screen.dart';
+import '../../core/support/support_screens.dart';
 
 /// Customer "My Loads" tab: live list of the customer's posted loads.
 class MyLoadsView extends StatefulWidget {
@@ -149,7 +150,7 @@ class _ContactSupportNote extends StatelessWidget {
             child: Text(tr(context, 'cannotCancelMatched'), style: const TextStyle(fontSize: 13, color: AppColors.body)),
           ),
           TextButton(
-            onPressed: () => showSnack(context, tr(context, 'supportSoon')),
+            onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const NewTicketScreen())),
             child: Text(tr(context, 'contactSupport')),
           ),
         ],

@@ -757,3 +757,84 @@ describe('booking chat', () => {
     await assertSucceeds(updateDoc(doc(asAdmin(), 'reports', 'r1'), { status: 'resolved', resolvedBy: 'admin1' }));
   });
 });
+
+describe('support tickets', () => {
+  const T = (uid, extra = {}) => ({
+    userId: uid, category: 'booking_issue', priority: 'normal', status: 'open', subject: 'Driver late',
+    description: '', escalationLevel: 0, createdAt: serverTimestamp(), updatedAt: serverTimestamp(), ...extra,
+  });
+  const reply = (uid, extra = {}) => ({ authorId: uid, text: 'Any update?', fromAdmin: false, createdAt: serverTimestamp(), ...extra });
+
+  test('users open their own tickets; disputes must name their booking', async () => {
+    await seedBooking();
+    await assertSucceeds(setDoc(doc(as('customer1'), 'tickets', 't1'), T('customer1')));
+    await assertSucceeds(setDoc(doc(as('customer1'), 'tickets', 't2'), T('customer1', { category: 'dispute', bookingId: 'L1' })));
+    await assertFails(setDoc(doc(as('customer1'), 'tickets', 't3'), T('customer1', { category: 'dispute' })));
+    await assertFails(setDoc(doc(as('driver2'), 'tickets', 't4'), T('driver2', { bookingId: 'L1' })));
+    await assertFails(setDoc(doc(as('customer1'), 'tickets', 't5'), T('driver1')));
+    await assertFails(setDoc(doc(as('customer1'), 'tickets', 't6'), T('customer1', { status: 'resolved' })));
+    await assertFails(setDoc(doc(as('customer1'), 'tickets', 't7'), T('customer1', { escalationLevel: 2 })));
+    await assertFails(getDoc(doc(as('driver1'), 'tickets', 't1')));
+    await assertSucceeds(getDoc(doc(asAdmin(), 'tickets', 't1')));
+  });
+
+  test('escalate one level at a time up to 3, then close; admins manage status', async () => {
+    await seed((db) => setDoc(doc(db, 'tickets', 't1'), T('customer1')));
+    const db = as('customer1');
+    await assertFails(updateDoc(doc(db, 'tickets', 't1'), { escalationLevel: 2 }));
+    for (const level of [1, 2, 3]) await assertSucceeds(updateDoc(doc(db, 'tickets', 't1'), { escalationLevel: level }));
+    await assertFails(updateDoc(doc(db, 'tickets', 't1'), { escalationLevel: 4 }));
+    await assertFails(updateDoc(doc(db, 'tickets', 't1'), { status: 'resolved' }));
+    await assertFails(updateDoc(doc(db, 'tickets', 't1'), { priority: 'urgent' }));
+    await assertSucceeds(updateDoc(doc(asAdmin(), 'tickets', 't1'), { status: 'in_progress', priority: 'high' }));
+    await assertSucceeds(updateDoc(doc(db, 'tickets', 't1'), { status: 'closed' }));
+  });
+
+  test('replies: owner while open, admin as support', async () => {
+    await seed((db) => setDoc(doc(db, 'tickets', 't1'), T('customer1')));
+    const replies = (db) => collection(db, 'tickets', 't1', 'replies');
+    await assertSucceeds(addDoc(replies(as('customer1')), reply('customer1')));
+    await assertFails(addDoc(replies(as('customer1')), reply('customer1', { fromAdmin: true })));
+    await assertFails(addDoc(replies(as('driver1')), reply('driver1')));
+    await assertSucceeds(addDoc(replies(asAdmin()), reply('admin1', { fromAdmin: true })));
+    await assertSucceeds(getDocs(replies(as('customer1'))));
+    await seed((db) => updateDoc(doc(db, 'tickets', 't1'), { status: 'closed' }));
+    await assertFails(addDoc(replies(as('customer1')), reply('customer1')));
+  });
+});
+
+describe('safety', () => {
+  const sos = (uid, extra = {}) => ({ userId: uid, status: 'open', location: new GeoPoint(28.6, 77.2), createdAt: serverTimestamp(), ...extra });
+
+  test('SOS alerts: own, optionally tied to own booking; admins handle them', async () => {
+    await seedBooking();
+    await assertSucceeds(setDoc(doc(as('driver1'), 'sos_alerts', 's1'), sos('driver1', { bookingId: 'L1' })));
+    await assertSucceeds(setDoc(doc(as('driver2'), 'sos_alerts', 's2'), sos('driver2', { location: null })));
+    await assertFails(setDoc(doc(as('driver2'), 'sos_alerts', 's3'), sos('driver2', { bookingId: 'L1' })));
+    await assertFails(setDoc(doc(as('driver2'), 'sos_alerts', 's4'), sos('driver1')));
+    await assertFails(getDoc(doc(as('customer1'), 'sos_alerts', 's1')));
+    await assertSucceeds(updateDoc(doc(asAdmin(), 'sos_alerts', 's1'), { status: 'acknowledged', handledBy: 'admin1' }));
+    await assertFails(updateDoc(doc(as('driver1'), 'sos_alerts', 's1'), { status: 'resolved' }));
+  });
+
+  test('emergency contacts: at most three', async () => {
+    const c = (n) => Array.from({ length: n }, (_, i) => ({ name: `C${i}`, phone: '+919800000000' }));
+    await assertSucceeds(setDoc(doc(as('u1'), 'users', 'u1'), { phone: '+91', emergencyContacts: c(3) }));
+    await assertFails(updateDoc(doc(as('u1'), 'users', 'u1'), { emergencyContacts: c(4) }));
+  });
+
+  test('breakdown: once, by the driver of an active trip, and the customer is notified', async () => {
+    await seedBooking('in_transit');
+    const d = as('driver1');
+    const report = (db, extra = {}) => {
+      const b = writeBatch(db);
+      b.update(doc(db, 'bookings', 'L1'), { breakdown: { note: 'tyre burst', replacementRequested: true, reportedAt: serverTimestamp() }, updatedAt: serverTimestamp(), ...extra });
+      b.set(doc(db, 'notifications', 'n1'), { userId: 'customer1', type: 'breakdown_reported', message: 'Delhi → Mumbai', relatedId: 'L1', read: false, createdAt: serverTimestamp() });
+      return b.commit();
+    };
+    await assertFails(report(as('customer1')));
+    await assertFails(report(d, { status: 'delivered' }));
+    await assertSucceeds(report(d));
+    await assertFails(updateDoc(doc(d, 'bookings', 'L1'), { breakdown: { note: 'again', replacementRequested: false, reportedAt: serverTimestamp() } }));
+  });
+});

@@ -14,6 +14,7 @@ String notificationTitle(BuildContext context, AppNotification n) => switch (n.t
         '${tr(context, 'notifStatusChanged')}: ${bookingStatusLabel(context, n.status ?? '')}',
       NotificationType.ratingReceived => tr(context, 'notifRatingReceived'),
       NotificationType.bookingCancelled => tr(context, 'notifBookingCancelled'),
+      NotificationType.breakdownReported => tr(context, 'notifBreakdown'),
       _ => n.type,
     };
 
@@ -22,6 +23,7 @@ IconData _iconFor(String type) => switch (type) {
       NotificationType.statusChanged => Icons.local_shipping_outlined,
       NotificationType.ratingReceived => Icons.star_outline_rounded,
       NotificationType.bookingCancelled => Icons.cancel_outlined,
+      NotificationType.breakdownReported => Icons.car_crash_outlined,
       _ => Icons.notifications_none_rounded,
     };
 

@@ -53,6 +53,9 @@ class Booking {
   final bool pickupOtpVerified;
   final bool deliveryOtpVerified;
 
+  /// Set when the driver reported a breakdown on this trip.
+  final BookingBreakdown? breakdown;
+
   /// E-way bill number (12 digits), entered by either party.
   final String ewayBillNo;
 
@@ -93,6 +96,7 @@ class Booking {
     this.pickupOtpVerified = false,
     this.deliveryOtpVerified = false,
     this.ewayBillNo = '',
+    this.breakdown,
     this.extraPickups = const [],
     this.extraDrops = const [],
     this.pickupSlot = PickupSlot.any,
@@ -145,12 +149,28 @@ class Booking {
       pickupOtpVerified: d['pickupOtp'] is String,
       deliveryOtpVerified: d['deliveryOtp'] is String,
       ewayBillNo: d['ewayBillNo'] as String? ?? '',
+      breakdown: d['breakdown'] is Map ? BookingBreakdown.fromMap(Map<String, dynamic>.from(d['breakdown'] as Map)) : null,
       extraPickups: [for (final s in (d['extraPickups'] as List?) ?? const []) s.toString()],
       extraDrops: [for (final s in (d['extraDrops'] as List?) ?? const []) s.toString()],
       pickupSlot: d['pickupSlot'] as String? ?? PickupSlot.any,
       cancellation: d['cancellation'] is Map ? BookingCancellation.fromMap(Map<String, dynamic>.from(d['cancellation'] as Map)) : null,
     );
   }
+}
+
+/// Breakdown reported by the driver; a replacement vehicle may be needed.
+class BookingBreakdown {
+  final String note;
+  final bool replacementRequested;
+  final DateTime? reportedAt;
+
+  const BookingBreakdown({this.note = '', this.replacementRequested = true, this.reportedAt});
+
+  factory BookingBreakdown.fromMap(Map<String, dynamic> m) => BookingBreakdown(
+        note: m['note'] as String? ?? '',
+        replacementRequested: m['replacementRequested'] != false,
+        reportedAt: (m['reportedAt'] as Timestamp?)?.toDate(),
+      );
 }
 
 /// What the driver records when loading is done (with the pickup OTP).

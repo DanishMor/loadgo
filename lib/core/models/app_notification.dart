@@ -6,9 +6,10 @@ class NotificationType {
   static const statusChanged = 'status_changed';
   static const ratingReceived = 'rating_received';
   static const bookingCancelled = 'booking_cancelled';
+  static const breakdownReported = 'breakdown_reported';
 
   /// Must stay in sync with firestore.rules.
-  static const all = [loadAccepted, statusChanged, ratingReceived, bookingCancelled];
+  static const all = [loadAccepted, statusChanged, ratingReceived, bookingCancelled, breakdownReported];
 }
 
 class AppNotification {

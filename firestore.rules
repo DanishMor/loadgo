@@ -45,10 +45,18 @@ service cloud.firestore {
           && request.resource.data.verified == (request.resource.data.verificationStatus == 'approved');
     }
 
+    // At most three {name, phone} emergency contacts on the profile.
+    function validEmergencyContacts(d) {
+      return !('emergencyContacts' in d)
+          || (d.emergencyContacts is list && d.emergencyContacts.size() <= 3);
+    }
+
     match /users/{userId} {
       allow read: if isUser(userId) || isAdmin();
-      allow create: if isUser(userId) && verificationInitOk(request.resource.data);
+      allow create: if isUser(userId) && verificationInitOk(request.resource.data)
+          && validEmergencyContacts(request.resource.data);
       allow update: if adminVerificationUpdate() || (isUser(userId)
+          && validEmergencyContacts(request.resource.data)
           && (!changedKeys().hasAny(['verified', 'verificationStatus'])
               || (resource.data.get('verificationStatus', null) == null
                   && verificationInitOk(request.resource.data))));
@@ -312,6 +320,18 @@ service cloud.firestore {
                   && validDeliveryProof(after.deliveryProof)));
     }
 
+    // Driver reports a breakdown once on an active trip.
+    function breakdownReport() {
+      let b = request.resource.data.breakdown;
+      return resource.data.status in ['accepted', 'driver_arriving', 'loading', 'picked_up', 'in_transit', 'unloading']
+          && !('breakdown' in resource.data)
+          && changedKeys().hasOnly(['breakdown', 'updatedAt'])
+          && b is map && b.keys().hasOnly(['note', 'replacementRequested', 'reportedAt'])
+          && b.note is string && b.note.size() <= 300
+          && b.replacementRequested is bool
+          && b.reportedAt == request.time;
+    }
+
     // Either party records the e-way bill number (12 digits) or clears it.
     function ewayBillUpdate() {
       return changedKeys().hasOnly(['ewayBillNo', 'updatedAt'])
@@ -382,6 +402,7 @@ service cloud.firestore {
           || (resource.data.driverId == request.auth.uid
           && (driverLocationUpdate()
               || ewayBillUpdate()
+              || breakdownReport()
               || driverStep(bookingId)
               || (changedKeys().hasOnly(['status', 'timeline', 'updatedAt', 'cancellation'])
                   && resource.data.status in ['accepted', 'driver_arriving']
@@ -500,6 +521,87 @@ service cloud.firestore {
     }
 
     // ------------------------------------------------------------------
+    // tickets: help desk. Users open tickets (optionally about one of their
+    // bookings; disputes must name one), reply, escalate up to level 3 and
+    // close. Admins see everything and manage status/priority.
+    // ------------------------------------------------------------------
+    function isBookingParty(bookingId) {
+      let b = get(docPath('bookings', bookingId)).data;
+      return b.driverId == request.auth.uid || b.customerId == request.auth.uid;
+    }
+
+    function validTicketCreate() {
+      let t = request.resource.data;
+      return t.keys().hasOnly(['userId', 'category', 'priority', 'status', 'bookingId', 'subject', 'description',
+                               'escalationLevel', 'createdAt', 'updatedAt'])
+          && t.userId == request.auth.uid
+          && t.category in ['booking_issue', 'payment', 'dispute', 'safety', 'account', 'other']
+          && t.priority in ['low', 'normal', 'high', 'urgent']
+          && t.status == 'open'
+          && t.escalationLevel == 0
+          && t.subject is string && t.subject.size() >= 3 && t.subject.size() <= 100
+          && t.get('description', '') is string && t.get('description', '').size() <= 1000
+          && (!('bookingId' in t) || isBookingParty(t.bookingId))
+          && (t.category != 'dispute' || 'bookingId' in t);
+    }
+
+    function ownerTicketUpdate() {
+      let before = resource.data;
+      let after = request.resource.data;
+      return before.userId == request.auth.uid
+          && before.status in ['open', 'in_progress']
+          && ((changedKeys().hasOnly(['escalationLevel', 'updatedAt'])
+                  && after.escalationLevel == before.escalationLevel + 1 && after.escalationLevel <= 3)
+              || (changedKeys().hasOnly(['status', 'updatedAt']) && after.status == 'closed'));
+    }
+
+    match /tickets/{ticketId} {
+      allow read: if signedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if signedIn() && validTicketCreate();
+      allow update: if signedIn() && (ownerTicketUpdate()
+          || (isAdmin()
+              && changedKeys().hasOnly(['status', 'priority', 'escalationLevel', 'assignedTo', 'updatedAt'])
+              && request.resource.data.status in ['open', 'in_progress', 'resolved', 'closed']
+              && request.resource.data.priority in ['low', 'normal', 'high', 'urgent']));
+      allow delete: if false;
+
+      match /replies/{replyId} {
+        allow read: if signedIn()
+            && (get(docPath('tickets', ticketId)).data.userId == request.auth.uid || isAdmin());
+        allow create: if signedIn()
+            && request.resource.data.keys().hasOnly(['authorId', 'text', 'fromAdmin', 'createdAt'])
+            && request.resource.data.authorId == request.auth.uid
+            && request.resource.data.text is string
+            && request.resource.data.text.size() >= 1 && request.resource.data.text.size() <= 1000
+            && request.resource.data.createdAt == request.time
+            && ((request.resource.data.fromAdmin == false
+                    && get(docPath('tickets', ticketId)).data.userId == request.auth.uid
+                    && get(docPath('tickets', ticketId)).data.status != 'closed')
+                || (request.resource.data.fromAdmin == true && isAdmin()));
+        allow update, delete: if false;
+      }
+    }
+
+    // ------------------------------------------------------------------
+    // sos_alerts: a user raises an alert (optionally tied to their booking,
+    // with a last known position). Admins acknowledge/resolve.
+    // ------------------------------------------------------------------
+    match /sos_alerts/{alertId} {
+      allow read: if signedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if signedIn()
+          && request.resource.data.keys().hasOnly(['userId', 'bookingId', 'location', 'status', 'createdAt'])
+          && request.resource.data.userId == request.auth.uid
+          && request.resource.data.status == 'open'
+          && request.resource.data.createdAt == request.time
+          && (request.resource.data.get('location', null) == null || request.resource.data.location is latlng)
+          && (!('bookingId' in request.resource.data) || isBookingParty(request.resource.data.bookingId));
+      allow update: if isAdmin()
+          && changedKeys().hasOnly(['status', 'handledBy', 'handledAt', 'adminNote'])
+          && request.resource.data.status in ['open', 'acknowledged', 'resolved'];
+      allow delete: if false;
+    }
+
+    // ------------------------------------------------------------------
     // reports: a booking party reports the other one. Reporters see their
     // own reports; admins review them. Nobody edits a report after filing.
     // ------------------------------------------------------------------
@@ -573,7 +675,7 @@ service cloud.firestore {
       let n = request.resource.data;
       let b = getAfter(docPath('bookings', n.relatedId)).data;
       return n.keys().hasOnly(['userId', 'type', 'message', 'relatedId', 'status', 'read', 'createdAt'])
-          && n.type in ['load_accepted', 'status_changed', 'rating_received', 'booking_cancelled']
+          && n.type in ['load_accepted', 'status_changed', 'rating_received', 'booking_cancelled', 'breakdown_reported']
           && n.message is string && n.message.size() <= 200
           && n.read == false
           && n.userId != request.auth.uid

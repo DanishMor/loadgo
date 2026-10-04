@@ -10,6 +10,8 @@ import '../../main.dart';
 import '../ratings/rating_widgets.dart';
 import '../../core/widgets/live_stream.dart';
 import 'edit_profile_screen.dart';
+import '../../core/support/support_screens.dart';
+import '../../core/safety/emergency_contacts_screen.dart';
 
 /// Profile tab for both roles: identity, contact details, average rating and
 /// logout. [isDriver] picks which name field and label to show.
@@ -123,6 +125,23 @@ class _ProfileViewState extends State<ProfileView> {
                       title: Text(tr(context, 'language')),
                       trailing: Text(trLanguageName(LanguageScope.of(context))),
                       onTap: () => showLanguageSelector(context),
+                    ),
+                    ListTile(
+                      key: const ValueKey('profileSupport'),
+                      contentPadding: EdgeInsets.zero,
+                      leading: const Icon(Icons.support_agent_rounded, color: AppColors.muted),
+                      title: Text(tr(context, 'helpSupport')),
+                      trailing: const Icon(Icons.chevron_right_rounded),
+                      onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const SupportHomeScreen())),
+                    ),
+                    ListTile(
+                      key: const ValueKey('profileEmergency'),
+                      contentPadding: EdgeInsets.zero,
+                      leading: const Icon(Icons.contact_emergency_outlined, color: AppColors.muted),
+                      title: Text(tr(context, 'emergencyContacts')),
+                      trailing: const Icon(Icons.chevron_right_rounded),
+                      onTap: () =>
+                          Navigator.of(context).push(MaterialPageRoute(builder: (_) => const EmergencyContactsScreen())),
                     ),
                   ],
                 ),
