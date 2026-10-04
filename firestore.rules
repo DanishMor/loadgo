@@ -99,6 +99,18 @@ service cloud.firestore {
       return !changedKeys().hasAny(['referralCode']) || resource.data.get('referralCode', null) == null;
     }
 
+    // users.plan / planUntil: written by admins only (Pro plan, by hand).
+    function planFieldsAbsent(d) {
+      return !d.keys().hasAny(['plan', 'planUntil']);
+    }
+
+    function adminPlanUpdate() {
+      return isAdmin()
+          && changedKeys().hasOnly(['plan', 'planUntil', 'updatedAt'])
+          && request.resource.data.get('plan', 'free') in ['free', 'pro']
+          && (!('planUntil' in request.resource.data) || request.resource.data.planUntil is timestamp);
+    }
+
     // Anti-fraud fields. riskTier/riskReason/riskUpdatedAt are admin-only;
     // cancelCount only goes up by one (see cancelCounted()).
     function riskFieldsAbsent(d) {
@@ -172,13 +184,13 @@ service cloud.firestore {
     match /users/{userId} {
       allow read: if isUser(userId) || isAdmin();
       allow create: if isUser(userId) && verificationInitOk(request.resource.data)
-          && validKyc(request.resource.data) && referralCodeOk(request.resource.data) && validIdentityHashes(request.resource.data) && validLastLocation(request.resource.data) && validRole(request.resource.data.get('role', null))
+          && validKyc(request.resource.data) && planFieldsAbsent(request.resource.data) && referralCodeOk(request.resource.data) && validIdentityHashes(request.resource.data) && validLastLocation(request.resource.data) && validRole(request.resource.data.get('role', null))
           && (request.resource.data.get('role', null) == null
               || request.resource.data.get('selectedRole', request.resource.data.role) == request.resource.data.role)
           && validEmergencyContacts(request.resource.data) && riskFieldsAbsent(request.resource.data)
           && validPrefs(request.resource.data) && validBusiness(request.resource.data);
-      allow update: if adminVerificationUpdate() || adminRiskUpdate() || (isUser(userId)
-          && roleLockOk() && validKyc(request.resource.data) && referralCodeOk(request.resource.data) && referralCodeKept() && validIdentityHashes(request.resource.data) && validLastLocation(request.resource.data)
+      allow update: if adminVerificationUpdate() || adminRiskUpdate() || adminPlanUpdate() || (isUser(userId)
+          && roleLockOk() && validKyc(request.resource.data) && !changedKeys().hasAny(['plan', 'planUntil']) && referralCodeOk(request.resource.data) && referralCodeKept() && validIdentityHashes(request.resource.data) && validLastLocation(request.resource.data)
           && validEmergencyContacts(request.resource.data)
           && validPrefs(request.resource.data) && validBusiness(request.resource.data)
           && ownerRiskFieldsUntouched()
@@ -1068,6 +1080,91 @@ service cloud.firestore {
     match /admins/{uid} {
       allow read: if isUser(uid);
       allow write: if false;
+    }
+
+    // ------------------------------------------------------------------
+    // Driver extras (record only; TODO(functions) to count and settle):
+    // tips after delivery, admin-made incentives with once-only claims, and
+    // Pro plan requests that an admin answers by hand.
+    // ------------------------------------------------------------------
+    match /tips/{bookingId} {
+      allow read: if signedIn() && (resource.data.customerId == request.auth.uid
+          || resource.data.driverId == request.auth.uid || isAdmin());
+      allow create: if signedIn()
+          && request.resource.data.keys().hasOnly(['bookingId', 'customerId', 'driverId', 'amountPaise', 'createdAt'])
+          && request.resource.data.bookingId == bookingId
+          && request.resource.data.customerId == request.auth.uid
+          && get(docPath('bookings', bookingId)).data.customerId == request.auth.uid
+          && get(docPath('bookings', bookingId)).data.driverId == request.resource.data.driverId
+          && get(docPath('bookings', bookingId)).data.status == 'delivered'
+          && request.resource.data.amountPaise is int
+          && request.resource.data.amountPaise >= 100 && request.resource.data.amountPaise <= 500000
+          && request.resource.data.createdAt == request.time;
+      allow update, delete: if false;
+    }
+
+    function validIncentive() {
+      let i = request.resource.data;
+      return i.keys().hasOnly(['title', 'targetTrips', 'windowDays', 'bonusPaise', 'startsAt', 'active', 'createdAt', 'updatedAt'])
+          && i.title is string && i.title.size() >= 2 && i.title.size() <= 60
+          && i.targetTrips is int && i.targetTrips >= 1 && i.targetTrips <= 1000
+          && i.windowDays is int && i.windowDays >= 1 && i.windowDays <= 365
+          && i.bonusPaise is int && i.bonusPaise >= 1 && i.bonusPaise <= 10000000
+          && i.startsAt is timestamp
+          && i.active is bool;
+    }
+
+    match /incentives/{incentiveId} {
+      allow read: if signedIn();
+      allow create, update: if isAdmin() && validIncentive();
+      allow delete: if false;
+    }
+
+    // incentive_claims/{incentiveId}_{driverId}: one claim per driver per
+    // incentive. The rules cannot count trips: an admin checks before paying.
+    match /incentive_claims/{claimId} {
+      allow read: if signedIn() && (resource.data.driverId == request.auth.uid || isAdmin());
+      allow create: if signedIn()
+          && request.resource.data.keys().hasOnly(['incentiveId', 'driverId', 'bonusPaise', 'status', 'createdAt'])
+          && request.resource.data.driverId == request.auth.uid
+          && claimId == request.resource.data.incentiveId + '_' + request.auth.uid
+          && request.resource.data.status == 'claimed'
+          && request.resource.data.createdAt == request.time
+          && get(docPath('users', request.auth.uid)).data.get('role', 'driver') == 'driver'
+          && canTransact(request.auth.uid)
+          && get(docPath('incentives', request.resource.data.incentiveId)).data.active == true
+          && request.resource.data.bonusPaise == get(docPath('incentives', request.resource.data.incentiveId)).data.bonusPaise
+          && request.time >= get(docPath('incentives', request.resource.data.incentiveId)).data.startsAt
+          && request.time <= get(docPath('incentives', request.resource.data.incentiveId)).data.startsAt
+              + duration.value(get(docPath('incentives', request.resource.data.incentiveId)).data.windowDays + 7, 'd');
+      allow update: if isAdmin()
+          && changedKeys().hasOnly(['status', 'paidAt'])
+          && resource.data.status == 'claimed'
+          && request.resource.data.status == 'paid';
+      allow delete: if false;
+    }
+
+    // plan_requests/{driverUid}: "I would like Pro". The plan itself lives on
+    // users/{uid}.plan and only an admin can change it.
+    match /plan_requests/{driverUid} {
+      allow read: if isUser(driverUid) || isAdmin();
+      allow create: if isUser(driverUid)
+          && request.resource.data.keys().hasOnly(['uid', 'plan', 'status', 'createdAt'])
+          && request.resource.data.uid == driverUid
+          && request.resource.data.plan == 'pro'
+          && request.resource.data.status == 'pending'
+          && request.resource.data.createdAt == request.time;
+      // The driver can ask again after an answer (the same document, back to pending).
+      allow update: if (isUser(driverUid)
+              && resource.data.status in ['approved', 'rejected']
+              && request.resource.data.keys().hasOnly(['uid', 'plan', 'status', 'createdAt'])
+              && request.resource.data.uid == driverUid
+              && request.resource.data.plan == 'pro'
+              && request.resource.data.status == 'pending'
+              && request.resource.data.createdAt == request.time)
+          || (isAdmin() && changedKeys().hasOnly(['status', 'answeredAt'])
+              && request.resource.data.status in ['approved', 'rejected']);
+      allow delete: if false;
     }
 
     // ------------------------------------------------------------------

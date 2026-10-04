@@ -5,6 +5,7 @@ import '../core/models/earnings.dart';
 import '../core/widgets/common.dart';
 import '../core/l10n/l10n.dart';
 import '../core/widgets/live_stream.dart';
+import 'driver_rewards_screen.dart';
 
 /// Driver "Earnings" tab: totals from delivered trips plus recent payouts.
 class EarningsView extends StatelessWidget {
@@ -44,6 +45,15 @@ class EarningsView extends StatelessWidget {
               Text(tr(context, 'earnings'),
                   style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: AppColors.title)),
               const SizedBox(height: 16),
+              ListTile(
+                key: const ValueKey('openRewards'),
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(Icons.card_giftcard_rounded, color: AppColors.primary),
+                title: Text(tr(context, 'tipsBonusesPlan'), style: const TextStyle(fontWeight: FontWeight.w700)),
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const DriverRewardsScreen())),
+              ),
+              const SizedBox(height: 4),
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(

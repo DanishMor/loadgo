@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../models/booking.dart';
+import '../models/driver_extras.dart';
 import '../models/ledger_entry.dart';
 import 'backend.dart';
 import 'pricing_service.dart';
@@ -15,8 +16,13 @@ class PaymentService {
 
   static CollectionReference<Map<String, dynamic>> get _ledger => Backend.db.collection('ledger');
 
-  static int commissionFor(int amountPaise) =>
-      -(amountPaise * (PricingService.config.commissionPercent * 100).round() / 10000).round();
+  /// Platform commission (negative paise) on [amountPaise]; Pro drivers pay
+  /// the lower `proCommissionPercent`.
+  static int commissionFor(int amountPaise, {bool pro = false}) {
+    final c = PricingService.config;
+    final percent = pro ? c.proCommissionPercent : c.commissionPercent;
+    return -(amountPaise * (percent * 100).round() / 10000).round();
+  }
 
   /// Customer: "I have paid [amountPaise]".
   static Future<void> markPaid(Booking b, int amountPaise) {
@@ -37,6 +43,8 @@ class PaymentService {
       throw StateError('Nothing to confirm');
     }
     final amount = b.paidAmountPaise!;
+    final profile = (await Backend.db.collection('users').doc(uid).get()).data();
+    final pro = DriverPlan.isPro(profile, DateTime.now());
     final batch = Backend.db.batch();
     batch.update(Backend.db.collection('bookings').doc(b.id), {
       'paymentStatus': PaymentStatus.driverConfirmed,
@@ -51,7 +59,7 @@ class PaymentService {
           'createdAt': FieldValue.serverTimestamp(),
         });
     line(LedgerType.tripEarning, amount);
-    line(LedgerType.platformCommission, commissionFor(amount));
+    line(LedgerType.platformCommission, commissionFor(amount, pro: pro));
     await batch.commit();
   }
 

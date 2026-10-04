@@ -583,6 +583,119 @@ describe('customer offers', () => {
   });
 });
 
+describe('driver extras', () => {
+  const now = Date.now();
+  const days = (n) => Timestamp.fromDate(new Date(now + n * 86400000));
+  const seedDelivered = (status = 'delivered') => seed((db) => setDoc(doc(db, 'bookings', 'B1'), { ...bookingFor('L1'), status, timeline: {} }));
+  const tip = (over = {}) => ({ bookingId: 'B1', customerId: 'customer1', driverId: 'driver1', amountPaise: 5000, createdAt: serverTimestamp(), ...over });
+
+  describe('tips', () => {
+    test('the customer tips a delivered booking once; both parties read it', async () => {
+      await seedDelivered();
+      await assertSucceeds(setDoc(doc(as('customer1'), 'tips', 'B1'), tip()));
+      await assertFails(setDoc(doc(as('customer1'), 'tips', 'B1'), tip({ amountPaise: 9000 })), 'second tip is an update');
+      await assertSucceeds(getDoc(doc(as('driver1'), 'tips', 'B1')));
+      await assertSucceeds(getDoc(doc(as('customer1'), 'tips', 'B1')));
+      await assertFails(getDoc(doc(as('driver2'), 'tips', 'B1')));
+      await assertFails(deleteDoc(doc(as('customer1'), 'tips', 'B1')));
+    });
+
+    test('refused: not delivered, wrong party, bad amount, wrong driver, extra fields', async () => {
+      await seedDelivered('in_transit');
+      await assertFails(setDoc(doc(as('customer1'), 'tips', 'B1'), tip()));
+      await seedDelivered();
+      await assertFails(setDoc(doc(as('customer2'), 'tips', 'B1'), tip({ customerId: 'customer2' })));
+      await assertFails(setDoc(doc(as('driver1'), 'tips', 'B1'), tip({ customerId: 'driver1' })));
+      await assertFails(setDoc(doc(as('customer1'), 'tips', 'B1'), tip({ amountPaise: 50 })));
+      await assertFails(setDoc(doc(as('customer1'), 'tips', 'B1'), tip({ amountPaise: 500001 })));
+      await assertFails(setDoc(doc(as('customer1'), 'tips', 'B1'), tip({ amountPaise: 99.5 })));
+      await assertFails(setDoc(doc(as('customer1'), 'tips', 'B1'), tip({ driverId: 'driver2' })));
+      await assertFails(setDoc(doc(as('customer1'), 'tips', 'B1'), tip({ note: 'x' })));
+      await assertFails(setDoc(doc(as('customer1'), 'tips', 'B1'), tip({ createdAt: Timestamp.fromDate(new Date('2020-01-01')) })));
+    });
+  });
+
+  describe('incentives and claims', () => {
+    const inc = (over = {}) => ({ title: 'Weekly 10', targetTrips: 10, windowDays: 7, bonusPaise: 50000, startsAt: days(-1), active: true, createdAt: serverTimestamp(), updatedAt: serverTimestamp(), ...over });
+    const seedInc = (over = {}) => seed(async (db) => {
+      await setDoc(doc(db, 'incentives', 'I1'), { ...inc(over), createdAt: Timestamp.now(), updatedAt: Timestamp.now() });
+      await setDoc(doc(db, 'users', 'driver1'), { role: 'driver', selectedRole: 'driver' });
+    });
+    const claim = (over = {}) => ({ incentiveId: 'I1', driverId: 'driver1', bonusPaise: 50000, status: 'claimed', createdAt: serverTimestamp(), ...over });
+
+    test('only admins write incentives, with sane numbers; everyone signed in reads', async () => {
+      await assertSucceeds(setDoc(doc(asAdmin(), 'incentives', 'I1'), inc()));
+      await assertFails(setDoc(doc(as('driver1'), 'incentives', 'I2'), inc()));
+      await assertSucceeds(getDoc(doc(as('driver1'), 'incentives', 'I1')));
+      await assertFails(setDoc(doc(asAdmin(), 'incentives', 'I3'), inc({ targetTrips: 0 })));
+      await assertFails(setDoc(doc(asAdmin(), 'incentives', 'I3'), inc({ windowDays: 400 })));
+      await assertFails(setDoc(doc(asAdmin(), 'incentives', 'I3'), inc({ bonusPaise: 1.5 })));
+      await assertFails(setDoc(doc(asAdmin(), 'incentives', 'I3'), inc({ title: 'x' })));
+      await assertSucceeds(updateDoc(doc(asAdmin(), 'incentives', 'I1'), { active: false, updatedAt: serverTimestamp() }));
+    });
+
+    test('a driver claims once with the exact bonus inside the window', async () => {
+      await seedInc();
+      await assertSucceeds(setDoc(doc(as('driver1'), 'incentive_claims', 'I1_driver1'), claim()));
+      await assertFails(setDoc(doc(as('driver1'), 'incentive_claims', 'I1_driver1'), claim()), 'second claim');
+      await assertSucceeds(getDoc(doc(as('driver1'), 'incentive_claims', 'I1_driver1')));
+      await assertFails(getDoc(doc(as('driver2'), 'incentive_claims', 'I1_driver1')));
+      await assertSucceeds(getDoc(doc(asAdmin(), 'incentive_claims', 'I1_driver1')));
+    });
+
+    test('refused: bigger bonus, someone else, wrong id, paid status, inactive, outside the window', async () => {
+      await seedInc();
+      await assertFails(setDoc(doc(as('driver1'), 'incentive_claims', 'I1_driver1'), claim({ bonusPaise: 99999 })));
+      await assertFails(setDoc(doc(as('driver1'), 'incentive_claims', 'I1_driver2'), claim({ driverId: 'driver2' })));
+      await assertFails(setDoc(doc(as('driver1'), 'incentive_claims', 'other'), claim()));
+      await assertFails(setDoc(doc(as('driver1'), 'incentive_claims', 'I1_driver1'), claim({ status: 'paid' })));
+      await seedInc({ active: false });
+      await assertFails(setDoc(doc(as('driver1'), 'incentive_claims', 'I1_driver1'), claim()));
+      await seedInc({ startsAt: days(-30) });
+      await assertFails(setDoc(doc(as('driver1'), 'incentive_claims', 'I1_driver1'), claim()), 'window and grace are over');
+      await seedInc({ startsAt: days(2) });
+      await assertFails(setDoc(doc(as('driver1'), 'incentive_claims', 'I1_driver1'), claim()), 'not started');
+    });
+
+    test('a restricted driver cannot claim; only an admin marks a claim paid', async () => {
+      await seedInc();
+      await seed((db) => setDoc(doc(db, 'users', 'driver1'), { role: 'driver', selectedRole: 'driver', riskTier: 'restricted' }));
+      await assertFails(setDoc(doc(as('driver1'), 'incentive_claims', 'I1_driver1'), claim()));
+      await seed((db) => setDoc(doc(db, 'users', 'driver1'), { role: 'driver', selectedRole: 'driver' }));
+      await assertSucceeds(setDoc(doc(as('driver1'), 'incentive_claims', 'I1_driver1'), claim()));
+      await assertFails(updateDoc(doc(as('driver1'), 'incentive_claims', 'I1_driver1'), { status: 'paid', paidAt: serverTimestamp() }));
+      await assertFails(updateDoc(doc(asAdmin(), 'incentive_claims', 'I1_driver1'), { status: 'paid', bonusPaise: 1 }));
+      await assertSucceeds(updateDoc(doc(asAdmin(), 'incentive_claims', 'I1_driver1'), { status: 'paid', paidAt: serverTimestamp() }));
+      await assertFails(updateDoc(doc(asAdmin(), 'incentive_claims', 'I1_driver1'), { status: 'claimed' }));
+    });
+  });
+
+  describe('plans', () => {
+    test('a driver asks for Pro; asking again only after an answer', async () => {
+      const req = () => ({ uid: 'driver1', plan: 'pro', status: 'pending', createdAt: serverTimestamp() });
+      await assertSucceeds(setDoc(doc(as('driver1'), 'plan_requests', 'driver1'), req()));
+      await assertFails(setDoc(doc(as('driver1'), 'plan_requests', 'driver1'), req()), 'still pending');
+      await assertFails(setDoc(doc(as('driver1'), 'plan_requests', 'driver2'), { ...req(), uid: 'driver2' }));
+      await assertFails(setDoc(doc(as('driver2'), 'plan_requests', 'driver2'), { ...req(), uid: 'driver2', status: 'approved' }));
+      await assertSucceeds(updateDoc(doc(asAdmin(), 'plan_requests', 'driver1'), { status: 'rejected', answeredAt: serverTimestamp() }));
+      await assertSucceeds(setDoc(doc(as('driver1'), 'plan_requests', 'driver1'), req()));
+      await assertFails(updateDoc(doc(as('driver1'), 'plan_requests', 'driver1'), { status: 'approved' }));
+    });
+
+    test('only an admin can change users.plan; nobody can give themselves Pro', async () => {
+      await seed((db) => setDoc(doc(db, 'users', 'driver1'), { role: 'driver', selectedRole: 'driver' }));
+      await assertFails(updateDoc(doc(as('driver1'), 'users', 'driver1'), { plan: 'pro' }));
+      await assertFails(updateDoc(doc(as('driver1'), 'users', 'driver1'), { planUntil: Timestamp.fromDate(new Date('2030-01-01')) }));
+      await assertFails(setDoc(doc(as('driver9'), 'users', 'driver9'), { plan: 'pro' }));
+      await assertSucceeds(updateDoc(doc(asAdmin(), 'users', 'driver1'), { plan: 'pro', planUntil: days(30), updatedAt: serverTimestamp() }));
+      await assertFails(updateDoc(doc(asAdmin(), 'users', 'driver1'), { plan: 'gold', updatedAt: serverTimestamp() }));
+      await assertFails(updateDoc(doc(asAdmin(), 'users', 'driver1'), { plan: 'pro', name: 'x', updatedAt: serverTimestamp() }));
+      await assertFails(updateDoc(doc(as('driver1'), 'users', 'driver1'), { plan: 'free' }));
+      await assertSucceeds(updateDoc(doc(as('driver1'), 'users', 'driver1'), { driverName: 'Ramesh' }));
+    });
+  });
+});
+
 describe('admin verification', () => {
   const seedDriver = () => seed((db) => setDoc(doc(db, 'users', 'd1'), { driverName: 'R', verified: false, verificationStatus: 'pending' }));
 

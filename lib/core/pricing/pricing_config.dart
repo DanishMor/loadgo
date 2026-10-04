@@ -13,6 +13,9 @@ class PricingConfig {
 
   /// Recorded on the driver's ledger when they confirm payment received.
   final num commissionPercent;
+
+  /// Commission for drivers on the Pro plan.
+  final num proCommissionPercent;
   final double roadFactor;
   final CancellationPolicy cancellation;
 
@@ -22,6 +25,7 @@ class PricingConfig {
     this.platformFeePercent = 5,
     this.gstPercent = 5,
     this.commissionPercent = 5,
+    this.proCommissionPercent = 2,
     this.roadFactor = 1.25,
     this.cancellation = const CancellationPolicy(),
   });
@@ -50,6 +54,7 @@ class PricingConfig {
       platformFeePercent: m['platformFeePercent'] as num? ?? defaultPricing.platformFeePercent,
       gstPercent: m['gstPercent'] as num? ?? defaultPricing.gstPercent,
       commissionPercent: m['commissionPercent'] as num? ?? defaultPricing.commissionPercent,
+      proCommissionPercent: m['proCommissionPercent'] as num? ?? defaultPricing.proCommissionPercent,
       roadFactor: (m['roadFactor'] as num?)?.toDouble() ?? defaultPricing.roadFactor,
       cancellation: CancellationPolicy.fromMap(m['cancellation'] as Map<String, dynamic>?),
     );
@@ -61,6 +66,7 @@ class PricingConfig {
         'platformFeePercent': platformFeePercent,
         'gstPercent': gstPercent,
         'commissionPercent': commissionPercent,
+        'proCommissionPercent': proCommissionPercent,
         'roadFactor': roadFactor,
         'cancellation': cancellation.toMap(),
       };

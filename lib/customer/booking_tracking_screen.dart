@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../core/constants/logistics.dart';
 import '../core/l10n/l10n.dart';
 import '../core/widgets/rating_widgets.dart';
+import '../core/widgets/tip_card.dart';
 import '../core/widgets/booking_widgets.dart';
 import '../core/widgets/location_widgets.dart';
 import 'trip_otp_card.dart';
@@ -47,6 +48,8 @@ class BookingTrackingScreen extends StatelessWidget {
           if (booking.status == BookingStatus.delivered) ...[
             const SizedBox(height: 14),
             RatingPrompt(booking: booking, titleKey: 'rateDriver'),
+            const SizedBox(height: 8),
+            TipCard(booking: booking),
           ],
         ],
       ),

@@ -10,6 +10,7 @@ import 'identity_strings.dart';
 import 'admin_strings.dart';
 import 'auth_strings.dart';
 import 'chat_strings.dart';
+import 'driver_extras_strings.dart';
 import 'enterprise_strings.dart';
 import 'load_strings.dart';
 import 'match_strings.dart';
@@ -38,6 +39,7 @@ const List<Map<String, List<String>>> stringTables = [
   consentStrings,
   bookingTypeStrings,
   customerOffersStrings,
+  driverExtrasStrings,
   adminStrings,
   matchStrings,
   settingsStrings,
