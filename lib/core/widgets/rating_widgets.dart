@@ -4,6 +4,7 @@ import '../models/booking.dart';
 import '../models/rating.dart';
 import '../services/rating_service.dart';
 import 'common.dart';
+import 'live_stream.dart';
 import '../l10n/l10n.dart';
 const _starColor = Color(0xFFFDB022);
 
@@ -12,8 +13,9 @@ class StarRow extends StatelessWidget {
   final int stars;
   final double size;
   final ValueChanged<int>? onChanged;
+  final String keyPrefix;
 
-  const StarRow({super.key, required this.stars, this.size = 28, this.onChanged});
+  const StarRow({super.key, required this.stars, this.size = 28, this.onChanged, this.keyPrefix = 'star'});
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +26,7 @@ class StarRow extends StatelessWidget {
           onChanged == null
               ? Icon(i <= stars ? Icons.star_rounded : Icons.star_outline_rounded, color: _starColor, size: size)
               : IconButton(
-                  key: ValueKey('star$i'),
+                  key: ValueKey('$keyPrefix$i'),
                   visualDensity: VisualDensity.compact,
                   tooltip: '$i',
                   onPressed: () => onChanged!(i),
@@ -87,6 +89,7 @@ class _RatingPromptState extends State<RatingPrompt> {
   late final Stream<Rating?> _mine = RatingService.watchMine(widget.booking.id);
   final _commentCtrl = TextEditingController();
   int _stars = 0;
+  final Map<String, int> _cats = {};
   bool _saving = false;
 
   @override
@@ -98,7 +101,7 @@ class _RatingPromptState extends State<RatingPrompt> {
   Future<void> _submit() async {
     setState(() => _saving = true);
     try {
-      await RatingService.rate(booking: widget.booking, stars: _stars, comment: _commentCtrl.text);
+      await RatingService.rate(booking: widget.booking, stars: _stars, comment: _commentCtrl.text, cats: _cats);
       if (mounted) showSnack(context, tr(context, 'thanksForRating'));
     } on AlreadyRatedException {
       if (mounted) showSnack(context, tr(context, 'alreadyRated'));
@@ -125,12 +128,25 @@ class _RatingPromptState extends State<RatingPrompt> {
               const SizedBox(height: 8),
               if (mine != null) ...[
                 StarRow(stars: mine.stars, size: 24),
+                if (mine.cats.isNotEmpty) RatingCategoryRows(scores: {for (final e in mine.cats.entries) e.key: e.value.toDouble()}),
                 if (mine.comment.isNotEmpty) ...[
                   const SizedBox(height: 6),
                   Text(mine.comment, style: const TextStyle(color: AppColors.muted)),
                 ],
               ] else ...[
                 StarRow(stars: _stars, onChanged: _saving ? null : (v) => setState(() => _stars = v)),
+                const SizedBox(height: 4),
+                Text(tr(context, 'rateInDetail'), style: const TextStyle(fontSize: 13, color: AppColors.muted)),
+                for (final c in RatingCategory.all)
+                  Row(children: [
+                    Expanded(child: Text(tr(context, 'rating${c[0].toUpperCase()}${c.substring(1)}'))),
+                    StarRow(
+                      keyPrefix: 'cat_${c}_',
+                      stars: _cats[c] ?? 0,
+                      size: 20,
+                      onChanged: _saving ? null : (v) => setState(() => _cats[c] = v),
+                    ),
+                  ]),
                 const SizedBox(height: 8),
                 TextField(
                   controller: _commentCtrl,
@@ -148,6 +164,73 @@ class _RatingPromptState extends State<RatingPrompt> {
           ),
         );
       },
+    );
+  }
+}
+
+/// One line per scored category: label and its (average) stars.
+class RatingCategoryRows extends StatelessWidget {
+  final Map<String, double> scores;
+
+  const RatingCategoryRows({super.key, required this.scores});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(children: [
+      for (final c in RatingCategory.all)
+        if (scores[c] != null)
+          Row(children: [
+            Expanded(child: Text(tr(context, 'rating${c[0].toUpperCase()}${c.substring(1)}'), style: const TextStyle(color: AppColors.muted, fontSize: 13))),
+            StarRow(stars: scores[c]!.round(), size: 16),
+            const SizedBox(width: 6),
+            Text(scores[c]!.toStringAsFixed(1), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
+          ]),
+    ]);
+  }
+}
+
+/// Reviews a user received: summary with category averages, then each review.
+class ReviewsScreen extends StatelessWidget {
+  final String userId;
+
+  const ReviewsScreen({super.key, required this.userId});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text(tr(context, 'reviewsTitle'))),
+      body: LiveStream<List<Rating>>(
+        stream: () => RatingService.watchReceived(userId),
+        builder: (context, list) {
+          if (list.isEmpty) return EmptyState(icon: Icons.star_outline_rounded, title: tr(context, 'noReviews'));
+          final s = RatingSummary.of(list);
+          return ListView(padding: const EdgeInsets.all(20), children: [
+            AppCard(
+              child: Column(children: [
+                Row(children: [
+                  Text(s.average.toStringAsFixed(1), style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w800)),
+                  const SizedBox(width: 10),
+                  StarRow(stars: s.average.round(), size: 22),
+                  const SizedBox(width: 8),
+                  Text('(${s.count})'),
+                ]),
+                RatingCategoryRows(scores: s.categoryAverages),
+              ]),
+            ),
+            for (final r in list)
+              Padding(
+                padding: const EdgeInsets.only(top: 10),
+                child: AppCard(
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    StarRow(stars: r.stars, size: 18),
+                    RatingCategoryRows(scores: {for (final e in r.cats.entries) e.key: e.value.toDouble()}),
+                    if (r.comment.isNotEmpty) Padding(padding: const EdgeInsets.only(top: 6), child: Text(r.comment)),
+                  ]),
+                ),
+              ),
+          ]);
+        },
+      ),
     );
   }
 }

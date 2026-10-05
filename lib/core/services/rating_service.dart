@@ -22,10 +22,13 @@ class RatingService {
   static String ratingId(String bookingId, String raterId) => '${bookingId}_$raterId';
 
   /// The signed-in user rates the other party of a delivered [booking].
-  static Future<void> rate({required Booking booking, required int stars, String comment = ''}) async {
+  static Future<void> rate({required Booking booking, required int stars, String comment = '', Map<String, int> cats = const {}}) async {
     final uid = Backend.requireUid();
     if (booking.status != BookingStatus.delivered) throw StateError('Only delivered bookings can be rated');
     if (stars < 1 || stars > 5) throw ArgumentError.value(stars, 'stars', 'must be 1-5');
+    for (final e in cats.entries) {
+      if (!RatingCategory.all.contains(e.key) || e.value < 1 || e.value > 5) throw ArgumentError.value(cats, 'cats');
+    }
     final String ratedId;
     if (uid == booking.driverId) {
       ratedId = booking.customerId;
@@ -45,8 +48,20 @@ class RatingService {
           'ratedId': ratedId,
           'stars': stars,
           'comment': comment.trim(),
+          if (cats.isNotEmpty) 'cats': cats,
           'createdAt': FieldValue.serverTimestamp(),
         });
+        // Below 3 stars: the admin sees it in Rating flags. TODO(functions): open this server side.
+        if (stars < lowRatingStars) {
+          tx.set(Backend.db.collection('rating_flags').doc(ref.id), {
+            'bookingId': booking.id,
+            'raterId': uid,
+            'ratedId': ratedId,
+            'stars': stars,
+            'status': RatingFlag.open,
+            'createdAt': FieldValue.serverTimestamp(),
+          });
+        }
         NotificationService.addInTransaction(
           tx,
           userId: ratedId,
@@ -74,5 +89,27 @@ class RatingService {
         .where('ratedId', isEqualTo: userId)
         .snapshots()
         .map((snap) => RatingSummary.of(snap.docs.map(Rating.fromDoc)));
+  }
+
+  /// Reviews [userId] received, newest first.
+  static Stream<List<Rating>> watchReceived(String userId) => _col.where('ratedId', isEqualTo: userId).snapshots().map((snap) {
+        final list = snap.docs.map(Rating.fromDoc).toList();
+        list.sort((a, b) => (b.createdAt?.millisecondsSinceEpoch ?? 1 << 50).compareTo(a.createdAt?.millisecondsSinceEpoch ?? 1 << 50));
+        return list;
+      });
+
+  // ---- admin: low-rating flags ----
+
+  static CollectionReference<Map<String, dynamic>> get _flags => Backend.db.collection('rating_flags');
+
+  static Stream<List<RatingFlag>> watchFlags() => _flags.snapshots().map((s) {
+        final list = [for (final d in s.docs) RatingFlag.fromDoc(d.id, d.data())];
+        list.sort((a, b) => (a.status == RatingFlag.open ? 0 : 1).compareTo(b.status == RatingFlag.open ? 0 : 1));
+        return list;
+      });
+
+  static Future<void> resolveFlag(String id, String status) {
+    if (status != RatingFlag.reviewed && status != RatingFlag.dismissed) throw ArgumentError.value(status, 'status');
+    return _flags.doc(id).update({'status': status, 'handledBy': Backend.requireUid(), 'handledAt': FieldValue.serverTimestamp()});
   }
 }

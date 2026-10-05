@@ -57,14 +57,21 @@ class _ProfileViewState extends State<ProfileView> {
         if (s.count == 0) {
           return Text(tr(context, 'noRatingsYet'), style: const TextStyle(color: AppColors.muted));
         }
-        return Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            StarRow(stars: s.average.round(), size: 22),
-            const SizedBox(width: 8),
-            Text('${s.average.toStringAsFixed(1)} (${s.count} ${tr(context, 'ratings')})',
-                style: const TextStyle(fontWeight: FontWeight.w700, color: AppColors.body)),
-          ],
+        return InkWell(
+          key: const ValueKey('openReviews'),
+          onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => ReviewsScreen(userId: Backend.uid ?? ''))),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                StarRow(stars: s.average.round(), size: 22),
+                const SizedBox(width: 8),
+                Text('${s.average.toStringAsFixed(1)} (${s.count} ${tr(context, 'ratings')})',
+                    style: const TextStyle(fontWeight: FontWeight.w700, color: AppColors.body)),
+              ],
+            ),
+            SizedBox(width: 260, child: RatingCategoryRows(scores: s.categoryAverages)),
+          ]),
         );
       },
     );

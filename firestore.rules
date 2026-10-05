@@ -1263,7 +1263,34 @@ service cloud.firestore {
               || (b.customerId == request.auth.uid && r.ratedId == b.driverId))
           && r.stars is int && r.stars >= 1 && r.stars <= 5
           && r.get('comment', '') is string && r.get('comment', '').size() <= 500
-          && r.keys().hasOnly(['bookingId', 'raterId', 'ratedId', 'stars', 'comment', 'createdAt']);
+          && (!('cats' in r) || (r.cats is map && r.cats.keys().hasOnly(['time', 'behaviour', 'safety'])
+              && r.cats.get('time', 3) is int && r.cats.get('time', 3) >= 1 && r.cats.get('time', 3) <= 5
+              && r.cats.get('behaviour', 3) is int && r.cats.get('behaviour', 3) >= 1 && r.cats.get('behaviour', 3) <= 5
+              && r.cats.get('safety', 3) is int && r.cats.get('safety', 3) >= 1 && r.cats.get('safety', 3) <= 5))
+          && r.keys().hasOnly(['bookingId', 'raterId', 'ratedId', 'stars', 'comment', 'cats', 'createdAt']);
+    }
+
+    // rating_flags/{ratingId}: written by the rater in the same batch as a
+    // rating under 3 stars; only admins read and resolve them.
+    // TODO(functions): create the flag server side.
+    match /rating_flags/{ratingId} {
+      allow read: if isAdmin();
+      allow create: if signedIn()
+          && ratingId.matches('.*_' + request.auth.uid)
+          && request.resource.data.keys().hasOnly(['bookingId', 'raterId', 'ratedId', 'stars', 'status', 'createdAt'])
+          && request.resource.data.raterId == request.auth.uid
+          && request.resource.data.status == 'open'
+          && request.resource.data.stars is int && request.resource.data.stars < 3
+          && request.resource.data.createdAt == request.time
+          && getAfter(docPath('ratings', ratingId)).data.stars == request.resource.data.stars
+          && getAfter(docPath('ratings', ratingId)).data.ratedId == request.resource.data.ratedId
+          && getAfter(docPath('ratings', ratingId)).data.bookingId == request.resource.data.bookingId;
+      allow update: if isAdmin()
+          && changedKeys().hasOnly(['status', 'handledBy', 'handledAt'])
+          && request.resource.data.status in ['reviewed', 'dismissed']
+          && request.resource.data.handledBy == request.auth.uid
+          && request.resource.data.handledAt == request.time;
+      allow delete: if false;
     }
 
     match /ratings/{ratingId} {

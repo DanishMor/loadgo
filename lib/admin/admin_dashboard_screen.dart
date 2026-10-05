@@ -8,6 +8,7 @@ import '../core/widgets/logistics_labels.dart';
 import 'admin_config_screen.dart';
 import 'admin_driver_rewards_screen.dart';
 import 'admin_fraud_cases_screen.dart';
+import 'admin_rating_flags_screen.dart';
 import 'admin_lists.dart';
 import 'admin_offers_screen.dart';
 import 'admin_payouts_screen.dart';
@@ -34,6 +35,7 @@ class AdminDashboardScreen extends StatelessWidget {
       ('adminReports', 'adminReports', Icons.flag_outlined, const AdminReportsScreen()),
       ('adminSignals', 'adminSignals', Icons.shield_outlined, const AdminSignalsScreen()),
       ('adminFraudCases', 'adminFraudCases', Icons.gavel_rounded, const AdminFraudCasesScreen()),
+      ('adminRatingFlags', 'adminRatingFlags', Icons.star_half_rounded, const AdminRatingFlagsScreen()),
       ('flaggedUsers', 'flaggedUsers', Icons.warning_amber_rounded, const FlaggedUsersScreen()),
       ('adminDeletionRequests', 'adminDeletionRequests', Icons.person_remove_outlined, const AdminDeletionRequestsScreen()),
       ('adminAudit', 'adminAudit', Icons.history_rounded, const AdminAuditScreen()),

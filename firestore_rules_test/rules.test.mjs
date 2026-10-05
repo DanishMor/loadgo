@@ -2266,6 +2266,43 @@ describe('favourite routes', () => {
   });
 });
 
+describe('rating categories and low-rating flags', () => {
+  const rating = (extra = {}) => ({ bookingId: 'L1', raterId: 'customer1', ratedId: 'driver1', stars: 2, comment: '', createdAt: serverTimestamp(), ...extra });
+  const flag = (extra = {}) => ({ bookingId: 'L1', raterId: 'customer1', ratedId: 'driver1', stars: 2, status: 'open', createdAt: serverTimestamp(), ...extra });
+  const rate = (db, r, f) => {
+    const b = writeBatch(db);
+    b.set(doc(db, 'ratings', 'L1_customer1'), r);
+    if (f) b.set(doc(db, 'rating_flags', 'L1_customer1'), f);
+    return b.commit();
+  };
+  beforeEach(() => seedBooking('delivered'));
+  test('categories must be 1-5 and one of time, behaviour, safety', async () => {
+    await assertFails(rate(as('customer1'), rating({ cats: { speed: 3 } }), flag()));
+    await assertFails(rate(as('customer1'), rating({ cats: { time: 6 } }), flag()));
+    await assertFails(rate(as('customer1'), rating({ cats: { time: 2.5 } }), flag()));
+    await assertSucceeds(rate(as('customer1'), rating({ cats: { time: 5, behaviour: 1, safety: 3 } }), flag()));
+  });
+  test('the flag needs a matching rating under 3 stars, written by the rater', async () => {
+    await assertFails(rate(as('customer1'), rating({ stars: 4 }), flag({ stars: 4 })));
+    await assertFails(rate(as('customer1'), rating({ stars: 4 }), flag({ stars: 2 })));
+    await assertFails(rate(as('customer1'), rating(), flag({ ratedId: 'someone' })));
+    await assertFails(rate(as('customer1'), rating(), flag({ status: 'reviewed' })));
+    await assertFails(rate(as('customer1'), rating(), flag({ extra: 1 })));
+    await assertSucceeds(rate(as('customer1'), rating({ stars: 4 })));
+  });
+  test('only admins read and resolve flags', async () => {
+    await assertSucceeds(rate(as('customer1'), rating(), flag()));
+    const ref = (db) => doc(db, 'rating_flags', 'L1_customer1');
+    await assertFails(getDoc(ref(as('customer1'))));
+    await assertFails(getDoc(ref(as('driver1'))));
+    await assertSucceeds(getDoc(ref(asAdmin())));
+    await assertFails(updateDoc(ref(as('customer1')), { status: 'dismissed', handledBy: 'customer1', handledAt: serverTimestamp() }));
+    await assertFails(updateDoc(ref(asAdmin()), { status: 'open', handledBy: 'admin1', handledAt: serverTimestamp() }));
+    await assertSucceeds(updateDoc(ref(asAdmin()), { status: 'reviewed', handledBy: 'admin1', handledAt: serverTimestamp() }));
+    await assertFails(deleteDoc(ref(asAdmin())));
+  });
+});
+
 describe('templates, favourites and block list', () => {
   const tpl = (extra = {}) => ({
     name: 'Weekly FMCG', pickup: 'Pune', drop: 'Delhi', cargoType: 'FMCG', weight: 8, vehicleType: '20ft', budget: null,
