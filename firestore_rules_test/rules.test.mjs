@@ -2266,6 +2266,76 @@ describe('favourite routes', () => {
   });
 });
 
+describe('claims and disputes', () => {
+  const claim = (extra = {}) => ({
+    bookingId: 'L1', customerId: 'customer1', driverId: 'driver1', openedBy: 'customer1', type: 'damage',
+    description: 'Boxes were crushed', status: 'open', createdAt: serverTimestamp(), updatedAt: serverTimestamp(), ...extra,
+  });
+  const event = (uid, role, kind = 'message', extra = {}) => ({ by: uid, role, kind, text: 'hello', createdAt: serverTimestamp(), ...extra });
+  const open = (db, uid, c = claim(), role = 'customer') => {
+    const b = writeBatch(db);
+    b.set(doc(db, 'claims', `L1_${uid}`), c);
+    b.set(doc(db, 'claims', `L1_${uid}`, 'events', 'e1'), event(uid, role, 'opened'));
+    return b.commit();
+  };
+  test('a party opens one claim, only once the trip reached unloading', async () => {
+    await seedBooking('in_transit');
+    await assertFails(open(as('customer1'), 'customer1'));
+    await seed((db) => updateDoc(doc(db, 'bookings', 'L1'), { status: 'unloading' }));
+    await assertSucceeds(open(as('customer1'), 'customer1'));
+    await assertSucceeds(open(as('driver1'), 'driver1', claim({ openedBy: 'driver1', type: 'payment' }), 'driver'));
+    await assertFails(open(as('customer2'), 'customer2', claim({ openedBy: 'customer2' })));
+  });
+  test('claim fields are validated and must match the booking', async () => {
+    await seedBooking('delivered');
+    await assertFails(open(as('customer1'), 'customer1', claim({ description: 'short' })));
+    await assertFails(open(as('customer1'), 'customer1', claim({ type: 'bogus' })));
+    await assertFails(open(as('customer1'), 'customer1', claim({ driverId: 'driver2' })));
+    await assertFails(open(as('customer1'), 'customer1', claim({ status: 'resolved' })));
+    await assertFails(open(as('customer1'), 'customer1', claim({ amountPaise: 99999999 })));
+    await assertFails(open(as('customer1'), 'customer1', claim({ extra: 1 })));
+    await assertFails(setDoc(doc(as('customer1'), 'claims', 'L1_driver1'), claim()));
+    await assertSucceeds(open(as('customer1'), 'customer1', claim({ amountPaise: 500000 })));
+  });
+  test('parties and admins read; outsiders do not; parties cannot change status', async () => {
+    await seedBooking('delivered');
+    await open(as('customer1'), 'customer1');
+    const ref = (db) => doc(db, 'claims', 'L1_customer1');
+    await assertSucceeds(getDoc(ref(as('customer1'))));
+    await assertSucceeds(getDoc(ref(as('driver1'))));
+    await assertSucceeds(getDoc(ref(asAdmin())));
+    await assertFails(getDoc(ref(as('customer2'))));
+    await assertSucceeds(getDoc(doc(as('driver1'), 'claims', 'L1_customer1', 'events', 'e1')));
+    await assertFails(getDoc(doc(as('customer2'), 'claims', 'L1_customer1', 'events', 'e1')));
+    await assertFails(updateDoc(ref(as('customer1')), { status: 'resolved', outcome: 'upheld', resolvedBy: 'customer1', updatedAt: serverTimestamp() }));
+    await assertFails(deleteDoc(ref(asAdmin())));
+  });
+  test('timeline: parties message while open, the other party too, admin always; no edits', async () => {
+    await seedBooking('delivered');
+    await open(as('customer1'), 'customer1');
+    const ev = (db, id) => doc(db, 'claims', 'L1_customer1', 'events', id);
+    await assertSucceeds(setDoc(ev(as('driver1'), 'e2'), event('driver1', 'driver')));
+    await assertFails(setDoc(ev(as('driver1'), 'e3'), event('driver1', 'customer')));
+    await assertFails(setDoc(ev(as('driver1'), 'e4'), event('driver1', 'driver', 'resolution')));
+    await assertFails(setDoc(ev(as('customer2'), 'e5'), event('customer2', 'customer')));
+    await assertFails(setDoc(ev(as('driver1'), 'e6'), event('customer1', 'driver')));
+    await assertFails(updateDoc(ev(as('driver1'), 'e2'), { text: 'changed' }));
+    await assertFails(deleteDoc(ev(as('customer1'), 'e1')));
+    await assertSucceeds(setDoc(ev(asAdmin(), 'e7'), event('admin1', 'admin', 'status')));
+  });
+  test('admin reviews and resolves; a resolved claim takes no party messages', async () => {
+    await seedBooking('delivered');
+    await open(as('customer1'), 'customer1');
+    const ref = (db) => doc(db, 'claims', 'L1_customer1');
+    await assertSucceeds(updateDoc(ref(asAdmin()), { status: 'under_review', updatedAt: serverTimestamp() }));
+    await assertFails(updateDoc(ref(asAdmin()), { status: 'resolved', updatedAt: serverTimestamp() }));
+    await assertFails(updateDoc(ref(asAdmin()), { status: 'resolved', outcome: 'upheld', resolvedBy: 'admin1', awardedPaise: -5, updatedAt: serverTimestamp() }));
+    await assertFails(updateDoc(ref(asAdmin()), { status: 'resolved', outcome: 'upheld', resolvedBy: 'admin1', customerId: 'x', updatedAt: serverTimestamp() }));
+    await assertSucceeds(updateDoc(ref(asAdmin()), { status: 'resolved', outcome: 'partial', resolvedBy: 'admin1', resolvedAt: serverTimestamp(), awardedPaise: 60000, resolutionNote: 'ok', updatedAt: serverTimestamp() }));
+    await assertFails(setDoc(doc(as('driver1'), 'claims', 'L1_customer1', 'events', 'late'), event('driver1', 'driver')));
+  });
+});
+
 describe('rating categories and low-rating flags', () => {
   const rating = (extra = {}) => ({ bookingId: 'L1', raterId: 'customer1', ratedId: 'driver1', stars: 2, comment: '', createdAt: serverTimestamp(), ...extra });
   const flag = (extra = {}) => ({ bookingId: 'L1', raterId: 'customer1', ratedId: 'driver1', stars: 2, status: 'open', createdAt: serverTimestamp(), ...extra });

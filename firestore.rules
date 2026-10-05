@@ -1273,6 +1273,64 @@ service cloud.firestore {
     // rating_flags/{ratingId}: written by the rater in the same batch as a
     // rating under 3 stars; only admins read and resolve them.
     // TODO(functions): create the flag server side.
+    // claims/{bookingId}_{openerUid}: a damage / shortage / delay claim opened
+    // by the customer or the driver of a booking that reached unloading.
+    // One per party per booking. Both parties and admins read it; only admins
+    // change status and resolution (record only: no money moves). The
+    // timeline is the append-only `events` subcollection.
+    // TODO(functions): notify the other party.
+    function claimParty(c) {
+      return request.auth.uid == c.customerId || request.auth.uid == c.driverId;
+    }
+
+    match /claims/{claimId} {
+      allow read: if signedIn() && (claimParty(resource.data) || isAdmin());
+      allow create: if signedIn() && validClaim(claimId);
+      allow update: if isAdmin()
+          && changedKeys().hasOnly(['status', 'outcome', 'awardedPaise', 'resolutionNote', 'resolvedBy', 'resolvedAt', 'updatedAt'])
+          && request.resource.data.status in ['under_review', 'resolved']
+          && (request.resource.data.status != 'resolved'
+              || (request.resource.data.get('outcome', '') in ['upheld', 'partial', 'declined']
+                  && request.resource.data.get('resolvedBy', '') == request.auth.uid))
+          && (!('awardedPaise' in request.resource.data) || (request.resource.data.awardedPaise is int
+              && request.resource.data.awardedPaise >= 0 && request.resource.data.awardedPaise <= 10000000))
+          && (!('resolutionNote' in request.resource.data) || (request.resource.data.resolutionNote is string
+              && request.resource.data.resolutionNote.size() <= 1000))
+          && request.resource.data.updatedAt == request.time;
+      allow delete: if false;
+
+      match /events/{eventId} {
+        allow read: if signedIn() && (claimParty(get(docPath('claims', claimId)).data) || isAdmin());
+        allow create: if signedIn()
+            && request.resource.data.keys().hasOnly(['by', 'role', 'kind', 'text', 'createdAt'])
+            && request.resource.data.by == request.auth.uid
+            && request.resource.data.text is string && request.resource.data.text.size() >= 1 && request.resource.data.text.size() <= 1000
+            && request.resource.data.createdAt == request.time
+            && ((isAdmin() && request.resource.data.role == 'admin' && request.resource.data.kind in ['message', 'status', 'resolution'])
+                || (claimParty(getAfter(docPath('claims', claimId)).data)
+                    && request.resource.data.kind in ['opened', 'message']
+                    && getAfter(docPath('claims', claimId)).data.status in ['open', 'under_review']
+                    && request.resource.data.role == (request.auth.uid == getAfter(docPath('claims', claimId)).data.customerId ? 'customer' : 'driver')));
+        allow update, delete: if false;
+      }
+    }
+
+    function validClaim(claimId) {
+      let c = request.resource.data;
+      let b = get(docPath('bookings', c.bookingId)).data;
+      return claimId == c.bookingId + '_' + request.auth.uid
+          && c.keys().hasOnly(['bookingId', 'customerId', 'driverId', 'openedBy', 'type', 'description', 'amountPaise', 'status', 'createdAt', 'updatedAt'])
+          && c.openedBy == request.auth.uid
+          && c.customerId == b.customerId && c.driverId == b.driverId
+          && (c.openedBy == b.customerId || c.openedBy == b.driverId)
+          && b.status in ['unloading', 'delivered']
+          && c.type in ['damage', 'shortage', 'delay', 'payment', 'behaviour', 'other']
+          && c.description is string && c.description.size() >= 10 && c.description.size() <= 1000
+          && (!('amountPaise' in c) || (c.amountPaise is int && c.amountPaise >= 0 && c.amountPaise <= 10000000))
+          && c.status == 'open'
+          && c.createdAt == request.time && c.updatedAt == request.time;
+    }
+
     match /rating_flags/{ratingId} {
       allow read: if isAdmin();
       allow create: if signedIn()

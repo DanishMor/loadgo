@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../core/claims/claim_screens.dart';
 import '../core/constants/logistics.dart';
 import '../core/models/booking.dart';
 import '../core/services/booking_service.dart';
@@ -57,6 +58,8 @@ class DriverTripScreen extends StatelessWidget {
           const SizedBox(height: 14),
           PaymentCard(booking: booking),
           const SizedBox(height: 14),
+          ClaimCard(booking: booking),
+          const SizedBox(height: 8),
           BookingTimeline(booking: booking),
           const SizedBox(height: 12),
           TripDocumentButtons(booking: booking),

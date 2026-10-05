@@ -34,6 +34,7 @@ import 'fleet_strings.dart';
 import 'business_team_strings.dart';
 import 'repeat_strings.dart';
 import 'rating_strings.dart';
+import 'dispute_strings.dart';
 import 'trip_watch_strings.dart';
 import 'vehicle_strings.dart';
 
@@ -66,6 +67,7 @@ const List<Map<String, List<String>>> stringTables = [
   businessTeamStrings,
   repeatStrings,
   ratingStrings,
+  disputeStrings,
   adminStrings,
   matchStrings,
   settingsStrings,
