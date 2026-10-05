@@ -9,6 +9,7 @@ import '../core/services/booking_service.dart';
 import '../core/services/payment_service.dart';
 import '../core/services/payout_service.dart';
 import '../core/models/risk.dart';
+import '../core/wallet/txn_history_screen.dart';
 import '../core/widgets/common.dart';
 import '../core/widgets/live_stream.dart';
 
@@ -94,6 +95,14 @@ class _WalletScreenState extends State<WalletScreen> {
         backgroundColor: AppColors.background,
         scrolledUnderElevation: 0,
         title: Text(tr(context, 'wallet'), style: const TextStyle(fontWeight: FontWeight.w700)),
+        actions: [
+          IconButton(
+            key: const ValueKey('openTxnHistory'),
+            tooltip: tr(context, 'txnTitle'),
+            icon: const Icon(Icons.receipt_long_outlined),
+            onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const TxnHistoryScreen(isDriver: true))),
+          ),
+        ],
       ),
       body: SafeArea(
         child: LiveStream<List<LedgerEntry>>(

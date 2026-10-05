@@ -9,10 +9,11 @@ import 'earnings.dart';
 class Tip {
   final String bookingId;
   final String driverId;
+  final String customerId;
   final int amountPaise;
   final DateTime? createdAt;
 
-  const Tip({required this.bookingId, required this.driverId, required this.amountPaise, this.createdAt});
+  const Tip({required this.bookingId, required this.driverId, this.customerId = '', required this.amountPaise, this.createdAt});
 
   /// Largest tip, in paise (Rs 5000).
   static const maxPaise = 500000;
@@ -23,6 +24,7 @@ class Tip {
   factory Tip.fromDoc(String id, Map<String, dynamic> d) => Tip(
         bookingId: id,
         driverId: d['driverId'] as String? ?? '',
+        customerId: d['customerId'] as String? ?? '',
         amountPaise: (d['amountPaise'] as num?)?.toInt() ?? 0,
         createdAt: (d['createdAt'] as Timestamp?)?.toDate(),
       );

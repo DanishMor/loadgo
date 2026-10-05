@@ -36,6 +36,7 @@ import 'repeat_strings.dart';
 import 'rating_strings.dart';
 import 'dispute_strings.dart';
 import 'invoice_strings.dart';
+import 'txn_strings.dart';
 import 'trip_watch_strings.dart';
 import 'vehicle_strings.dart';
 
@@ -70,6 +71,7 @@ const List<Map<String, List<String>>> stringTables = [
   ratingStrings,
   disputeStrings,
   invoiceStrings,
+  txnStrings,
   adminStrings,
   matchStrings,
   settingsStrings,

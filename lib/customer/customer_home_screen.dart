@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../core/profile/profile_nav_tile.dart';
 import 'business_hub_screen.dart';
+import '../core/wallet/txn_history_screen.dart';
 import 'my_drivers_screen.dart';
 import 'templates_screen.dart';
 import 'business_invites_card.dart';
@@ -80,6 +81,12 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
         icon: Icons.business_center_outlined,
         titleKey: 'businessTools',
         screen: (_) => const BusinessHubScreen(),
+      ),
+      ProfileNavTile(
+        key: const ValueKey('profileTransactions'),
+        icon: Icons.account_balance_wallet_outlined,
+        titleKey: 'txnTitle',
+        screen: (_) => const TxnHistoryScreen(isDriver: false),
       ),
       ProfileNavTile(
         key: const ValueKey('profileTemplates'),

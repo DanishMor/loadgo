@@ -64,6 +64,17 @@ class DriverExtrasService {
     });
   }
 
+  /// Tips the signed-in customer gave, newest first.
+  static Stream<List<Tip>> watchGivenTips() {
+    final uid = Backend.uid;
+    if (uid == null) return Stream.value(const []);
+    return _db.collection('tips').where('customerId', isEqualTo: uid).snapshots().map((s) {
+      final list = [for (final d in s.docs) Tip.fromDoc(d.id, d.data())];
+      list.sort((a, b) => (b.createdAt ?? DateTime(0)).compareTo(a.createdAt ?? DateTime(0)));
+      return list;
+    });
+  }
+
   // ------------------------------------------------------------------
   // incentives
   // ------------------------------------------------------------------
