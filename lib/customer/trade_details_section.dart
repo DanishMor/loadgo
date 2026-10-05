@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../core/enterprise/validators.dart';
 import '../core/l10n/l10n.dart';
@@ -45,14 +46,12 @@ class TradeDetailsSection extends StatelessWidget {
           controller: container,
           textCapitalization: TextCapitalization.characters,
           decoration: InputDecoration(labelText: tr(context, 'containerNumber')),
-          validator: (v) => (v ?? '').trim().isEmpty || isValidContainerNumber(normaliseContainer(v!)) ? null : tr(context, 'containerInvalid'),
-        ),
+          validator: (v) => (v ?? '').trim().isEmpty || isValidContainerNumber(normaliseContainer(v!)) ? null : tr(context, 'containerInvalid'), inputFormatters: [LengthLimitingTextInputFormatter(30)]),
         TextFormField(
           key: const ValueKey('sealNumberField'),
           controller: seal,
           decoration: InputDecoration(labelText: tr(context, 'sealNumber')),
-          validator: (v) => (v ?? '').trim().isEmpty || isValidSealNumber(v!) ? null : tr(context, 'sealInvalid'),
-        ),
+          validator: (v) => (v ?? '').trim().isEmpty || isValidSealNumber(v!) ? null : tr(context, 'sealInvalid'), inputFormatters: [LengthLimitingTextInputFormatter(30)]),
         const SizedBox(height: 8),
         Wrap(spacing: 8, children: [
           OutlinedButton.icon(

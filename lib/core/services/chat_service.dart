@@ -6,6 +6,7 @@ import '../chat/off_platform.dart';
 import '../models/booking.dart';
 import '../models/chat_message.dart';
 import 'backend.dart';
+import 'rate_limit_service.dart';
 
 /// Empty, too long, or the other person blocked you.
 class ChatSendException implements Exception {
@@ -54,13 +55,18 @@ class ChatService {
     final t = text.trim();
     if (t.isEmpty) throw ChatSendException('empty');
     if (t.length > ChatMessage.maxLength) throw ChatSendException('tooLong');
+    final msgRef = _messages(booking.id).doc();
+    final rate = await RateLimit.prepare(RateLimit.messageKind, docId: msgRef.id);
     try {
-      await _messages(booking.id).add({
+      final batch = Backend.db.batch();
+      batch.set(msgRef, {
         'senderId': uid,
         'text': t,
         'flagged': looksOffPlatform(t),
         'createdAt': FieldValue.serverTimestamp(),
       });
+      rate.addToBatch(batch);
+      await batch.commit();
     } on FirebaseException catch (e) {
       // The rules refuse messages to someone who blocked you.
       if (e.code == 'permission-denied') throw ChatSendException('blocked');

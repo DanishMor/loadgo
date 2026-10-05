@@ -86,7 +86,7 @@ class _DriverEvidenceCardState extends State<DriverEvidenceCard> {
                 key: const ValueKey('odoField'),
                 controller: _km,
                 keyboardType: TextInputType.number,
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                inputFormatters: [LengthLimitingTextInputFormatter(10), FilteringTextInputFormatter.digitsOnly],
                 decoration: InputDecoration(labelText: tr(context, 'odometerKm')),
               ),
             ),

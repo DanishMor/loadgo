@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { after, before, beforeEach, describe, test } from 'node:test';
 import { assertFails, assertSucceeds, initializeTestEnvironment } from '@firebase/rules-unit-testing';
-import { GeoPoint, Timestamp, addDoc, deleteField, doc, getDoc, getDocs, collection, query, where, setDoc, updateDoc, deleteDoc, writeBatch, serverTimestamp, increment } from 'firebase/firestore';
+import { GeoPoint, Timestamp, addDoc as rawAddDoc, deleteField, doc, getDoc, getDocs, collection, query, where, setDoc as rawSetDoc, updateDoc, deleteDoc, writeBatch as rawWriteBatch, serverTimestamp, increment } from 'firebase/firestore';
 
 let env;
 
@@ -20,7 +20,67 @@ beforeEach(async () => {
   await env.withSecurityRulesDisabled((ctx) => setDoc(doc(ctx.firestore(), 'admins', 'admin1'), { createdBy: 'console' }));
 });
 
-const as = (uid) => env.authenticatedContext(uid).firestore();
+const as = (uid) => {
+  const db = env.authenticatedContext(uid).firestore();
+  db.__uid = uid;
+  if (db._delegate) db._delegate.__uid = uid; // doc(db, ...).firestore is the delegate
+  return db;
+};
+
+// Loads, offers and chat messages must bump the user's hourly counter in the
+// same batch (rate_limits). These wrappers do that for every test, so the
+// existing suites keep testing what they test; the rate-limit suite below uses
+// the raw functions. The counter is seeded as an expired window, so a bump is
+// always "first in a new hour".
+const COUNTED_PATH = /^(loads|offers)\/[^/]+$|^bookings\/[^/]+\/messages\/[^/]+$/;
+const kindOf = (path) => (path.startsWith('loads/') ? 'load' : path.startsWith('offers/') ? 'offer' : 'message');
+const expiredCounter = (uid, kind) =>
+  env.withSecurityRulesDisabled((ctx) =>
+    rawSetDoc(doc(ctx.firestore(), 'rate_limits', `${uid}_${kind}`), { count: 1, windowStart: Timestamp.fromMillis(Date.now() - 7200000), last: 'seed' }));
+const counted = (ref, db) => !!db.__uid && COUNTED_PATH.test(ref.path);
+
+const setDoc = async (ref, data, opts) => {
+  const db = ref.firestore;
+  if (opts !== undefined || !counted(ref, db)) return opts === undefined ? rawSetDoc(ref, data) : rawSetDoc(ref, data, opts);
+  const kind = kindOf(ref.path);
+  await expiredCounter(db.__uid, kind);
+  const b = rawWriteBatch(db);
+  b.set(ref, data);
+  b.set(doc(db, 'rate_limits', `${db.__uid}_${kind}`), { count: 1, windowStart: serverTimestamp(), last: ref.id });
+  return b.commit();
+};
+
+const addDoc = (col, data) => (COUNTED_PATH.test(`${col.path}/x`) && col.firestore.__uid ? setDoc(doc(col), data) : rawAddDoc(col, data));
+
+const writeBatch = (db) => {
+  const real = rawWriteBatch(db);
+  let paid = null;
+  const batch = {
+    set(ref, data, opts) {
+      if (opts === undefined && paid === null && counted(ref, db)) paid = ref;
+      if (opts === undefined) real.set(ref, data);
+      else real.set(ref, data, opts);
+      return batch;
+    },
+    update(...args) {
+      real.update(...args);
+      return batch;
+    },
+    delete(ref) {
+      real.delete(ref);
+      return batch;
+    },
+    async commit() {
+      if (paid) {
+        const kind = kindOf(paid.path);
+        await expiredCounter(db.__uid, kind);
+        real.set(doc(db, 'rate_limits', `${db.__uid}_${kind}`), { count: 1, windowStart: serverTimestamp(), last: paid.id });
+      }
+      return real.commit();
+    },
+  };
+  return batch;
+};
 const asAdmin = () => env.authenticatedContext('admin1').firestore();
 const anon = () => env.unauthenticatedContext().firestore();
 const seed = (fn) => env.withSecurityRulesDisabled((ctx) => fn(ctx.firestore()));
@@ -2263,6 +2323,124 @@ describe('favourite routes', () => {
     await assertFails(setDoc(doc(as('driver1'), 'users', 'driver1', 'favourite_routes', 'r3'), route({ pickup: 'M' })));
     await assertFails(setDoc(doc(as('driver1'), 'users', 'driver1', 'favourite_routes', 'r4'), route({ extra: 1 })));
     await assertSucceeds(deleteDoc(doc(as('driver1'), 'users', 'driver1', 'favourite_routes', 'r1')));
+  });
+});
+
+describe('hourly abuse limits', () => {
+  const counter = (uid, kind) => doc(as(uid), 'rate_limits', `${uid}_${kind}`);
+  const seedCounter = (uid, kind, count, minutesAgo) =>
+    seed((db) => rawSetDoc(doc(db, 'rate_limits', `${uid}_${kind}`), { count, windowStart: Timestamp.fromMillis(Date.now() - minutesAgo * 60000), last: 'seed' }));
+  const fresh = () => ({ count: 1, windowStart: serverTimestamp() });
+  // one raw batch: the load plus the counter write
+  const postLoad = (id, bump, uid = 'customer1') => {
+    const db = as(uid);
+    const b = rawWriteBatch(db);
+    b.set(doc(db, 'loads', id), { ...LOAD, shipperId: uid, createdAt: serverTimestamp() });
+    if (bump) b.set(doc(db, 'rate_limits', `${uid}_load`), bump);
+    return b.commit();
+  };
+
+  test('a load needs a bump that names it; the first one starts a window at 1', async () => {
+    await assertFails(postLoad('L1', null));
+    await assertFails(postLoad('L1', { ...fresh(), last: 'other' }));
+    await assertFails(postLoad('L1', { count: 2, windowStart: serverTimestamp(), last: 'L1' }));
+    await assertSucceeds(postLoad('L1', { ...fresh(), last: 'L1' }));
+  });
+  test('inside a window the counter goes up by exactly one and keeps its start', async () => {
+    await seedCounter('customer1', 'load', 5, 10);
+    const start = (await getDoc(counter('customer1', 'load'))).data().windowStart;
+    await assertFails(postLoad('L1', null));
+    await assertFails(postLoad('L1', { count: 5, windowStart: start, last: 'L1' }));
+    await assertFails(postLoad('L1', { count: 9, windowStart: start, last: 'L1' }));
+    await assertFails(postLoad('L1', { count: 1, windowStart: serverTimestamp(), last: 'L1' }), 'window is still open: no reset');
+    await assertFails(postLoad('L1', { count: 6, windowStart: serverTimestamp(), last: 'L1' }));
+    await assertSucceeds(postLoad('L1', { count: 6, windowStart: start, last: 'L1' }));
+  });
+  test('one bump pays for one document only', async () => {
+    const db = as('customer1');
+    const b = rawWriteBatch(db);
+    b.set(doc(db, 'loads', 'L1'), { ...LOAD, createdAt: serverTimestamp() });
+    b.set(doc(db, 'loads', 'L2'), { ...LOAD, createdAt: serverTimestamp() });
+    b.set(doc(db, 'rate_limits', 'customer1_load'), { ...fresh(), last: 'L1' });
+    await assertFails(b.commit());
+  });
+  test('the 31st load in an hour is refused; a new hour starts again', async () => {
+    await seedCounter('customer1', 'load', 29, 5);
+    const start = (await getDoc(counter('customer1', 'load'))).data().windowStart;
+    await assertSucceeds(postLoad('L30', { count: 30, windowStart: start, last: 'L30' }));
+    await assertFails(postLoad('L31', { count: 31, windowStart: start, last: 'L31' }));
+    await assertFails(postLoad('L31', { ...fresh(), last: 'L31' }));
+    await seedCounter('customer1', 'load', 30, 61);
+    await assertSucceeds(postLoad('L32', { ...fresh(), last: 'L32' }));
+  });
+  test('offers (60) and chat messages (120) have their own counters and limits', async () => {
+    await seedOpenLoad();
+    const offer = (bump, uid = 'driver1') => {
+      const db = as(uid);
+      const b = rawWriteBatch(db);
+      b.set(doc(db, 'offers', `L1_${uid}`), {
+        loadId: 'L1', driverId: uid, customerId: 'customer1', vehicleId: 'v1', vehicleNumber: VEHICLE.number, vehicleType: '20ft', driverName: 'R',
+        pricePaise: 100000, originalPaise: 100000, status: 'pending', createdAt: serverTimestamp(), updatedAt: serverTimestamp(),
+      });
+      if (bump) b.set(doc(db, 'rate_limits', `${uid}_offer`), bump);
+      return b.commit();
+    };
+    await assertFails(offer(null));
+    await seedCounter('driver1', 'offer', 60, 3);
+    await assertFails(offer({ count: 61, windowStart: (await getDoc(counter('driver1', 'offer'))).data().windowStart, last: 'L1_driver1' }));
+    await seedCounter('driver1', 'offer', 59, 3);
+    await assertSucceeds(offer({ count: 60, windowStart: (await getDoc(counter('driver1', 'offer'))).data().windowStart, last: 'L1_driver1' }));
+
+    await seedBooking('accepted');
+    const say = (bump, id = 'm1') => {
+      const db = as('customer1');
+      const b = rawWriteBatch(db);
+      b.set(doc(db, 'bookings', 'L1', 'messages', id), { senderId: 'customer1', text: 'hi', flagged: false, createdAt: serverTimestamp() });
+      if (bump) b.set(doc(db, 'rate_limits', 'customer1_message'), bump);
+      return b.commit();
+    };
+    await assertFails(say(null));
+    await seedCounter('customer1', 'message', 120, 3);
+    const w = (await getDoc(counter('customer1', 'message'))).data().windowStart;
+    await assertFails(say({ count: 121, windowStart: w, last: 'm1' }));
+    await seedCounter('customer1', 'message', 119, 3);
+    const w2 = (await getDoc(counter('customer1', 'message'))).data().windowStart;
+    await assertSucceeds(say({ count: 120, windowStart: w2, last: 'm1' }));
+    await assertFails(say({ ...fresh(), last: 'm2' }, 'm2'));
+  });
+  test('counters are private, only your own, only the three kinds, never deleted', async () => {
+    await assertFails(rawSetDoc(doc(as('customer2'), 'rate_limits', 'customer1_load'), { ...fresh(), last: 'x' }));
+    await assertFails(rawSetDoc(doc(as('customer1'), 'rate_limits', 'customer1_ticket'), { ...fresh(), last: 'x' }));
+    await assertSucceeds(rawSetDoc(doc(as('customer1'), 'rate_limits', 'customer1_load'), { ...fresh(), last: 'x' }));
+    await assertSucceeds(getDoc(counter('customer1', 'load')));
+    await assertFails(getDoc(doc(as('customer2'), 'rate_limits', 'customer1_load')));
+    await assertFails(deleteDoc(counter('customer1', 'load')));
+    await assertFails(rawSetDoc(counter('customer1', 'load'), { count: 1, windowStart: serverTimestamp(), last: 'y', extra: 1 }));
+  });
+});
+
+describe('input length limits', () => {
+  const post = (extra) => setDoc(doc(as('customer1'), 'loads', 'L1'), { ...LOAD, createdAt: serverTimestamp(), ...extra });
+  test('load text and numbers are capped', async () => {
+    await assertFails(post({ pickup: 'x'.repeat(201) }));
+    await assertFails(post({ drop: 'x'.repeat(201) }));
+    await assertFails(post({ cargoType: 'x'.repeat(61) }));
+    await assertFails(post({ vehicleType: 'x'.repeat(41) }));
+    await assertFails(post({ notes: 'x'.repeat(501) }));
+    await assertFails(post({ weight: 1001 }));
+    await assertFails(post({ budget: 2000000000 }));
+    await assertSucceeds(post({ pickup: 'x'.repeat(200), notes: 'n'.repeat(500), weight: 1000 }));
+  });
+  test('profile text is capped', async () => {
+    await assertFails(setDoc(doc(as('u1'), 'users', 'u1'), { phone: '+91', name: 'x'.repeat(81) }));
+    await assertFails(setDoc(doc(as('u1'), 'users', 'u1'), { phone: '+91', email: 'x'.repeat(101) }));
+    await assertSucceeds(setDoc(doc(as('u1'), 'users', 'u1'), { phone: '+91', name: 'x'.repeat(80), companyName: 'c'.repeat(100) }));
+    await assertFails(updateDoc(doc(as('u1'), 'users', 'u1'), { driverName: 'x'.repeat(81) }));
+  });
+  test('vehicle type and rc number are capped', async () => {
+    await assertFails(addVehicle(as('driver1'), 'v9', { ...VEHICLE, number: 'MH12AB9999', type: 'x'.repeat(41) }));
+    await assertFails(addVehicle(as('driver1'), 'v9', { ...VEHICLE, number: 'MH12AB9999', rcNumber: 'x'.repeat(31) }));
+    await assertSucceeds(addVehicle(as('driver1'), 'v9', { ...VEHICLE, number: 'MH12AB9999' }));
   });
 });
 

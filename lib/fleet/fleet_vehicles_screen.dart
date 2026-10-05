@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../core/l10n/l10n.dart';
 import '../core/models/fleet.dart';
@@ -34,15 +35,15 @@ class _FleetVehiclesScreenState extends State<FleetVehiclesScreen> {
           title: Text(tr(c, 'addVehicle')),
           content: SingleChildScrollView(
             child: Column(mainAxisSize: MainAxisSize.min, children: [
-              TextField(key: const ValueKey('fvNumber'), controller: number, textCapitalization: TextCapitalization.characters, decoration: InputDecoration(labelText: tr(c, 'vehicleNumber'))),
+              TextField(key: const ValueKey('fvNumber'), controller: number, textCapitalization: TextCapitalization.characters, decoration: InputDecoration(labelText: tr(c, 'vehicleNumber')), inputFormatters: [LengthLimitingTextInputFormatter(30)]),
               DropdownButtonFormField<String>(
                 key: const ValueKey('fvType'),
                 initialValue: type,
                 items: vehicleTypeItems(c, keep: type),
                 onChanged: (v) => setS(() => type = v ?? type),
               ),
-              TextField(key: const ValueKey('fvCapacity'), controller: capacity, keyboardType: const TextInputType.numberWithOptions(decimal: true), decoration: InputDecoration(labelText: tr(c, 'capacityTons'))),
-              TextField(key: const ValueKey('fvRc'), controller: rc, textCapitalization: TextCapitalization.characters, decoration: InputDecoration(labelText: tr(c, 'rcNumber'))),
+              TextField(key: const ValueKey('fvCapacity'), controller: capacity, keyboardType: const TextInputType.numberWithOptions(decimal: true), decoration: InputDecoration(labelText: tr(c, 'capacityTons')), inputFormatters: [LengthLimitingTextInputFormatter(10)]),
+              TextField(key: const ValueKey('fvRc'), controller: rc, textCapitalization: TextCapitalization.characters, decoration: InputDecoration(labelText: tr(c, 'rcNumber')), inputFormatters: [LengthLimitingTextInputFormatter(30)]),
             ]),
           ),
           actions: [

@@ -48,7 +48,7 @@ class _WalletScreenState extends State<WalletScreen> {
           key: const ValueKey('payoutAmount'),
           controller: ctrl,
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))],
+          inputFormatters: [LengthLimitingTextInputFormatter(10), FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))],
           decoration: InputDecoration(prefixIcon: const Icon(Icons.currency_rupee_rounded), helperText: trf(context, 'payoutAvailable', {'amount': formatPaise(b.available)})),
         ),
         actions: [

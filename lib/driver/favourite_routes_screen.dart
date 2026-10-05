@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../core/l10n/l10n.dart';
 import '../core/matching/load_ranker.dart';
@@ -53,16 +54,14 @@ class _FavouriteRoutesScreenState extends State<FavouriteRoutesScreen> {
               child: TextField(
                 key: const ValueKey('favPickup'),
                 controller: _pickup,
-                decoration: InputDecoration(labelText: tr(context, 'pickupLocation')),
-              ),
+                decoration: InputDecoration(labelText: tr(context, 'pickupLocation')), inputFormatters: [LengthLimitingTextInputFormatter(100)]),
             ),
             const SizedBox(width: 8),
             Expanded(
               child: TextField(
                 key: const ValueKey('favDrop'),
                 controller: _drop,
-                decoration: InputDecoration(labelText: tr(context, 'dropLocation')),
-              ),
+                decoration: InputDecoration(labelText: tr(context, 'dropLocation')), inputFormatters: [LengthLimitingTextInputFormatter(100)]),
             ),
             IconButton.filled(key: const ValueKey('favAdd'), onPressed: _add, icon: const Icon(Icons.add_rounded)),
           ]),

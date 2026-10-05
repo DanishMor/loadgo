@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../core/enterprise/validators.dart';
 import '../core/identity/identity_index.dart';
@@ -123,16 +124,14 @@ class _CustomerProfileSetupScreenState extends State<CustomerProfileSetupScreen>
                     textCapitalization: TextCapitalization.words,
                     textInputAction: TextInputAction.next,
                     decoration: const InputDecoration(prefixIcon: Icon(Icons.person_outline_rounded)),
-                    validator: (v) => (v == null || v.trim().length < 2) ? tr(context, 'nameRequired') : null,
-                  ),
+                    validator: (v) => (v == null || v.trim().length < 2) ? tr(context, 'nameRequired') : null, inputFormatters: [LengthLimitingTextInputFormatter(100)]),
                   const SizedBox(height: 18),
                   _label(tr(context, 'companyNameOptional')),
                   TextFormField(
                     controller: _companyCtrl,
                     textCapitalization: TextCapitalization.words,
                     textInputAction: TextInputAction.next,
-                    decoration: const InputDecoration(prefixIcon: Icon(Icons.business_rounded)),
-                  ),
+                    decoration: const InputDecoration(prefixIcon: Icon(Icons.business_rounded)), inputFormatters: [LengthLimitingTextInputFormatter(100)]),
                   const SizedBox(height: 18),
                   _label(tr(context, 'emailOptional')),
                   TextFormField(
@@ -143,8 +142,7 @@ class _CustomerProfileSetupScreenState extends State<CustomerProfileSetupScreen>
                       final e = v?.trim() ?? '';
                       if (e.isEmpty) return null;
                       return RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(e) ? null : tr(context, 'invalidEmail');
-                    },
-                  ),
+                    }, inputFormatters: [LengthLimitingTextInputFormatter(100)]),
                   const SizedBox(height: 18),
                   _label(tr(context, 'gstOptional')),
                   TextFormField(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../core/enterprise/shipment_timeline.dart';
 import '../core/enterprise/validators.dart';
@@ -160,7 +161,7 @@ class _NewShipmentScreenState extends State<NewShipmentScreen> {
                 key: const ValueKey('shipOrigin'),
                 controller: _origin,
                 decoration: InputDecoration(labelText: tr(context, 'shipOrigin')),
-                validator: _required),
+                validator: _required, inputFormatters: [LengthLimitingTextInputFormatter(100)]),
             TextFormField(
               key: const ValueKey('shipHub'),
               controller: _hub,
@@ -173,14 +174,13 @@ class _NewShipmentScreenState extends State<NewShipmentScreen> {
                   onPressed: _pickHub,
                 ),
               ),
-              validator: _required,
-            ),
+              validator: _required, inputFormatters: [LengthLimitingTextInputFormatter(100)]),
             TextFormField(
                 key: const ValueKey('shipDestination'),
                 controller: _destination,
                 decoration: InputDecoration(labelText: tr(context, 'shipDestination')),
-                validator: _required),
-            TextFormField(controller: _cargo, decoration: InputDecoration(labelText: tr(context, 'cargoType'))),
+                validator: _required, inputFormatters: [LengthLimitingTextInputFormatter(100)]),
+            TextFormField(controller: _cargo, decoration: InputDecoration(labelText: tr(context, 'cargoType')), inputFormatters: [LengthLimitingTextInputFormatter(100)]),
             TextFormField(
               key: const ValueKey('shipWeight'),
               controller: _weight,
@@ -189,8 +189,7 @@ class _NewShipmentScreenState extends State<NewShipmentScreen> {
               validator: (v) {
                 final n = num.tryParse(v?.trim() ?? '');
                 return (n == null || n <= 0 || n > 100) ? tr(context, 'invalidNumber') : null;
-              },
-            ),
+              }, inputFormatters: [LengthLimitingTextInputFormatter(10)]),
             DropdownButtonFormField<String>(
               initialValue: _vehicleType,
               decoration: InputDecoration(labelText: tr(context, 'vehicleTypeNeeded')),
@@ -202,14 +201,12 @@ class _NewShipmentScreenState extends State<NewShipmentScreen> {
               controller: _container,
               textCapitalization: TextCapitalization.characters,
               decoration: InputDecoration(labelText: tr(context, 'containerNumber')),
-              validator: (v) => (v ?? '').trim().isEmpty || isValidContainerNumber(normaliseContainer(v!)) ? null : tr(context, 'containerInvalid'),
-            ),
+              validator: (v) => (v ?? '').trim().isEmpty || isValidContainerNumber(normaliseContainer(v!)) ? null : tr(context, 'containerInvalid'), inputFormatters: [LengthLimitingTextInputFormatter(30)]),
             TextFormField(
               key: const ValueKey('shipSeal'),
               controller: _seal,
               decoration: InputDecoration(labelText: tr(context, 'sealNumber')),
-              validator: (v) => (v ?? '').trim().isEmpty || isValidSealNumber(v!) ? null : tr(context, 'sealInvalid'),
-            ),
+              validator: (v) => (v ?? '').trim().isEmpty || isValidSealNumber(v!) ? null : tr(context, 'sealInvalid'), inputFormatters: [LengthLimitingTextInputFormatter(30)]),
             const SizedBox(height: 8),
             ListTile(
               contentPadding: EdgeInsets.zero,

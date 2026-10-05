@@ -126,7 +126,7 @@ class _PriceDialogState extends State<_PriceDialog> {
               controller: _ctrl,
               autofocus: true,
               keyboardType: TextInputType.number,
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              inputFormatters: [LengthLimitingTextInputFormatter(10), FilteringTextInputFormatter.digitsOnly],
               decoration: InputDecoration(labelText: widget.label, prefixIcon: const Icon(Icons.currency_rupee_rounded)),
               validator: (v) {
                 final n = int.tryParse(v?.trim() ?? '');

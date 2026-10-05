@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../core/profile/profile_nav_tile.dart';
 import 'business_hub_screen.dart';
@@ -233,8 +234,7 @@ class _CustomerHomeContent extends StatelessWidget {
                   prefixIcon: const Icon(Icons.search_rounded, color: Color(0xFF667085)),
                   hintText: tr(context, 'search'),
                   hintStyle: const TextStyle(color: Color(0xFF98A2B3), fontSize: 14),
-                ),
-              ),
+                ), inputFormatters: [LengthLimitingTextInputFormatter(100)]),
             ),
             RemindersBanner(isDriver: false, onOpen: (r) => _openReminder(context, r)),
             const BusinessInvitesCard(),

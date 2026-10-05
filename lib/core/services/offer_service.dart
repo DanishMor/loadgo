@@ -4,6 +4,7 @@ import '../models/load.dart';
 import '../models/offer.dart';
 import '../models/vehicle.dart';
 import 'backend.dart';
+import 'rate_limit_service.dart';
 import 'risk_service.dart';
 import 'booking_service.dart';
 
@@ -27,8 +28,10 @@ class OfferService {
     await RiskService.ensureCanTransact();
     final ref = _col.doc(Offer.idFor(load.id, uid));
     final profile = (await Backend.db.collection('users').doc(uid).get()).data() ?? const {};
+    final rate = await RateLimit.prepare(RateLimit.offerKind, docId: ref.id);
     await Backend.db.runTransaction((tx) async {
       if ((await tx.get(ref)).exists) throw OfferExistsException();
+      rate.addToTransaction(tx);
       tx.set(ref, {
         'loadId': load.id,
         'driverId': uid,

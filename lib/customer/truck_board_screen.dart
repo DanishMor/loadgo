@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../core/l10n/l10n.dart';
 import '../core/models/risk.dart';
@@ -102,9 +103,9 @@ class _TruckBoardScreenState extends State<TruckBoardScreen> {
         title: Text(tr(c, 'requestTruck')),
         content: SingleChildScrollView(
           child: Column(mainAxisSize: MainAxisSize.min, children: [
-            TextField(key: const ValueKey('reqPickup'), controller: pickup, decoration: InputDecoration(labelText: tr(c, 'pickupLocation'))),
-            TextField(key: const ValueKey('reqDrop'), controller: drop, decoration: InputDecoration(labelText: tr(c, 'dropLocation'))),
-            TextField(key: const ValueKey('reqWeight'), controller: weight, keyboardType: const TextInputType.numberWithOptions(decimal: true), decoration: InputDecoration(labelText: tr(c, 'weightTons'))),
+            TextField(key: const ValueKey('reqPickup'), controller: pickup, decoration: InputDecoration(labelText: tr(c, 'pickupLocation')), inputFormatters: [LengthLimitingTextInputFormatter(100)]),
+            TextField(key: const ValueKey('reqDrop'), controller: drop, decoration: InputDecoration(labelText: tr(c, 'dropLocation')), inputFormatters: [LengthLimitingTextInputFormatter(100)]),
+            TextField(key: const ValueKey('reqWeight'), controller: weight, keyboardType: const TextInputType.numberWithOptions(decimal: true), decoration: InputDecoration(labelText: tr(c, 'weightTons')), inputFormatters: [LengthLimitingTextInputFormatter(10)]),
             TextField(key: const ValueKey('reqNote'), controller: note, maxLength: 200, decoration: InputDecoration(labelText: tr(c, 'noteOptional'))),
           ]),
         ),
@@ -144,9 +145,9 @@ class _TruckBoardScreenState extends State<TruckBoardScreen> {
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 4, 20, 0),
             child: Row(children: [
-              Expanded(child: TextField(key: const ValueKey('boardFrom'), controller: _from, onChanged: (_) => setState(() => _shown = _boardPage), decoration: InputDecoration(labelText: tr(context, 'routeFrom')))),
+              Expanded(child: TextField(key: const ValueKey('boardFrom'), controller: _from, onChanged: (_) => setState(() => _shown = _boardPage), decoration: InputDecoration(labelText: tr(context, 'routeFrom')), inputFormatters: [LengthLimitingTextInputFormatter(100)])),
               const SizedBox(width: 8),
-              Expanded(child: TextField(key: const ValueKey('boardTo'), controller: _to, onChanged: (_) => setState(() => _shown = _boardPage), decoration: InputDecoration(labelText: tr(context, 'routeTo')))),
+              Expanded(child: TextField(key: const ValueKey('boardTo'), controller: _to, onChanged: (_) => setState(() => _shown = _boardPage), decoration: InputDecoration(labelText: tr(context, 'routeTo')), inputFormatters: [LengthLimitingTextInputFormatter(100)])),
             ]),
           ),
           Padding(
@@ -170,8 +171,7 @@ class _TruckBoardScreenState extends State<TruckBoardScreen> {
                   controller: _capacity,
                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
                   onChanged: (_) => setState(() => _shown = _boardPage),
-                  decoration: InputDecoration(labelText: tr(context, 'capacityMin')),
-                ),
+                  decoration: InputDecoration(labelText: tr(context, 'capacityMin')), inputFormatters: [LengthLimitingTextInputFormatter(10)]),
               ),
               const SizedBox(width: 8),
               OutlinedButton(

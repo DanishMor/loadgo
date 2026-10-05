@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../core/l10n/l10n.dart';
 import '../core/models/risk.dart';
@@ -105,8 +106,8 @@ class _EmptyTrucksScreenState extends State<EmptyTrucksScreen> {
               items: [for (final v in _vehicles) DropdownMenuItem(value: v.id, child: Text('${v.number} • ${vehicleTypeLabel(context, v.type)}'))],
               onChanged: (v) => setState(() => _vehicleId = v),
             ),
-            TextField(key: const ValueKey('truckFrom'), controller: _from, decoration: InputDecoration(labelText: tr(context, 'routeFrom'))),
-            TextField(key: const ValueKey('truckTo'), controller: _to, decoration: InputDecoration(labelText: tr(context, 'routeTo'))),
+            TextField(key: const ValueKey('truckFrom'), controller: _from, decoration: InputDecoration(labelText: tr(context, 'routeFrom')), inputFormatters: [LengthLimitingTextInputFormatter(100)]),
+            TextField(key: const ValueKey('truckTo'), controller: _to, decoration: InputDecoration(labelText: tr(context, 'routeTo')), inputFormatters: [LengthLimitingTextInputFormatter(100)]),
             const SizedBox(height: 8),
             OutlinedButton.icon(
               key: const ValueKey('truckDate'),

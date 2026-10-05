@@ -79,7 +79,7 @@ class _TipCardState extends State<TipCard> {
                       key: const ValueKey('tipCustom'),
                       controller: _ctrl,
                       keyboardType: TextInputType.number,
-                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                      inputFormatters: [LengthLimitingTextInputFormatter(10), FilteringTextInputFormatter.digitsOnly],
                       decoration: InputDecoration(prefixIcon: const Icon(Icons.currency_rupee_rounded), labelText: tr(context, 'tipOther')),
                     ),
                   ),

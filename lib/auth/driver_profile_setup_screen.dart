@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../core/services/user_service.dart';
 import '../core/l10n/l10n.dart';
@@ -104,16 +105,14 @@ class _DriverProfileSetupScreenState extends State<DriverProfileSetupScreen> {
                     textCapitalization: TextCapitalization.words,
                     textInputAction: TextInputAction.next,
                     decoration: const InputDecoration(prefixIcon: Icon(Icons.person_outline_rounded)),
-                    validator: (v) => (v == null || v.trim().length < 2) ? tr(context, 'nameRequired') : null,
-                  ),
+                    validator: (v) => (v == null || v.trim().length < 2) ? tr(context, 'nameRequired') : null, inputFormatters: [LengthLimitingTextInputFormatter(100)]),
                   const SizedBox(height: 18),
                   _label(tr(context, 'vehicleNumber')),
                   TextFormField(
                     controller: _vehicleNumCtrl,
                     textCapitalization: TextCapitalization.characters,
                     decoration: InputDecoration(prefixIcon: const Icon(Icons.numbers_rounded), hintText: tr(context, 'vehicleNumberHint')),
-                    validator: (v) => (v == null || v.trim().length < 4) ? tr(context, 'vehicleNumberRequired') : null,
-                  ),
+                    validator: (v) => (v == null || v.trim().length < 4) ? tr(context, 'vehicleNumberRequired') : null, inputFormatters: [LengthLimitingTextInputFormatter(100)]),
                   const SizedBox(height: 18),
                   _label(tr(context, 'vehicleType')),
                   Wrap(

@@ -20,6 +20,7 @@ import 'risk_service.dart';
 import '../pricing/fare_calculator.dart';
 import 'backend.dart';
 import 'repeat_service.dart';
+import 'rate_limit_service.dart';
 
 /// The chosen pickup time breaks the advance-booking limits.
 class ScheduleException implements Exception {
@@ -106,6 +107,7 @@ class LoadService {
     final geohash = pickupGeohashFor(pickup);
     final blocked = await RepeatService.blockedIds(uid);
     final ref = _col.doc();
+    final rate = await RateLimit.prepare(RateLimit.loadKind, docId: ref.id);
     final data = <String, Object?>{
       if (blocked.isNotEmpty) 'blockedDriverIds': blocked,
       'pickupGeohash': ?geohash,
@@ -145,6 +147,7 @@ class LoadService {
     };
     final batch = Backend.db.batch();
     batch.set(ref, data);
+    rate.addToBatch(batch);
     // Offers are recorded in the same batch: the promo slot and per-user use
     // documents, and the credits spend line (the rules check all of them).
     if (promo != null) RewardsService.addRedemption(batch, promo, loadId: ref.id, uid: uid);

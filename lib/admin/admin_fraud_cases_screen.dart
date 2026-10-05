@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../core/l10n/l10n.dart';
 import '../core/models/fraud_case.dart';
@@ -34,7 +35,7 @@ class _AdminFraudCasesScreenState extends State<AdminFraudCasesScreen> {
       builder: (context) => AlertDialog(
         title: Text(tr(context, 'newCase')),
         content: Column(mainAxisSize: MainAxisSize.min, children: [
-          TextField(key: const ValueKey('caseUser'), controller: user, decoration: InputDecoration(labelText: tr(context, 'userId'))),
+          TextField(key: const ValueKey('caseUser'), controller: user, decoration: InputDecoration(labelText: tr(context, 'userId')), inputFormatters: [LengthLimitingTextInputFormatter(128)]),
           TextField(key: const ValueKey('caseSummary'), controller: summary, maxLength: 300, decoration: InputDecoration(labelText: tr(context, 'caseSummary'))),
         ]),
         actions: [

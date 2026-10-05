@@ -82,7 +82,7 @@ class _ProofDialogState extends State<_ProofDialog> {
                   key: const ValueKey('packagesField'),
                   controller: _a,
                   keyboardType: TextInputType.number,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  inputFormatters: [LengthLimitingTextInputFormatter(10), FilteringTextInputFormatter.digitsOnly],
                   decoration: InputDecoration(labelText: tr(context, 'packages')),
                   validator: (v) => (int.tryParse(v?.trim() ?? '') ?? 0) > 0 ? null : tr(context, 'invalidNumber'),
                 ),
@@ -94,8 +94,7 @@ class _ProofDialogState extends State<_ProofDialog> {
                   validator: (v) {
                     final n = num.tryParse(v?.trim() ?? '');
                     return (n == null || n <= 0 || n > 100) ? tr(context, 'invalidNumber') : null;
-                  },
-                ),
+                  }, inputFormatters: [LengthLimitingTextInputFormatter(10)]),
                 TextFormField(
                   controller: _seal,
                   maxLength: 40,
@@ -113,7 +112,7 @@ class _ProofDialogState extends State<_ProofDialog> {
                 TextFormField(
                   controller: _b,
                   keyboardType: TextInputType.phone,
-                  inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9+]'))],
+                  inputFormatters: [LengthLimitingTextInputFormatter(100), FilteringTextInputFormatter.allow(RegExp(r'[0-9+]'))],
                   decoration: InputDecoration(labelText: tr(context, 'receiverPhone')),
                   validator: (v) {
                     final t = v?.trim() ?? '';

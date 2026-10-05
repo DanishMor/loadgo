@@ -165,11 +165,10 @@ class _DriverKycScreenState extends State<DriverKycScreen> {
                   TextFormField(
                     key: const ValueKey('kycDl'),
                     controller: _dlCtrl,
-                    inputFormatters: upper,
+                    inputFormatters: [...upper, LengthLimitingTextInputFormatter(30)],
                     textInputAction: TextInputAction.next,
                     decoration: const InputDecoration(prefixIcon: Icon(Icons.badge_outlined)),
-                    validator: (v) => isValidDlNumber(v ?? '') ? null : tr(context, 'kycInvalidDl'),
-                  ),
+                    validator: (v) => isValidDlNumber(v ?? '') ? null : tr(context, 'kycInvalidDl'),),
                   const SizedBox(height: 18),
                   _label(tr(context, 'dlExpiry')),
                   InkWell(
@@ -189,11 +188,10 @@ class _DriverKycScreenState extends State<DriverKycScreen> {
                   TextFormField(
                     key: const ValueKey('kycRc'),
                     controller: _rcCtrl,
-                    inputFormatters: upper,
+                    inputFormatters: [...upper, LengthLimitingTextInputFormatter(30)],
                     textInputAction: TextInputAction.next,
                     decoration: InputDecoration(prefixIcon: const Icon(Icons.local_shipping_outlined), hintText: tr(context, 'vehicleNumberHint')),
-                    validator: (v) => isValidVehicleNumber(v ?? '') ? null : tr(context, 'kycInvalidRc'),
-                  ),
+                    validator: (v) => isValidVehicleNumber(v ?? '') ? null : tr(context, 'kycInvalidRc'),),
                   const SizedBox(height: 18),
                   _label(tr(context, 'aadhaarLast4')),
                   TextFormField(

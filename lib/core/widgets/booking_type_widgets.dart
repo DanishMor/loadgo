@@ -124,15 +124,14 @@ class MoversSection extends StatelessWidget {
             final parsed = MoversDetails.parseItems(v ?? '');
             if (parsed == null || parsed.isEmpty) return tr(context, 'moversItemsInvalid');
             return parsed.length > 30 ? tr(context, 'moversItemsInvalid') : null;
-          },
-        ),
+          }, inputFormatters: [LengthLimitingTextInputFormatter(100)]),
         const SizedBox(height: 14),
         FieldLabel(tr(context, 'moversFloor')),
         TextFormField(
           key: const ValueKey('moversFloor'),
           controller: floor,
           keyboardType: TextInputType.number,
-          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+          inputFormatters: [LengthLimitingTextInputFormatter(10), FilteringTextInputFormatter.digitsOnly],
           decoration: const InputDecoration(prefixIcon: Icon(Icons.stairs_outlined)),
           validator: (v) {
             final n = int.tryParse(v?.trim() ?? '');

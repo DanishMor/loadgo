@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../services/user_service.dart';
 import '../widgets/common.dart';
@@ -76,8 +77,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   textCapitalization: TextCapitalization.words,
                   textInputAction: TextInputAction.next,
                   decoration: const InputDecoration(prefixIcon: Icon(Icons.person_outline_rounded)),
-                  validator: (v) => (v == null || v.trim().length < 2) ? tr(context, 'nameRequired') : null,
-                ),
+                  validator: (v) => (v == null || v.trim().length < 2) ? tr(context, 'nameRequired') : null, inputFormatters: [LengthLimitingTextInputFormatter(100)]),
                 const SizedBox(height: 18),
                 FieldLabel(tr(context, 'emailOptional')),
                 TextFormField(
@@ -88,15 +88,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   validator: (v) {
                     final e = v?.trim() ?? '';
                     return e.isEmpty || _emailPattern.hasMatch(e) ? null : tr(context, 'invalidEmail');
-                  },
-                ),
+                  }, inputFormatters: [LengthLimitingTextInputFormatter(100)]),
                 const SizedBox(height: 18),
                 FieldLabel(tr(context, 'companyNameOptional')),
                 TextFormField(
                   controller: _companyCtrl,
                   textCapitalization: TextCapitalization.words,
-                  decoration: const InputDecoration(prefixIcon: Icon(Icons.business_rounded)),
-                ),
+                  decoration: const InputDecoration(prefixIcon: Icon(Icons.business_rounded)), inputFormatters: [LengthLimitingTextInputFormatter(100)]),
                 const SizedBox(height: 30),
                 PrimaryButton(label: tr(context, 'save'), loading: _saving, onPressed: _save),
               ],

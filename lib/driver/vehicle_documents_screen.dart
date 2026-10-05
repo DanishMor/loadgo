@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../core/constants/logistics.dart';
 import '../core/l10n/l10n.dart';
@@ -134,8 +135,7 @@ class _VehicleDocumentsScreenState extends State<VehicleDocumentsScreen> {
             key: ValueKey('docNumber_$kind'),
             controller: _numbers[kind],
             textCapitalization: TextCapitalization.characters,
-            decoration: InputDecoration(labelText: tr(context, 'docNumber')),
-          ),
+            decoration: InputDecoration(labelText: tr(context, 'docNumber')), inputFormatters: [LengthLimitingTextInputFormatter(30)]),
           const SizedBox(height: 8),
           _dateRow(
             key: ValueKey('docExpiry_$kind'),

@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../core/l10n/l10n.dart';
 import '../core/models/vehicle_type.dart';
@@ -141,8 +142,7 @@ class _ConfigEditorScreenState extends State<ConfigEditorScreen> {
                     maxLines: null,
                     expands: true,
                     style: const TextStyle(fontFamily: 'monospace', fontSize: 12),
-                    decoration: const InputDecoration(border: OutlineInputBorder()),
-                  ),
+                    decoration: const InputDecoration(border: OutlineInputBorder()), inputFormatters: [LengthLimitingTextInputFormatter(20000)]),
                 ),
                 const SizedBox(height: 12),
                 SizedBox(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../core/enterprise/validators.dart';
 import '../core/identity/identity_index.dart';
@@ -93,16 +94,14 @@ class _FleetProfileSetupScreenState extends State<FleetProfileSetupScreen> {
                   controller: _name,
                   textCapitalization: TextCapitalization.words,
                   decoration: InputDecoration(labelText: tr(context, 'fullName')),
-                  validator: (v) => (v ?? '').trim().length < 2 ? tr(context, 'nameRequired') : null,
-                ),
+                  validator: (v) => (v ?? '').trim().length < 2 ? tr(context, 'nameRequired') : null, inputFormatters: [LengthLimitingTextInputFormatter(100)]),
                 const SizedBox(height: 14),
                 TextFormField(
                   key: const ValueKey('fleetCompany'),
                   controller: _company,
                   textCapitalization: TextCapitalization.words,
                   decoration: InputDecoration(labelText: tr(context, 'company')),
-                  validator: (v) => (v ?? '').trim().length < 2 ? tr(context, 'fieldRequired') : null,
-                ),
+                  validator: (v) => (v ?? '').trim().length < 2 ? tr(context, 'fieldRequired') : null, inputFormatters: [LengthLimitingTextInputFormatter(100)]),
                 const SizedBox(height: 14),
                 TextFormField(
                   key: const ValueKey('fleetPan'),

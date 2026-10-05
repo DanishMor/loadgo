@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../core/l10n/l10n.dart';
 import '../core/models/driver_extras.dart';
@@ -132,9 +133,9 @@ class _IncentiveEditScreenState extends State<IncentiveEditScreen> {
             decoration: InputDecoration(labelText: tr(context, 'incentiveName')),
             validator: (v) => (v ?? '').trim().length < 2 ? tr(context, 'fieldRequired') : null,
           ),
-          TextFormField(key: const ValueKey('incTrips'), controller: _trips, keyboardType: TextInputType.number, decoration: InputDecoration(labelText: tr(context, 'incentiveTrips')), validator: (v) => _int(v, 1, 1000)),
-          TextFormField(key: const ValueKey('incDays'), controller: _days, keyboardType: TextInputType.number, decoration: InputDecoration(labelText: tr(context, 'incentiveDays')), validator: (v) => _int(v, 1, 365)),
-          TextFormField(key: const ValueKey('incBonus'), controller: _bonus, keyboardType: TextInputType.number, decoration: InputDecoration(labelText: tr(context, 'incentiveBonus')), validator: (v) => _int(v, 1, 100000)),
+          TextFormField(key: const ValueKey('incTrips'), controller: _trips, keyboardType: TextInputType.number, decoration: InputDecoration(labelText: tr(context, 'incentiveTrips')), validator: (v) => _int(v, 1, 1000), inputFormatters: [LengthLimitingTextInputFormatter(10)]),
+          TextFormField(key: const ValueKey('incDays'), controller: _days, keyboardType: TextInputType.number, decoration: InputDecoration(labelText: tr(context, 'incentiveDays')), validator: (v) => _int(v, 1, 365), inputFormatters: [LengthLimitingTextInputFormatter(10)]),
+          TextFormField(key: const ValueKey('incBonus'), controller: _bonus, keyboardType: TextInputType.number, decoration: InputDecoration(labelText: tr(context, 'incentiveBonus')), validator: (v) => _int(v, 1, 100000), inputFormatters: [LengthLimitingTextInputFormatter(10)]),
           const SizedBox(height: 20),
           PrimaryButton(label: tr(context, 'save'), loading: _saving, onPressed: _save),
         ]),
@@ -203,7 +204,7 @@ class _PlansTabState extends State<_PlansTab> {
   @override
   Widget build(BuildContext context) {
     return ListView(padding: const EdgeInsets.all(16), children: [
-      TextField(key: const ValueKey('planDays'), controller: _days, keyboardType: TextInputType.number, decoration: InputDecoration(labelText: tr(context, 'planDays'))),
+      TextField(key: const ValueKey('planDays'), controller: _days, keyboardType: TextInputType.number, decoration: InputDecoration(labelText: tr(context, 'planDays')), inputFormatters: [LengthLimitingTextInputFormatter(10)]),
       const SizedBox(height: 8),
       Text(tr(context, 'planRequests'), style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
       LiveStream<List<dynamic>>(
@@ -226,7 +227,7 @@ class _PlansTabState extends State<_PlansTab> {
         },
       ),
       const Divider(height: 32),
-      TextField(key: const ValueKey('planUid'), controller: _uid, decoration: InputDecoration(labelText: tr(context, 'userId'))),
+      TextField(key: const ValueKey('planUid'), controller: _uid, decoration: InputDecoration(labelText: tr(context, 'userId')), inputFormatters: [LengthLimitingTextInputFormatter(128)]),
       const SizedBox(height: 8),
       Row(children: [
         Expanded(child: FilledButton(key: const ValueKey('setPro'), onPressed: () => _set(_uid.text.trim(), DriverPlan.pro), child: Text(tr(context, 'planSetPro')))),

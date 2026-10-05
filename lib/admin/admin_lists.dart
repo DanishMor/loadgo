@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../core/documents/doc_expiry.dart';
 
 import '../core/constants/logistics.dart';
@@ -91,8 +92,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
           child: TextField(
             key: const ValueKey('userSearch'),
             decoration: InputDecoration(prefixIcon: const Icon(Icons.search), hintText: tr(context, 'adminSearchHint')),
-            onChanged: (v) => setState(() => _query = v),
-          ),
+            onChanged: (v) => setState(() => _query = v), inputFormatters: [LengthLimitingTextInputFormatter(30)]),
         ),
         Expanded(
           child: FutureBuilder<List<Doc>>(
@@ -279,8 +279,7 @@ class _AdminBookingsScreenState extends State<AdminBookingsScreen> {
           key: const ValueKey('reassignNumber'),
           controller: number,
           textCapitalization: TextCapitalization.characters,
-          decoration: InputDecoration(labelText: tr(ctx, 'adminNewVehicleHint')),
-        ),
+          decoration: InputDecoration(labelText: tr(ctx, 'adminNewVehicleHint')), inputFormatters: [LengthLimitingTextInputFormatter(30)]),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(tr(ctx, 'cancel'))),
           FilledButton(key: const ValueKey('reassignGo'), onPressed: () => Navigator.pop(ctx, true), child: Text(tr(ctx, 'save'))),

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../core/models/saved_search.dart';
 import '../core/widgets/saved_search_menu.dart';
 
@@ -199,8 +200,8 @@ class _AvailableLoadsViewState extends State<AvailableLoadsView> {
       builder: (c) => AlertDialog(
         title: Text(tr(c, 'plannedRoute')),
         content: Column(mainAxisSize: MainAxisSize.min, children: [
-          TextField(key: const ValueKey('routeFrom'), controller: from, decoration: InputDecoration(labelText: tr(c, 'routeFrom'))),
-          TextField(key: const ValueKey('routeTo'), controller: to, decoration: InputDecoration(labelText: tr(c, 'routeTo'))),
+          TextField(key: const ValueKey('routeFrom'), controller: from, decoration: InputDecoration(labelText: tr(c, 'routeFrom')), inputFormatters: [LengthLimitingTextInputFormatter(100)]),
+          TextField(key: const ValueKey('routeTo'), controller: to, decoration: InputDecoration(labelText: tr(c, 'routeTo')), inputFormatters: [LengthLimitingTextInputFormatter(100)]),
         ]),
         actions: [
           if (current != null) TextButton(key: const ValueKey('routeClear'), onPressed: () => Navigator.pop(c, false), child: Text(tr(c, 'remove'))),
@@ -292,8 +293,7 @@ class _AvailableLoadsViewState extends State<AvailableLoadsView> {
                       prefixIcon: const Icon(Icons.search_rounded),
                       hintText: tr(context, 'searchPickup'),
                       contentPadding: const EdgeInsets.symmetric(vertical: 12),
-                    ),
-                  ),
+                    ), inputFormatters: [LengthLimitingTextInputFormatter(100)]),
                 ),
                 const SizedBox(width: 8),
                 IconButton.filledTonal(
@@ -455,8 +455,7 @@ class _FilterSheetState extends State<_FilterSheet> {
           key: ValueKey(key),
           controller: c,
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          decoration: InputDecoration(labelText: label, prefixIcon: icon == null ? null : Icon(icon)),
-        ),
+          decoration: InputDecoration(labelText: label, prefixIcon: icon == null ? null : Icon(icon)), inputFormatters: [LengthLimitingTextInputFormatter(100)]),
       );
 
   @override
@@ -470,7 +469,7 @@ class _FilterSheetState extends State<_FilterSheet> {
           children: [
             Text(tr(context, 'filters'), style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
             const SizedBox(height: 16),
-            TextField(key: const ValueKey('dropFilter'), controller: _dropCtrl, decoration: InputDecoration(labelText: tr(context, 'filterDrop'))),
+            TextField(key: const ValueKey('dropFilter'), controller: _dropCtrl, decoration: InputDecoration(labelText: tr(context, 'filterDrop')), inputFormatters: [LengthLimitingTextInputFormatter(100)]),
             const SizedBox(height: 16),
             FieldLabel(tr(context, 'vehicleType')),
             DropdownButtonFormField<String?>(

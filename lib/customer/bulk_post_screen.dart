@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../core/enterprise/bulk_loads.dart';
 import '../core/l10n/l10n.dart';
@@ -79,8 +80,7 @@ class _BulkPostScreenState extends State<BulkPostScreen> {
           maxLines: 12,
           style: const TextStyle(fontFamily: 'monospace', fontSize: 13),
           decoration: const InputDecoration(border: OutlineInputBorder()),
-          onChanged: (_) => setState(() {}),
-        ),
+          onChanged: (_) => setState(() {}), inputFormatters: [LengthLimitingTextInputFormatter(5000)]),
         const SizedBox(height: 8),
         ListTile(
           contentPadding: EdgeInsets.zero,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../services/rate_limit_service.dart';
 
 import '../l10n/l10n.dart';
 import '../models/booking.dart';
@@ -88,6 +89,8 @@ class _ChatScreenState extends State<ChatScreen> {
     try {
       await ChatService.send(widget.booking, text);
       _ctrl.clear();
+    } on RateLimitException catch (e) {
+      if (mounted) showSnack(context, trf(context, 'rateLimited', {'m': e.minutesLeft}));
     } on ChatSendException catch (e) {
       if (mounted) showSnack(context, tr(context, e.reason == 'blocked' ? 'cannotSendBlocked' : 'somethingWrong'));
     } catch (_) {

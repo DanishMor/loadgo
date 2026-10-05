@@ -51,6 +51,14 @@ service cloud.firestore {
           && request.resource.data.verified == (request.resource.data.verificationStatus == 'approved');
     }
 
+    // Free-text profile fields are capped (form input limits).
+    function validProfileText(d) {
+      return d.get('name', '') is string && d.get('name', '').size() <= 80
+          && d.get('driverName', '') is string && d.get('driverName', '').size() <= 80
+          && d.get('email', '') is string && d.get('email', '').size() <= 100
+          && d.get('companyName', '') is string && d.get('companyName', '').size() <= 100;
+    }
+
     // At most three {name, phone} emergency contacts on the profile.
     function validEmergencyContacts(d) {
       return !('emergencyContacts' in d)
@@ -152,12 +160,17 @@ service cloud.firestore {
     }
 
     // restricted / suspended accounts cannot post, offer or accept.
+    // Riskier tiers and an expired licence (no admin override) cannot transact.
+    function userMayTransact(u) {
+      return u.get('riskTier', 'normal') in ['normal', 'review']
+          && (!('driverKyc' in u)
+              || u.driverKyc.get('dlExpiry', request.time) > request.time - duration.value(1, 'd')
+              || u.get('docOverrideUntil', request.time) > request.time);
+    }
+
     function canTransact(uid) {
       let p = /databases/$(database)/documents/users/$(uid);
-      return !exists(p)
-          || (get(p).data.get('riskTier', 'normal') in ['normal', 'review']
-              && (get(p).data.get('driverKyc', {}).get('dlExpiry', request.time) > request.time - duration.value(1, 'd')
-                  || get(p).data.get('docOverrideUntil', request.time) > request.time));
+      return !exists(p) || userMayTransact(get(p).data);
     }
 
     // A cancellation must bump the canceller's cancelCount in the same batch.
@@ -217,13 +230,13 @@ service cloud.firestore {
     match /users/{userId} {
       allow read: if isUser(userId) || isAdmin();
       allow create: if isUser(userId) && verificationInitOk(request.resource.data)
-          && validKyc(request.resource.data) && reviewMetaAbsent(request.resource.data) && planFieldsAbsent(request.resource.data) && !('docOverrideUntil' in request.resource.data) && referralCodeOk(request.resource.data) && validIdentityHashes(request.resource.data) && validLastLocation(request.resource.data) && validRole(request.resource.data.get('role', null))
+          && validKyc(request.resource.data) && validProfileText(request.resource.data) && reviewMetaAbsent(request.resource.data) && planFieldsAbsent(request.resource.data) && !('docOverrideUntil' in request.resource.data) && referralCodeOk(request.resource.data) && validIdentityHashes(request.resource.data) && validLastLocation(request.resource.data) && validRole(request.resource.data.get('role', null))
           && (request.resource.data.get('role', null) == null
               || request.resource.data.get('selectedRole', request.resource.data.role) == request.resource.data.role)
           && validEmergencyContacts(request.resource.data) && riskFieldsAbsent(request.resource.data)
           && validPrefs(request.resource.data) && validBusiness(request.resource.data);
       allow update: if adminVerificationUpdate() || adminRiskUpdate() || adminPlanUpdate() || adminDocOverride() || (isUser(userId)
-          && roleLockOk() && validKyc(request.resource.data) && !changedKeys().hasAny(['plan', 'planUntil', 'verificationMeta', 'docOverrideUntil']) && referralCodeOk(request.resource.data) && referralCodeKept() && validIdentityHashes(request.resource.data) && validLastLocation(request.resource.data)
+          && roleLockOk() && validKyc(request.resource.data) && validProfileText(request.resource.data) && !changedKeys().hasAny(['plan', 'planUntil', 'verificationMeta', 'docOverrideUntil']) && referralCodeOk(request.resource.data) && referralCodeKept() && validIdentityHashes(request.resource.data) && validLastLocation(request.resource.data)
           && validEmergencyContacts(request.resource.data)
           && validPrefs(request.resource.data) && validBusiness(request.resource.data)
           && ownerRiskFieldsUntouched()
@@ -397,8 +410,9 @@ service cloud.firestore {
     function validVehicle(d) {
       return d.keys().hasAll(['ownerId', 'number', 'type', 'capacity', 'status'])
           && d.number is string && d.number.size() >= 6 && d.number.size() <= 12
-          && d.type is string
-          && d.capacity is number && d.capacity > 0
+          && d.type is string && d.type.size() >= 1 && d.type.size() <= 40
+          && d.get('rcNumber', '') is string && d.get('rcNumber', '').size() <= 30
+          && d.capacity is number && d.capacity > 0 && d.capacity <= 1000
           && d.status in ['active', 'inactive']
           && availabilityOf(d) in ['available', 'on_trip', 'maintenance', 'suspended', 'doc_expired']
           && validVehicleDocs(d)
@@ -557,12 +571,13 @@ service cloud.firestore {
     }
 
     function validLoad(d) {
-      return d.pickup is string && d.pickup.size() > 1
-          && d.drop is string && d.drop.size() > 1
-          && d.cargoType is string
-          && d.weight is number && d.weight > 0
-          && d.vehicleType is string
-          && (d.get('budget', null) == null || (d.budget is number && d.budget > 0))
+      return d.pickup is string && d.pickup.size() > 1 && d.pickup.size() <= 200
+          && d.drop is string && d.drop.size() > 1 && d.drop.size() <= 200
+          && d.cargoType is string && d.cargoType.size() <= 60
+          && d.weight is number && d.weight > 0 && d.weight <= 1000
+          && d.vehicleType is string && d.vehicleType.size() <= 40
+          && d.notes.size() <= 500
+          && (d.get('budget', null) == null || (d.budget is number && d.budget > 0 && d.budget <= 1000000000))
           && d.pickupDate is timestamp
           && (!('estimate' in d) || validEstimate(d.estimate))
           && validStops(d.get('extraPickups', []))
@@ -721,6 +736,43 @@ service cloud.firestore {
           && getAfter(docPath('bookings', resource.data.bookingId)).data.get('cancellation', {}).get('by', '') == 'customer';
     }
 
+    // rate_limits/{uid}_{kind}: how many loads, offers (bids) and chat
+    // messages a user created in the current hour. Every such create must bump
+    // the counter in the same batch (rateBumped); the counter itself only moves
+    // up by one inside a window, restarts at 1 when the hour is over (the
+    // window start is the server time), and never passes the limit.
+    function rateLimitFor(kind) {
+      return kind == 'load' ? 30 : (kind == 'offer' ? 60 : 120);
+    }
+
+    function validRateCounter(id) {
+      let d = request.resource.data;
+      let kind = id.split('_')[1];
+      let ref = docPath('rate_limits', id);
+      return d.keys().hasOnly(['count', 'windowStart', 'last'])
+          && d.count is int && d.count >= 1 && d.count <= rateLimitFor(kind)
+          && d.windowStart is timestamp
+          && d.last is string && d.last.size() >= 1 && d.last.size() <= 150
+          && ((!exists(ref) || get(ref).data.windowStart + duration.value(1, 'h') <= request.time)
+              ? (d.count == 1 && d.windowStart == request.time)
+              : (d.count == get(ref).data.count + 1 && d.windowStart == get(ref).data.windowStart));
+    }
+
+    match /rate_limits/{counterId} {
+      allow read: if signedIn() && counterId.matches(request.auth.uid + '_(load|offer|message)');
+      allow create, update: if signedIn() && counterId.matches(request.auth.uid + '_(load|offer|message)') && validRateCounter(counterId);
+      allow delete: if false;
+    }
+
+    // The bump names the one document it pays for (`last`), so a single bump
+    // cannot cover several creates in one batch.
+    function rateBumped(kind, docId) {
+      let ref = docPath('rate_limits', request.auth.uid + '_' + kind);
+      return getAfter(ref).data.last == docId
+          && (getAfter(ref).data.windowStart == request.time
+              || getAfter(ref).data.count == get(ref).data.count + 1);
+    }
+
     match /loads/{loadId} {
       allow read: if signedIn()
           && (resource.data.status == 'open'
@@ -732,6 +784,7 @@ service cloud.firestore {
           && request.resource.data.shipperId == request.auth.uid
           && request.resource.data.status == 'open'
           && canTransact(request.auth.uid)
+          && rateBumped('load', loadId)
           && !request.resource.data.keys().hasAny(['driverId', 'bookingId'])
           && validLoad(request.resource.data)
           && (!('scheduledAt' in request.resource.data)
@@ -1031,6 +1084,7 @@ service cloud.firestore {
             && request.resource.data.text.size() >= 1 && request.resource.data.text.size() <= 500
             && request.resource.data.flagged is bool
             && request.resource.data.createdAt == request.time
+            && rateBumped('message', messageId)
             && !exists(/databases/$(database)/documents/users/$(
                    get(docPath('bookings', bookingId)).data.driverId == request.auth.uid
                        ? get(docPath('bookings', bookingId)).data.customerId
@@ -1112,12 +1166,14 @@ service cloud.firestore {
                                'driverName', 'pricePaise', 'originalPaise', 'status', 'createdAt', 'updatedAt'])
           && o.driverId == request.auth.uid
           && canTransact(request.auth.uid)
+          && rateBumped('offer', offerId)
           && o.status == 'pending'
           && o.pricePaise is int && o.pricePaise > 0 && o.pricePaise <= 100000000
           && o.originalPaise == o.pricePaise
           && load.status == 'open'
           && load.shipperId != request.auth.uid
           && o.customerId == load.shipperId
+          && o.get('driverName', '') is string && o.get('driverName', '').size() <= 80
           && o.get('pickup', load.pickup) == load.pickup
           && o.get('drop', load.drop) == load.drop
           && vehicle.ownerId == request.auth.uid

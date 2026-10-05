@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../core/enterprise/validators.dart';
 import '../core/l10n/l10n.dart';
@@ -202,9 +203,9 @@ class _BranchDialogState extends State<_BranchDialog> {
             items: [for (final t in BranchType.all) DropdownMenuItem(value: t, child: Text(branchTypeLabel(context, t)))],
             onChanged: (v) => setState(() => _type = v ?? _type),
           ),
-          TextField(key: const ValueKey('branchName'), controller: _name, decoration: InputDecoration(labelText: tr(context, 'branchName'))),
-          TextField(controller: _address, decoration: InputDecoration(labelText: tr(context, 'branchAddress'))),
-          TextField(controller: _city, decoration: InputDecoration(labelText: tr(context, 'branchCity'))),
+          TextField(key: const ValueKey('branchName'), controller: _name, decoration: InputDecoration(labelText: tr(context, 'branchName')), inputFormatters: [LengthLimitingTextInputFormatter(100)]),
+          TextField(controller: _address, decoration: InputDecoration(labelText: tr(context, 'branchAddress')), inputFormatters: [LengthLimitingTextInputFormatter(100)]),
+          TextField(controller: _city, decoration: InputDecoration(labelText: tr(context, 'branchCity')), inputFormatters: [LengthLimitingTextInputFormatter(100)]),
         ]),
       ),
       actions: [

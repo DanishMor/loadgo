@@ -1,5 +1,6 @@
 import '../core/models/risk.dart';
 import 'package:flutter/material.dart';
+import '../core/services/rate_limit_service.dart';
 
 import '../core/l10n/l10n.dart';
 import '../core/models/load.dart';
@@ -61,6 +62,8 @@ class _MakeOfferButtonState extends State<MakeOfferButton> {
       if (mounted) showSnack(context, tr(context, 'offerSent'));
     } on AccountRestrictedException {
       if (mounted) showSnack(context, tr(context, 'accountRestricted'));
+    } on RateLimitException catch (e) {
+      if (mounted) showSnack(context, trf(context, 'rateLimited', {'m': e.minutesLeft}));
     } on OfferExistsException {
       if (mounted) showSnack(context, tr(context, 'offerExists'));
     } on OfferStateException {

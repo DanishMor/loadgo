@@ -26,6 +26,7 @@ import '../core/services/rewards_service.dart';
 import '../core/services/business_service.dart';
 import '../core/models/repeat.dart';
 import '../core/services/repeat_service.dart';
+import '../core/services/rate_limit_service.dart';
 
 /// Customer form to post a load. Pops with `true` once posted.
 /// [repostFrom] prefills everything except the pickup date.
@@ -158,8 +159,7 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
             ],
           ),
         ),
-        validator: _requiredText,
-      ),
+        validator: _requiredText, inputFormatters: [LengthLimitingTextInputFormatter(100)]),
     );
   }
 
@@ -266,7 +266,7 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
             key: const ValueKey('distanceKm'),
             controller: _distanceCtrl,
             keyboardType: TextInputType.number,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            inputFormatters: [LengthLimitingTextInputFormatter(10), FilteringTextInputFormatter.digitsOnly],
             decoration: InputDecoration(prefixIcon: const Icon(Icons.straighten_rounded), labelText: tr(context, 'distanceOverride')),
             validator: (v) {
               final t = v?.trim() ?? '';
@@ -427,6 +427,10 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
       if (!mounted) return;
       setState(() => _saving = false);
       showSnack(context, tr(context, 'accountRestricted'));
+    } on RateLimitException catch (e) {
+      if (!mounted) return;
+      setState(() => _saving = false);
+      showSnack(context, trf(context, 'rateLimited', {'m': e.minutesLeft}));
     } catch (_) {
       if (!mounted) return;
       setState(() => _saving = false);
@@ -465,8 +469,7 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
                     prefixIcon: const Icon(Icons.trip_origin_rounded, color: AppColors.success),
                     suffixIcon: _savedPlaceButton(_pickupCtrl),
                   ),
-                  validator: _requiredText,
-                ),
+                  validator: _requiredText, inputFormatters: [LengthLimitingTextInputFormatter(100)]),
                 for (final (i, c) in _extraPickups.indexed)
                   _stopField(c, trf(context, 'pickupStopN', {'n': i + 2}), _extraPickups, pickup: true),
                 _addStopButton(_extraPickups, 'addPickupStop', 'addPickupStop'),
@@ -483,8 +486,7 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
                     prefixIcon: const Icon(Icons.location_on_rounded, color: Colors.redAccent),
                     suffixIcon: _savedPlaceButton(_dropCtrl),
                   ),
-                  validator: (v) => _bookingType == BookingType.rental ? null : _requiredText(v),
-                ),
+                  validator: (v) => _bookingType == BookingType.rental ? null : _requiredText(v), inputFormatters: [LengthLimitingTextInputFormatter(100)]),
                 _addStopButton(_extraDrops, 'addDropStop', 'addDropStop'),
                 const SizedBox(height: 18),
                 FieldLabel(tr(context, 'cargoType')),
@@ -506,8 +508,7 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
                     final info = VehicleTypeService.byId(_vehicleType);
                     if (info != null && !info.fits(n)) return trf(context, 'vtTooHeavy', {'max': formatNum(info.maxTons)});
                     return null;
-                  },
-                ),
+                  }, inputFormatters: [LengthLimitingTextInputFormatter(100)]),
                 const SizedBox(height: 18),
                 FieldLabel(tr(context, 'vehicleTypeNeeded')),
                 DropdownButtonFormField<String>(
@@ -569,8 +570,7 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
                     if (t.isEmpty) return null;
                     final n = num.tryParse(t);
                     return (n == null || n <= 0) ? tr(context, 'invalidNumber') : null;
-                  },
-                ),
+                  }, inputFormatters: [LengthLimitingTextInputFormatter(10)]),
                 const SizedBox(height: 18),
                 FieldLabel(tr(context, 'pickupDate')),
                 FormField<DateTime>(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../core/constants/ports.dart';
 import '../core/l10n/l10n.dart';
@@ -39,8 +40,7 @@ class _HubSheetState extends State<_HubSheet> {
             child: TextField(
               key: const ValueKey('hubSearch'),
               decoration: InputDecoration(prefixIcon: const Icon(Icons.search), hintText: tr(context, 'pickPortIcd')),
-              onChanged: (v) => setState(() => _query = v),
-            ),
+              onChanged: (v) => setState(() => _query = v), inputFormatters: [LengthLimitingTextInputFormatter(30)]),
           ),
           Expanded(
             child: ListView(children: [

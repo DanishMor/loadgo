@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../core/constants/logistics.dart';
@@ -238,8 +239,7 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
                   validator: (v) {
                     if (v == null || v.trim().isEmpty) return tr(context, 'fieldRequired');
                     return VehicleService.isValidNumber(v) ? null : tr(context, 'invalidVehicleNumber');
-                  },
-                ),
+                  }, inputFormatters: [LengthLimitingTextInputFormatter(100)]),
                 const SizedBox(height: 18),
                 FieldLabel(tr(context, 'vehicleType')),
                 DropdownButtonFormField<String>(
@@ -263,16 +263,14 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
                   validator: (v) {
                     final n = num.tryParse(v?.trim() ?? '');
                     return (n == null || n <= 0 || n > 100) ? tr(context, 'invalidNumber') : null;
-                  },
-                ),
+                  }, inputFormatters: [LengthLimitingTextInputFormatter(100)]),
                 const SizedBox(height: 18),
                 FieldLabel(tr(context, 'rcNumber')),
                 TextFormField(
                   controller: _rcCtrl,
                   textCapitalization: TextCapitalization.characters,
                   decoration: const InputDecoration(prefixIcon: Icon(Icons.description_outlined)),
-                  validator: (v) => (v == null || v.trim().length < 4) ? tr(context, 'fieldRequired') : null,
-                ),
+                  validator: (v) => (v == null || v.trim().length < 4) ? tr(context, 'fieldRequired') : null, inputFormatters: [LengthLimitingTextInputFormatter(100)]),
                 const SizedBox(height: 18),
                 FieldLabel(tr(context, 'vehicleDimensions')),
                 Row(children: [
@@ -293,8 +291,7 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
                             final t = v?.trim() ?? '';
                             if (t.isEmpty) return null;
                             return VehicleProfile.validDimension(double.tryParse(t)) ? null : tr(context, 'invalidNumber');
-                          },
-                        ),
+                          }, inputFormatters: [LengthLimitingTextInputFormatter(100)]),
                       ),
                     ),
                 ]),

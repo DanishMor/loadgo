@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../core/l10n/l10n.dart';
 import '../core/offers/promo.dart';
@@ -141,8 +142,7 @@ class _OffersSectionState extends State<OffersSection> {
                   prefixIcon: const Icon(Icons.local_offer_outlined),
                   labelText: tr(context, 'promoCode'),
                   errorText: _error,
-                ),
-              ),
+                ), inputFormatters: [LengthLimitingTextInputFormatter(100)]),
             ),
             const SizedBox(width: 8),
             _promo == null
