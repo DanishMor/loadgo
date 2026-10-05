@@ -5,6 +5,7 @@ import '../l10n/l10n.dart';
 import '../models/booking.dart';
 import '../services/booking_service.dart';
 import '../widgets/common.dart';
+import '../widgets/live_stream.dart';
 import '../widgets/logistics_labels.dart';
 import 'pod_screen.dart';
 
@@ -24,11 +25,10 @@ class LrScreen extends StatelessWidget {
         title: Text(tr(context, 'lrTitle'), style: const TextStyle(fontWeight: FontWeight.w700)),
       ),
       body: SafeArea(
-        child: StreamBuilder<Booking?>(
-          stream: BookingService.watch(bookingId),
-          builder: (context, snap) {
-            final b = snap.data;
-            if (b == null) return const Center(child: CircularProgressIndicator());
+        child: LiveDoc<Booking>(
+          stream: () => BookingService.watch(bookingId),
+          builder: (context, b) {
+            if (b == null) return EmptyState(icon: Icons.search_off_rounded, title: tr(context, 'bookingNotFound'));
             final row = PodScreen.row;
             final weight = b.pickupProof?.weightTons ?? b.weight;
             return ListView(

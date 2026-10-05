@@ -63,13 +63,19 @@ Future<Vehicle?> _chooseVehicle(BuildContext context, Load load, List<Vehicle> v
 /// Full accept flow: ensure an active vehicle, confirm, then book atomically.
 /// [onBusy] is toggled only around network calls, not while the sheet is open.
 /// Returns the booking id on success.
-Future<String?> acceptLoadFlow(BuildContext context, Load load, {ValueChanged<bool>? onBusy}) async {
+Future<String?> acceptLoadFlow(BuildContext context, Load load, {ValueChanged<bool>? onBusy, VoidCallback? onRetry}) async {
   final List<Vehicle> vehicles;
   onBusy?.call(true);
   try {
     vehicles = await VehicleService.fetchMyActive();
   } catch (_) {
-    if (context.mounted) showSnack(context, tr(context, 'somethingWrong'));
+    if (context.mounted) {
+      if (onRetry == null) {
+        showSnack(context, tr(context, 'somethingWrong'));
+      } else {
+        showRetrySnack(context, tr(context, 'somethingWrong'), onRetry);
+      }
+    }
     return null;
   } finally {
     onBusy?.call(false);
@@ -99,7 +105,13 @@ Future<String?> acceptLoadFlow(BuildContext context, Load load, {ValueChanged<bo
   } on VehicleBusyException {
     if (context.mounted) showSnack(context, tr(context, 'vehicleBusy'));
   } catch (_) {
-    if (context.mounted) showSnack(context, tr(context, 'somethingWrong'));
+    if (context.mounted) {
+      if (onRetry == null) {
+        showSnack(context, tr(context, 'somethingWrong'));
+      } else {
+        showRetrySnack(context, tr(context, 'somethingWrong'), onRetry);
+      }
+    }
   } finally {
     onBusy?.call(false);
   }

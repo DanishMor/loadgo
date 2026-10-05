@@ -8,6 +8,7 @@ import '../pricing/gst.dart';
 import '../services/booking_service.dart';
 import '../services/pricing_service.dart';
 import '../widgets/common.dart';
+import '../widgets/live_stream.dart';
 import '../widgets/logistics_labels.dart';
 import 'invoice_issue_card.dart';
 import 'payment_card.dart';
@@ -39,13 +40,9 @@ class InvoiceScreen extends StatelessWidget {
         title: Text(tr(context, 'invoice'), style: const TextStyle(fontWeight: FontWeight.w700)),
       ),
       body: SafeArea(
-        child: StreamBuilder<Booking?>(
-          stream: BookingService.watch(bookingId),
-          builder: (context, snap) {
-            if (snap.connectionState == ConnectionState.waiting && !snap.hasData) {
-              return const Center(child: CircularProgressIndicator());
-            }
-            final b = snap.data;
+        child: LiveDoc<Booking>(
+          stream: () => BookingService.watch(bookingId),
+          builder: (context, b) {
             if (b == null) return EmptyState(icon: Icons.search_off_rounded, title: tr(context, 'bookingNotFound'));
             if (b.status != BookingStatus.delivered) {
               return EmptyState(icon: Icons.receipt_long_outlined, title: tr(context, 'invoiceAfterDelivery'));

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../widgets/live_stream.dart';
 import '../services/rate_limit_service.dart';
 
 import '../l10n/l10n.dart';
@@ -94,7 +95,7 @@ class _ChatScreenState extends State<ChatScreen> {
     } on ChatSendException catch (e) {
       if (mounted) showSnack(context, tr(context, e.reason == 'blocked' ? 'cannotSendBlocked' : 'somethingWrong'));
     } catch (_) {
-      if (mounted) showSnack(context, tr(context, 'somethingWrong'));
+      if (mounted) showRetrySnack(context, tr(context, 'somethingWrong'), _send);
     } finally {
       if (mounted) setState(() => _sending = false);
     }
@@ -195,11 +196,10 @@ class _ChatScreenState extends State<ChatScreen> {
               child: Text(tr(context, 'offPlatformWarning'), style: const TextStyle(fontSize: 12, color: AppColors.body)),
             ),
             Expanded(
-              child: StreamBuilder<List<ChatMessage>>(
-                stream: _messages,
-                builder: (context, snap) {
-                  final list = snap.data ?? const [];
-                  if (snap.hasData && list.isEmpty) {
+              child: LiveStream<List<ChatMessage>>(
+                stream: () => _messages,
+                builder: (context, list) {
+                  if (list.isEmpty) {
                     return Center(child: Text(tr(context, 'noMessages'), style: const TextStyle(color: AppColors.muted)));
                   }
                   return ListView(

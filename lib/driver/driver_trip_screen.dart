@@ -137,6 +137,12 @@ class _NextStatusButtonState extends State<_NextStatusButton> {
       (otp, delivery) = r;
     }
     if (!mounted) return;
+    await _sendAdvance(next, otp, pickup, delivery);
+  }
+
+  /// The network part of [_advance]; a failed call can be retried with the
+  /// same OTP and proof.
+  Future<void> _sendAdvance(String next, String? otp, PickupProof? pickup, DeliveryProof? delivery) async {
     setState(() => _busy = true);
     try {
       await BookingService.advance(widget.booking.id, otp: otp, pickup: pickup, delivery: delivery);
@@ -148,7 +154,7 @@ class _NextStatusButtonState extends State<_NextStatusButton> {
     } on WrongOtpException {
       if (mounted) showSnack(context, tr(context, 'wrongOtp'));
     } catch (_) {
-      if (mounted) showSnack(context, tr(context, 'somethingWrong'));
+      if (mounted) showRetrySnack(context, tr(context, 'somethingWrong'), () => _sendAdvance(next, otp, pickup, delivery));
     } finally {
       if (mounted) setState(() => _busy = false);
     }

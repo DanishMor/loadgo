@@ -12,6 +12,7 @@ import 'core/navigation/app_routes.dart';
 import 'core/services/app_config.dart';
 import 'core/services/connectivity_service.dart';
 import 'core/services/language_store.dart';
+import 'core/services/backend.dart';
 import 'core/services/push_service.dart';
 import 'core/widgets/live_stream.dart' show OfflineBanner;
 import 'firebase_options.dart';
@@ -27,6 +28,7 @@ Future<void> main() async {
     return true;
   };
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  Backend.enableOfflinePersistence();
   await ConnectivityService.start();
   applyLanguageName(await LanguageStore.loadLocal());
   // Register for push whenever a user is signed in (also after app restarts).

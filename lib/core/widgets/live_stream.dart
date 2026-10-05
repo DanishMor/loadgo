@@ -84,7 +84,14 @@ class _LiveStreamState<D> extends State<LiveStream<D>> {
     });
   }
 
-  void _retry() => setState(_subscribe);
+  /// Bumped on Retry so the StreamBuilder starts clean (it would keep showing
+  /// the old error until the new stream speaks).
+  int _attempt = 0;
+
+  void _retry() => setState(() {
+        _attempt++;
+        _subscribe();
+      });
 
   @override
   void dispose() {
@@ -95,6 +102,7 @@ class _LiveStreamState<D> extends State<LiveStream<D>> {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<D>(
+      key: ValueKey(_attempt),
       stream: _stream,
       builder: (context, snap) {
         if (snap.hasError) {
@@ -147,6 +155,23 @@ class _LiveStreamState<D> extends State<LiveStream<D>> {
           )
         : const Center(child: CircularProgressIndicator());
   }
+}
+
+/// [LiveStream] for one document that may not exist: the builder gets null
+/// when it is missing (a null event counts as data, not as "still loading").
+class LiveDoc<V> extends StatelessWidget {
+  final Stream<V?> Function() stream;
+  final Widget Function(BuildContext context, V? value) builder;
+  final bool compact;
+
+  const LiveDoc({super.key, required this.stream, required this.builder, this.compact = false});
+
+  @override
+  Widget build(BuildContext context) => LiveStream<(V?,)>(
+        stream: () => stream().map((v) => (v,)),
+        compact: compact,
+        builder: (context, data) => builder(context, data.$1),
+      );
 }
 
 /// Friendly failure message with a Retry button.

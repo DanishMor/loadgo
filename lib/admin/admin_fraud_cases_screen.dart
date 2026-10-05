@@ -145,11 +145,10 @@ class _FraudCaseScreenState extends State<FraudCaseScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(tr(context, 'fraudCase'))),
-      body: StreamBuilder<FraudCase?>(
-        stream: _case,
-        builder: (context, snap) {
-          final c = snap.data;
-          if (c == null) return const Center(child: CircularProgressIndicator());
+      body: LiveDoc<FraudCase>(
+        stream: () => _case,
+        builder: (context, c) {
+          if (c == null) return EmptyState(icon: Icons.search_off_rounded, title: tr(context, 'noCases'));
           return ListView(padding: const EdgeInsets.all(16), children: [
             Text(c.summary, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
             const SizedBox(height: 4),

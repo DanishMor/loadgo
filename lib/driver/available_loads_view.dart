@@ -40,6 +40,7 @@ class _AcceptLoadButtonState extends State<AcceptLoadButton> {
     final bookingId = await acceptLoadFlow(
       context,
       widget.load,
+      onRetry: _accept,
       onBusy: (busy) {
         if (mounted) setState(() => _busy = busy);
       },

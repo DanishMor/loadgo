@@ -434,7 +434,7 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
     } catch (_) {
       if (!mounted) return;
       setState(() => _saving = false);
-      showSnack(context, tr(context, 'somethingWrong'));
+      showRetrySnack(context, tr(context, 'somethingWrong'), _submit);
     }
   }
 

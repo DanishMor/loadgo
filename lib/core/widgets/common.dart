@@ -1,5 +1,6 @@
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
+import '../l10n/l10n.dart';
 
 /// Small UI building blocks shared by the vehicle, load and booking screens.
 /// Colors follow the palette already used across the app.
@@ -69,6 +70,18 @@ String formatPaise(int paise) {
 void showSnack(BuildContext context, String msg) {
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(content: Text(msg), behavior: SnackBarBehavior.floating),
+  );
+}
+
+/// An error message with a Retry action (failed network calls).
+void showRetrySnack(BuildContext context, String msg, VoidCallback onRetry) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text(msg),
+      behavior: SnackBarBehavior.floating,
+      duration: const Duration(seconds: 8),
+      action: SnackBarAction(label: tr(context, 'retry'), onPressed: onRetry),
+    ),
   );
 }
 

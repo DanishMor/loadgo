@@ -15,6 +15,22 @@ class Backend {
 
   static FirebaseFirestore get db => _db ??= FirebaseFirestore.instance;
 
+  /// Offline cache: lists, bookings and chats already seen stay readable
+  /// without a network, and writes made offline are sent when it returns.
+  /// 100 MB is plenty for this app; older entries are dropped first.
+  static const offlineCacheBytes = 100 * 1024 * 1024;
+
+  static Settings get firestoreSettings => const Settings(persistenceEnabled: true, cacheSizeBytes: offlineCacheBytes);
+
+  /// Call once after Firebase.initializeApp (see main.dart).
+  static void enableOfflinePersistence() {
+    try {
+      FirebaseFirestore.instance.settings = firestoreSettings;
+    } catch (e) {
+      debugPrint('Firestore settings not applied: $e');
+    }
+  }
+
   /// The Firebase Auth instance (a mock in tests).
   static FirebaseAuth get auth => _auth != null ? _auth!() : FirebaseAuth.instance;
 

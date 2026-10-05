@@ -69,7 +69,7 @@ class _MakeOfferButtonState extends State<MakeOfferButton> {
     } on OfferStateException {
       if (mounted) showSnack(context, tr(context, 'loadUnavailable'));
     } catch (_) {
-      if (mounted) showSnack(context, tr(context, 'somethingWrong'));
+      if (mounted) showRetrySnack(context, tr(context, 'somethingWrong'), _offer);
     } finally {
       if (mounted) setState(() => _busy = false);
     }

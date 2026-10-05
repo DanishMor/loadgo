@@ -346,11 +346,10 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
         title: Text(tr(context, 'helpSupport'), style: const TextStyle(fontWeight: FontWeight.w700)),
       ),
       body: SafeArea(
-        child: StreamBuilder<SupportTicket?>(
-          stream: _ticket,
-          builder: (context, snap) {
-            final t = snap.data;
-            if (t == null) return const Center(child: CircularProgressIndicator());
+        child: LiveDoc<SupportTicket>(
+          stream: () => _ticket,
+          builder: (context, t) {
+            if (t == null) return EmptyState(icon: Icons.search_off_rounded, title: tr(context, 'noTickets'));
             return Column(
               children: [
                 Expanded(
