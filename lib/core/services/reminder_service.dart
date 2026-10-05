@@ -12,6 +12,7 @@ import 'booking_service.dart';
 import 'load_service.dart';
 import 'offer_service.dart';
 import 'vehicle_service.dart';
+import 'settings_service.dart';
 import 'pricing_service.dart';
 import '../trip/trip_eta.dart';
 
@@ -38,7 +39,8 @@ class ReminderService {
 
     void emit() {
       if (out.isClosed) return;
-      out.add(ReminderEngine.compute(ReminderInput(
+      final prefs = SettingsService.prefs.value;
+      out.add([for (final r in ReminderEngine.compute(ReminderInput(
         now: now(),
         isDriver: isDriver,
         bookings: bookings,
@@ -47,8 +49,10 @@ class ReminderService {
         vehicles: vehicles,
         licenceExpiry: licence,
         etaOf: (b) => TripEta.eta(b, PricingService.estimateRouteKm([b.pickup, ...b.extraPickups, ...b.extraDrops, b.drop])),
-      )));
+      ))) if (prefs.allowsReminder(r.kind)) r]);
     }
+
+    void onPrefs() => emit();
 
     void listen<T>(Stream<T> s, void Function(T) onData) {
       subs.add(s.listen((v) {
@@ -75,10 +79,12 @@ class ReminderService {
           listen(LoadService.watchMine(), (v) => loads = v);
           listen(OfferService.watchForCustomer(), (v) => offers = v);
         }
+        SettingsService.prefs.addListener(onPrefs);
         emit();
         timer = Timer.periodic(tick, (_) => emit());
       },
       onCancel: () async {
+        SettingsService.prefs.removeListener(onPrefs);
         timer?.cancel();
         for (final s in subs) {
           await s.cancel();

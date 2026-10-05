@@ -40,6 +40,7 @@ import 'txn_strings.dart';
 import 'doc_expiry_strings.dart';
 import 'search_strings.dart';
 import 'eta_strings.dart';
+import 'notif_center_strings.dart';
 import 'trip_watch_strings.dart';
 import 'vehicle_strings.dart';
 
@@ -78,6 +79,7 @@ const List<Map<String, List<String>>> stringTables = [
   docExpiryStrings,
   searchStrings,
   etaStrings,
+  notifCenterStrings,
   adminStrings,
   matchStrings,
   settingsStrings,

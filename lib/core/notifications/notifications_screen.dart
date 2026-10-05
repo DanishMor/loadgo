@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../models/app_notification.dart';
+import '../models/user_settings.dart';
+import '../services/settings_service.dart';
 import '../services/notification_service.dart';
 import '../widgets/common.dart';
 import '../l10n/l10n.dart';
@@ -102,6 +104,11 @@ class NotificationsScreen extends StatefulWidget {
 
 class _NotificationsScreenState extends State<NotificationsScreen> {
   List<AppNotification> _latest = const [];
+
+  /// Selected category chip (null = all).
+  String? _category;
+
+  late final Stream<List<AppNotification>> _stored = NotificationService.watchMine(applyPrefs: false).asBroadcastStream();
   // Not asBroadcastStream: that would keep the 1-minute timer alive after
   // the screen is closed.
   late final Stream<List<Reminder>> _reminders =
@@ -127,6 +134,12 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           style: const TextStyle(fontWeight: FontWeight.w700),
         ),
         actions: [
+          IconButton(
+            key: const ValueKey('notifSettings'),
+            tooltip: tr(context, 'notifSettings'),
+            icon: const Icon(Icons.tune_rounded),
+            onPressed: _openSettings,
+          ),
           TextButton(
             onPressed: () => NotificationService.markAllRead(_latest).ignore(),
             child: Text(tr(context, 'markAllRead')),
@@ -134,23 +147,72 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         ],
       ),
       body: SafeArea(
-        child: Column(
-          children: [
-            _remindersSection(),
-            Expanded(child: _notificationList()),
-          ],
+        child: ValueListenableBuilder<NotificationPrefs>(
+          valueListenable: SettingsService.prefs,
+          builder: (context, prefs, _) => Column(
+            children: [
+              _chips(prefs),
+              _remindersSection(prefs),
+              Expanded(child: _notificationList(prefs)),
+            ],
+          ),
         ),
       ),
     );
   }
 
+  Widget _chips(NotificationPrefs prefs) {
+    return SizedBox(
+      height: 52,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        child: Row(children: [
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: ChoiceChip(
+              key: const ValueKey('notifCat_all'),
+              label: Text(tr(context, 'notifCatAll')),
+              selected: _category == null,
+              onSelected: (_) => setState(() => _category = null),
+            ),
+          ),
+          for (final c in NotifCategory.all)
+            if (prefs.isOn(c))
+              Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: ChoiceChip(
+                  key: ValueKey('notifCat_$c'),
+                  label: Text(tr(context, 'notifCat_$c')),
+                  selected: _category == c,
+                  onSelected: (_) => setState(() => _category = c),
+                ),
+              ),
+        ]),
+      ),
+    );
+  }
+
+  Future<void> _openSettings() async {
+    await showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (_) => const _NotifSettingsSheet(),
+    );
+    // A muted category's chip disappears: fall back to All.
+    if (mounted && _category != null && !SettingsService.prefs.value.isOn(_category!)) setState(() => _category = null);
+  }
+
   /// Reminders worked out on this device (no push): shown above the stored
   /// notifications, not marked read.
-  Widget _remindersSection() {
+  Widget _remindersSection(NotificationPrefs prefs) {
     return StreamBuilder<List<Reminder>>(
       stream: _reminders,
       builder: (context, snap) {
-        final list = snap.data ?? const <Reminder>[];
+        final list = [
+          for (final r in snap.data ?? const <Reminder>[])
+            if (prefs.allowsReminder(r.kind) && (_category == null || NotifCategory.ofReminder(r.kind) == _category)) r,
+        ];
         if (list.isEmpty) return const SizedBox.shrink();
         return ConstrainedBox(
           constraints: BoxConstraints(
@@ -190,12 +252,16 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     );
   }
 
-  Widget _notificationList() {
+  Widget _notificationList(NotificationPrefs prefs) {
     return Builder(
       builder: (context) {
         return LiveStream<List<AppNotification>>(
-          stream: NotificationService.watchMine,
-          builder: (context, items) {
+          stream: () => _stored,
+          builder: (context, all) {
+            final items = [
+              for (final n in all)
+                if (prefs.allows(n.type) && (_category == null || NotifCategory.ofType(n.type) == _category)) n,
+            ];
             _latest = items;
             if (items.isEmpty) {
               return EmptyState(
@@ -273,6 +339,48 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           },
         );
       },
+    );
+  }
+}
+
+/// The five category switches. Safety alerts stay on.
+class _NotifSettingsSheet extends StatefulWidget {
+  const _NotifSettingsSheet();
+
+  @override
+  State<_NotifSettingsSheet> createState() => _NotifSettingsSheetState();
+}
+
+class _NotifSettingsSheetState extends State<_NotifSettingsSheet> {
+  Future<void> _set(String category, bool on) async {
+    final next = SettingsService.prefs.value.set(category, on);
+    SettingsService.prefs.value = next; // takes effect at once
+    try {
+      await SettingsService.savePrefs(next);
+    } catch (_) {
+      if (mounted) showSnack(context, tr(context, 'somethingWrong'));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: ValueListenableBuilder<NotificationPrefs>(
+        valueListenable: SettingsService.prefs,
+        builder: (context, prefs, _) => ListView(shrinkWrap: true, children: [
+          for (final c in NotifCategory.all)
+            SwitchListTile(
+              key: ValueKey('notifSwitch_$c'),
+              title: Text(tr(context, 'notifCat_$c')),
+              value: prefs.isOn(c),
+              onChanged: (v) => _set(c, v),
+            ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+            child: Text(tr(context, 'notifCriticalNote'), style: const TextStyle(fontSize: 12, color: AppColors.faint)),
+          ),
+        ]),
+      ),
     );
   }
 }

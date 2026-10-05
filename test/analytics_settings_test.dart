@@ -100,7 +100,7 @@ void main() {
     await db.collection('notifications').add({'userId': 'u1', 'type': NotificationType.ratingReceived, 'message': 'r', 'relatedId': 'b', 'read': false, 'createdAt': Timestamp.now()});
     expect((await NotificationService.watchMine().first), hasLength(2));
     await SettingsService.savePrefs(const NotificationPrefs(ratings: false));
-    expect((await db.collection('users').doc('u1').get())['notificationPrefs'], {'bookingUpdates': true, 'ratings': false, 'promotions': true});
+    expect((await db.collection('users').doc('u1').get())['notificationPrefs'], {'bookingUpdates': true, 'ratings': false, 'promotions': true, 'payments': true, 'reminders': true});
     expect((await NotificationService.watchMine().first).map((n) => n.type), [NotificationType.statusChanged]);
     expect(await NotificationService.watchUnreadCount().first, 1);
     SettingsService.prefs.value = const NotificationPrefs();

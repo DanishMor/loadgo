@@ -2266,6 +2266,21 @@ describe('favourite routes', () => {
   });
 });
 
+describe('notification category switches', () => {
+  const prefs = (extra = {}) => ({ bookingUpdates: true, ratings: false, promotions: true, payments: true, reminders: false, ...extra });
+  test('five boolean switches are accepted, on create and update', async () => {
+    await assertSucceeds(setDoc(doc(as('u1'), 'users', 'u1'), { phone: '+91', notificationPrefs: prefs() }));
+    await assertSucceeds(updateDoc(doc(as('u1'), 'users', 'u1'), { notificationPrefs: prefs({ payments: false }) }));
+    await assertSucceeds(updateDoc(doc(as('u1'), 'users', 'u1'), { notificationPrefs: { ratings: false } }));
+  });
+  test('unknown keys and non-booleans are refused', async () => {
+    await assertFails(setDoc(doc(as('u2'), 'users', 'u2'), { phone: '+91', notificationPrefs: prefs({ spam: true }) }));
+    await assertFails(setDoc(doc(as('u2'), 'users', 'u2'), { phone: '+91', notificationPrefs: prefs({ payments: 'yes' }) }));
+    await assertFails(setDoc(doc(as('u2'), 'users', 'u2'), { phone: '+91', notificationPrefs: prefs({ reminders: 0 }) }));
+    await assertFails(setDoc(doc(as('u2'), 'users', 'u2'), { phone: '+91', notificationPrefs: 'off' }));
+  });
+});
+
 describe('saved searches', () => {
   const search = (extra = {}) => ({ kind: 'loads', name: 'Heavy to Delhi', filter: { drop: 'Delhi', minWeight: 6 }, createdAt: serverTimestamp(), ...extra });
   const ref = (uid, id) => doc(as(uid), 'users', 'customer1', 'saved_searches', id);

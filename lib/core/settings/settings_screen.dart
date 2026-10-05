@@ -139,6 +139,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               _switch('prefBookings', 'prefBookingUpdates', p.bookingUpdates, (v) => _setPrefs(p.copyWith(bookingUpdates: v))),
               _switch('prefRatings', 'prefRatings', p.ratings, (v) => _setPrefs(p.copyWith(ratings: v))),
               _switch('prefPromotions', 'prefPromotions', p.promotions, (v) => _setPrefs(p.copyWith(promotions: v))),
+              _switch('prefPayments', 'notifCat_payments', p.payments, (v) => _setPrefs(p.copyWith(payments: v))),
+              _switch('prefReminders', 'notifCat_reminders', p.reminders, (v) => _setPrefs(p.copyWith(reminders: v))),
               _header('consentCenter'),
               _switch('consentLocation', 'consentLocation', c.location, (v) => _setConsents(c.copyWith(location: v))),
               _switch('consentAnalytics', 'consentAnalytics', c.analytics, (v) => _setConsents(c.copyWith(analytics: v))),

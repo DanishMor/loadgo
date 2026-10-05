@@ -52,12 +52,15 @@ class NotificationService {
   }
 
   /// The signed-in user's notifications, newest first.
-  static Stream<List<AppNotification>> watchMine() {
+  ///
+  /// With [applyPrefs] false the user's category switches are not applied
+  /// (the notification center filters live, so a switch takes effect at once).
+  static Stream<List<AppNotification>> watchMine({bool applyPrefs = true}) {
     final uid = Backend.uid;
     if (uid == null) return Stream.value(const []);
     return _col.where('userId', isEqualTo: uid).snapshots().map((snap) {
       final prefs = SettingsService.prefs.value;
-      final list = snap.docs.map(AppNotification.fromDoc).where((n) => prefs.allows(n.type)).toList();
+      final list = snap.docs.map(AppNotification.fromDoc).where((n) => !applyPrefs || prefs.allows(n.type)).toList();
       list.sort((a, b) => newestFirst(a.createdAt, b.createdAt));
       return list;
     });
