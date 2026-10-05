@@ -2266,6 +2266,72 @@ describe('favourite routes', () => {
   });
 });
 
+describe('invoices and the number series', () => {
+  const FY = '2026-27';
+  const inv = (extra = {}) => ({
+    bookingId: 'L1', issuerId: 'driver1', customerId: 'customer1', driverId: 'driver1', seq: 1, fy: FY, number: `LG/${FY}/00001`,
+    gstPercent: 18, taxablePaise: 2118644, cgstPaise: 190678, sgstPaise: 190678, totalPaise: 2500000, sellerName: 'Ramesh Transport',
+    hsn: '996511', issuedAt: serverTimestamp(), ...extra,
+  });
+  const issue = (db, invoice = inv(), next = 2) => {
+    const b = writeBatch(db);
+    b.set(doc(db, 'invoices', 'L1'), invoice);
+    b.set(doc(db, 'invoice_series', `driver1_${FY}`), { next, updatedAt: serverTimestamp() });
+    return b.commit();
+  };
+  beforeEach(async () => {
+    await seedBooking('delivered');
+    await seed((db) => updateDoc(doc(db, 'bookings', 'L1'), { agreedFarePaise: 2500000 }));
+  });
+  test('the driver of a delivered trip issues number 1 and bumps the counter', async () => {
+    await assertSucceeds(issue(as('driver1')));
+    await assertSucceeds(getDoc(doc(as('customer1'), 'invoices', 'L1')));
+    await assertSucceeds(getDoc(doc(as('driver1'), 'invoice_series', `driver1_${FY}`)));
+    await assertFails(getDoc(doc(as('driver2'), 'invoices', 'L1')));
+    await assertFails(getDoc(doc(as('driver2'), 'invoice_series', `driver1_${FY}`)));
+    await assertSucceeds(getDoc(doc(asAdmin(), 'invoices', 'L1')));
+  });
+  test('wrong issuer, wrong status, wrong number, or a missing counter bump fail', async () => {
+    await assertFails(issue(as('customer1'), inv({ issuerId: 'customer1' })));
+    await assertFails(issue(as('driver2'), inv({ issuerId: 'driver2' })));
+    await assertFails(issue(as('driver1'), inv({ seq: 2, number: `LG/${FY}/00002` }), 3));
+    await assertFails(issue(as('driver1'), inv(), 5));
+    await assertFails(setDoc(doc(as('driver1'), 'invoices', 'L1'), inv()));
+    await assertFails(issue(as('driver1'), inv({ number: 'INV-1' })));
+    await assertFails(issue(as('driver1'), inv({ number: 'LG/2025-26/00001' })));
+    await seed((db) => updateDoc(doc(db, 'bookings', 'L1'), { status: 'in_transit' }));
+    await assertFails(issue(as('driver1')));
+  });
+  test('amounts must add up and match the booking; fields are validated', async () => {
+    await assertFails(issue(as('driver1'), inv({ totalPaise: 2500001 })));
+    await assertFails(issue(as('driver1'), inv({ totalPaise: 3000000, taxablePaise: 2542372, cgstPaise: 228814, sgstPaise: 228814 })));
+    await assertFails(issue(as('driver1'), inv({ sellerGstin: 'short' })));
+    await assertFails(issue(as('driver1'), inv({ ewayBillNo: '12345' })));
+    await assertFails(issue(as('driver1'), inv({ hsn: 'x' })));
+    await assertFails(issue(as('driver1'), inv({ extra: 1 })));
+    await assertSucceeds(issue(as('driver1'), inv({ sellerGstin: '27ABCDE1234F1Z5', ewayBillNo: '123456789012', ewayDistanceKm: 900, ewayValidUntil: Timestamp.fromDate(new Date('2026-11-01')) })));
+  });
+  test('the series continues at 2 and cannot be reset or skipped', async () => {
+    await assertSucceeds(issue(as('driver1')));
+    await seed((db) => setDoc(doc(db, 'bookings', 'L2'), { ...bookingFor('L1'), status: 'delivered' }));
+    await assertFails(setDoc(doc(as('driver1'), 'invoice_series', `driver1_${FY}`), { next: 2, updatedAt: serverTimestamp() }));
+    await assertFails(updateDoc(doc(as('driver1'), 'invoice_series', `driver1_${FY}`), { next: 9, updatedAt: serverTimestamp() }));
+    await assertFails(updateDoc(doc(as('driver1'), 'invoice_series', `driver1_${FY}`), { next: 1, updatedAt: serverTimestamp() }));
+    await assertFails(setDoc(doc(as('driver2'), 'invoice_series', `driver1_${FY}`), { next: 2, updatedAt: serverTimestamp() }));
+    await assertFails(deleteDoc(doc(as('driver1'), 'invoice_series', `driver1_${FY}`)));
+  });
+  test('only the issuer edits e-way fields; nothing else is editable or deletable', async () => {
+    await issue(as('driver1'));
+    const ref = (db) => doc(db, 'invoices', 'L1');
+    await assertSucceeds(updateDoc(ref(as('driver1')), { ewayBillNo: '123456789012', ewayDistanceKm: 500 }));
+    await assertFails(updateDoc(ref(as('driver1')), { ewayBillNo: 'abc' }));
+    await assertFails(updateDoc(ref(as('driver1')), { totalPaise: 1 }));
+    await assertFails(updateDoc(ref(as('driver1')), { number: 'LG/2026-27/00009' }));
+    await assertFails(updateDoc(ref(as('customer1')), { ewayBillNo: '123456789012' }));
+    await assertFails(deleteDoc(ref(as('driver1'))));
+  });
+});
+
 describe('claims and disputes', () => {
   const claim = (extra = {}) => ({
     bookingId: 'L1', customerId: 'customer1', driverId: 'driver1', openedBy: 'customer1', type: 'damage',

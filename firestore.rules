@@ -1273,6 +1273,71 @@ service cloud.firestore {
     // rating_flags/{ratingId}: written by the rater in the same batch as a
     // rating under 3 stars; only admins read and resolve them.
     // TODO(functions): create the flag server side.
+    // invoices/{bookingId}: the GST invoice the driver (transporter) issues
+    // after delivery. Numbers run in a series per issuer and financial year:
+    // `invoice_series/{uid}_{fy}.next` is bumped in the same batch, so numbers
+    // are gapless and cannot repeat. Amounts are a snapshot; the e-way bill
+    // fields are record only (nothing is sent to the GST portal).
+    // LATER(paid): GSP / e-way bill API.
+    match /invoice_series/{seriesId} {
+      allow read: if signedIn() && seriesId.matches(request.auth.uid + '_[0-9]{4}-[0-9]{2}');
+      allow create: if signedIn() && seriesId.matches(request.auth.uid + '_[0-9]{4}-[0-9]{2}')
+          && request.resource.data.keys().hasOnly(['next', 'updatedAt'])
+          && request.resource.data.next == 2
+          && request.resource.data.updatedAt == request.time;
+      allow update: if signedIn() && seriesId.matches(request.auth.uid + '_[0-9]{4}-[0-9]{2}')
+          && request.resource.data.keys().hasOnly(['next', 'updatedAt'])
+          && request.resource.data.next == resource.data.next + 1
+          && request.resource.data.updatedAt == request.time;
+      allow delete: if false;
+    }
+
+    function validInvoice(bookingId) {
+      let i = request.resource.data;
+      let b = get(docPath('bookings', bookingId)).data;
+      let seriesPath = docPath('invoice_series', request.auth.uid + '_' + i.fy);
+      let seqNow = exists(seriesPath) ? get(seriesPath).data.next : 1;
+      return i.keys().hasOnly(['bookingId', 'issuerId', 'customerId', 'driverId', 'seq', 'fy', 'number', 'gstPercent', 'taxablePaise',
+                               'cgstPaise', 'sgstPaise', 'totalPaise', 'sellerName', 'sellerGstin', 'buyerName', 'buyerGstin', 'hsn',
+                               'ewayBillNo', 'ewayValidUntil', 'ewayDistanceKm', 'issuedAt'])
+          && i.bookingId == bookingId
+          && b.status == 'delivered'
+          && b.driverId == request.auth.uid && i.issuerId == request.auth.uid
+          && i.driverId == b.driverId && i.customerId == b.customerId
+          && i.fy is string && i.fy.matches('[0-9]{4}-[0-9]{2}')
+          && i.seq is int && i.seq == seqNow && getAfter(seriesPath).data.next == i.seq + 1
+          && i.number is string && i.number.matches('LG/[0-9]{4}-[0-9]{2}/[0-9]{5,}')
+          && i.number.matches('LG/' + i.fy + '/.*')
+          && i.gstPercent is number && i.gstPercent >= 0 && i.gstPercent <= 28
+          && i.taxablePaise is int && i.cgstPaise is int && i.sgstPaise is int && i.totalPaise is int
+          && i.taxablePaise >= 0 && i.cgstPaise >= 0 && i.sgstPaise >= 0
+          && i.totalPaise == i.taxablePaise + i.cgstPaise + i.sgstPaise
+          && i.totalPaise > 0 && i.totalPaise <= 1000000000
+          && b.get('paidAmountPaise', b.get('agreedFarePaise', b.get('fareEstimate', i.totalPaise))) == i.totalPaise
+          && i.sellerName is string && i.sellerName.size() >= 1 && i.sellerName.size() <= 80
+          && (!('sellerGstin' in i) || (i.sellerGstin is string && i.sellerGstin.size() == 15))
+          && (!('buyerName' in i) || (i.buyerName is string && i.buyerName.size() <= 80))
+          && (!('buyerGstin' in i) || (i.buyerGstin is string && i.buyerGstin.size() == 15))
+          && i.hsn is string && i.hsn.matches('[0-9]{4,8}')
+          && (!('ewayBillNo' in i) || (i.ewayBillNo is string && i.ewayBillNo.matches('[0-9]{12}')))
+          && (!('ewayValidUntil' in i) || i.ewayValidUntil is timestamp)
+          && (!('ewayDistanceKm' in i) || (i.ewayDistanceKm is int && i.ewayDistanceKm >= 0 && i.ewayDistanceKm <= 5000))
+          && i.issuedAt == request.time;
+    }
+
+    match /invoices/{bookingId} {
+      allow read: if signedIn() && (resource.data.issuerId == request.auth.uid
+          || resource.data.customerId == request.auth.uid || isAdmin());
+      allow create: if signedIn() && validInvoice(bookingId);
+      allow update: if signedIn() && resource.data.issuerId == request.auth.uid
+          && changedKeys().hasOnly(['ewayBillNo', 'ewayValidUntil', 'ewayDistanceKm'])
+          && (!('ewayBillNo' in request.resource.data) || request.resource.data.ewayBillNo.matches('[0-9]{12}'))
+          && (!('ewayValidUntil' in request.resource.data) || request.resource.data.ewayValidUntil is timestamp)
+          && (!('ewayDistanceKm' in request.resource.data) || (request.resource.data.ewayDistanceKm is int
+              && request.resource.data.ewayDistanceKm >= 0 && request.resource.data.ewayDistanceKm <= 5000));
+      allow delete: if false;
+    }
+
     // claims/{bookingId}_{openerUid}: a damage / shortage / delay claim opened
     // by the customer or the driver of a booking that reached unloading.
     // One per party per booking. Both parties and admins read it; only admins

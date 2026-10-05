@@ -9,6 +9,7 @@ import '../services/booking_service.dart';
 import '../services/pricing_service.dart';
 import '../widgets/common.dart';
 import '../widgets/logistics_labels.dart';
+import 'invoice_issue_card.dart';
 import 'payment_card.dart';
 
 void openInvoice(BuildContext context, String bookingId) {
@@ -108,6 +109,8 @@ class InvoiceScreen extends StatelessWidget {
                       ],
                     ),
                   ),
+                  const SizedBox(height: 12),
+                  InvoiceIssueCard(booking: b),
                   const SizedBox(height: 12),
                   PaymentCard(booking: b),
                 ],
