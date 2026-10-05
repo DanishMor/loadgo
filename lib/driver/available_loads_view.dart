@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import '../core/models/saved_search.dart';
+import '../core/widgets/saved_search_menu.dart';
 
 import '../core/matching/nearest.dart';
 import '../core/models/load.dart';
@@ -229,17 +231,18 @@ class _AvailableLoadsViewState extends State<AvailableLoadsView> {
   }
 
   Widget _activeChips() {
+    InputChip chip(String label, LoadFilter Function() cleared) =>
+        InputChip(label: Text(label), onDeleted: () => setState(() => _filter = cleared()));
+    final f = _filter;
     final chips = <Widget>[
-      if (_filter.vehicleType != null)
-        InputChip(
-          label: Text(_filter.vehicleType!),
-          onDeleted: () => setState(() => _filter = _filter.copyWith(vehicleType: () => null)),
-        ),
-      if (_filter.minBudget != null)
-        InputChip(
-          label: Text('≥ ${formatRupees(_filter.minBudget!)}'),
-          onDeleted: () => setState(() => _filter = _filter.copyWith(minBudget: () => null)),
-        ),
+      if (f.dropQuery.trim().isNotEmpty) chip('→ ${f.dropQuery.trim()}', () => f.copyWith(dropQuery: '')),
+      if (f.vehicleType != null) chip(f.vehicleType!, () => f.copyWith(vehicleType: () => null)),
+      if (f.minBudget != null) chip('≥ ${formatRupees(f.minBudget!)}', () => f.copyWith(minBudget: () => null)),
+      if (f.maxBudget != null) chip('≤ ${formatRupees(f.maxBudget!)}', () => f.copyWith(maxBudget: () => null)),
+      if (f.minWeight != null) chip('≥ ${formatNum(f.minWeight!)} T', () => f.copyWith(minWeight: () => null)),
+      if (f.maxWeight != null) chip('≤ ${formatNum(f.maxWeight!)} T', () => f.copyWith(maxWeight: () => null)),
+      if (f.fromDate != null) chip('${formatDate(f.fromDate!)} →', () => f.copyWith(fromDate: () => null)),
+      if (f.toDate != null) chip('→ ${formatDate(f.toDate!)}', () => f.copyWith(toDate: () => null)),
     ];
     if (chips.isEmpty) return const SizedBox.shrink();
     return Padding(
@@ -303,6 +306,19 @@ class _AvailableLoadsViewState extends State<AvailableLoadsView> {
                   ),
                 ),
               ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: SavedSearchMenu(
+              kind: SearchKind.loads,
+              canSave: !_filter.isEmpty,
+              currentFilter: () => _filter.toMap(),
+              onApply: (m) {
+                final f = LoadFilter.fromMap(m);
+                _searchCtrl.text = f.pickupQuery;
+                setState(() => _filter = f);
+              },
             ),
           ),
           _activeChips(),
@@ -377,7 +393,8 @@ class _AvailableLoadsViewState extends State<AvailableLoadsView> {
   }
 }
 
-/// Bottom sheet for vehicle type and minimum budget. Pops the new filter.
+/// Bottom sheet for drop city, vehicle type, budget, weight and pickup dates.
+/// Pops the new filter.
 class _FilterSheet extends StatefulWidget {
   final LoadFilter initial;
   const _FilterSheet({required this.initial});
@@ -388,33 +405,72 @@ class _FilterSheet extends StatefulWidget {
 
 class _FilterSheetState extends State<_FilterSheet> {
   late String? _type = widget.initial.vehicleType;
-  late final _budgetCtrl =
-      TextEditingController(text: widget.initial.minBudget == null ? '' : formatNum(widget.initial.minBudget!));
+  late DateTime? _from = widget.initial.fromDate;
+  late DateTime? _to = widget.initial.toDate;
+  late final _dropCtrl = TextEditingController(text: widget.initial.dropQuery);
+  late final _minBudget = TextEditingController(text: widget.initial.minBudget == null ? '' : formatNum(widget.initial.minBudget!));
+  late final _maxBudget = TextEditingController(text: widget.initial.maxBudget == null ? '' : formatNum(widget.initial.maxBudget!));
+  late final _minWeight = TextEditingController(text: widget.initial.minWeight == null ? '' : formatNum(widget.initial.minWeight!));
+  late final _maxWeight = TextEditingController(text: widget.initial.maxWeight == null ? '' : formatNum(widget.initial.maxWeight!));
 
   @override
   void dispose() {
-    _budgetCtrl.dispose();
+    for (final c in [_dropCtrl, _minBudget, _maxBudget, _minWeight, _maxWeight]) {
+      c.dispose();
+    }
     super.dispose();
   }
 
+  num? _num(TextEditingController c) {
+    final n = num.tryParse(c.text.trim());
+    return (n == null || n <= 0) ? null : n;
+  }
+
   void _apply() {
-    final budget = num.tryParse(_budgetCtrl.text.trim());
     Navigator.of(context).pop(widget.initial.copyWith(
+      dropQuery: _dropCtrl.text.trim(),
       vehicleType: () => _type,
-      minBudget: () => (budget == null || budget <= 0) ? null : budget,
+      minBudget: () => _num(_minBudget),
+      maxBudget: () => _num(_maxBudget),
+      minWeight: () => _num(_minWeight),
+      maxWeight: () => _num(_maxWeight),
+      fromDate: () => _from,
+      toDate: () => _to,
     ));
   }
+
+  Future<void> _pick(bool from) async {
+    final now = DateTime.now();
+    final d = await showDatePicker(
+      context: context,
+      initialDate: (from ? _from : _to) ?? now,
+      firstDate: DateTime(now.year - 1),
+      lastDate: DateTime(now.year + 2),
+    );
+    if (d != null) setState(() => from ? _from = d : _to = d);
+  }
+
+  Widget _numField(String key, TextEditingController c, String label, {IconData? icon}) => Expanded(
+        child: TextField(
+          key: ValueKey(key),
+          controller: c,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          decoration: InputDecoration(labelText: label, prefixIcon: icon == null ? null : Icon(icon)),
+        ),
+      );
 
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-      child: Padding(
+      child: SingleChildScrollView(
         padding: EdgeInsets.fromLTRB(20, 0, 20, 20 + MediaQuery.viewInsetsOf(context).bottom),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(tr(context, 'filters'), style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
+            const SizedBox(height: 16),
+            TextField(key: const ValueKey('dropFilter'), controller: _dropCtrl, decoration: InputDecoration(labelText: tr(context, 'filterDrop'))),
             const SizedBox(height: 16),
             FieldLabel(tr(context, 'vehicleType')),
             DropdownButtonFormField<String?>(
@@ -427,24 +483,46 @@ class _FilterSheetState extends State<_FilterSheet> {
               onChanged: (v) => setState(() => _type = v),
             ),
             const SizedBox(height: 16),
-            FieldLabel(tr(context, 'minBudget')),
-            TextField(
-              key: const ValueKey('minBudgetFilter'),
-              controller: _budgetCtrl,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(prefixIcon: const Icon(Icons.currency_rupee_rounded), hintText: tr(context, 'anyBudget')),
-            ),
+            Row(children: [
+              _numField('minBudgetFilter', _minBudget, tr(context, 'minBudget'), icon: Icons.currency_rupee_rounded),
+              const SizedBox(width: 8),
+              _numField('maxBudgetFilter', _maxBudget, tr(context, 'maxBudgetLabel'), icon: Icons.currency_rupee_rounded),
+            ]),
+            const SizedBox(height: 12),
+            Row(children: [
+              _numField('minWeightFilter', _minWeight, tr(context, 'weightMin')),
+              const SizedBox(width: 8),
+              _numField('maxWeightFilter', _maxWeight, tr(context, 'weightMax')),
+            ]),
+            const SizedBox(height: 12),
+            Row(children: [
+              Expanded(
+                child: OutlinedButton(
+                  key: const ValueKey('fromDateFilter'),
+                  onPressed: () => _pick(true),
+                  child: Text(_from == null ? tr(context, 'filterDateFrom') : formatDate(_from!)),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: OutlinedButton(
+                  key: const ValueKey('toDateFilter'),
+                  onPressed: () => _pick(false),
+                  child: Text(_to == null ? tr(context, 'filterDateTo') : formatDate(_to!)),
+                ),
+              ),
+            ]),
             const SizedBox(height: 20),
             Row(
               children: [
                 Expanded(
                   child: OutlinedButton(
-                    onPressed: () => Navigator.of(context).pop(widget.initial.copyWith(vehicleType: () => null, minBudget: () => null)),
+                    onPressed: () => Navigator.of(context).pop(LoadFilter(pickupQuery: widget.initial.pickupQuery)),
                     child: Text(tr(context, 'clearFilters')),
                   ),
                 ),
                 const SizedBox(width: 12),
-                Expanded(child: FilledButton(onPressed: _apply, child: Text(tr(context, 'applyFilters')))),
+                Expanded(child: FilledButton(key: const ValueKey('applyFilters'), onPressed: _apply, child: Text(tr(context, 'applyFilters')))),
               ],
             ),
           ],

@@ -2266,6 +2266,25 @@ describe('favourite routes', () => {
   });
 });
 
+describe('saved searches', () => {
+  const search = (extra = {}) => ({ kind: 'loads', name: 'Heavy to Delhi', filter: { drop: 'Delhi', minWeight: 6 }, createdAt: serverTimestamp(), ...extra });
+  const ref = (uid, id) => doc(as(uid), 'users', 'customer1', 'saved_searches', id);
+  test('private to the owner and validated', async () => {
+    await assertSucceeds(setDoc(ref('customer1', 's1'), search()));
+    await assertSucceeds(setDoc(ref('customer1', 's2'), search({ kind: 'trucks', filter: { from: 'Pune', minCapacity: 10 } })));
+    await assertSucceeds(getDoc(ref('customer1', 's1')));
+    await assertFails(getDoc(ref('customer2', 's1')));
+    await assertFails(setDoc(ref('customer2', 's3'), search()));
+    await assertFails(setDoc(ref('customer1', 's4'), search({ kind: 'bogus' })));
+    await assertFails(setDoc(ref('customer1', 's5'), search({ name: '' })));
+    await assertFails(setDoc(ref('customer1', 's6'), search({ filter: {} })));
+    await assertFails(setDoc(ref('customer1', 's7'), search({ filter: { evil: 1 } })));
+    await assertFails(setDoc(ref('customer1', 's8'), search({ extra: 1 })));
+    await assertSucceeds(deleteDoc(ref('customer1', 's1')));
+    await assertFails(deleteDoc(ref('customer2', 's2')));
+  });
+});
+
 describe('document expiry', () => {
   const day = 86400000;
   const past = (d) => Timestamp.fromDate(new Date(Date.now() - d * day));

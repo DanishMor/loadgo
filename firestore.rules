@@ -240,6 +240,20 @@ service cloud.firestore {
           && request.resource.data.address is string && request.resource.data.address.size() >= 2 && request.resource.data.address.size() <= 200;
     }
 
+    // users/{uid}/saved_searches: named load / truck filters. The cap of 10
+    // per kind is enforced by the app (rules cannot count).
+    match /users/{userId}/saved_searches/{searchId} {
+      allow read, delete: if isUser(userId);
+      allow create, update: if isUser(userId)
+          && request.resource.data.keys().hasOnly(['kind', 'name', 'filter', 'createdAt'])
+          && request.resource.data.kind in ['loads', 'trucks']
+          && request.resource.data.name is string && request.resource.data.name.size() >= 1 && request.resource.data.name.size() <= 40
+          && request.resource.data.filter is map && request.resource.data.filter.size() >= 1 && request.resource.data.filter.size() <= 12
+          && request.resource.data.filter.keys().hasOnly(['pickup', 'drop', 'from', 'to', 'vehicleType', 'minBudget', 'maxBudget',
+                                                         'minWeight', 'maxWeight', 'minCapacity', 'onOrAfter', 'onOrBefore'])
+          && request.resource.data.createdAt == request.time;
+    }
+
     // users/{uid}/load_templates: loads the customer repeats (no dates).
     // The 20-template cap is enforced by the app (rules cannot count).
     match /users/{userId}/load_templates/{templateId} {

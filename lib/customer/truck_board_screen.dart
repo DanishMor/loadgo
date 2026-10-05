@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../core/l10n/l10n.dart';
 import '../core/models/risk.dart';
+import '../core/models/saved_search.dart';
+import '../core/widgets/saved_search_menu.dart';
 import '../core/models/truck_board.dart';
 import '../core/services/truck_board_service.dart';
 import '../core/services/vehicle_type_service.dart';
@@ -36,16 +38,58 @@ class _TruckBoardScreenState extends State<TruckBoardScreen> {
   late final Stream<List<TruckPost>> _posts = (widget.posts ?? TruckBoardService.watchOpenBoard()).asBroadcastStream();
   final _from = TextEditingController();
   final _to = TextEditingController();
+  final _capacity = TextEditingController();
   String? _type;
+  DateTime? _after;
+  DateTime? _before;
+
+  /// Cards shown so far; "Load more" adds another page.
+  int _shown = _boardPage;
+  static const _boardPage = 20;
 
   @override
   void dispose() {
     _from.dispose();
     _to.dispose();
+    _capacity.dispose();
     super.dispose();
   }
 
-  TruckFilter get _filter => TruckFilter(from: _from.text, to: _to.text, vehicleType: _type);
+  TruckFilter get _filter {
+    final cap = num.tryParse(_capacity.text.trim());
+    return TruckFilter(
+      from: _from.text,
+      to: _to.text,
+      vehicleType: _type,
+      onOrAfter: _after,
+      onOrBefore: _before,
+      minCapacity: cap == null || cap <= 0 ? null : cap,
+    );
+  }
+
+  void _apply(Map<String, dynamic> m) {
+    final f = TruckFilter.fromMap(m);
+    _from.text = f.from;
+    _to.text = f.to;
+    _capacity.text = f.minCapacity == null ? '' : formatNum(f.minCapacity!);
+    setState(() {
+      _type = f.vehicleType;
+      _after = f.onOrAfter;
+      _before = f.onOrBefore;
+      _shown = _boardPage;
+    });
+  }
+
+  Future<void> _pickDate(bool after) async {
+    final now = DateTime.now();
+    final d = await showDatePicker(
+      context: context,
+      initialDate: (after ? _after : _before) ?? now,
+      firstDate: DateTime(now.year - 1),
+      lastDate: now.add(const Duration(days: 365)),
+    );
+    if (d != null) setState(() => after ? _after = d : _before = d);
+  }
 
   Future<void> _request(TruckPost post) async {
     final pickup = TextEditingController(text: post.fromCity);
@@ -100,9 +144,9 @@ class _TruckBoardScreenState extends State<TruckBoardScreen> {
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 4, 20, 0),
             child: Row(children: [
-              Expanded(child: TextField(key: const ValueKey('boardFrom'), controller: _from, onChanged: (_) => setState(() {}), decoration: InputDecoration(labelText: tr(context, 'routeFrom')))),
+              Expanded(child: TextField(key: const ValueKey('boardFrom'), controller: _from, onChanged: (_) => setState(() => _shown = _boardPage), decoration: InputDecoration(labelText: tr(context, 'routeFrom')))),
               const SizedBox(width: 8),
-              Expanded(child: TextField(key: const ValueKey('boardTo'), controller: _to, onChanged: (_) => setState(() {}), decoration: InputDecoration(labelText: tr(context, 'routeTo')))),
+              Expanded(child: TextField(key: const ValueKey('boardTo'), controller: _to, onChanged: (_) => setState(() => _shown = _boardPage), decoration: InputDecoration(labelText: tr(context, 'routeTo')))),
             ]),
           ),
           Padding(
@@ -117,17 +161,57 @@ class _TruckBoardScreenState extends State<TruckBoardScreen> {
               onChanged: (v) => setState(() => _type = v),
             ),
           ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+            child: Row(children: [
+              Expanded(
+                child: TextField(
+                  key: const ValueKey('boardCapacity'),
+                  controller: _capacity,
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  onChanged: (_) => setState(() => _shown = _boardPage),
+                  decoration: InputDecoration(labelText: tr(context, 'capacityMin')),
+                ),
+              ),
+              const SizedBox(width: 8),
+              OutlinedButton(
+                key: const ValueKey('boardAfter'),
+                onPressed: () => _pickDate(true),
+                child: Text(_after == null ? tr(context, 'filterDateFrom') : formatDate(_after!)),
+              ),
+              const SizedBox(width: 4),
+              OutlinedButton(
+                key: const ValueKey('boardBefore'),
+                onPressed: () => _pickDate(false),
+                child: Text(_before == null ? tr(context, 'filterDateTo') : formatDate(_before!)),
+              ),
+            ]),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: SavedSearchMenu(kind: SearchKind.trucks, canSave: !_filter.isEmpty, currentFilter: () => _filter.toMap(), onApply: _apply),
+          ),
           Expanded(
             child: LiveStream<List<TruckPost>>(
               stream: () => _posts,
               builder: (context, all) {
                 final list = [for (final p in all) if (_filter.matches(p)) p];
                 if (list.isEmpty) return EmptyState(icon: Icons.local_shipping_outlined, title: tr(context, 'noEmptyTrucks'));
+                final shown = list.length > _shown ? _shown : list.length;
+                final more = list.length > shown;
                 return ListView.separated(
                   padding: const EdgeInsets.fromLTRB(20, 12, 20, 30),
-                  itemCount: list.length,
+                  itemCount: shown + (more ? 1 : 0),
                   separatorBuilder: (_, _) => const SizedBox(height: 10),
                   itemBuilder: (context, i) {
+                    if (i == shown) {
+                      return OutlinedButton.icon(
+                        key: const ValueKey('boardLoadMore'),
+                        onPressed: () => setState(() => _shown += _boardPage),
+                        icon: const Icon(Icons.expand_more_rounded),
+                        label: Text(tr(context, 'loadMore')),
+                      );
+                    }
                     final p = list[i];
                     return AppCard(
                       key: ValueKey('truckPost_${p.id}'),

@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'load.dart';
+import 'load_filter.dart' show parseIsoDate;
 
 /// `truck_posts/{id}`: a driver's empty truck, "free from A to B on a date".
 /// Customers browse the board and send a request.
@@ -61,29 +62,53 @@ class TruckPost {
 }
 
 /// Board filter: text on from/to (matched as in the city table by simple
-/// containment), vehicle type and a date range.
+/// containment), vehicle type, a date range and a minimum capacity in tons.
 class TruckFilter {
   final String from;
   final String to;
   final String? vehicleType;
   final DateTime? onOrAfter;
   final DateTime? onOrBefore;
+  final num? minCapacity;
 
-  const TruckFilter({this.from = '', this.to = '', this.vehicleType, this.onOrAfter, this.onOrBefore});
+  const TruckFilter({this.from = '', this.to = '', this.vehicleType, this.onOrAfter, this.onOrBefore, this.minCapacity});
 
   static const none = TruckFilter();
 
-  bool get isEmpty => from.trim().isEmpty && to.trim().isEmpty && vehicleType == null && onOrAfter == null && onOrBefore == null;
+  bool get isEmpty =>
+      from.trim().isEmpty && to.trim().isEmpty && vehicleType == null && onOrAfter == null && onOrBefore == null && minCapacity == null;
 
   bool matches(TruckPost p) {
     bool has(String hay, String needle) => needle.trim().isEmpty || hay.toLowerCase().contains(needle.trim().toLowerCase());
     if (!has(p.fromCity, from) || !has(p.toCity, to)) return false;
     if (vehicleType != null && p.vehicleType != vehicleType) return false;
+    if (minCapacity != null && p.capacity < minCapacity!) return false;
     final day = DateTime(p.availableDate.year, p.availableDate.month, p.availableDate.day);
     if (onOrAfter != null && day.isBefore(DateTime(onOrAfter!.year, onOrAfter!.month, onOrAfter!.day))) return false;
     if (onOrBefore != null && day.isAfter(DateTime(onOrBefore!.year, onOrBefore!.month, onOrBefore!.day))) return false;
     return true;
   }
+
+  static String _iso(DateTime d) => '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+
+  /// Stored form of a saved search (only the fields in use).
+  Map<String, Object?> toMap() => {
+        if (from.trim().isNotEmpty) 'from': from.trim(),
+        if (to.trim().isNotEmpty) 'to': to.trim(),
+        'vehicleType': ?vehicleType,
+        'minCapacity': ?minCapacity,
+        if (onOrAfter != null) 'onOrAfter': _iso(onOrAfter!),
+        if (onOrBefore != null) 'onOrBefore': _iso(onOrBefore!),
+      };
+
+  factory TruckFilter.fromMap(Map<String, dynamic> m) => TruckFilter(
+        from: m['from'] as String? ?? '',
+        to: m['to'] as String? ?? '',
+        vehicleType: m['vehicleType'] as String?,
+        minCapacity: m['minCapacity'] as num?,
+        onOrAfter: parseIsoDate(m['onOrAfter']),
+        onOrBefore: parseIsoDate(m['onOrBefore']),
+      );
 }
 
 /// `truck_requests/{postId}_{customerId}`: a customer asks for a posted truck.

@@ -38,6 +38,7 @@ import 'dispute_strings.dart';
 import 'invoice_strings.dart';
 import 'txn_strings.dart';
 import 'doc_expiry_strings.dart';
+import 'search_strings.dart';
 import 'trip_watch_strings.dart';
 import 'vehicle_strings.dart';
 
@@ -74,6 +75,7 @@ const List<Map<String, List<String>>> stringTables = [
   invoiceStrings,
   txnStrings,
   docExpiryStrings,
+  searchStrings,
   adminStrings,
   matchStrings,
   settingsStrings,
