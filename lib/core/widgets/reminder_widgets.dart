@@ -4,9 +4,11 @@ import '../l10n/l10n.dart';
 import '../reminders/reminders.dart';
 import '../services/reminder_service.dart';
 import 'common.dart';
+import 'trip_eta_card.dart' show durationText;
 
 /// Translated sentence for a reminder.
 String reminderText(BuildContext context, Reminder r) => switch (r.kind) {
+      ReminderKind.tripDelayed => trf(context, 'remTripDelayed', {'route': r.args['route']!, 'time': durationText(context, Duration(minutes: r.args['minutes'] as int))}),
       ReminderKind.pickupSoon => trf(context, 'remPickupSoon', r.args),
       ReminderKind.returnLoads => trf(context, 'remReturnLoads', r.args),
       ReminderKind.noDriverYet => trf(context, 'remNoDriver', r.args),
@@ -21,6 +23,7 @@ String reminderText(BuildContext context, Reminder r) => switch (r.kind) {
     };
 
 IconData reminderIcon(ReminderKind k) => switch (k) {
+      ReminderKind.tripDelayed => Icons.timer_off_outlined,
       ReminderKind.pickupSoon || ReminderKind.noDriverYet => Icons.schedule_rounded,
       ReminderKind.returnLoads => Icons.u_turn_left_rounded,
       ReminderKind.vehicleDocs || ReminderKind.licenceExpiring => Icons.assignment_late_rounded,

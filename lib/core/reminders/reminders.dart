@@ -4,8 +4,9 @@ import '../models/load.dart';
 import '../models/offer.dart';
 import '../matching/return_loads.dart';
 import '../models/vehicle.dart';
+import '../trip/trip_eta.dart';
 
-enum ReminderKind { returnLoads, pickupSoon, noDriverYet, vehicleDocs, serviceDue, tyreDue, licenceExpiring, offersWaiting, counterWaiting, confirmWaiting }
+enum ReminderKind { tripDelayed, returnLoads, pickupSoon, noDriverYet, vehicleDocs, serviceDue, tyreDue, licenceExpiring, offersWaiting, counterWaiting, confirmWaiting }
 
 /// An in-app reminder worked out from what the app already knows (no push,
 /// nothing stored). LATER(paid): the same rules in a scheduled Cloud
@@ -44,6 +45,9 @@ class ReminderInput {
   /// Driver's licence expiry (from onboarding), if known.
   final DateTime? licenceExpiry;
 
+  /// Estimated arrival of a booking (null = unknown); feeds the delay alert.
+  final DateTime? Function(Booking)? etaOf;
+
   const ReminderInput({
     required this.now,
     required this.isDriver,
@@ -52,6 +56,7 @@ class ReminderInput {
     this.offers = const [],
     this.vehicles = const [],
     this.licenceExpiry,
+    this.etaOf,
   });
 }
 
@@ -84,6 +89,22 @@ class ReminderEngine {
           relatedId: b.id,
           priority: 0,
         ));
+      }
+    }
+
+    // Both sides: a trip on the road well past its estimated arrival.
+    if (i.etaOf != null) {
+      for (final b in i.bookings) {
+        final late = TripEta.delayMinutes(b, i.etaOf!(b), i.now);
+        if (late != null) {
+          out.add(Reminder(
+            kind: ReminderKind.tripDelayed,
+            id: 'delayed_${b.id}',
+            args: {'route': '${b.pickup} → ${b.drop}', 'minutes': late},
+            relatedId: b.id,
+            priority: 0,
+          ));
+        }
       }
     }
 

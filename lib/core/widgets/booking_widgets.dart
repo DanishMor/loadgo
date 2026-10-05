@@ -5,6 +5,8 @@ import '../models/booking.dart';
 import '../services/booking_service.dart';
 import '../share_text.dart';
 import 'common.dart';
+import '../trip/trip_eta.dart';
+import 'trip_eta_card.dart';
 import '../l10n/l10n.dart';
 import 'live_stream.dart';
 import 'logistics_labels.dart';
@@ -116,6 +118,9 @@ class BookingTimeline extends StatelessWidget {
 
   const BookingTimeline({super.key, required this.booking});
 
+  /// Time each step took after the one before it.
+  Map<String, Duration> get _since => {for (final s in TripEta.steps(booking)) if (s.sincePrevious != null) s.status: s.sincePrevious!};
+
   @override
   Widget build(BuildContext context) {
     // A cancelled booking only ever got as far as "accepted".
@@ -168,7 +173,10 @@ class BookingTimeline extends StatelessWidget {
                     style: TextStyle(fontWeight: FontWeight.w800, color: done ? AppColors.title : AppColors.faint),
                   ),
                   if (time != null)
-                    Text(formatDateTime(time), style: const TextStyle(fontSize: 12, color: AppColors.muted)),
+                    Text(
+                      [formatDateTime(time), if (_since[status] != null) '+${durationText(context, _since[status]!)}'].join('  '),
+                      style: const TextStyle(fontSize: 12, color: AppColors.muted),
+                    ),
                 ],
               ),
             ),

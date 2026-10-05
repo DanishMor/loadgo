@@ -12,6 +12,8 @@ import 'booking_service.dart';
 import 'load_service.dart';
 import 'offer_service.dart';
 import 'vehicle_service.dart';
+import 'pricing_service.dart';
+import '../trip/trip_eta.dart';
 
 /// Live in-app reminders for the signed-in user: the latest bookings, loads,
 /// offers, vehicles and licence expiry fed through [ReminderEngine], and
@@ -44,6 +46,7 @@ class ReminderService {
         offers: offers,
         vehicles: vehicles,
         licenceExpiry: licence,
+        etaOf: (b) => TripEta.eta(b, PricingService.estimateRouteKm([b.pickup, ...b.extraPickups, ...b.extraDrops, b.drop])),
       )));
     }
 

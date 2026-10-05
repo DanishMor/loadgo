@@ -5,6 +5,7 @@ import '../core/constants/logistics.dart';
 import '../core/models/booking.dart';
 import '../core/services/booking_service.dart';
 import '../core/widgets/common.dart';
+import '../core/widgets/trip_eta_card.dart';
 import '../core/l10n/l10n.dart';
 import '../core/widgets/rating_widgets.dart';
 import '../core/widgets/booking_widgets.dart';
@@ -58,6 +59,8 @@ class DriverTripScreen extends StatelessWidget {
           const SizedBox(height: 14),
           PaymentCard(booking: booking),
           const SizedBox(height: 14),
+          TripEtaCard(booking: booking),
+          const SizedBox(height: 8),
           ClaimCard(booking: booking),
           const SizedBox(height: 8),
           BookingTimeline(booking: booking),
