@@ -229,6 +229,51 @@ service cloud.firestore {
           && request.resource.data.address is string && request.resource.data.address.size() >= 2 && request.resource.data.address.size() <= 200;
     }
 
+    // users/{uid}/load_templates: loads the customer repeats (no dates).
+    // The 20-template cap is enforced by the app (rules cannot count).
+    match /users/{userId}/load_templates/{templateId} {
+      allow read, delete: if isUser(userId);
+      allow create, update: if isUser(userId)
+          && request.resource.data.keys().hasOnly(['name', 'pickup', 'drop', 'cargoType', 'weight', 'vehicleType', 'budget', 'notes',
+                                                   'pickupSlot', 'fragile', 'highValue', 'costCenter', 'createdAt'])
+          && request.resource.data.name is string && request.resource.data.name.size() >= 1 && request.resource.data.name.size() <= 40
+          && request.resource.data.pickup is string && request.resource.data.pickup.size() >= 2 && request.resource.data.pickup.size() <= 200
+          && request.resource.data.drop is string && request.resource.data.drop.size() >= 2 && request.resource.data.drop.size() <= 200
+          && request.resource.data.cargoType is string && request.resource.data.cargoType.size() <= 60
+          && request.resource.data.weight is number && request.resource.data.weight > 0 && request.resource.data.weight <= 100
+          && request.resource.data.vehicleType is string && request.resource.data.vehicleType.size() <= 40
+          && (request.resource.data.get('budget', null) == null || (request.resource.data.budget is number && request.resource.data.budget > 0))
+          && request.resource.data.get('notes', '') is string && request.resource.data.get('notes', '').size() <= 300
+          && request.resource.data.get('pickupSlot', 'any') in ['any', 'morning', 'midday', 'afternoon', 'evening']
+          && request.resource.data.get('fragile', false) is bool
+          && request.resource.data.get('highValue', false) is bool
+          && request.resource.data.get('costCenter', 'x') is string && request.resource.data.get('costCenter', 'x').size() <= 30
+          && request.resource.data.createdAt == request.time;
+    }
+
+    // users/{uid}/favourite_drivers and blocked_drivers: private lists keyed by
+    // the driver's uid. A blocked driver is copied onto new loads
+    // (blockedDriverIds) so the driver cannot accept them; the app also hides
+    // those loads from that driver's feed.
+    match /users/{userId}/favourite_drivers/{driverId} {
+      allow read, delete: if isUser(userId);
+      allow create, update: if isUser(userId)
+          && driverId != userId
+          && request.resource.data.keys().hasOnly(['name', 'vehicleNumber', 'createdAt'])
+          && request.resource.data.get('name', '') is string && request.resource.data.get('name', '').size() <= 60
+          && request.resource.data.get('vehicleNumber', '') is string && request.resource.data.get('vehicleNumber', '').size() <= 12
+          && request.resource.data.createdAt == request.time;
+    }
+
+    match /users/{userId}/blocked_drivers/{driverId} {
+      allow read, delete: if isUser(userId);
+      allow create, update: if isUser(userId)
+          && driverId != userId
+          && request.resource.data.keys().hasOnly(['name', 'createdAt'])
+          && request.resource.data.get('name', '') is string && request.resource.data.get('name', '').size() <= 60
+          && request.resource.data.createdAt == request.time;
+    }
+
     // users/{uid}/branches: a business's warehouses, factories, ports, CFS.
     match /users/{userId}/branches/{branchId} {
       allow read, delete: if isUser(userId);
@@ -471,6 +516,7 @@ service cloud.firestore {
           && validTradeFields(d)
           && validBookingType(d)
           && (!('invitedDriverId' in d) || (d.invitedDriverId is string && d.invitedDriverId.size() >= 1 && d.invitedDriverId.size() <= 60))
+          && (!('blockedDriverIds' in d) || (d.blockedDriverIds is list && d.blockedDriverIds.size() <= 50))
           && (!('costCenter' in d) || (d.costCenter is string && d.costCenter.size() >= 1 && d.costCenter.size() <= 30))
           && (!('businessId' in d) || (d.businessId is string && (d.businessId == d.shipperId || activeBooker(d.businessId, d.shipperId))))
           && (!('scheduledAt' in d) || d.scheduledAt is timestamp)
@@ -795,6 +841,7 @@ service cloud.firestore {
           && b.status == 'accepted'
           && load.status == 'open'
           && load.shipperId != request.auth.uid
+          && !(request.auth.uid in load.get('blockedDriverIds', []))
           && b.customerId == load.shipperId
           // Denormalized copy must match the load the customer posted.
           && b.pickup == load.pickup

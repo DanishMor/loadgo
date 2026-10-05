@@ -24,6 +24,8 @@ import '../core/scheduling/schedule.dart';
 import '../core/offers/promo.dart';
 import '../core/services/rewards_service.dart';
 import '../core/services/business_service.dart';
+import '../core/models/repeat.dart';
+import '../core/services/repeat_service.dart';
 
 /// Customer form to post a load. Pops with `true` once posted.
 /// [repostFrom] prefills everything except the pickup date.
@@ -321,6 +323,33 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
   DateTime? get _scheduledAt {
     final d = _pickupDate, t = _pickupTime;
     return d == null || t == null ? null : DateTime(d.year, d.month, d.day, t.hour, t.minute);
+  }
+
+  Future<void> _saveTemplate() async {
+    if (!_formKey.currentState!.validate()) return;
+    final name = await showDialog<String>(context: context, builder: (_) => const _TemplateNameDialog());
+    if (name == null || name.trim().isEmpty) return;
+    final budgetText = _budgetCtrl.text.trim();
+    try {
+      await RepeatService.saveTemplate(LoadTemplate(
+        id: '',
+        name: name,
+        pickup: _pickupCtrl.text.trim(),
+        drop: _dropCtrl.text.trim().isEmpty ? _pickupCtrl.text.trim() : _dropCtrl.text.trim(),
+        cargoType: _cargoType,
+        weight: num.parse(_weightCtrl.text.trim()),
+        vehicleType: _vehicleType,
+        budget: budgetText.isEmpty ? null : num.parse(budgetText),
+        notes: _notesCtrl.text.trim(),
+        pickupSlot: _slot,
+        fragile: _fragile,
+        highValue: _highValue,
+        costCenter: _businessId == null ? null : _costCenterCtrl.text.trim(),
+      ));
+      if (mounted) showSnack(context, tr(context, 'templateSaved'));
+    } on TemplateLimitException {
+      if (mounted) showSnack(context, tr(context, 'templateLimit'));
+    }
   }
 
   Future<void> _submit() async {
@@ -633,11 +662,55 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
                 ],
                 const SizedBox(height: 20),
                 PrimaryButton(label: tr(context, 'postLoad'), icon: Icons.send_rounded, loading: _saving, onPressed: _submit),
+                const SizedBox(height: 8),
+                Center(
+                  child: TextButton.icon(
+                    key: const ValueKey('saveTemplate'),
+                    onPressed: _saveTemplate,
+                    icon: const Icon(Icons.bookmark_add_outlined, size: 18),
+                    label: Text(tr(context, 'saveAsTemplate')),
+                  ),
+                ),
               ],
             ),
           ),
         ),
       ),
+    );
+  }
+}
+
+class _TemplateNameDialog extends StatefulWidget {
+  const _TemplateNameDialog();
+
+  @override
+  State<_TemplateNameDialog> createState() => _TemplateNameDialogState();
+}
+
+class _TemplateNameDialogState extends State<_TemplateNameDialog> {
+  final _name = TextEditingController();
+
+  @override
+  void dispose() {
+    _name.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text(tr(context, 'saveAsTemplate')),
+      content: TextField(
+        key: const ValueKey('templateName'),
+        controller: _name,
+        maxLength: 40,
+        autofocus: true,
+        decoration: InputDecoration(labelText: tr(context, 'templateName')),
+      ),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(context), child: Text(tr(context, 'cancel'))),
+        FilledButton(key: const ValueKey('templateNameOk'), onPressed: () => Navigator.pop(context, _name.text), child: Text(tr(context, 'save'))),
+      ],
     );
   }
 }

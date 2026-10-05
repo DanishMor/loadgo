@@ -67,6 +67,10 @@ class Load {
   final String? businessId;
   final String? costCenter;
 
+  /// Drivers the customer had blocked when posting. They do not see the load
+  /// and cannot accept it.
+  final List<String> blockedDriverIds;
+
   /// Exact pickup time for an advance booking (null = no fixed time).
   final DateTime? scheduledAt;
 
@@ -114,6 +118,7 @@ class Load {
     this.invitedDriverId,
     this.businessId,
     this.costCenter,
+    this.blockedDriverIds = const [],
     this.fragile = false,
     this.highValue = false,
     this.promoCode,
@@ -122,6 +127,9 @@ class Load {
   });
 
   bool get isOpen => status == LoadStatus.open;
+
+  /// True when [driverId] is on this load's block list.
+  bool blocks(String? driverId) => driverId != null && blockedDriverIds.contains(driverId);
 
   /// Every stop in visiting order: pickups, extra drops, final drop.
   List<String> get route => [pickup, ...extraPickups, ...extraDrops, drop];
@@ -165,6 +173,7 @@ class Load {
       invitedDriverId: d['invitedDriverId'] as String?,
       businessId: d['businessId'] as String?,
       costCenter: d['costCenter'] as String?,
+      blockedDriverIds: [for (final s in (d['blockedDriverIds'] as List?) ?? const []) s.toString()],
       fragile: d['fragile'] == true,
       highValue: d['highValue'] == true,
       promoCode: (d['promo'] as Map?)?['code'] as String?,

@@ -1,0 +1,597 @@
+LOADGO
+Final Master Roadmap
+Complete Transport + Logistics Marketplace | Hinglish Edition
+Bike + Truck + Fleet + Load Marketplace + Live Map + Driver Network
++ KYC + Anti-Fraud + Payments + Import/Export + Enterprise + AI
+Core vision: LoadGo ko sirf "truck booking app" nahi, balki verified logistics marketplace banana hai jahan
+customer, driver, truck owner, fleet owner, transporter, trader, importer aur exporter ek connected ecosystem
+mein kaam kar saken.
+Document purpose: Ye roadmap feature selection, architecture planning aur phased development ke liye master
+reference hai. Is document mein proposed features hain; final regulatory/API integrations implementation se pehle
+legally and technically validate kiye jayenge.
+LoadGo - Final Master Roadmap | Hinglish Page 1 / 29
+Contents / Roadmap Map
+Code Feature LoadGo design / kaise work karega
+00 Current base + principles Roadmap module
+01 Authentication & account ecosystem Roadmap module
+02 Identity, KYC & government/issuer
+verification
+Roadmap module
+03 Periodic face re-KYC + account security Roadmap module
+04 Customer app Roadmap module
+05 Bike + small delivery Roadmap module
+06 Truck + fleet ecosystem Roadmap module
+07 Load marketplace Roadmap module
+08 Booking + pricing engine Roadmap module
+09 Map + routing + live map Roadmap module
+10 Smart matching Roadmap module
+11 Driver app + driver network Roadmap module
+12 Chat, calls & location sharing Roadmap module
+13 Trip lifecycle + live tracking Roadmap module
+14 Pickup, cargo security & POD Roadmap module
+15 Payments, wallet & settlement Roadmap module
+16 Documents + compliance workflow Roadmap module
+17 Import/export + multi-leg logistics Roadmap module
+18 Business + enterprise + transporter Roadmap module
+19 Anti-fraud + risk engine Roadmap module
+20 Safety + support + insurance Roadmap module
+21 Notifications + analytics Roadmap module
+22 AI + future intelligence Roadmap module
+23 Backend architecture + security Roadmap module
+24 Testing + pilot + Pan-India scale Roadmap module
+25 Final end-to-end blueprint Roadmap module
+Recommended priority: Pehle stable core workflow banao - Auth/KYC -> Customer/Driver -> Vehicle -> Load ->
+Booking -> Map -> Matching -> Tracking -> POD -> Payment -> Anti-Fraud -> Admin. Advanced AI/API/telematics
+uske baad.
+LoadGo - Final Master Roadmap | Hinglish Page 2 / 29
+00 Current Base & Product Principles
+Abhi app foundation/authentication/dashboard stage par hai.
+Current base mein Flutter + Firebase setup, Splash, role selection, Customer Login, Firebase Phone OTP, OTP
+verification, Customer Home, bottom navigation aur 12-language foundation hai. Ab app ko modular production
+architecture mein shift karna hai.
+Core principles
+Code Feature LoadGo design / kaise work karega
+P0-01 Modular architecture Ek hi main.dart mein sab kuch bharne ke bajay auth, customer, driver,
+booking, map, KYC, payment, admin aur services alag modules.
+P0-02 Verification-first Sensitive role ko verification ke bina high-trust actions nahi milne chahiye.
+P0-03 Server-authoritative Fare, booking status, payout, permissions aur risk decisions client app par
+blindly trust nahi honge.
+P0-04 Privacy by design Aadhaar/PAN/face/address/location ko minimum required scope mein
+access/store/show karna.
+P0-05 Auditability Critical changes ka event log - who, what, when, device/session context
+where appropriate.
+P0-06 Indian logistics first UPI, GST, e-way bill workflow, vehicle docs, Indian mobile numbers,
+regional languages, highways/ports/warehouses use-cases.
+LoadGo - Final Master Roadmap | Hinglish Page 3 / 29
+01 Authentication & Account Ecosystem
+Har user type ke liye controlled onboarding aur secure login.
+Code Feature LoadGo design / kaise work karega
+A1 Customer mobile OTP Indian mobile validation + Firebase OTP; register/login same account
+identity.
+A2 Google login Optional secondary auth; Firebase identity linking ke saath.
+A3 Driver mobile OTP Driver signup/login with dedicated role.
+A4 Business accounts Company owner, manager, dispatch, accounts, viewer roles.
+A5 Role-based access Customer, driver, transporter, fleet, shipper, importer, exporter, trader,
+admin etc.
+A6 New-device verification Naye device par extra verification / risk challenge.
+A7 Session management Trusted devices, logout all, session revoke.
+A8 Account recovery Secure recovery workflow; identity checks required for sensitive changes.
+A9 Account linking Individual se business role / fleet / company profiles link karna.
+A10 Consent center Privacy, location, document, face-verification aur communication
+permissions ka control.
+LoadGo - Final Master Roadmap | Hinglish Page 4 / 29
+02
+Identity, KYC & Government/Issuer
+Verification
+Aadhaar + PAN + DL + RC + DigiLocker + business verification ko layered system banana.
+Code Feature LoadGo design / kaise work karega
+K1 Aadhaar verification flow Authorised/approved Aadhaar authentication ecosystem ke through
+consent-based identity check.
+K2 PAN verification Authorised PAN verification service/path; name/DOB/status checks
+where permitted.
+K3 Driving Licence DigiLocker/transport-authorised source se available document
+verification.
+K4 RC verification Vehicle registration record/document verification through permitted
+transport ecosystem.
+K5 DigiLocker consent User consent ke baad supported documents fetch/share/verify.
+K6 Current + permanent address User/business profile mein structured address records; sensitive display
+masked.
+K7 Face verification Identity match workflow; liveness/provider controls as appropriate.
+K8 Driver KYC pack Aadhaar, PAN, DL, address, photo, payout profile, vehicle relationship.
+K9 Business KYC GSTIN, PAN, business name, trade name, addresses, company
+details/documents.
+K10 MCA / EntityLocker path Eligible company/entity documents ke authorised verification workflow ke
+liye integration layer.
+K11 Verification badge Mobile/identity/PAN/DL/RC/GST/business/face status alag-alag visible.
+K12 Expiry tracking DL, RC, insurance, PUC, fitness, permits and other relevant document
+expiry alerts.
+K13 Mismatch workflow Name/entity/vehicle relationship mismatch -> pending/manual review,
+not blind approval.
+K14 Source + timestamp Har verification result ke saath source/type/status/timestamp/expiry
+metadata.
+Rule: "Document uploaded" aur "Government/issuer verified" ko kabhi same status mat samjho. Verified badge
+actual authorised verification response ke baad hi.
+LoadGo - Final Master Roadmap | Hinglish Page 5 / 29
+03 Periodic Face Re-KYC + Account Security
+Fraud risk ko time-to-time re-check karne ka dedicated engine.
+Code Feature LoadGo design / kaise work karega
+R1 Scheduled re-KYC Configured policy interval par face/identity re-check.
+R2 New device trigger Naya phone/device detect ho to re-verification.
+R3 SIM/mobile change Sensitive mobile change par stronger authentication.
+R4 Payout/bank change Payout account change se pehle re-KYC/risk challenge.
+R5 High-value transaction High-value shipment/payout par additional verification.
+R6 Suspicious activity trigger Behavioural risk score high ho to re-KYC/manual review.
+R7 Document expiry trigger Expired/changed document ke baad verification refresh.
+R8 Random verification Selected accounts par periodic random checks.
+R9 Trusted device list Device history + revoke access.
+R10 Face-KYC freshness Current verification timestamp aur next verification due date track karna.
+R11 Recovery protection Passwordless ecosystem mein identity-sensitive recovery ko KYC se
+protect karna.
+R12 Manual review Auto check fail hone par human verification queue.
+Face re-KYC ko harassment jaisa frequent na banakar risk-based + policy-based trigger engine rakha jayega.
+LoadGo - Final Master Roadmap | Hinglish Page 6 / 29
+04 Customer App
+Shipper/customer ko booking se tracking aur documents tak complete flow.
+Code Feature LoadGo design / kaise work karega
+C1 Home dashboard Search, Book Bike, Book Truck, Post Load, Live Map, recent trips, alerts.
+C2 Book Bike Small parcel/local goods ke liye two-wheeler flow.
+C3 Book Truck Truck category + cargo + route + schedule.
+C4 Post Load Customer budget ke saath marketplace par load publish kar sake.
+C5 Pickup/drop Single, multi-pickup, multi-drop location selection.
+C6 Saved places Home, office, factory, warehouse, port, CFS, mandi etc.
+C7 Fare estimate Route, vehicle, weight and options ke basis par estimate.
+C8 Available vehicles Nearby/verified vehicle options with ETA, vehicle info and verification
+status.
+C9 Booking history Upcoming, active, completed, cancelled.
+C10 Active trip Live vehicle map + ETA + status timeline.
+C11 Documents Invoice, LR/Bilty, e-way reference, POD, proofs.
+C12 Payments UPI/card/other supported methods, receipts and refunds.
+C13 Support Issue categories, ticket/chat/call.
+C14 Profile/business Individual ya company account with KYC and saved settings.
+LoadGo - Final Master Roadmap | Hinglish Page 7 / 29
+05 Bike + Small Delivery
+Porter-style two-wheeler/local logistics capability ko LoadGo mein first-class category banana.
+Code Feature LoadGo design / kaise work karega
+B1 Bike Local parcel and small goods transport.
+B2 Scooter City delivery where suitable.
+B3 EV two-wheeler Eligible electric fleet category.
+B4 Cycle Optional low-cost local delivery.
+B5 Goods auto 3-wheeler category.
+B6 Mini truck Tata Ace / similar category.
+B7 Instant local booking Pickup now -> nearby rider/vehicle -> ETA -> delivery.
+B8 Schedule local delivery Future date/time slot.
+B9 Package details Weight, size, quantity, fragile/high-value flag.
+B10 Photo capture Pickup/delivery proof for parcel.
+B11 Bike route tracking Real-time rider location and ETA.
+B12 Bike KYC Rider identity + DL + RC + insurance/PUC where applicable.
+B13 Business delivery Shops/businesses ke repeated local orders.
+B14 Fleet mode Multiple bikes/scooters under one fleet owner.
+LoadGo - Final Master Roadmap | Hinglish Page 8 / 29
+06 Truck + Fleet Ecosystem
+Truck owner, driver aur fleet owner ko structured vehicle ecosystem.
+Code Feature LoadGo design / kaise work karega
+V1 Truck catalogue Open body, container, trailer, mini, 10-32 ft, multi-axle etc.
+V2 Vehicle profile Number, class, capacity, dimensions, fuel, body type.
+V3 Vehicle documents RC, insurance, PUC, fitness, permit and expiry.
+V4 Owner relationship Owner, authorised operator or fleet relationship record.
+V5 Driver assignment Vehicle-to-driver mapping with active assignment.
+V6 Fleet dashboard Vehicles, drivers, online/offline, active trips, idle vehicles.
+V7 Vehicle availability Available, busy, on-trip, maintenance, suspended.
+V8 Maintenance reminders Service, tyre, insurance, PUC, fitness, permit.
+V9 FASTag layer Future partner/API integration for supported FASTag flows.
+V10 Fuel layer Fuel station map, expense tracking, future partner integration.
+V11 Replacement vehicle Breakdown/availability issue par replacement workflow.
+V12 Vehicle verification badge RC/transport-source verification + document freshness.
+LoadGo - Final Master Roadmap | Hinglish Page 9 / 29
+07 Load Marketplace
+Shipper ke load ko verified drivers/transporter/fleet se match karna.
+Code Feature LoadGo design / kaise work karega
+L1 Post Load Pickup, drop, cargo, weight, vehicle, date, budget, notes.
+L2 Browse Loads Driver/transporter ko searchable marketplace.
+L3 Load filters Route, distance, vehicle, weight, freight, pickup time.
+L4 Nearby loads Current location ke aas-paas.
+L5 Route loads Driver ke planned route ke aas-paas.
+L6 Return loads Destination par pahunchne ke baad reverse-direction opportunities.
+L7 Favourite routes Regular route alerts.
+L8 Load alerts Matching load par push notification.
+L9 Load detail card Cargo, route, budget/fare, pickup time, verification requirements.
+L10 Offers Driver/transporter controlled quote/accept flow.
+L11 Negotiation Optional controlled negotiation with platform rules.
+L12 Double confirmation Customer + driver confirmation ke baad booking lock.
+L13 Load visibility controls Public marketplace, selected network, direct invite etc.
+L14 Prohibited cargo rules Restricted goods ke liye policy and booking filters.
+LoadGo - Final Master Roadmap | Hinglish Page 10 / 29
+08 Booking + Pricing Engine
+Instant booking aur marketplace booking dono ke liye core transaction engine.
+Code Feature LoadGo design / kaise work karega
+P1 Book Now Immediate vehicle search and booking.
+P2 Schedule Future pickup date/time.
+P3 Recurring Repeat route/shipments.
+P4 Multi-stop Multiple pickup/drop points.
+P5 Fare estimate Distance + vehicle + cargo + weight + demand factors.
+P6 Fare breakdown Base, distance, toll, loading, unloading, waiting, platform fee, GST etc.
+P7 Minimum fare Vehicle/category based minimum pricing.
+P8 Driver offer Marketplace quote option.
+P9 Hybrid pricing System estimate + offers.
+P10 Detention Loading/unloading waiting record and configured charge.
+P11 Cancellation policy Reason + charge/refund logic.
+P12 Booking state machine Created -> matched -> accepted -> confirmed -> active -> delivered ->
+settled.
+P13 Server-side pricing Client estimate is not authoritative; final quote from secure backend.
+P14 Pricing admin Admin-configurable rates/rules with audit trail.
+LoadGo - Final Master Roadmap | Hinglish Page 11 / 29
+09 Map + Routing + LoadGo Live Map
+Mapbox-style full logistics map - sirf pickup/drop nahi.
+Code Feature LoadGo design / kaise work karega
+M1 My location User current location with permission.
+M2 Pickup/drop Search, pin, geocoding and saved place.
+M3 Vehicle markers Nearby trucks, bikes and active vehicles.
+M4 Load markers Available/public loads on map.
+M5 Driver network layer Eligible connected/nearby drivers based on privacy settings.
+M6 Active trip layer Running shipments and routes.
+M7 Warehouse/factory Business logistics POIs.
+M8 Ports/CFS Import/export logistics POIs.
+M9 Fuel/toll Relevant navigation overlays.
+M10 Routing Route calculation + ETA.
+M11 Navigation Turn-by-turn driver navigation.
+M12 Rerouting Route change/off-route handling.
+M13 Traffic-aware ETA Where provider data and plan permit.
+M14 Geofencing Pickup/drop/warehouse/port boundaries.
+M15 Route deviation Planned vs actual route comparison.
+M16 Offline/poor-network support Essential route/trip information cached where technically feasible.
+Map ko LoadGo ka shared spatial layer samjho: booking, matching, tracking, driver network, POIs aur safety sab isi
+se connect honge.
+LoadGo - Final Master Roadmap | Hinglish Page 12 / 29
+10 Smart Matching Engine
+Best-fit vehicle/driver/route ko automate karna.
+Code Feature LoadGo design / kaise work karega
+SM1 Nearest vehicle Pickup ke nearest eligible vehicle.
+SM2 Correct capacity Weight/dimensions ke according capacity filter.
+SM3 Correct vehicle type Bike/mini/container/trailer etc.
+SM4 Availability Online + eligible + free vehicle.
+SM5 Route match Driver route aur shipment route alignment.
+SM6 Return-load match Empty return reduce karne ke liye.
+SM7 Verification filter Required KYC/document status valid.
+SM8 Risk filter High-risk/suspended accounts exclude/hold.
+SM9 Fleet matching Fleet ke available vehicles se auto allocation.
+SM10 Scheduled matching Pickup slot ke according.
+SM11 Multi-stop matching Compatible route and capacity.
+SM12 Emergency replacement Breakdown/cancellation ke baad replacement.
+SM13 Load ranking Distance, ETA, route fit and operational factors.
+SM14 Human override Operations team exceptional cases manually reassign kar sake.
+LoadGo - Final Master Roadmap | Hinglish Page 13 / 29
+11 Driver App + Driver Network
+Driver ko sirf load acceptor nahi, connected logistics worker banana.
+Code Feature LoadGo design / kaise work karega
+D1 Driver Home Online/offline, map, loads, trips, earnings.
+D2 Online/offline Availability control.
+D3 Nearby loads Location based marketplace.
+D4 Route loads Planned route related opportunities.
+D5 Return loads Destination based reverse load suggestions.
+D6 Trip dashboard Current assignment and steps.
+D7 Earnings Day/week/month and trip level.
+D8 Wallet Pending/available/payout records.
+D9 Documents KYC + vehicle docs + expiry.
+D10 Driver profile Verified badges, vehicles, service info, languages.
+D11 Nearby drivers Privacy-controlled network map/list.
+D12 Connect Driver-to-driver connection request.
+D13 Groups Trip/route/convoy/fleet groups.
+D14 Load share Load card share inside driver network.
+D15 Breakdown Emergency/replacement workflow.
+D16 SOS Safety escalation and trip-share flow.
+LoadGo - Final Master Roadmap | Hinglish Page 14 / 29
+12 Chat, Calls & Location Sharing
+Driver-driver aur customer-driver communication ko safe network ke saath build karna.
+Code Feature LoadGo design / kaise work karega
+CH1 Customer-driver chat Booking context attached chat.
+CH2 Driver-driver chat 1-to-1 conversation.
+CH3 Group chat Trip/route/fleet group.
+CH4 Voice message Short voice notes.
+CH5 Photo sharing Cargo/route/proof communication.
+CH6 Document sharing Load-related documents.
+CH7 Load card share Chat mein load detail card.
+CH8 Location share Temporary/current location sharing.
+CH9 Masked call Possible where telephony provider supports it.
+CH10 Support chat Customer/driver -> LoadGo support.
+CH11 Report/block Abuse/spam/scam reporting.
+CH12 Off-platform warning Direct payment/contact risk warnings.
+CH13 Location privacy modes Nearby only / connections / trip members / hidden.
+CH14 Location expiry Temporary share automatically expire.
+LoadGo - Final Master Roadmap | Hinglish Page 15 / 29
+13 Trip Lifecycle + Live Tracking
+Uber-style trip state machine with logistics proof.
+Code Feature LoadGo design / kaise work karega
+T1 Driver assigned Customer gets driver + vehicle details.
+T2 Driver arriving ETA and route.
+T3 Pickup reached Geofence + optional OTP.
+T4 Loading Loading state.
+T5 Loading complete Cargo confirmation.
+T6 Trip started Live location begins.
+T7 In transit Route, ETA, stops, alerts.
+T8 Long halt Operational alert if configured.
+T9 Route deviation Off-route alert.
+T10 Near destination Receiver preparation.
+T11 Destination reached Drop geofence.
+T12 Unloading Unloading state.
+T13 Delivered POD requirements completed.
+T14 Settlement Payment/payout workflow after conditions.
+LoadGo - Final Master Roadmap | Hinglish Page 16 / 29
+14 Pickup, Cargo Security & POD
+Fraud/dispute proof ke liye digital evidence chain.
+Code Feature LoadGo design / kaise work karega
+S1 Pickup OTP Shipper + driver pickup confirmation.
+S2 Pickup GPS Location evidence.
+S3 Pickup timestamp Time evidence.
+S4 Cargo photos Condition and loading evidence.
+S5 Vehicle photo Vehicle-at-pickup evidence.
+S6 Odometer Optional trip start reading.
+S7 Cargo count/weight Recorded shipment details.
+S8 Seal number Container/sealed cargo.
+S9 Damage report Condition exception flow.
+S10 Delivery OTP Receiver confirmation.
+S11 Receiver details Name/contact where appropriate.
+S12 Delivery photo Delivered cargo evidence.
+S13 Signature Optional digital signature.
+S14 POD Final proof-of-delivery packet.
+S15 Evidence audit Who/when/where for evidence events.
+LoadGo - Final Master Roadmap | Hinglish Page 17 / 29
+15 Payments, Wallet & Settlement
+India-focused payment + controlled payout layer.
+Code Feature LoadGo design / kaise work karega
+PAY1 UPI Primary Indian digital payment option where provider supports.
+PAY2 Cards/net banking Optional supported gateways.
+PAY3 Advance payment Booking time advance.
+PAY4 Balance settlement Trip completion ke baad remaining amount.
+PAY5 Refund Cancellation/issue resolution.
+PAY6 Cancellation charges Rules-based calculation.
+PAY7 Payment receipt Transaction proof.
+PAY8 Driver payout Completed trip settlement.
+PAY9 Wallet Pending/available balances.
+PAY10 Payout verification Bank/account ownership checks.
+PAY11 Suspicious payout hold Risk high hone par temporary hold + review.
+PAY12 Commission LoadGo platform fee with transparent record.
+PAY13 GST/invoice Business transaction documentation.
+PAY14 Settlement ledger Server-side financial ledger + audit.
+Payment release ko POD/trip completion/risk rules se connect kiya ja sakta hai. Exact payment/escrow
+architecture regulated provider aur applicable rules ke according design hoga.
+LoadGo - Final Master Roadmap | Hinglish Page 18 / 29
+16 Documents + Compliance Workflow
+Trip aur business documents ko ek digital record mein lana.
+Code Feature LoadGo design / kaise work karega
+DOC1 Document center All shipment/vehicle/business documents.
+DOC2 LR/Bilty Digital transport document record.
+DOC3 Invoice Booking/business invoice.
+DOC4 E-way bill reference Official workflow/reference integration where permitted.
+DOC5 Driver documents KYC docs and expiry.
+DOC6 Vehicle documents RC/insurance/PUC/fitness/permit.
+DOC7 Cargo documents Shipment specific docs.
+DOC8 POD packet Delivery evidence bundle.
+DOC9 Versioning Changed document history.
+DOC10 Access control Customer/driver/admin/enterprise role based.
+DOC11 Masking Sensitive identifiers partially masked on UI.
+DOC12 Verification source Document source and verification status.
+DOC13 Expiry reminders Upcoming expiry notifications.
+DOC14 Audit Document upload/update/view verification logs where required.
+LoadGo - Final Master Roadmap | Hinglish Page 19 / 29
+17 Import/Export + Multi-Leg Logistics
+Domestic se aage port/container logistics ko support karna.
+Code Feature LoadGo design / kaise work karega
+IE1 Domestic movement Factory/warehouse/shop -> destination.
+IE2 Import movement Port/CFS -> warehouse/factory.
+IE3 Export movement Factory/warehouse -> CFS/port.
+IE4 Container booking Container vehicle category.
+IE5 Container number Shipment linked container ID.
+IE6 Seal number Seal management.
+IE7 Port/CFS POIs Map and booking references.
+IE8 Multi-leg shipment Same shipment ke multiple transport legs.
+IE9 Leg tracking Har leg ka driver/vehicle/status.
+IE10 Handover Leg1 -> Leg2 controlled handover.
+IE11 Warehouse/factory stops Structured logistics locations.
+IE12 Shipment timeline End-to-end milestone timeline.
+IE13 Documents Relevant cargo/compliance docs per leg.
+IE14 Enterprise shipment view Business ko complete chain ka single view.
+LoadGo - Final Master Roadmap | Hinglish Page 20 / 29
+18 Business + Enterprise + Transporter
+B2B freight operations ko dedicated tools.
+Code Feature LoadGo design / kaise work karega
+BIZ1 Business KYC GST/PAN/company/entity verification.
+BIZ2 Company profile Legal + trade name, addresses, contacts.
+BIZ3 Branches Multiple warehouses/factories/cities.
+BIZ4 Users Owner, admin, manager, dispatch, accounts, viewer.
+BIZ5 Permissions Role-based access.
+BIZ6 Approval workflow Large bookings ke liye manager approval.
+BIZ7 Bulk booking Multiple shipments ek saath.
+BIZ8 Fleet management Company-owned/contracted vehicles.
+BIZ9 Driver pool Assigned/approved drivers.
+BIZ10 Expense dashboard Transport spend, fuel, toll etc.
+BIZ11 Reports Routes, trips, payments, POD.
+BIZ12 Transporter dashboard Multiple vehicles/drivers/customers.
+BIZ13 API integration ERP/TMS/WMS integration layer.
+BIZ14 Webhooks Trip/status/POD events where integration supports.
+BIZ15 Business support Dedicated ticket/operations workflow.
+LoadGo - Final Master Roadmap | Hinglish Page 21 / 29
+19 Anti-Fraud + Risk Engine
+Layered security - kisi ek document ya OTP par depend nahi.
+Code Feature LoadGo design / kaise work karega
+F1 Duplicate identity patterns Same identity-related signals se duplicate accounts detect.
+F2 Duplicate PAN patterns Authorised verification data ke basis par risk check.
+F3 Duplicate DL/RC Vehicle/driver relationship anomalies.
+F4 Same-device clusters Multiple suspicious accounts from same device.
+F5 Account takeover New device, SIM/mobile change, unusual login.
+F6 Payout risk Bank/payout changes + high-value activity.
+F7 Behavioural risk Abnormal cancellations, bookings, profile changes.
+F8 Impossible travel Location sequence inconsistency.
+F9 Fake GPS risk Mock-location/device/GPS consistency checks where feasible.
+F10 Pickup fraud OTP + GPS + photo + timestamp.
+F11 Delivery fraud OTP + receiver + POD + GPS.
+F12 Document tampering Uploaded docs suspicious -> verification queue.
+F13 Off-platform scam risk Chat/payment warnings + report flow.
+F14 Auto hold Risk condition par transaction/account hold.
+F15 Human review High-risk cases manual operations queue.
+F16 Audit trail Critical events immutable-style logging architecture.
+F17 Risk tiers Normal / review / restricted / suspended states.
+F18 Fraud case management Alert -> evidence -> analyst action -> resolution.
+Goal "fraud impossible" nahi; goal hai fraud risk ko multiple independent controls se aggressively reduce karna, aur
+suspicious cases ko human review tak le jana.
+LoadGo - Final Master Roadmap | Hinglish Page 22 / 29
+20 Safety + Support + Insurance
+Trip safety aur issue resolution ko product ka native part banana.
+Code Feature LoadGo design / kaise work karega
+SAFE1 SOS Driver safety escalation.
+SAFE2 Emergency contacts Trip share and emergency contact flow.
+SAFE3 Breakdown Roadside/replacement process.
+SAFE4 Accident workflow Incident report + support escalation.
+SAFE5 Customer support Booking/payment/delivery issues.
+SAFE6 Driver support Load/payment/vehicle issues.
+SAFE7 Ticketing Case ID, priority, status.
+SAFE8 Call support Provider-based call option.
+SAFE9 Goods insurance Optional authorised partner integration.
+SAFE10 Driver accident cover Optional partner product.
+SAFE11 Dispute management Pickup/delivery/payment evidence based review.
+SAFE12 Escalation rules Customer -> support -> operations -> specialist.
+LoadGo - Final Master Roadmap | Hinglish Page 23 / 29
+21 Notifications + Analytics
+Real-time awareness + business intelligence.
+Code Feature LoadGo design / kaise work karega
+N1 Booking notification Booking created/accepted/confirmed.
+N2 Driver arriving ETA alert.
+N3 Trip started Live trip started.
+N4 Route deviation Alert.
+N5 Delivery complete POD/settlement notification.
+N6 KYC reminder Re-KYC due.
+N7 Document expiry DL/RC/insurance/etc.
+N8 Return load alert Driver route related opportunity.
+N9 Payment notification Payment/payout/refund.
+N10 Chat notification Message/group alerts.
+N11 Customer analytics Shipments, spend, routes, delivery success.
+N12 Driver analytics Trips, earnings, acceptance, empty km.
+N13 Fleet analytics Utilisation, idle time, revenue, maintenance.
+N14 Admin analytics Users, loads, bookings, GMV-like metrics, fraud alerts.
+N15 Enterprise reports Branch-wise, route-wise, driver-wise reports.
+LoadGo - Final Master Roadmap | Hinglish Page 24 / 29
+22 AI + Future Intelligence
+Core transaction engine stable hone ke baad AI layer.
+Code Feature LoadGo design / kaise work karega
+AI1 AI fare assistant Route/cargo/vehicle based informational estimate.
+AI2 AI load recommendations Driver ke route/preferences par matching suggestions.
+AI3 AI route assistant Operational route suggestions.
+AI4 AI support First-level FAQ/support automation.
+AI5 AI document extraction Uploaded docs se fields identify karna.
+AI6 AI fraud signals Pattern detection; final decisions remain rule/human controlled.
+AI7 Demand prediction City/route demand forecasting.
+AI8 Supply prediction Driver/vehicle supply forecasting.
+AI9 Dynamic pricing intelligence Market signals + configured business rules.
+AI10 Fleet optimisation Vehicle allocation and utilisation suggestions.
+AI11 Empty-mile reduction Return-load optimisation.
+AI12 Route optimisation Multi-stop logistics planning.
+AI13 Conversation assistant Natural-language load creation/search.
+AI14 Enterprise assistant Business shipment queries and summaries.
+LoadGo - Final Master Roadmap | Hinglish Page 25 / 29
+23 Backend Architecture + Security
+Scalable architecture jo future AI/modules ko support kare.
+Code Feature LoadGo design / kaise work karega
+BE1 Firebase Auth Phone OTP, identity/session management.
+BE2 Firestore Users, bookings, loads, vehicles, trips, chats, settings.
+BE3 Cloud Functions/server Fare, matching, booking state, notifications, risk actions, integrations.
+BE4 Storage Documents, cargo photos, POD, profile/vehicle media with strict rules.
+BE5 App Check Untrusted app requests ko reduce/deny karne ke liye.
+BE6 Security Rules Role and document-level access control.
+BE7 Role model Customer/driver/business/admin/verification/support permissions.
+BE8 Maps service layer Map/routing/geocoding provider wrapper so vendor change is easier.
+BE9 Payment service layer Gateway-agnostic interface for UPI/cards/refunds/payouts.
+BE10 KYC service layer Aadhaar/PAN/DigiLocker/GST/MCA/vehicle-source integrations via
+authorised paths.
+BE11 Notification service FCM/push + transactional message layer.
+BE12 Audit event store Critical security/booking/payment/KYC events.
+BE13 Risk engine Rules + signals + manual review queues.
+BE14 Analytics pipeline Operational and business analytics.
+BE15 Backup/recovery Firestore/storage backups, disaster recovery and operational restore plan.
+BE16 Secrets management API keys, service credentials and signing secrets not embedded in app.
+BE17 Data retention Sensitive data ke liye explicit retention/deletion policy.
+BE18 Privacy controls Consent, purpose limitation, access minimisation, masking.
+Recommended folder model: lib/core, auth, customer, driver, booking, marketplace, map, tracking, chat, kyc,
+vehicle, payments, documents, business, admin, services, models, notifications, risk. main.dart ko thin entry point
+rakho.
+LoadGo - Final Master Roadmap | Hinglish Page 26 / 29
+24 Testing + Pilot + Pan-India Scale
+Production se pehle controlled rollout.
+Code Feature LoadGo design / kaise work karega
+TEST1 Unit tests Fare, matching, booking state, permissions, validation.
+TEST2 Widget tests Login, booking, map, forms, chat, dashboards.
+TEST3 Integration tests Firebase/KYC/payment/map/provider flows.
+TEST4 Security tests Rules, role escalation, document access, auth takeover scenarios.
+TEST5 Location tests Background location, GPS loss, route deviation, low network.
+TEST6 Payment tests Success/failure/refund/payout/duplicate transaction.
+TEST7 Load tests Many drivers, loads, tracking events.
+TEST8 Device coverage Android ranges + different screen sizes.
+TEST9 Language QA All 12 languages across customer/driver flows.
+TEST10 Pilot city 1-2 city controlled launch.
+TEST11 Operational feedback Driver + shipper feedback, fraud cases, support patterns.
+TEST12 Scale-up More cities after operational readiness.
+TEST13 Pan-India National coverage with route/city expansion.
+TEST14 Import/export scale Ports/CFS/industrial clusters expansion.
+LoadGo - Final Master Roadmap | Hinglish Page 27 / 29
+Final End-to-End LoadGo Blueprint
+User / Company
+-> Mobile OTP + KYC + Device Security
+-> Aadhaar/PAN/DL/RC/DigiLocker/Business Verification
+-> Periodic Face Re-KYC + Risk Engine
+-> Vehicle/Bike/Fleet Registration
+-> LoadGo Live Map
+-> Post Load OR Book Now
+-> Pricing Engine
+-> Smart Matching
+-> Driver/Vehicle Assignment
+-> Customer-Driver Chat + Safe Call
+-> Pickup Geofence + OTP + Photos
+-> Live Trip Tracking + Route/ETA
+-> Route Deviation / SOS / Breakdown
+-> Destination Geofence + Receiver OTP + POD
+-> Payment Settlement + Driver Payout
+-> Rating + Trust Profile
+-> Documents + Audit Trail
+-> Analytics + AI
+-> Enterprise + Import/Export + Pan-India Scale
+Master rule: Pehle "happy path" ko end-to-end working banao, phir fraud/security, disputes, edge cases aur scale
+add karo. Har production feature ke saath access control + audit + error state + analytics event define karo.
+Feature inspiration note
+Roadmap mein industry-style capabilities ko reference level par incorporate kiya gaya hai, especially truck
+marketplace, GPS/live tracking, two-wheelers, enterprise logistics, return loads, verified-network ideas aur digital
+logistics documents. Government identity/document integrations implementation ke waqt authorised API/provider,
+consent aur applicable Indian compliance requirements ke according validate kiye jayenge.
+LoadGo - Final Master Roadmap | Hinglish Page 28 / 29
+Master Feature Checklist
+Code Feature LoadGo design / kaise work karega
+Account Included Customer, Driver, Truck Owner, Fleet Owner, Transporter, Shipper, Trader,
+Importer, Exporter, Enterprise, Admin, Support, Verification Team
+Vehicles Included Bike, Scooter, EV 2W, Cycle optional, 3W, Mini Truck, 10-32 ft trucks, Container,
+Trailer, Multi-axle
+KYC Included Aadhaar, PAN, DL, RC, DigiLocker, Face KYC, Periodic Re-KYC, GST,
+company/entity verification, addresses
+Marketplace Included Post Load, Browse Loads, Route Loads, Return Loads, Offers, Negotiation, Double
+Confirmation
+Booking Included Now, Scheduled, Recurring, Multi-pickup, Multi-drop, Pricing, Cancellation, State
+machine
+Map Included Live map, vehicles, drivers, loads, POIs, routing, ETA, navigation, traffic, rerouting,
+geofence, deviation
+Network Included Driver connect, chat, groups, convoy, load share, temporary location share, privacy
+controls
+Tracking Included Assigned, Arriving, Pickup, Loading, Transit, ETA, Deviation, Destination, Delivered
+Proof Included Pickup OTP/GPS/photo, cargo condition, seal, delivery OTP/signature/photo, POD
+Money Included UPI, cards/other gateway, advance, settlement, refund, wallet, payout, commission,
+invoice
+Docs Included LR/Bilty, invoice, e-way reference, KYC docs, vehicle docs, POD, expiry, audit
+Import/Export Included Port, CFS, container, seal, multi-leg, handover, shipment timeline
+Business Included Company, GST, branches, users, roles, approval, fleet, bulk booking, reports, API
+Fraud Included Device, duplicate patterns, behavioural risk, fake GPS signals, document mismatch,
+auto-hold, human review
+Safety Included SOS, emergency contacts, breakdown, accident workflow, support, insurance
+partner
+AI Included Fare assistant, load matching, route assistant, document extraction, fraud signals,
+demand/supply, optimisation
+Scale Included Testing, pilot, operations, Pan-India, ports, industrial clusters, API ecosystem
+Version note
+LoadGo Final Master Roadmap - Hinglish. This is a planning document, not a legal/compliance certification. Sensitive identity, biometric,
+payment, telecom, location and government-data features require appropriate provider contracts, consent flows, security review and
+applicable Indian compliance before production launch.
+LoadGo - Final Master Roadmap | Hinglish Page 29 / 29

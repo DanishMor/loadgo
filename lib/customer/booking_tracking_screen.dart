@@ -7,6 +7,7 @@ import '../core/widgets/tip_card.dart';
 import '../core/widgets/detention_card.dart';
 import '../core/widgets/evidence_cards.dart';
 import 'cancel_scheduled_button.dart';
+import 'driver_trust_row.dart';
 import '../core/widgets/booking_widgets.dart';
 import '../core/widgets/location_widgets.dart';
 import 'trip_otp_card.dart';
@@ -39,6 +40,8 @@ class BookingTrackingScreen extends StatelessWidget {
           ],
           const SizedBox(height: 8),
           Align(alignment: Alignment.centerLeft, child: RatingBadge(userId: booking.driverId)),
+          const SizedBox(height: 4),
+          DriverTrustRow(booking: booking),
           if (booking.isInTransit) ...[
             const SizedBox(height: 8),
             DriverLocationCard(booking: booking),

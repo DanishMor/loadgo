@@ -6,6 +6,8 @@ import '../core/widgets/common.dart';
 import '../core/l10n/l10n.dart';
 import '../core/widgets/paged_live_stream.dart';
 import '../core/widgets/booking_widgets.dart';
+import '../core/models/repeat.dart';
+import 'post_load_screen.dart';
 
 /// Customer "Bookings" tab split into active and past (delivered/cancelled).
 /// Delivered bookings open their invoice; everything else opens tracking.
@@ -78,6 +80,17 @@ class _CustomerBookingsViewState extends State<CustomerBookingsView> {
                           booking: b,
                           onTap: () => delivered ? widget.onOpenInvoice(b.id) : widget.onOpenTracking(b.id),
                         ),
+                        if (!b.isActive)
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: TextButton.icon(
+                              key: ValueKey('bookAgain_${b.id}'),
+                              onPressed: () => Navigator.of(context).push(MaterialPageRoute<bool>(
+                                  builder: (_) => PostLoadScreen(repostFrom: loadDraftFromBooking(b)))),
+                              icon: const Icon(Icons.replay_rounded, size: 18),
+                              label: Text(tr(context, 'bookAgain')),
+                            ),
+                          ),
                         if (delivered)
                           Align(
                             alignment: Alignment.centerRight,

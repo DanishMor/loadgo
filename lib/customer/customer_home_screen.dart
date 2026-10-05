@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 
 import '../core/profile/profile_nav_tile.dart';
 import 'business_hub_screen.dart';
+import 'my_drivers_screen.dart';
+import 'templates_screen.dart';
 import 'business_invites_card.dart';
 import 'offers_screen.dart';
 import 'truck_board_screen.dart';
@@ -78,6 +80,18 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
         icon: Icons.business_center_outlined,
         titleKey: 'businessTools',
         screen: (_) => const BusinessHubScreen(),
+      ),
+      ProfileNavTile(
+        key: const ValueKey('profileTemplates'),
+        icon: Icons.bookmarks_outlined,
+        titleKey: 'templatesTitle',
+        screen: (_) => const TemplatesScreen(),
+      ),
+      ProfileNavTile(
+        key: const ValueKey('profileMyDrivers'),
+        icon: Icons.favorite_border_rounded,
+        titleKey: 'favouriteDrivers',
+        screen: (_) => const MyDriversScreen(),
       ),
     ]),
   ];

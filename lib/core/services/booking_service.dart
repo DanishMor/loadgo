@@ -58,7 +58,7 @@ class BookingService {
         final snap = await tx.get(loadRef);
         if (!snap.exists) throw LoadUnavailableException();
         final load = Load.fromDoc(snap);
-        if (!load.isOpen || load.shipperId == uid) throw LoadUnavailableException();
+        if (!load.isOpen || load.shipperId == uid || load.blocks(uid)) throw LoadUnavailableException();
         final vehicleRef = Backend.db.collection('vehicles').doc(vehicle.id);
         final vehicleSnap = await tx.get(vehicleRef);
         if (vehicleSnap.exists && !Vehicle.fromDoc(vehicleSnap).canTakeBooking) throw VehicleBusyException();

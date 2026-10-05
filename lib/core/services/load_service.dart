@@ -19,6 +19,7 @@ import 'rewards_service.dart';
 import 'risk_service.dart';
 import '../pricing/fare_calculator.dart';
 import 'backend.dart';
+import 'repeat_service.dart';
 
 /// The chosen pickup time breaks the advance-booking limits.
 class ScheduleException implements Exception {
@@ -103,8 +104,10 @@ class LoadService {
     List<String> clean(List<String> l) =>
         [for (final s in l) if (s.trim().isNotEmpty) s.trim()].take(maxStopsPerSide - 1).toList();
     final geohash = pickupGeohashFor(pickup);
+    final blocked = await RepeatService.blockedIds(uid);
     final ref = _col.doc();
     final data = <String, Object?>{
+      if (blocked.isNotEmpty) 'blockedDriverIds': blocked,
       'pickupGeohash': ?geohash,
       'bookingType': bookingType,
       'invitedDriverId': ?invitedDriverId,
@@ -199,7 +202,7 @@ class LoadService {
     return _col
         .where('status', isEqualTo: LoadStatus.open)
         .snapshots()
-        .map((snap) => _sorted(snap).where((l) => l.shipperId != uid).toList());
+        .map((snap) => _sorted(snap).where((l) => l.shipperId != uid && !l.blocks(uid)).toList());
   }
 
   /// Paged "My Loads": the newest [limit] loads the customer posted.
@@ -215,7 +218,7 @@ class LoadService {
   static Stream<Paged<Load>> watchOpenPage(int limit) {
     final uid = Backend.uid;
     return newestPage(_col.where('status', isEqualTo: LoadStatus.open), limit).map((snap) => Paged(
-          _sorted(snap).where((l) => l.shipperId != uid).toList(),
+          _sorted(snap).where((l) => l.shipperId != uid && !l.blocks(uid)).toList(),
           hasMore: snap.docs.length >= limit,
         ));
   }
@@ -231,7 +234,7 @@ class LoadService {
     late StreamController<List<Load>> out;
     final latest = <String, List<Load>>{};
     final subs = <StreamSubscription>[];
-    void emit() => out.add([for (final l in latest.values.expand((x) => x)) if (l.shipperId != uid) l]);
+    void emit() => out.add([for (final l in latest.values.expand((x) => x)) if (l.shipperId != uid && !l.blocks(uid)) l]);
 
     out = StreamController<List<Load>>(
       onListen: () {

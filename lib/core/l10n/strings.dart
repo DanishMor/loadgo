@@ -32,6 +32,7 @@ import 'trip_strings.dart';
 import 'truck_board_strings.dart';
 import 'fleet_strings.dart';
 import 'business_team_strings.dart';
+import 'repeat_strings.dart';
 import 'trip_watch_strings.dart';
 import 'vehicle_strings.dart';
 
@@ -62,6 +63,7 @@ const List<Map<String, List<String>>> stringTables = [
   truckBoardStrings,
   fleetStrings,
   businessTeamStrings,
+  repeatStrings,
   adminStrings,
   matchStrings,
   settingsStrings,

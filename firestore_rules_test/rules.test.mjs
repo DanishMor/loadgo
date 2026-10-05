@@ -2266,6 +2266,48 @@ describe('favourite routes', () => {
   });
 });
 
+describe('templates, favourites and block list', () => {
+  const tpl = (extra = {}) => ({
+    name: 'Weekly FMCG', pickup: 'Pune', drop: 'Delhi', cargoType: 'FMCG', weight: 8, vehicleType: '20ft', budget: null,
+    notes: '', pickupSlot: 'any', fragile: false, highValue: false, createdAt: serverTimestamp(), ...extra,
+  });
+  test('templates are private and validated', async () => {
+    const t = (uid, id) => doc(as(uid), 'users', 'customer1', 'load_templates', id);
+    await assertSucceeds(setDoc(t('customer1', 't1'), tpl()));
+    await assertSucceeds(getDoc(t('customer1', 't1')));
+    await assertFails(getDoc(t('customer2', 't1')));
+    await assertFails(setDoc(t('customer2', 't2'), tpl()));
+    await assertFails(setDoc(t('customer1', 't3'), tpl({ name: '' })));
+    await assertFails(setDoc(t('customer1', 't4'), tpl({ weight: 0 })));
+    await assertFails(setDoc(t('customer1', 't5'), tpl({ pickupDate: Timestamp.now() })));
+    await assertSucceeds(deleteDoc(t('customer1', 't1')));
+  });
+  test('favourite and blocked lists are private, own uid cannot be listed', async () => {
+    const fav = (uid, d) => doc(as(uid), 'users', 'customer1', 'favourite_drivers', d);
+    const blk = (uid, d) => doc(as(uid), 'users', 'customer1', 'blocked_drivers', d);
+    await assertSucceeds(setDoc(fav('customer1', 'driver1'), { name: 'Ramesh', vehicleNumber: 'MH12AB1234', createdAt: serverTimestamp() }));
+    await assertFails(getDoc(fav('customer2', 'driver1')));
+    await assertFails(setDoc(fav('customer1', 'customer1'), { name: 'x', vehicleNumber: '', createdAt: serverTimestamp() }));
+    await assertSucceeds(setDoc(blk('customer1', 'driver2'), { name: 'Bad', createdAt: serverTimestamp() }));
+    await assertFails(setDoc(blk('customer2', 'driver3'), { name: 'Bad', createdAt: serverTimestamp() }));
+    await assertFails(setDoc(blk('customer1', 'driver3'), { name: 'Bad', extra: 1, createdAt: serverTimestamp() }));
+    await assertFails(getDoc(blk('customer2', 'driver2')));
+    await assertSucceeds(deleteDoc(blk('customer1', 'driver2')));
+  });
+  test('a blocked driver cannot accept the load, others can', async () => {
+    await seedOpenLoad();
+    await seed((db) => setDoc(doc(db, 'loads', 'L1'), { ...LOAD, blockedDriverIds: ['driver1'] }));
+    await assertFails(acceptBatch(as('driver1'), 'L1'));
+    await assertFails(acceptBatch(as('driver2'), 'L1', 'driver2', { vehicleId: 'v1' }));
+    await assertSucceeds(acceptBatch(as('driver2'), 'L1', 'driver2', { vehicleId: 'v2', vehicleNumber: 'KA01CD5678' }));
+  });
+  test('a load may carry at most 50 blocked ids', async () => {
+    const ids = Array.from({ length: 51 }, (_, i) => `d${i}`);
+    await assertFails(setDoc(doc(as('customer1'), 'loads', 'L1'), { ...LOAD, createdAt: serverTimestamp(), blockedDriverIds: ids }));
+    await assertSucceeds(setDoc(doc(as('customer1'), 'loads', 'L1'), { ...LOAD, createdAt: serverTimestamp(), blockedDriverIds: ids.slice(0, 50) }));
+  });
+});
+
 describe('settings, consents and deletion requests', () => {
   test('notificationPrefs and consents must be boolean maps with known keys', async () => {
     await seed((db) => setDoc(doc(db, 'users', 'u1'), { phone: '+91' }));
