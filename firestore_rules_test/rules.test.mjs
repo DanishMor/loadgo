@@ -2198,7 +2198,8 @@ describe('anti-fraud', () => {
     await seed((db) => setDoc(doc(db, 'users', 'u1'), { phone: '+91' }));
     await assertSucceeds(setTier(asAdmin(), 'u1', 'restricted'));
     await assertSucceeds(setTier(asAdmin(), 'u1', 'normal'));
-    await assertFails(setTier(asAdmin(), 'u1', 'banned'));
+    await assertSucceeds(setTier(asAdmin(), 'u1', 'banned'));
+    await assertFails(setTier(asAdmin(), 'u1', 'bogus'));
     await assertFails(setTier(as('u1'), 'u1', 'normal'));
     await assertFails(setTier(as('u2'), 'u1', 'normal'));
     await assertFails(updateDoc(doc(as('u1'), 'users', 'u1'), { riskReason: 'fine' }));
@@ -2323,6 +2324,54 @@ describe('favourite routes', () => {
     await assertFails(setDoc(doc(as('driver1'), 'users', 'driver1', 'favourite_routes', 'r3'), route({ pickup: 'M' })));
     await assertFails(setDoc(doc(as('driver1'), 'users', 'driver1', 'favourite_routes', 'r4'), route({ extra: 1 })));
     await assertSucceeds(deleteDoc(doc(as('driver1'), 'users', 'driver1', 'favourite_routes', 'r1')));
+  });
+});
+
+describe('admin user management', () => {
+  const event = (extra = {}) => ({ type: 'user_action', actorId: 'admin1', targetId: 'u1', data: { action: 'ban', reason: 'x' }, createdAt: serverTimestamp(), ...extra });
+  beforeEach(() => seed((db) => setDoc(doc(db, 'users', 'u1'), { phone: '+91', name: 'U' })));
+
+  test('only admins ban, and banned is a valid tier; users cannot set it', async () => {
+    const admin = asAdmin();
+    const b = writeBatch(admin);
+    b.update(doc(admin, 'users', 'u1'), { riskTier: 'banned', riskReason: 'fraud', riskUpdatedAt: serverTimestamp() });
+    b.set(doc(admin, 'audit_events', 'e1'), event());
+    await assertSucceeds(b.commit());
+    await assertFails(updateDoc(doc(asAdmin(), 'users', 'u1'), { riskTier: 'evil', riskReason: 'x', riskUpdatedAt: serverTimestamp() }));
+    await assertFails(updateDoc(doc(as('u1'), 'users', 'u1'), { riskTier: 'normal', riskReason: '', riskUpdatedAt: serverTimestamp() }));
+  });
+  test('user_action audit events are admin-only and append-only', async () => {
+    await assertSucceeds(setDoc(doc(asAdmin(), 'audit_events', 'e1'), event()));
+    await assertFails(setDoc(doc(as('u1'), 'audit_events', 'e2'), event({ actorId: 'u1' })));
+    await assertFails(setDoc(doc(asAdmin(), 'audit_events', 'e3'), event({ actorId: 'someoneelse' })));
+    await assertFails(updateDoc(doc(asAdmin(), 'audit_events', 'e1'), { data: {} }));
+    await assertFails(deleteDoc(doc(asAdmin(), 'audit_events', 'e1')));
+    await assertSucceeds(getDoc(doc(asAdmin(), 'audit_events', 'e1')));
+    await assertFails(getDoc(doc(as('u1'), 'audit_events', 'e1')));
+  });
+  test('force re-verify: admin sets pending with itself as reviewer', async () => {
+    await seed((db) => setDoc(doc(db, 'users', 'u1'), { phone: '+91', driverName: 'D', verified: true, verificationStatus: 'approved' }));
+    await assertSucceeds(updateDoc(doc(asAdmin(), 'users', 'u1'), {
+      verified: false, verificationStatus: 'pending', updatedAt: serverTimestamp(),
+      verificationMeta: { source: 'manual_review', by: 'admin1', status: 'pending', at: serverTimestamp() },
+    }));
+    await assertFails(updateDoc(doc(asAdmin(), 'users', 'u1'), {
+      verified: false, verificationStatus: 'pending', updatedAt: serverTimestamp(),
+      verificationMeta: { source: 'manual_review', by: 'other', status: 'pending', at: serverTimestamp() },
+    }));
+  });
+  test('internal notes: admins read and append; nobody else sees them; no edits', async () => {
+    const note = (extra = {}) => ({ by: 'admin1', text: 'called him', createdAt: serverTimestamp(), ...extra });
+    const ref = (db, id) => doc(db, 'users', 'u1', 'admin_notes', id);
+    await assertSucceeds(setDoc(ref(asAdmin(), 'n1'), note()));
+    await assertFails(setDoc(ref(asAdmin(), 'n2'), note({ by: 'x' })));
+    await assertFails(setDoc(ref(asAdmin(), 'n3'), note({ text: '' })));
+    await assertFails(setDoc(ref(asAdmin(), 'n4'), note({ text: 'x'.repeat(1001) })));
+    await assertFails(setDoc(ref(as('u1'), 'n5'), note({ by: 'u1' })));
+    await assertFails(getDoc(ref(as('u1'), 'n1')));
+    await assertSucceeds(getDoc(ref(asAdmin(), 'n1')));
+    await assertFails(updateDoc(ref(asAdmin(), 'n1'), { text: 'edited' }));
+    await assertFails(deleteDoc(ref(asAdmin(), 'n1')));
   });
 });
 

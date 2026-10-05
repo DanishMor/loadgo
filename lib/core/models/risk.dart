@@ -10,7 +10,10 @@ class RiskTier {
   static const restricted = 'restricted';
   static const suspended = 'suspended';
 
-  static const all = [normal, review, restricted, suspended];
+  /// Permanent: cannot transact and is shown a "banned" screen at start.
+  static const banned = 'banned';
+
+  static const all = [normal, review, restricted, suspended, banned];
 
   static bool canTransact(String? tier) => tier == null || tier == normal || tier == review;
 }

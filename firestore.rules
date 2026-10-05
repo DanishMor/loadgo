@@ -154,7 +154,7 @@ service cloud.firestore {
       let d = request.resource.data;
       return isAdmin()
           && changedKeys().hasOnly(['riskTier', 'riskReason', 'riskUpdatedAt'])
-          && d.riskTier in ['normal', 'review', 'restricted', 'suspended']
+          && d.riskTier in ['normal', 'review', 'restricted', 'suspended', 'banned']
           && d.riskReason is string && d.riskReason.size() <= 200
           && d.riskUpdatedAt == request.time;
     }
@@ -244,6 +244,17 @@ service cloud.firestore {
               || (resource.data.get('verificationStatus', null) == null
                   && verificationInitOk(request.resource.data))));
       allow delete: if false;
+    }
+
+    // users/{uid}/admin_notes: internal notes about a user. Admins only, append-only.
+    match /users/{userId}/admin_notes/{noteId} {
+      allow read: if isAdmin();
+      allow create: if isAdmin()
+          && request.resource.data.keys().hasOnly(['by', 'text', 'createdAt'])
+          && request.resource.data.by == request.auth.uid
+          && request.resource.data.text is string && request.resource.data.text.size() >= 1 && request.resource.data.text.size() <= 1000
+          && request.resource.data.createdAt == request.time;
+      allow update, delete: if false;
     }
 
     // users/{uid}/blocked/{otherUid}: people this user does not want
@@ -1355,10 +1366,10 @@ service cloud.firestore {
       allow create: if signedIn()
           && request.resource.data.keys().hasOnly(['type', 'actorId', 'targetId', 'bookingId', 'loadId', 'data', 'createdAt'])
           && request.resource.data.actorId == request.auth.uid
-          && request.resource.data.type in ['verification', 'accept', 'status_change', 'cancel', 'risk_change', 'reassign', 'config_change']
+          && request.resource.data.type in ['verification', 'accept', 'status_change', 'cancel', 'risk_change', 'reassign', 'config_change', 'user_action']
           && request.resource.data.data is map
           && request.resource.data.createdAt == request.time
-          && (!(request.resource.data.type in ['verification', 'risk_change', 'reassign', 'config_change']) || isAdmin());
+          && (!(request.resource.data.type in ['verification', 'risk_change', 'reassign', 'config_change', 'user_action']) || isAdmin());
       allow update, delete: if false;
     }
 

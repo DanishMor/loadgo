@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'admin_user_screen.dart';
 import 'package:flutter/services.dart';
 import '../core/documents/doc_expiry.dart';
 
@@ -125,11 +126,8 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                           )
                         : const Icon(Icons.edit_outlined),
                     onTap: () async {
-                      final name = (d.data()['name'] ?? d.data()['driverName'] ?? d.id).toString();
-                      final tier = d.data()['riskTier'] as String? ?? RiskTier.normal;
-                      if (await editRiskTier(context, uid: d.id, name: name, tier: tier)) {
-                        setState(() => _users = AdminConsoleService.users());
-                      }
+                      await Navigator.of(context).push(MaterialPageRoute(builder: (_) => AdminUserScreen(uid: d.id)));
+                      if (mounted) setState(() => _users = AdminConsoleService.users());
                     },
                   ),
               ]);

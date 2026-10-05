@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../core/services/user_service.dart';
+import 'banned_screen.dart';
 import 'driver_consent_screen.dart';
 import 'driver_kyc_screen.dart';
 import 'driver_pending_screen.dart';
@@ -33,6 +34,7 @@ Future<Widget> resolveCustomerStart() async {
   }
 
   final data = doc.data() ?? {};
+  if (data['riskTier'] == 'banned') return const BannedScreen();
 
   if (data['profileComplete'] != true) {
     return CustomerProfileSetupScreen(
@@ -46,6 +48,7 @@ Future<Widget> resolveCustomerStart() async {
 
 Future<Widget> resolveDriverStart() async {
   final data = await UserService.getUser();
+  if (data?['riskTier'] == 'banned') return const BannedScreen();
 
   final roles = ((data?['roles'] as List?) ?? const [])
       .map((e) => e.toString())

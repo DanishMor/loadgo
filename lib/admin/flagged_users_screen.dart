@@ -19,6 +19,7 @@ String riskTierLabel(BuildContext context, String tier) => tr(context, switch (t
       RiskTier.review => 'riskReview',
       RiskTier.restricted => 'riskRestricted',
       RiskTier.suspended => 'riskSuspended',
+      RiskTier.banned => 'riskBanned',
       _ => 'riskNormal',
     });
 

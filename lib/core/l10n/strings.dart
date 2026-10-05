@@ -42,6 +42,7 @@ import 'search_strings.dart';
 import 'eta_strings.dart';
 import 'notif_center_strings.dart';
 import 'limit_strings.dart';
+import 'admin_user_strings.dart';
 import 'trip_watch_strings.dart';
 import 'vehicle_strings.dart';
 
@@ -82,6 +83,7 @@ const List<Map<String, List<String>>> stringTables = [
   etaStrings,
   notifCenterStrings,
   limitStrings,
+  adminUserStrings,
   adminStrings,
   matchStrings,
   settingsStrings,

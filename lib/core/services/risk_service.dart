@@ -61,7 +61,7 @@ class RiskService {
   /// Users with a non-normal tier, many cancellations or open reports.
   static Future<List<FlaggedUser>> flagged() async {
     final results = await Future.wait([
-      _users.where('riskTier', whereIn: [RiskTier.review, RiskTier.restricted, RiskTier.suspended]).get(),
+      _users.where('riskTier', whereIn: [RiskTier.review, RiskTier.restricted, RiskTier.suspended, RiskTier.banned]).get(),
       _users.where('cancelCount', isGreaterThanOrEqualTo: cancelFlagThreshold).get(),
       Backend.db.collection('reports').where('status', isEqualTo: 'open').get(),
     ]);
