@@ -32,7 +32,11 @@ class VehicleAvailability {
   /// Admin only.
   static const suspended = 'suspended';
 
-  static const all = [available, onTrip, maintenance, suspended];
+  /// Set by the app while an insurance, permit or fitness paper is expired;
+  /// lifted by renewing it or by an admin override.
+  static const docExpired = 'doc_expired';
+
+  static const all = [available, onTrip, maintenance, suspended, docExpired];
 }
 
 /// Compliance papers tracked per vehicle (text only, never uploaded).
@@ -44,6 +48,9 @@ class VehicleDocKind {
   static const permit = 'permit';
 
   static const all = [insurance, puc, fitness, permit];
+
+  /// Papers that stop a vehicle taking bookings when expired (PUC only warns).
+  static const blocking = [insurance, permit, fitness];
 }
 
 /// Fuel and body type of a vehicle (optional profile fields). Keep in sync

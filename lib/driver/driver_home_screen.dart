@@ -32,6 +32,8 @@ import '../core/profile/profile_view.dart';
 import '../core/widgets/live_stream.dart';
 import 'my_vehicles_screen.dart';
 import 'vehicle_alerts_banner.dart';
+import 'doc_suspension_banner.dart';
+import '../core/services/doc_expiry_service.dart';
 import 'my_offers_screen.dart';
 import 'fleet_invites_card.dart';
 import 'wallet_screen.dart';
@@ -54,13 +56,19 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
   final Stream<List<Load>> _openLoads = LoadService.watchOpen().asBroadcastStream();
   final Stream<List<FavouriteRoute>> _favourites = MatchService.watchFavourites().asBroadcastStream();
   DateTime? _loadsSeenAt;
+  Map<String, dynamic>? _profile;
 
   @override
   void initState() {
     super.initState();
     DriverLocationSync.refresh();
+    DocExpiryService.syncMine().catchError((_) => 0);
     UserService.getUser().then((u) {
-      if (mounted && u?['online'] == true) setState(() => _isOnline = true);
+      if (!mounted) return;
+      setState(() {
+        _profile = u;
+        if (u?['online'] == true) _isOnline = true;
+      });
     }).catchError((_) {});
     MatchService.lastSeenLoads().then((t) {
       if (!mounted) return;
@@ -199,6 +207,8 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
   void _openVehicles() =>
       Navigator.of(context).push(MaterialPageRoute(builder: (_) => const MyVehiclesScreen()));
 
+  void _openLicence() => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const DriverKycScreen(edit: true)));
+
   void _onAccepted(String bookingId) => openDriverTrip(context, bookingId);
 
   /// Nudges drivers without any vehicle to add one; hidden otherwise.
@@ -277,6 +287,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
             _noVehiclePrompt(),
             RemindersBanner(isDriver: true, onOpen: _openReminder),
             UpcomingTripsCard(onOpen: (id) => openDriverTrip(context, id)),
+            DocSuspensionBanner(vehicles: _vehicles, profile: _profile, onOpenVehicles: _openVehicles, onOpenLicence: _openLicence),
             VehicleAlertsBanner(vehicles: _vehicles, onTap: _openVehicles),
             const SizedBox(height: 16),
             Container(

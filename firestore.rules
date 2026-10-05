@@ -117,6 +117,14 @@ service cloud.firestore {
           && (!('planUntil' in request.resource.data) || request.resource.data.planUntil is timestamp);
     }
 
+    // users.docOverrideUntil: an admin lets a driver with an expired licence
+    // work until that date (see canTransact). Admin-only.
+    function adminDocOverride() {
+      return isAdmin()
+          && changedKeys().hasOnly(['docOverrideUntil', 'updatedAt'])
+          && request.resource.data.docOverrideUntil is timestamp;
+    }
+
     // Owners cannot write the review record; admins do (adminVerificationUpdate).
     function reviewMetaAbsent(d) {
       return !('verificationMeta' in d);
@@ -145,8 +153,11 @@ service cloud.firestore {
 
     // restricted / suspended accounts cannot post, offer or accept.
     function canTransact(uid) {
-      return !exists(/databases/$(database)/documents/users/$(uid))
-          || get(/databases/$(database)/documents/users/$(uid)).data.get('riskTier', 'normal') in ['normal', 'review'];
+      let p = /databases/$(database)/documents/users/$(uid);
+      return !exists(p)
+          || (get(p).data.get('riskTier', 'normal') in ['normal', 'review']
+              && (get(p).data.get('driverKyc', {}).get('dlExpiry', request.time) > request.time - duration.value(1, 'd')
+                  || get(p).data.get('docOverrideUntil', request.time) > request.time));
     }
 
     // A cancellation must bump the canceller's cancelCount in the same batch.
@@ -195,13 +206,13 @@ service cloud.firestore {
     match /users/{userId} {
       allow read: if isUser(userId) || isAdmin();
       allow create: if isUser(userId) && verificationInitOk(request.resource.data)
-          && validKyc(request.resource.data) && reviewMetaAbsent(request.resource.data) && planFieldsAbsent(request.resource.data) && referralCodeOk(request.resource.data) && validIdentityHashes(request.resource.data) && validLastLocation(request.resource.data) && validRole(request.resource.data.get('role', null))
+          && validKyc(request.resource.data) && reviewMetaAbsent(request.resource.data) && planFieldsAbsent(request.resource.data) && !('docOverrideUntil' in request.resource.data) && referralCodeOk(request.resource.data) && validIdentityHashes(request.resource.data) && validLastLocation(request.resource.data) && validRole(request.resource.data.get('role', null))
           && (request.resource.data.get('role', null) == null
               || request.resource.data.get('selectedRole', request.resource.data.role) == request.resource.data.role)
           && validEmergencyContacts(request.resource.data) && riskFieldsAbsent(request.resource.data)
           && validPrefs(request.resource.data) && validBusiness(request.resource.data);
-      allow update: if adminVerificationUpdate() || adminRiskUpdate() || adminPlanUpdate() || (isUser(userId)
-          && roleLockOk() && validKyc(request.resource.data) && !changedKeys().hasAny(['plan', 'planUntil', 'verificationMeta']) && referralCodeOk(request.resource.data) && referralCodeKept() && validIdentityHashes(request.resource.data) && validLastLocation(request.resource.data)
+      allow update: if adminVerificationUpdate() || adminRiskUpdate() || adminPlanUpdate() || adminDocOverride() || (isUser(userId)
+          && roleLockOk() && validKyc(request.resource.data) && !changedKeys().hasAny(['plan', 'planUntil', 'verificationMeta', 'docOverrideUntil']) && referralCodeOk(request.resource.data) && referralCodeKept() && validIdentityHashes(request.resource.data) && validLastLocation(request.resource.data)
           && validEmergencyContacts(request.resource.data)
           && validPrefs(request.resource.data) && validBusiness(request.resource.data)
           && ownerRiskFieldsUntouched()
@@ -326,6 +337,22 @@ service cloud.firestore {
       return d.get('availability', 'available');
     }
 
+    // Document expiry. A vehicle whose insurance, permit or fitness paper has
+    // run out (expiry before yesterday's midnight, day granularity) cannot take
+    // bookings, and 'doc_expired' is the state the app puts it in. Only an
+    // admin override (docOverrideUntil in the future) lifts that.
+    function paperClear(d, kind) {
+      return d.get('docs', {}).get(kind, {}).get('expiry', request.time) > request.time - duration.value(1, 'd');
+    }
+
+    function vehiclePapersClear(d) {
+      return paperClear(d, 'insurance') && paperClear(d, 'permit') && paperClear(d, 'fitness');
+    }
+
+    function overrideActive(d) {
+      return d.get('docOverrideUntil', request.time) > request.time;
+    }
+
     function validVehicleDocs(d) {
       return !('docs' in d) || (d.docs is map
           && d.docs.keys().hasOnly(['insurance', 'puc', 'fitness', 'permit']));
@@ -348,7 +375,7 @@ service cloud.firestore {
           && d.type is string
           && d.capacity is number && d.capacity > 0
           && d.status in ['active', 'inactive']
-          && availabilityOf(d) in ['available', 'on_trip', 'maintenance', 'suspended']
+          && availabilityOf(d) in ['available', 'on_trip', 'maintenance', 'suspended', 'doc_expired']
           && validVehicleDocs(d)
           && (!('nextServiceDate' in d) || d.nextServiceDate is timestamp)
           && (!('nextTyreCheckDate' in d) || d.nextTyreCheckDate is timestamp)
@@ -367,7 +394,8 @@ service cloud.firestore {
     function ownerAvailabilityOk() {
       let before = availabilityOf(resource.data);
       let after = availabilityOf(request.resource.data);
-      return before == after || (before != 'suspended' && after != 'suspended');
+      return (before == after || (before != 'suspended' && after != 'suspended'))
+          && (before != 'doc_expired' || after == 'doc_expired' || vehiclePapersClear(request.resource.data) || overrideActive(resource.data));
     }
 
     // A fleet owner assigns a vehicle to one of their active drivers
@@ -398,18 +426,21 @@ service cloud.firestore {
           && request.resource.data.ownerId == request.auth.uid
           && validVehicle(request.resource.data)
           && availabilityOf(request.resource.data) == 'available'
+          && !('docOverrideUntil' in request.resource.data)
           && numberReservedFor(vehicleId, request.resource.data.number);
       allow update: if signedIn()
           && ((resource.data.ownerId == request.auth.uid
               && request.resource.data.ownerId == request.auth.uid
               && validVehicle(request.resource.data)
+              && !changedKeys().hasAny(['docOverrideUntil'])
               && ownerAvailabilityOk()
               && assignmentOk()
               && (request.resource.data.number == resource.data.number
                   || numberReservedFor(vehicleId, request.resource.data.number)))
             || assignedDriverAvailability()
             || (isAdmin()
-              && changedKeys().hasOnly(['availability', 'updatedAt'])
+              && changedKeys().hasOnly(['availability', 'docOverrideUntil', 'updatedAt'])
+              && (!('docOverrideUntil' in request.resource.data) || request.resource.data.docOverrideUntil is timestamp)
               && validVehicle(request.resource.data)));
       allow delete: if signedIn() && resource.data.ownerId == request.auth.uid;
     }
@@ -872,7 +903,8 @@ service cloud.firestore {
               ? !('fleetOwnerId' in b)
               : b.get('fleetOwnerId', '') == get(docPath('vehicles', b.vehicleId)).data.ownerId)
           && get(docPath('vehicles', b.vehicleId)).data.get('status', 'active') == 'active'
-          && availabilityOf(get(docPath('vehicles', b.vehicleId)).data) == 'available';
+          && availabilityOf(get(docPath('vehicles', b.vehicleId)).data) == 'available'
+          && (vehiclePapersClear(get(docPath('vehicles', b.vehicleId)).data) || overrideActive(get(docPath('vehicles', b.vehicleId)).data));
     }
 
     // A booking from an offer: the driver's own selected offer for this

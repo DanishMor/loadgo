@@ -2266,6 +2266,64 @@ describe('favourite routes', () => {
   });
 });
 
+describe('document expiry', () => {
+  const day = 86400000;
+  const past = (d) => Timestamp.fromDate(new Date(Date.now() - d * day));
+  const future = (d) => Timestamp.fromDate(new Date(Date.now() + d * day));
+  const accept = (db) => acceptBatch(db, 'L1');
+  const setVehicle = (extra) => seed((db) => setDoc(doc(db, 'vehicles', 'v1'), { ...VEHICLE, ...extra }));
+  beforeEach(seedOpenLoad);
+
+  test('an expired insurance, permit or fitness paper blocks accepting; PUC and valid papers do not', async () => {
+    await setVehicle({ docs: { insurance: { number: 'P', expiry: past(3) } } });
+    await assertFails(accept(as('driver1')));
+    await setVehicle({ docs: { permit: { number: 'P', expiry: past(3) } } });
+    await assertFails(accept(as('driver1')));
+    await setVehicle({ docs: { fitness: { number: 'P', expiry: past(3) } } });
+    await assertFails(accept(as('driver1')));
+    await setVehicle({ docs: { puc: { number: 'P', expiry: past(30) }, insurance: { number: 'P', expiry: future(30) } } });
+    await assertSucceeds(accept(as('driver1')));
+  });
+  test('an admin override lets the vehicle work until it ends', async () => {
+    await setVehicle({ docs: { insurance: { number: 'P', expiry: past(3) } }, docOverrideUntil: future(2) });
+    await assertSucceeds(accept(as('driver1')));
+  });
+  test('an expired override does not help', async () => {
+    await setVehicle({ docs: { insurance: { number: 'P', expiry: past(3) } }, docOverrideUntil: past(1) });
+    await assertFails(accept(as('driver1')));
+  });
+  test('the owner may suspend for documents, but only lift it with clear papers or an override', async () => {
+    await setVehicle({ docs: { insurance: { number: 'P', expiry: past(3) } } });
+    const ref = (db) => doc(db, 'vehicles', 'v1');
+    await assertSucceeds(updateDoc(ref(as('driver1')), { availability: 'doc_expired' }));
+    await assertFails(updateDoc(ref(as('driver1')), { availability: 'available' }));
+    await assertFails(updateDoc(ref(as('driver1')), { availability: 'available', docOverrideUntil: future(5) }));
+    await assertSucceeds(updateDoc(ref(as('driver1')), { availability: 'available', docs: { insurance: { number: 'P', expiry: future(300) } } }));
+  });
+  test('only admins write docOverrideUntil, on vehicles and on users', async () => {
+    const ref = (db) => doc(db, 'vehicles', 'v1');
+    await assertFails(updateDoc(ref(as('driver1')), { docOverrideUntil: future(5) }));
+    await assertSucceeds(updateDoc(ref(asAdmin()), { availability: 'available', docOverrideUntil: future(5), updatedAt: serverTimestamp() }));
+    await assertFails(updateDoc(ref(asAdmin()), { docOverrideUntil: 'tomorrow' }));
+    await seed((db) => setDoc(doc(db, 'users', 'driver1'), { phone: '+91' }));
+    await assertFails(updateDoc(doc(as('driver1'), 'users', 'driver1'), { docOverrideUntil: future(5) }));
+    await assertSucceeds(updateDoc(doc(asAdmin(), 'users', 'driver1'), { docOverrideUntil: future(5), updatedAt: serverTimestamp() }));
+    await assertFails(setDoc(doc(as('driver9'), 'users', 'driver9'), { phone: '+91', docOverrideUntil: future(5) }));
+  });
+  test('an expired licence blocks accepting unless an admin override is on the profile', async () => {
+    const kyc = { dlNumber: 'DL1420110012345', dlExpiry: past(3), rcNumber: 'RC123', aadhaarLast4: '1234', pan: 'ABCDE1234F' };
+    await seed((db) => setDoc(doc(db, 'users', 'driver1'), { phone: '+91', driverKyc: kyc }));
+    await assertFails(accept(as('driver1')));
+    await seed((db) => updateDoc(doc(db, 'users', 'driver1'), { docOverrideUntil: future(3) }));
+    await assertSucceeds(accept(as('driver1')));
+  });
+  test('a valid licence accepts', async () => {
+    const kyc = { dlNumber: 'DL1420110012345', dlExpiry: future(300), rcNumber: 'RC123', aadhaarLast4: '1234', pan: 'ABCDE1234F' };
+    await seed((db) => setDoc(doc(db, 'users', 'driver1'), { phone: '+91', driverKyc: kyc }));
+    await assertSucceeds(accept(as('driver1')));
+  });
+});
+
 describe('invoices and the number series', () => {
   const FY = '2026-27';
   const inv = (extra = {}) => ({

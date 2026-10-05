@@ -94,6 +94,8 @@ Future<String?> acceptLoadFlow(BuildContext context, Load load, {ValueChanged<bo
     if (context.mounted) showSnack(context, tr(context, 'loadUnavailable'));
   } on AccountRestrictedException {
     if (context.mounted) showSnack(context, tr(context, 'accountRestricted'));
+  } on DocsExpiredException {
+    if (context.mounted) showSnack(context, tr(context, 'docsExpiredBlock'));
   } on VehicleBusyException {
     if (context.mounted) showSnack(context, tr(context, 'vehicleBusy'));
   } catch (_) {

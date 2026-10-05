@@ -81,6 +81,24 @@ class AdminConsoleService {
     });
   }
 
+  /// Lets a vehicle with expired papers work for [days] days: sets the
+  /// override and lifts the document suspension (admin only per rules).
+  static Future<void> overrideVehicleDocs(String vehicleId, {int days = 7}) {
+    return _db.collection('vehicles').doc(vehicleId).update({
+      'availability': VehicleAvailability.available,
+      'docOverrideUntil': Timestamp.fromDate(DateTime.now().add(Duration(days: days))),
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+  /// Lets a driver with an expired licence accept loads for [days] days.
+  static Future<void> overrideLicence(String userId, {int days = 7}) {
+    return _db.collection('users').doc(userId).update({
+      'docOverrideUntil': Timestamp.fromDate(DateTime.now().add(Duration(days: days))),
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+  }
+
   // ---- loads / bookings ----
 
   static Stream<List<QueryDocumentSnapshot<Map<String, dynamic>>>> watchLoads({String? status}) {

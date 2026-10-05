@@ -36,13 +36,14 @@ String availabilityLabel(BuildContext context, String availability) => tr(contex
       VehicleAvailability.onTrip => 'availOnTrip',
       VehicleAvailability.maintenance => 'availMaintenance',
       VehicleAvailability.suspended => 'availSuspended',
+      VehicleAvailability.docExpired => 'availDocExpired',
       _ => 'availAvailable',
     });
 
 Color availabilityColor(String availability) => switch (availability) {
       VehicleAvailability.onTrip => AppColors.primary,
       VehicleAvailability.maintenance => AppColors.warning,
-      VehicleAvailability.suspended => Colors.redAccent,
+      VehicleAvailability.suspended || VehicleAvailability.docExpired => Colors.redAccent,
       _ => AppColors.success,
     };
 

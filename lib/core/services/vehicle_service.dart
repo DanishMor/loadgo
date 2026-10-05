@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import '../constants/logistics.dart';
 import '../models/vehicle.dart';
 import 'backend.dart';
+import 'doc_expiry_service.dart';
 
 /// Another account (or another of your vehicles) already registered this number.
 class DuplicateVehicleException implements Exception {
@@ -191,8 +192,8 @@ class VehicleService {
 
   /// Saves insurance/PUC/fitness/permit details and the next service date.
   /// Empty entries are removed.
-  static Future<void> saveDocuments(String vehicleId, Map<String, VehicleDocInfo> docs, {DateTime? nextServiceDate, DateTime? nextTyreCheckDate}) {
-    return _col.doc(vehicleId).update({
+  static Future<void> saveDocuments(String vehicleId, Map<String, VehicleDocInfo> docs, {DateTime? nextServiceDate, DateTime? nextTyreCheckDate}) async {
+    await _col.doc(vehicleId).update({
       'docs': {
         for (final e in docs.entries)
           if (VehicleDocKind.all.contains(e.key) && !e.value.isEmpty) e.key: e.value.toMap(),
@@ -201,6 +202,7 @@ class VehicleService {
       'nextTyreCheckDate': nextTyreCheckDate == null ? FieldValue.delete() : Timestamp.fromDate(nextTyreCheckDate),
       'updatedAt': FieldValue.serverTimestamp(),
     });
+    await DocExpiryService.syncVehicle(vehicleId);
   }
 
   /// Owner switches between available and maintenance. on_trip is managed by

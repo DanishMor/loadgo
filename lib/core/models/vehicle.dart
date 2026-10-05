@@ -27,6 +27,9 @@ class Vehicle {
   /// Optional profile: cargo space in metres, fuel and body type.
   final VehicleProfile profile;
 
+  /// An admin lets the vehicle work with expired papers until this time.
+  final DateTime? docOverrideUntil;
+
   const Vehicle({
     required this.id,
     required this.ownerId,
@@ -43,6 +46,7 @@ class Vehicle {
     this.nextTyreCheckDate,
     this.assignedDriverId,
     this.profile = const VehicleProfile(),
+    this.docOverrideUntil,
   });
 
   bool get isActive => status == VehicleStatus.active;
@@ -55,6 +59,14 @@ class Vehicle {
         for (final k in VehicleDocKind.all)
           if (docs[k]?.expiry case final e? when !e.isAfter(now.add(Duration(days: days)))) k,
       ];
+
+  bool overrideActive(DateTime now) => docOverrideUntil != null && docOverrideUntil!.isAfter(now);
+
+  /// Expired insurance / permit / fitness papers.
+  List<String> blockingExpired(DateTime now) => [for (final k in expiredDocs(now)) if (VehicleDocKind.blocking.contains(k)) k];
+
+  /// True when expired papers keep this vehicle off bookings (no admin override).
+  bool papersBlocked(DateTime now) => blockingExpired(now).isNotEmpty && !overrideActive(now);
 
   List<String> expiredDocs(DateTime now) => [
         for (final k in VehicleDocKind.all)
@@ -90,6 +102,7 @@ class Vehicle {
       nextTyreCheckDate: (d['nextTyreCheckDate'] as Timestamp?)?.toDate(),
       assignedDriverId: d['assignedDriverId'] as String?,
       profile: VehicleProfile.fromMap(d),
+      docOverrideUntil: (d['docOverrideUntil'] as Timestamp?)?.toDate(),
     );
   }
 }

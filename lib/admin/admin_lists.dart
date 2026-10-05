@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import '../core/documents/doc_expiry.dart';
 
 import '../core/constants/logistics.dart';
 import '../core/l10n/l10n.dart';
@@ -110,8 +111,19 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                       d.data()['phone'] ?? '',
                       riskTierLabel(context, d.data()['riskTier'] as String? ?? RiskTier.normal),
                       if ((d.data()['roles'] as List?)?.isNotEmpty ?? false) (d.data()['roles'] as List).join('/'),
+                      if (DocExpiry.licenceBlocked(d.data(), DateTime.now())) tr(context, 'adminLicenceExpiredTag'),
                     ].where((e) => e.toString().isNotEmpty).join(' · ')),
-                    trailing: const Icon(Icons.edit_outlined),
+                    trailing: DocExpiry.licenceBlocked(d.data(), DateTime.now())
+                        ? TextButton(
+                            key: ValueKey('licenceOverride_${d.id}'),
+                            onPressed: () async {
+                              await AdminConsoleService.overrideLicence(d.id);
+                              if (context.mounted) showSnack(context, tr(context, 'docOverrideDone'));
+                              setState(() => _users = AdminConsoleService.users());
+                            },
+                            child: Text(tr(context, 'adminDocOverride')),
+                          )
+                        : const Icon(Icons.edit_outlined),
                     onTap: () async {
                       final name = (d.data()['name'] ?? d.data()['driverName'] ?? d.id).toString();
                       final tier = d.data()['riskTier'] as String? ?? RiskTier.normal;
@@ -147,15 +159,26 @@ class AdminVehiclesScreen extends StatelessWidget {
           key: ValueKey('vehicle_${d.id}'),
           title: Text('${v['number'] ?? ''} · ${vehicleTypeLabel(context, v['type'] as String? ?? '')}'),
           subtitle: Text(availabilityLabel(context, availability)),
-          trailing: TextButton(
-            key: ValueKey('suspend_${d.id}'),
-            onPressed: () => _run(
-              context,
-              () => AdminConsoleService.setVehicleAvailability(
-                  d.id, suspended ? VehicleAvailability.available : VehicleAvailability.suspended),
+          trailing: Row(mainAxisSize: MainAxisSize.min, children: [
+            if (availability == VehicleAvailability.docExpired)
+              TextButton(
+                key: ValueKey('docOverride_${d.id}'),
+                onPressed: () => _run(context, () async {
+                  await AdminConsoleService.overrideVehicleDocs(d.id);
+                  if (context.mounted) showSnack(context, tr(context, 'docOverrideDone'));
+                }),
+                child: Text(tr(context, 'adminDocOverride')),
+              ),
+            TextButton(
+              key: ValueKey('suspend_${d.id}'),
+              onPressed: () => _run(
+                context,
+                () => AdminConsoleService.setVehicleAvailability(
+                    d.id, suspended ? VehicleAvailability.available : VehicleAvailability.suspended),
+              ),
+              child: Text(tr(context, suspended ? 'adminLiftSuspension' : 'adminSuspend')),
             ),
-            child: Text(tr(context, suspended ? 'adminLiftSuspension' : 'adminSuspend')),
-          ),
+          ]),
         );
       },
     );

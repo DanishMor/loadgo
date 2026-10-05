@@ -10,6 +10,7 @@ import '../models/vehicle.dart';
 import 'pricing_service.dart';
 import 'audit_service.dart';
 import 'backend.dart';
+import '../documents/doc_expiry.dart';
 import 'notification_service.dart';
 import 'risk_service.dart';
 
@@ -24,6 +25,15 @@ class OtpRequiredException implements Exception {}
 
 /// The rules rejected the OTP (it does not match the customer's code).
 class WrongOtpException implements Exception {}
+
+/// The driver's licence or the vehicle's insurance/permit/fitness paper is expired
+/// (no admin override). [what] is 'licence' or 'vehicle'.
+class DocsExpiredException implements Exception {
+  final String what;
+  DocsExpiredException(this.what);
+  @override
+  String toString() => 'DocsExpiredException($what)';
+}
 
 /// The chosen vehicle is on another trip, in maintenance, suspended or off.
 class VehicleBusyException implements Exception {
@@ -50,6 +60,7 @@ class BookingService {
     final uid = Backend.requireUid();
     await RiskService.ensureCanTransact();
     final profile = (await Backend.db.collection('users').doc(uid).get()).data() ?? const {};
+    if (DocExpiry.licenceBlocked(profile, DateTime.now())) throw DocsExpiredException('licence');
     final loadRef = Backend.db.collection('loads').doc(loadId);
     final bookingRef = _col.doc();
 
@@ -61,6 +72,7 @@ class BookingService {
         if (!load.isOpen || load.shipperId == uid || load.blocks(uid)) throw LoadUnavailableException();
         final vehicleRef = Backend.db.collection('vehicles').doc(vehicle.id);
         final vehicleSnap = await tx.get(vehicleRef);
+        if (vehicleSnap.exists && Vehicle.fromDoc(vehicleSnap).papersBlocked(DateTime.now())) throw DocsExpiredException('vehicle');
         if (vehicleSnap.exists && !Vehicle.fromDoc(vehicleSnap).canTakeBooking) throw VehicleBusyException();
         final rules = PricingService.config.schedule;
         final deferVehicle = load.scheduledAt != null && load.scheduledAt!.isAfter(DateTime.now().add(Duration(minutes: rules.leadMinutes)));
