@@ -241,6 +241,12 @@ class AdminConsoleService {
 
   // ---- analytics ----
 
+  /// The newest bookings (by creation time) for the trend charts.
+  static Future<List<Booking>> recentBookings({int limit = 1000}) async {
+    final snap = await _db.collection('bookings').orderBy('createdAt', descending: true).limit(limit).get();
+    return snap.docs.map(Booking.fromDoc).toList();
+  }
+
   static Future<int> _count(Query<Map<String, dynamic>> q) async => (await q.count().get()).count ?? 0;
 
   static Future<AdminCounters> counters() async {

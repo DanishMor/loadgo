@@ -10,6 +10,7 @@ import 'admin_config_screen.dart';
 import 'admin_driver_rewards_screen.dart';
 import 'admin_fraud_cases_screen.dart';
 import 'admin_rating_flags_screen.dart';
+import 'admin_trends_section.dart';
 import 'admin_lists.dart';
 import 'admin_offers_screen.dart';
 import 'admin_payouts_screen.dart';
@@ -80,6 +81,7 @@ class AdminAnalyticsScreen extends StatefulWidget {
 
 class _AdminAnalyticsScreenState extends State<AdminAnalyticsScreen> {
   late Future<AdminCounters> _future = AdminConsoleService.counters();
+  int _refresh = 0;
 
   Widget _section(String title, Map<String, int> rows, String Function(String) label) => AppCard(
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -104,7 +106,10 @@ class _AdminAnalyticsScreenState extends State<AdminAnalyticsScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh_rounded),
-            onPressed: () => setState(() => _future = AdminConsoleService.counters()),
+            onPressed: () => setState(() {
+              _future = AdminConsoleService.counters();
+              _refresh++;
+            }),
           ),
         ],
       ),
@@ -127,6 +132,8 @@ class _AdminAnalyticsScreenState extends State<AdminAnalyticsScreen> {
             _section(tr(context, 'adminLoadsByStatus'), c.loadsByStatus, (s) => _loadStatusLabel(context, s)),
             const SizedBox(height: 12),
             _section(tr(context, 'adminBookingsByStatus'), c.bookingsByStatus, (s) => bookingStatusLabel(context, s)),
+            const SizedBox(height: 20),
+            AdminTrendsSection(key: ValueKey('trends_$_refresh')),
           ]);
         },
       ),
