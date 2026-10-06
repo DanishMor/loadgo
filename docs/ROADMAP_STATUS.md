@@ -14,7 +14,7 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | R Re-KYC | 12 | 5 | 1 | 2 | 4 | 0 |
 | C Customer app | 14 | 8 | 6 | 0 | 0 | 0 |
 | B Bike | 14 | 9 | 4 | 0 | 1 | 0 |
-| V Truck + fleet | 12 | 7 | 2 | 2 | 1 | 0 |
+| V Truck + fleet | 12 | 8 | 2 | 1 | 1 | 0 |
 | L Load marketplace | 14 | 11 | 2 | 1 | 0 | 0 |
 | P Booking + pricing | 14 | 10 | 2 | 1 | 1 | 0 |
 | M Map | 16 | 1 | 5 | 0 | 9 | 1 |
@@ -33,7 +33,7 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | AI AI | 14 | 0 | 0 | 0 | 14 | 0 |
 | BE Backend | 18 | 4 | 6 | 1 | 7 | 0 |
 | TEST Testing | 14 | 4 | 3 | 0 | 7 | 0 |
-| **Total** | **347** | **157** | **85** | **28** | **76** | **1** |
+| **Total** | **347** | **158** | **85** | **27** | **76** | **1** |
 
 ## P0 Principles
 
@@ -143,7 +143,7 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | V2 | Vehicle profile Number, class, capacity, dimensions, fuel, body type. | Done | Number, type, capacity, RC, optional cargo dimensions, fuel and body type (vehicle profile, rules validated) |
 | V3 | Vehicle documents RC, insurance, PUC, fitness, permit and expiry. | Done | vehicle_documents_screen.dart insurance/PUC/fitness/permit + expiry |
 | V4 | Owner relationship Owner, authorised operator or fleet relationship record. | Done | Vehicle ownerId plus assignedDriverId (owner and authorised driver relationship) |
-| V5 | Driver assignment Vehicle-to-driver mapping with active assignment. | Todo-free | Driver owns vehicle; no assignment |
+| V5 | Driver assignment Vehicle-to-driver mapping with active assignment. | Done | Fleet owner assigns a vehicle to an active member (`assignedDriverId`); the driver sees and uses it |
 | V6 | Fleet dashboard Vehicles, drivers, online/offline, active trips, idle vehicles. | Done | Fleet dashboard: vehicles, drivers, trips on the road, idle vehicles, earnings |
 | V7 | Vehicle availability Available, busy, on-trip, maintenance, suspended. | Done | available/on_trip/maintenance/suspended, auto on_trip |
 | V8 | Maintenance reminders Service, tyre, insurance, PUC, fitness, permit. | Done | Next service and next tyre-check dates + in-app reminders (Home banner and notification list); push is the paid part |

@@ -9,16 +9,24 @@ Truck and cargo booking app (Flutter + Firebase). Customers post loads; verified
 - Booking chat with off-platform warning, report and block; support tickets with escalation and a call-support button; in-app notifications and reminders (pickup soon, papers expiring, offers waiting)
 - Documents center (invoice with GST, digital LR, proof of delivery with GPS, odometer and receiver signature), cargo document records with history, settings, consent center (location is stored only with consent), My devices (trust, sign out, log out everywhere), delete-account request
 
+- Notification center with categories and switches, dark mode and large-text support, help and FAQ, Terms, Privacy and Refund screens, first-time tour, offline cache with retry, **account deletion** (profile, private data, vehicles and identity entries; Auth user last)
+- Claims and disputes with a timeline, ratings both ways with categories, GST invoice PDF with e-way bill fields, transaction history with CSV
+
 **Customer**
 - Post loads: goods transport, hourly rental (4/8/12 h) or packers and movers; 0-4 helpers; multi-stop, saved places, fare estimate with breakdown, fragile/high-value flags, payment mode, prohibited-cargo check, repost
 - Promo codes, credits and referral code (record only), price offers with one counter, OTP-protected pickup and delivery, tips, ratings
 - Analytics, business tools (GSTIN format check, branches, bulk post, route/branch/driver report with CSV, import/export container and seal numbers, two-leg shipments)
+
+- Scheduled bookings, favourite drivers, block list, load templates and "book again", empty-truck board, business team and monthly statements
 
 **Driver**
 - Onboarding gate: location consent, then licence, RC, Aadhaar (last 4 digits only) and PAN, then admin approval; duplicate documents are blocked across accounts (`identity_index`)
 - Vehicles with profile (size, fuel, body), papers, tyre and service reminders; nearby loads by geohash sorted by distance; planned route; city demand; recommended loads; offers and accept
 - Trip: waiting clock, odometer, GPS at pickup/delivery, signature, geofence alerts, SOS, breakdown and accident reports
 - Wallet (pending/available/paid-out, payout requests), tips, bonus targets, Free/Pro plan (lower commission), online switch
+
+**Fleet owner**
+- Third role: vehicles, invited drivers, assignment, trips on the road, earnings per vehicle
 
 **Admin** (only users with an `admins/<uid>` document; rules enforce it)
 - Users and risk tier, driver verification with masked document numbers, vehicles, loads, bookings with manual reassign, tickets, SOS, reports and fraud cases, flagged users with a risk score, risk signals and shared devices, payout requests, promo codes and credits, driver bonuses and plans, audit log, config editors (pricing, vehicle types, support number)

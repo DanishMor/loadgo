@@ -1,6 +1,6 @@
 # Next tasks
 
-Written 2026-10-04 after run 3, Task 9. The items still marked **Todo-free** in `docs/ROADMAP_STATUS.md`, with where they will be done. Queue: `docs/TASK_QUEUE.md` (Tasks 10 to 30); blocked items: `docs/BLOCKED.md`.
+Written 2026-10-04 after run 3, Task 9. The items still marked **Todo-free** in `docs/ROADMAP_STATUS.md`, with where they will be done. Queues: `docs/TASK_QUEUE.md` (Tasks 10 to 30, all done) and `docs/TASK_QUEUE_2.md` (Task 31 on, built from every open free row); blocked items: `docs/BLOCKED.md`.
 
 | Code | Item | Gap | Planned in |
 |---|---|---|---|
