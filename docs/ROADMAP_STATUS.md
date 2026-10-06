@@ -54,7 +54,7 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | A2 | Google login Optional secondary auth; Firebase identity linking ke saath. | Todo-free | Google button only shows "coming soon" (customer_login_screen.dart); google_sign_in is free |
 | A3 | Driver mobile OTP Driver signup/login with dedicated role. | Done | lib/auth/driver_login_screen.dart |
 | A4 | Business accounts Company owner, manager, dispatch, accounts, viewer roles. | Todo-free | No manager/dispatch/accounts/viewer roles |
-| A5 | Role-based access Customer, driver, transporter, fleet, shipper, importer, exporter, trader, | Done | Customer, driver and fleet roles are locked once set;  (shipper, importer, exporter, trader, transporter) in Edit profile, rules-validated; transporters also have the fleet role |
+| A5 | Role-based access Customer, driver, transporter, fleet, shipper, importer, exporter, trader, | Done | Customer, driver and fleet roles are locked once set; users.businessType (shipper, importer, exporter, trader, transporter) in Edit profile, rules-validated; transporters also have the fleet role |
 | A6 | New-device verification Naye device par extra verification / risk challenge. | Done | Device id kept per installation; a new device on an account with other devices raises a risk signal and shows as New in Settings > My devices |
 | A7 | Session management Trusted devices, logout all, session revoke. | Done | My devices: trust, sign out a device, log out everywhere (checked when the app starts; token revoke is TODO(functions)) |
 | A8 | Account recovery Secure recovery workflow; identity checks required for sensitive changes. | Paid-or-Later | No recovery flow; identity checks need KYC provider |
@@ -70,7 +70,7 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | K3 | Driving Licence DigiLocker/transport-authorised source se available document | Partial | Licence number + expiry are collected and format-checked in driver onboarding, never verified against a source (DigiLocker/Parivahan is the paid part) |
 | K4 | RC verification Vehicle registration record/document verification through permitted | Paid-or-Later | RC number is text only (vehicle.rcNumber), no source check |
 | K5 | DigiLocker consent User consent ke baad supported documents fetch/share/verify. | Paid-or-Later | DigiLocker needs registration |
-| K6 | Current + permanent address User/business profile mein structured address records; sensitive display | Done | Edit profile keeps  {current, permanent} (rules: 200 chars each); admins see them masked |
+| K6 | Current + permanent address User/business profile mein structured address records; sensitive display | Done | Edit profile keeps users.addresses {current, permanent} (rules: 200 chars each); admins see them masked |
 | K7 | Face verification Identity match workflow; liveness/provider controls as appropriate. | Paid-or-Later | Needs face-match provider |
 | K8 | Driver KYC pack Aadhaar, PAN, DL, address, photo, payout profile, vehicle relationship. | Paid-or-Later | Driver KYC pack has licence, RC, Aadhaar last 4, PAN, address and a payout UPI id record (Edit profile); the photo needs Storage (paid) |
 | K9 | Business KYC GSTIN, PAN, business name, trade name, addresses, company | Paid-or-Later | GSTIN format and mod-36 check character are verified offline in all three forms; confirming that the number exists needs the GST portal / a KYC API (paid) |
@@ -86,7 +86,7 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 |---|---|---|---|
 | R1 | Scheduled re-KYC Configured policy interval par face/identity re-check. | Paid-or-Later | Needs face-KYC provider |
 | R2 | New device trigger Naya phone/device detect ho to re-verification. | Done | New-device detection writes a `new_device` risk signal for admins (re-verification is manual) |
-| R3 | SIM/mobile change Sensitive mobile change par stronger authentication. | Done | Settings > Change mobile number: SMS code to the new number (Firebase), profile phone updated,  risk signal for admins |
+| R3 | SIM/mobile change Sensitive mobile change par stronger authentication. | Done | Settings > Change mobile number: SMS code to the new number (Firebase), profile phone updated, phone_change risk signal for admins |
 | R4 | Payout/bank change Payout account change se pehle re-KYC/risk challenge. | Paid-or-Later | No payout/bank profile exists yet |
 | R5 | High-value transaction High-value shipment/payout par additional verification. | Done | Loads of Rs 50,000 or more write a high_value risk signal for admins |
 | R6 | Suspicious activity trigger Behavioural risk score high ho to re-KYC/manual review. | Done | RiskRules.score (cancels, reports, new devices, expired papers, tier) shown in the flagged list with a review suggestion |
