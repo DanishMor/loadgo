@@ -83,10 +83,12 @@ Color offerStatusColor(String status) => switch (status) {
     };
 
 /// Asks for a whole-rupee price; returns paise, or null when cancelled.
-Future<int?> askPricePaise(BuildContext context, {required String title, required String label, int? initialPaise, String? note}) =>
+/// [footer] is rebuilt as the driver types (e.g. a toll, fuel and margin panel).
+Future<int?> askPricePaise(BuildContext context,
+        {required String title, required String label, int? initialPaise, String? note, Widget Function(BuildContext, int? paise)? footer}) =>
     showDialog<int>(
       context: context,
-      builder: (_) => _PriceDialog(title: title, label: label, initialPaise: initialPaise, note: note),
+      builder: (_) => _PriceDialog(title: title, label: label, initialPaise: initialPaise, note: note, footer: footer),
     );
 
 class _PriceDialog extends StatefulWidget {
@@ -94,8 +96,9 @@ class _PriceDialog extends StatefulWidget {
   final String label;
   final int? initialPaise;
   final String? note;
+  final Widget Function(BuildContext, int? paise)? footer;
 
-  const _PriceDialog({required this.title, required this.label, this.initialPaise, this.note});
+  const _PriceDialog({required this.title, required this.label, this.initialPaise, this.note, this.footer});
 
   @override
   State<_PriceDialog> createState() => _PriceDialogState();
@@ -115,7 +118,7 @@ class _PriceDialogState extends State<_PriceDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: Text(widget.title),
-      content: Form(
+      content: SingleChildScrollView(child: Form(
         key: _formKey,
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -137,9 +140,19 @@ class _PriceDialogState extends State<_PriceDialog> {
               const SizedBox(height: 8),
               Text(widget.note!, style: TextStyle(color: AppColors.muted, fontSize: 12)),
             ],
+            if (widget.footer case final footer?) ...[
+              const SizedBox(height: 10),
+              ListenableBuilder(
+                listenable: _ctrl,
+                builder: (context, _) {
+                  final n = int.tryParse(_ctrl.text.trim());
+                  return footer(context, n == null || n <= 0 ? null : n * 100);
+                },
+              ),
+            ],
           ],
         ),
-      ),
+      )),
       actions: [
         TextButton(onPressed: () => Navigator.of(context).pop(), child: Text(tr(context, 'cancel'))),
         FilledButton(

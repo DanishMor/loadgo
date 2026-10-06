@@ -1,6 +1,7 @@
 import '../scheduling/schedule.dart';
 import 'fare_calculator.dart';
 import 'surge.dart';
+import 'trip_cost.dart';
 
 /// `config/pricing`: rate cards per vehicle category with optional
 /// per-vehicle-type overrides, plus fee/tax/cancellation settings.
@@ -30,6 +31,9 @@ class PricingConfig {
   /// Peak / night / festival surge (OFF unless an admin enables it).
   final SurgeRule surge;
 
+  /// Diesel price in paise per litre for the fuel estimate (admin edits it).
+  final int dieselPaisePerLitre;
+
   const PricingConfig({
     required this.categories,
     this.types = const {},
@@ -42,6 +46,7 @@ class PricingConfig {
     this.roadFactor = 1.25,
     this.cancellation = const CancellationPolicy(),
     this.surge = SurgeRule.off,
+    this.dieselPaisePerLitre = FuelEstimate.defaultDieselPaisePerLitre,
   });
 
   PricingRule ruleFor(String vehicleTypeId, String category) =>
@@ -77,6 +82,10 @@ class PricingConfig {
       roadFactor: (m['roadFactor'] as num?)?.toDouble() ?? defaultPricing.roadFactor,
       cancellation: CancellationPolicy.fromMap(m['cancellation'] as Map<String, dynamic>?),
       surge: SurgeRule.fromMap(m['surge']),
+      dieselPaisePerLitre: switch (m['dieselPaisePerLitre']) {
+        final num n when n > 0 && n <= 100000 => n.round(),
+        _ => FuelEstimate.defaultDieselPaisePerLitre,
+      },
     );
   }
 
@@ -92,6 +101,7 @@ class PricingConfig {
         'roadFactor': roadFactor,
         'cancellation': cancellation.toMap(),
         'surge': surge.toMap(),
+        'dieselPaisePerLitre': dieselPaisePerLitre,
       };
 }
 

@@ -13,6 +13,7 @@ import '../core/widgets/logistics_labels.dart';
 import '../core/services/pricing_service.dart';
 import '../core/pricing/fare_calculator.dart';
 import '../core/widgets/fare_breakdown.dart';
+import '../core/widgets/trip_cost_widgets.dart';
 import '../core/constants/prohibited_cargo.dart';
 import '../core/models/load.dart';
 import '../core/widgets/booking_type_widgets.dart';
@@ -323,6 +324,12 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
                 ),
                 TextButton(onPressed: () => showFareBreakdown(context, quote), child: Text(tr(context, 'viewBreakdown'))),
               ],
+            ),
+          ],
+          if (quote != null && _bookingType != BookingType.rental && (_manualKm ?? auto) != null) ...[
+            const SizedBox(height: 12),
+            TripCostCard(
+              cost: tripCostFor(farePaise: quote.total, km: (_manualKm ?? auto)!, vehicleType: _vehicleType, from: _pickupCtrl.text, to: _dropCtrl.text),
             ),
           ],
           const SizedBox(height: 6),
