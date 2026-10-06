@@ -51,6 +51,7 @@ import 'ui_strings.dart';
 import 'fleet_extra_strings.dart';
 import 'booking_extra_strings.dart';
 import 'profile_extra_strings.dart';
+import 'network_strings.dart';
 
 const List<Map<String, List<String>>> stringTables = [
   authStrings,
@@ -100,6 +101,7 @@ const List<Map<String, List<String>>> stringTables = [
   fleetExtraStrings,
   bookingExtraStrings,
   profileExtraStrings,
+  networkStrings,
 ];
 
 final Map<String, List<String>> extraStrings = {

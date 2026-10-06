@@ -1,3 +1,4 @@
+import '../core/network/network_screen.dart';
 import 'package:flutter/material.dart';
 
 import '../core/profile/profile_nav_tile.dart';
@@ -171,7 +172,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
         return Column(
           children: [
             for (final load in loads.take(3)) ...[
-              LoadCard(key: ValueKey(load.id), load: load, action: AcceptLoadButton(load: load, onAccepted: _onAccepted)),
+              LoadCard(key: ValueKey(load.id), load: load, networkShare: true, action: AcceptLoadButton(load: load, onAccepted: _onAccepted)),
               const SizedBox(height: 12),
             ],
             if (loads.length > 3)
@@ -407,6 +408,12 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
           icon: Icons.bar_chart_rounded,
           titleKey: 'myAnalytics',
           screen: (_) => const DriverAnalyticsScreen(),
+        ),
+        ProfileNavTile(
+          key: const ValueKey('profileNetwork'),
+          icon: Icons.groups_2_outlined,
+          titleKey: 'netTitle',
+          screen: (_) => const NetworkScreen(),
         ),
         ProfileNavTile(
           key: const ValueKey('profileEditDocuments'),

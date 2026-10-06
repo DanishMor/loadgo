@@ -571,6 +571,164 @@ service cloud.firestore {
       allow update: if false;
     }
 
+    // ------------------------------------------------------------------
+    // Driver network. driver_presence/{uid}: where a driver chose to be seen
+    // (rounded to about 1 km, for a limited time, or not at all). Drivers who
+    // chose "nearby" appear in a geohash list; "connections" is read one
+    // driver at a time by connected drivers; "trip" and "hidden" store no
+    // position. Expiry is checked on single reads only: a list cannot be
+    // filtered by time in rules, so the app hides expired entries
+    // (TODO(functions): remove them).
+    // ------------------------------------------------------------------
+    function linkId(a, b) {
+      return a < b ? a + '_' + b : b + '_' + a;
+    }
+
+    function blockedBy(other) {
+      return exists(/databases/$(database)/documents/users/$(other)/blocked/$(request.auth.uid));
+    }
+
+    function otherMember(members) {
+      return members[0] == request.auth.uid ? members[1] : members[0];
+    }
+
+    function linkConnected(a, b) {
+      return exists(docPath('driver_links', linkId(a, b)))
+          && get(docPath('driver_links', linkId(a, b))).data.status == 'connected';
+    }
+
+    function presenceShapeOk(d) {
+      return d.name is string && d.name.size() <= 80
+          && d.mode in ['nearby', 'connections', 'trip', 'hidden']
+          && d.updatedAt == request.time
+          && (d.mode in ['nearby', 'connections']
+              ? (d.keys().hasOnly(['name', 'mode', 'lat', 'lng', 'geohash', 'sharedUntil', 'updatedAt'])
+                  && d.lat is number && d.lat >= -90 && d.lat <= 90
+                  && d.lng is number && d.lng >= -180 && d.lng <= 180
+                  && d.geohash is string && d.geohash.matches('^[0-9b-hjkmnp-z]{4,12}$')
+                  && d.sharedUntil is timestamp && d.sharedUntil > request.time
+                  && d.sharedUntil <= request.time + duration.value(24, 'h'))
+              : d.keys().hasOnly(['name', 'mode', 'updatedAt']));
+    }
+
+    match /driver_presence/{uid} {
+      allow get: if isUser(uid)
+          || (signedIn() && resource.data.get('sharedUntil', request.time) > request.time
+              && (resource.data.mode == 'nearby'
+                  || (resource.data.mode == 'connections' && linkConnected(request.auth.uid, uid))));
+      allow list: if signedIn() && resource.data.mode == 'nearby';
+      allow create, update: if isUser(uid)
+          && get(docPath('users', uid)).data.get('role', '') in ['driver', 'fleet']
+          && presenceShapeOk(request.resource.data);
+      allow delete: if isUser(uid);
+    }
+
+    // driver_links/{smallerUid_largerUid}: a connection request, then a
+    // connection. Only the other driver accepts; either may end it. Someone
+    // who blocked you cannot be asked.
+    function messageCardOk(c) {
+      return c is map
+          && c.keys().hasOnly(['loadId', 'pickup', 'drop', 'cargoType', 'weight', 'vehicleType', 'budgetPaise'])
+          && c.loadId is string && c.loadId.size() >= 1 && c.loadId.size() <= 40
+          && c.pickup is string && c.pickup.size() >= 1 && c.pickup.size() <= 80
+          && c.drop is string && c.drop.size() >= 1 && c.drop.size() <= 80
+          && c.cargoType is string && c.cargoType.size() <= 40
+          && c.weight is number && c.weight > 0 && c.weight <= 1000
+          && c.vehicleType is string && c.vehicleType.size() <= 30
+          && (!('budgetPaise' in c) || (c.budgetPaise is int && c.budgetPaise >= 0 && c.budgetPaise <= 10000000000));
+    }
+
+    // A chat message of the driver network: text and/or a load card.
+    function networkMessageOk(d) {
+      return d.keys().hasOnly(['senderId', 'senderName', 'text', 'loadCard', 'flagged', 'createdAt'])
+          && d.senderId == request.auth.uid
+          && d.senderName is string && d.senderName.size() <= 80
+          && d.text is string && d.text.size() <= 500
+          && (d.text.size() >= 1 || 'loadCard' in d)
+          && (!('loadCard' in d) || messageCardOk(d.loadCard))
+          && d.flagged is bool
+          && d.createdAt == request.time;
+    }
+
+    match /driver_links/{pairId} {
+      allow read: if signedIn() && request.auth.uid in resource.data.members;
+      allow create: if signedIn()
+          && request.resource.data.keys().hasOnly(['members', 'requestedBy', 'requesterName', 'targetName', 'status', 'createdAt', 'updatedAt'])
+          && request.resource.data.members is list && request.resource.data.members.size() == 2
+          && request.resource.data.members[0] < request.resource.data.members[1]
+          && request.auth.uid in request.resource.data.members
+          && pairId == request.resource.data.members[0] + '_' + request.resource.data.members[1]
+          && request.resource.data.requestedBy == request.auth.uid
+          && request.resource.data.requesterName is string && request.resource.data.requesterName.size() <= 80
+          && request.resource.data.targetName is string && request.resource.data.targetName.size() <= 80
+          && request.resource.data.status == 'pending'
+          && request.resource.data.createdAt == request.time
+          && request.resource.data.updatedAt == request.time
+          && !blockedBy(otherMember(request.resource.data.members));
+      allow update: if signedIn()
+          && request.auth.uid in resource.data.members
+          && resource.data.status == 'pending'
+          && resource.data.requestedBy != request.auth.uid
+          && changedKeys().hasOnly(['status', 'updatedAt'])
+          && request.resource.data.status == 'connected'
+          && request.resource.data.updatedAt == request.time;
+      allow delete: if signedIn() && request.auth.uid in resource.data.members;
+
+      match /messages/{messageId} {
+        allow read: if signedIn()
+            && request.auth.uid in get(docPath('driver_links', pairId)).data.members
+            && get(docPath('driver_links', pairId)).data.status == 'connected';
+        allow create: if signedIn()
+            && request.auth.uid in get(docPath('driver_links', pairId)).data.members
+            && get(docPath('driver_links', pairId)).data.status == 'connected'
+            && networkMessageOk(request.resource.data)
+            && rateBumped('message', messageId)
+            && !blockedBy(otherMember(get(docPath('driver_links', pairId)).data.members));
+        allow update, delete: if false;
+      }
+    }
+
+    // driver_groups/{id}: a trip, route, convoy or fleet group. Created with
+    // only the owner; the owner adds connected drivers one at a time and may
+    // remove anyone; a member leaves by removing themselves.
+    match /driver_groups/{groupId} {
+      allow read: if signedIn() && request.auth.uid in resource.data.memberIds;
+      allow create: if signedIn()
+          && request.resource.data.keys().hasOnly(['name', 'kind', 'ownerId', 'memberIds', 'createdAt', 'updatedAt'])
+          && request.resource.data.name is string && request.resource.data.name.size() >= 1 && request.resource.data.name.size() <= 40
+          && request.resource.data.kind in ['trip', 'route', 'convoy', 'fleet']
+          && request.resource.data.ownerId == request.auth.uid
+          && request.resource.data.memberIds == [request.auth.uid]
+          && request.resource.data.createdAt == request.time
+          && request.resource.data.updatedAt == request.time;
+      allow update: if signedIn()
+          && changedKeys().hasOnly(['memberIds', 'updatedAt'])
+          && request.resource.data.updatedAt == request.time
+          && request.resource.data.memberIds is list
+          && request.resource.data.memberIds.size() <= 30
+          && ((resource.data.ownerId == request.auth.uid
+                && request.auth.uid in request.resource.data.memberIds
+                && (resource.data.memberIds.hasAll(request.resource.data.memberIds)
+                    || (request.resource.data.memberIds.size() == resource.data.memberIds.size() + 1
+                        && request.resource.data.memberIds.hasAll(resource.data.memberIds)
+                        && linkConnected(request.auth.uid, request.resource.data.memberIds.removeAll(resource.data.memberIds)[0]))))
+              || (resource.data.ownerId != request.auth.uid
+                  && request.auth.uid in resource.data.memberIds
+                  && !(request.auth.uid in request.resource.data.memberIds)
+                  && resource.data.memberIds.hasAll(request.resource.data.memberIds)
+                  && request.resource.data.memberIds.size() == resource.data.memberIds.size() - 1));
+      allow delete: if signedIn() && resource.data.ownerId == request.auth.uid;
+
+      match /messages/{messageId} {
+        allow read: if signedIn() && request.auth.uid in get(docPath('driver_groups', groupId)).data.memberIds;
+        allow create: if signedIn()
+            && request.auth.uid in get(docPath('driver_groups', groupId)).data.memberIds
+            && networkMessageOk(request.resource.data)
+            && rateBumped('message', messageId);
+        allow update, delete: if false;
+      }
+    }
+
     // identity_index/{sha256(type + number)} = {uid, role, type, createdAt}.
     // One document (licence, PAN, RC, GST) can belong to one account only: the
     // id is derived from the number, so a second create is an update and

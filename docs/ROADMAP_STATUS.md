@@ -19,8 +19,8 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | P Booking + pricing | 14 | 12 | 1 | 0 | 1 | 0 |
 | M Map | 16 | 3 | 3 | 0 | 10 | 0 |
 | SM Smart matching | 14 | 14 | 0 | 0 | 0 | 0 |
-| D Driver app | 16 | 11 | 1 | 3 | 1 | 0 |
-| CH Chat | 14 | 4 | 1 | 5 | 4 | 0 |
+| D Driver app | 16 | 15 | 0 | 0 | 1 | 0 |
+| CH Chat | 14 | 9 | 1 | 0 | 4 | 0 |
 | T Trip lifecycle | 14 | 10 | 3 | 0 | 1 | 0 |
 | S Pickup, cargo, POD | 15 | 10 | 2 | 0 | 3 | 0 |
 | PAY Payments | 14 | 5 | 3 | 1 | 5 | 0 |
@@ -33,7 +33,7 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | AI AI | 14 | 0 | 0 | 0 | 14 | 0 |
 | BE Backend | 18 | 5 | 5 | 1 | 7 | 0 |
 | TEST Testing | 14 | 4 | 3 | 0 | 7 | 0 |
-| **Total** | **347** | **195** | **52** | **17** | **83** | **0** |
+| **Total** | **347** | **204** | **51** | **9** | **83** | **0** |
 
 ## P0 Principles
 
@@ -244,10 +244,10 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | D8 | Wallet Pending/available/payout records. | Done | Wallet shows pending, available and paid-out figures, payout requests and history (records only) |
 | D9 | Documents KYC + vehicle docs + expiry. | Paid-or-Later | Free part done (expiry + freshness badge). Document photos need Storage (Blaze) |
 | D10 | Driver profile Verified badges, vehicles, service info, languages. | Done | Profile shows verified badge, per-document badges, vehicle count, language and plan |
-| D11 | Nearby drivers Privacy-controlled network map/list. | Todo-free | No driver network |
-| D12 | Connect Driver-to-driver connection request. | Todo-free | No driver connections |
-| D13 | Groups Trip/route/convoy/fleet groups. | Todo-free | No groups |
-| D14 | Load share Load card share inside driver network. | Partial | Text share of load card (core/share_text.dart); not inside a network |
+| D11 | Nearby drivers Privacy-controlled network map/list. | Done | Task 35: Driver network > Nearby (geohash list, rounded position, expiring share); presence rules |
+| D12 | Connect Driver-to-driver connection request. | Done | Task 35: connection requests (driver_links), accept/decline/remove, block respected |
+| D13 | Groups Trip/route/convoy/fleet groups. | Done | Task 35: trip/route/convoy/fleet groups, owner adds connected drivers, members leave |
+| D14 | Load share Load card share inside driver network. | Done | Task 35: Share in network button on driver load cards sends a load card to a connection or group; open public loads only |
 | D15 | Breakdown Emergency/replacement workflow. | Done | Breakdown report (trip_safety_card.dart) |
 | D16 | SOS Safety escalation and trip-share flow. | Done | SOS with last location, calls 112 |
 
@@ -256,19 +256,19 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | Code | Item | Status | Where / why |
 |---|---|---|---|
 | CH1 | Customer-driver chat Booking context attached chat. | Done | core/chat, bookings/{id}/messages |
-| CH2 | Driver-driver chat 1-to-1 conversation. | Todo-free | Chat only per booking |
-| CH3 | Group chat Trip/route/fleet group. | Todo-free | No group chat |
+| CH2 | Driver-driver chat 1-to-1 conversation. | Done | Task 35: driver-to-driver chat on a connection (driver_links/messages) |
+| CH3 | Group chat Trip/route/fleet group. | Done | Task 35: group chat (driver_groups/messages) |
 | CH4 | Voice message Short voice notes. | Paid-or-Later | Needs Storage |
 | CH5 | Photo sharing Cargo/route/proof communication. | Paid-or-Later | Needs Storage |
 | CH6 | Document sharing Load-related documents. | Paid-or-Later | Needs Storage |
-| CH7 | Load card share Chat mein load detail card. | Todo-free | Load card not sendable in chat |
+| CH7 | Load card share Chat mein load detail card. | Done | Task 35: load card inside a message, shape checked in rules |
 | CH8 | Location share Temporary/current location sharing. | Done | LocationSharingCard shares driver position to the booking during trip |
 | CH9 | Masked call Possible where telephony provider supports it. | Paid-or-Later | Needs telephony provider |
 | CH10 | Support chat Customer/driver -> LoadGo support. | Done | Support tickets with replies, categories, priority and escalation; SOS and call-support button |
 | CH11 | Report/block Abuse/spam/scam reporting. | Done | reports + users/{uid}/blocked |
 | CH12 | Off-platform warning Direct payment/contact risk warnings. | Partial | off_platform.dart client-side warning only |
-| CH13 | Location privacy modes Nearby only / connections / trip members / hidden. | Todo-free | No privacy modes |
-| CH14 | Location expiry Temporary share automatically expire. | Todo-free | No expiry on location share |
+| CH13 | Location privacy modes Nearby only / connections / trip members / hidden. | Done | Task 35: modes nearby / connections / trip members / hidden (driver_presence); trip and hidden store no position |
+| CH14 | Location expiry Temporary share automatically expire. | Done | Task 35: share lasts 1, 8 or 24 h; expiry checked on single reads in rules and in the list on the client (TODO(functions) cleanup) |
 
 ## T Trip lifecycle
 

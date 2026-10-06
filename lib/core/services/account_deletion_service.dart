@@ -88,6 +88,22 @@ class AccountDeletionService {
       if (number is String && number.isNotEmpty) refs.add(db.collection('vehicle_numbers').doc(number));
     }
 
+    // Driver network: stop sharing, end connections, delete own groups and
+    // leave the others. Messages stay under their parents (rules forbid
+    // deleting them); TODO(functions): scrub them.
+    refs.add(db.collection('driver_presence').doc(uid));
+    refs.addAll((await db.collection('driver_links').where('members', arrayContains: uid).get()).docs.map((d) => d.reference));
+    for (final g in (await db.collection('driver_groups').where('memberIds', arrayContains: uid).get()).docs) {
+      if (g.data()['ownerId'] == uid) {
+        refs.add(g.reference);
+      } else {
+        await g.reference.update({
+          'memberIds': [for (final m in List<String>.from(g.data()['memberIds'] as List)) if (m != uid) m],
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
+      }
+    }
+
     for (final sub in subcollections) {
       refs.addAll((await userRef.collection(sub).get()).docs.map((d) => d.reference));
     }

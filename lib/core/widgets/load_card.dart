@@ -7,6 +7,7 @@ import '../share_text.dart';
 import 'common.dart';
 import '../l10n/l10n.dart';
 import 'logistics_labels.dart';
+import '../network/share_load_sheet.dart';
 
 String loadStatusLabel(BuildContext context, String status, {bool cancelled = false}) => switch (status) {
       LoadStatus.closed when cancelled => tr(context, 'statusCancelled'),
@@ -30,7 +31,10 @@ class LoadCard extends StatelessWidget {
   final bool showStatus;
   final Widget? action;
 
-  const LoadCard({super.key, required this.load, this.showStatus = false, this.action});
+  /// Drivers get a button that sends the card to a connection or group.
+  final bool networkShare;
+
+  const LoadCard({super.key, required this.load, this.showStatus = false, this.action, this.networkShare = false});
 
   Widget _meta(IconData icon, String text) => Row(
         mainAxisSize: MainAxisSize.min,
@@ -58,6 +62,13 @@ class LoadCard extends StatelessWidget {
                   color: loadStatusColor(load.status, cancelled: load.cancelled),
                 ),
               ],
+              if (networkShare)
+                IconButton(
+                  key: ValueKey('networkShare_${load.id}'),
+                  tooltip: tr(context, 'netShareLoad'),
+                  icon: const Icon(Icons.groups_2_outlined),
+                  onPressed: () => showShareToNetwork(context, load),
+                ),
               CopyShareButton(
                 text: loadShareText(load),
                 tooltip: tr(context, 'share'),

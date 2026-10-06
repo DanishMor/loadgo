@@ -42,7 +42,7 @@ class ReturnLoadsSection extends StatelessWidget {
                   padding: const EdgeInsets.only(bottom: 4),
                   child: Text(tr(context, 'returnHome'), key: ValueKey('home_${r.load.id}'), style: const TextStyle(color: AppColors.success, fontWeight: FontWeight.w700)),
                 ),
-              LoadCard(key: ValueKey('return_${r.load.id}'), load: r.load, action: AcceptLoadButton(load: r.load, onAccepted: onAccepted)),
+              LoadCard(key: ValueKey('return_${r.load.id}'), load: r.load, networkShare: true, action: AcceptLoadButton(load: r.load, onAccepted: onAccepted)),
               const SizedBox(height: 10),
             ],
           ],

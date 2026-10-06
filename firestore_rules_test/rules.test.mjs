@@ -32,7 +32,7 @@ const as = (uid) => {
 // existing suites keep testing what they test; the rate-limit suite below uses
 // the raw functions. The counter is seeded as an expired window, so a bump is
 // always "first in a new hour".
-const COUNTED_PATH = /^(loads|offers)\/[^/]+$|^bookings\/[^/]+\/messages\/[^/]+$/;
+const COUNTED_PATH = /^(loads|offers)\/[^/]+$|^(bookings|driver_links|driver_groups)\/[^/]+\/messages\/[^/]+$/;
 const kindOf = (path) => (path.startsWith('loads/') ? 'load' : path.startsWith('offers/') ? 'offer' : 'message');
 const expiredCounter = (uid, kind) =>
   env.withSecurityRulesDisabled((ctx) =>
@@ -3080,5 +3080,116 @@ describe('vehicle expenses and switching vehicle after a breakdown', () => {
     await seed((db) => updateDoc(doc(db, 'bookings', 'L1'), { breakdown: { note: 'x', replacementRequested: true, reportedAt: Timestamp.now() } }));
     await seed((db) => updateDoc(doc(db, 'vehicles', 'v3'), { capacity: 2 }));
     await assertFails(updateDoc(doc(as('driver1'), 'bookings', 'L1'), swap()));
+  });
+});
+
+describe('driver network: presence, connections, groups, chat', () => {
+  const presence = (over = {}) => ({ name: 'Ramesh', mode: 'nearby', lat: 18.52, lng: 73.86, geohash: 'te7ud2', sharedUntil: Timestamp.fromMillis(Date.now() + 3600000), updatedAt: serverTimestamp(), ...over });
+  const link = (a, b, over = {}) => ({ members: [a, b].sort(), requestedBy: a, requesterName: 'A', targetName: 'B', status: 'pending', createdAt: serverTimestamp(), updatedAt: serverTimestamp(), ...over });
+  const card = (over = {}) => ({ loadId: 'L1', pickup: 'Pune', drop: 'Delhi', cargoType: 'FMCG', weight: 10, vehicleType: '20ft', budgetPaise: 5000000, ...over });
+  const msg = (uid, over = {}) => ({ senderId: uid, senderName: 'R', text: 'hello', flagged: false, createdAt: serverTimestamp(), ...over });
+
+  beforeEach(async () => {
+    await seed(async (db) => {
+      for (const u of ['d1', 'd2', 'd3']) await setDoc(doc(db, 'users', u), { phone: '+91', role: 'driver', selectedRole: 'driver' });
+      await setDoc(doc(db, 'users', 'c1'), { phone: '+91', role: 'customer', selectedRole: 'customer' });
+    });
+  });
+
+  test('presence: a driver publishes a rounded, expiring position; others see nearby only', async () => {
+    await assertSucceeds(setDoc(doc(as('d1'), 'driver_presence', 'd1'), presence()));
+    await assertFails(setDoc(doc(as('d2'), 'driver_presence', 'd1'), presence())); // not theirs
+    await assertFails(setDoc(doc(as('c1'), 'driver_presence', 'c1'), presence())); // customers do not publish
+    await assertFails(setDoc(doc(as('d1'), 'driver_presence', 'd1'), presence({ sharedUntil: Timestamp.fromMillis(Date.now() + 3 * 86400000) }))); // over 24 h
+    await assertFails(setDoc(doc(as('d1'), 'driver_presence', 'd1'), presence({ sharedUntil: Timestamp.fromMillis(Date.now() - 1000) })));
+    await assertFails(setDoc(doc(as('d1'), 'driver_presence', 'd1'), presence({ mode: 'everyone' })));
+    await assertFails(setDoc(doc(as('d1'), 'driver_presence', 'd1'), presence({ extra: 1 })));
+    await assertFails(setDoc(doc(as('d1'), 'driver_presence', 'd1'), { name: 'R', mode: 'hidden', lat: 1, lng: 1, updatedAt: serverTimestamp() })); // hidden stores no position
+    await assertSucceeds(getDoc(doc(as('d2'), 'driver_presence', 'd1')));
+    const list = query(collection(as('d2'), 'driver_presence'), where('mode', '==', 'nearby'), where('geohash', '>=', 'te7u'), where('geohash', '<', 'te7u~'));
+    await assertSucceeds(getDocs(list));
+    await assertFails(getDocs(query(collection(as('d2'), 'driver_presence'), where('mode', '==', 'connections'))));
+    await assertFails(getDocs(collection(as('d2'), 'driver_presence')));
+  });
+
+  test('presence: connections mode is read by connected drivers only; hidden and trip store no position', async () => {
+    await assertSucceeds(setDoc(doc(as('d1'), 'driver_presence', 'd1'), presence({ mode: 'connections' })));
+    await assertFails(getDoc(doc(as('d2'), 'driver_presence', 'd1')));
+    await seed((db) => setDoc(doc(db, 'driver_links', 'd1_d2'), link('d1', 'd2', { status: 'connected' })));
+    await assertSucceeds(getDoc(doc(as('d2'), 'driver_presence', 'd1')));
+    await assertFails(getDoc(doc(as('d3'), 'driver_presence', 'd1')));
+    await assertSucceeds(setDoc(doc(as('d1'), 'driver_presence', 'd1'), { name: 'R', mode: 'hidden', updatedAt: serverTimestamp() }));
+    await assertFails(getDoc(doc(as('d2'), 'driver_presence', 'd1')));
+    await assertSucceeds(setDoc(doc(as('d1'), 'driver_presence', 'd1'), { name: 'R', mode: 'trip', updatedAt: serverTimestamp() }));
+    await assertSucceeds(deleteDoc(doc(as('d1'), 'driver_presence', 'd1')));
+  });
+
+  test('connections: request, accept by the other driver only, either ends it, blocked cannot ask', async () => {
+    await assertSucceeds(setDoc(doc(as('d1'), 'driver_links', 'd1_d2'), link('d1', 'd2')));
+    await assertFails(setDoc(doc(as('d1'), 'driver_links', 'd1_d3'), link('d1', 'd2'))); // id must match the pair
+    await assertFails(setDoc(doc(as('d3'), 'driver_links', 'd1_d2'), link('d1', 'd2', { requestedBy: 'd3' }))); // not a member
+    await assertFails(setDoc(doc(as('d1'), 'driver_links', 'd1_d3'), link('d1', 'd3', { status: 'connected' }))); // cannot self-accept
+    await assertFails(updateDoc(doc(as('d1'), 'driver_links', 'd1_d2'), { status: 'connected', updatedAt: serverTimestamp() })); // requester cannot accept
+    await assertFails(updateDoc(doc(as('d3'), 'driver_links', 'd1_d2'), { status: 'connected', updatedAt: serverTimestamp() }));
+    await assertFails(getDoc(doc(as('d3'), 'driver_links', 'd1_d2')));
+    await assertSucceeds(updateDoc(doc(as('d2'), 'driver_links', 'd1_d2'), { status: 'connected', updatedAt: serverTimestamp() }));
+    await assertFails(updateDoc(doc(as('d2'), 'driver_links', 'd1_d2'), { requestedBy: 'd2', updatedAt: serverTimestamp() }));
+    await assertSucceeds(getDocs(query(collection(as('d2'), 'driver_links'), where('members', 'array-contains', 'd2'))));
+    await assertFails(deleteDoc(doc(as('d3'), 'driver_links', 'd1_d2')));
+    await assertSucceeds(deleteDoc(doc(as('d2'), 'driver_links', 'd1_d2')));
+    await seed((db) => setDoc(doc(db, 'users', 'd3', 'blocked', 'd1'), { createdAt: Timestamp.now() }));
+    await assertFails(setDoc(doc(as('d1'), 'driver_links', 'd1_d3'), link('d1', 'd3')));
+  });
+
+  test('driver chat: only connected members, text or a shaped load card, no edits', async () => {
+    await seed((db) => setDoc(doc(db, 'driver_links', 'd1_d2'), link('d1', 'd2')));
+    await assertFails(setDoc(doc(as('d1'), 'driver_links', 'd1_d2', 'messages', 'm0'), msg('d1'))); // still pending
+    await seed((db) => updateDoc(doc(db, 'driver_links', 'd1_d2'), { status: 'connected' }));
+    const m = (uid, id) => doc(as(uid), 'driver_links', 'd1_d2', 'messages', id);
+    await assertSucceeds(setDoc(m('d1', 'm1'), msg('d1')));
+    await assertSucceeds(setDoc(m('d2', 'm2'), msg('d2', { text: '', loadCard: card() })));
+    await assertSucceeds(setDoc(m('d1', 'm2b'), msg('d1', { loadCard: (({ budgetPaise, ...rest }) => rest)(card()) })));
+    await assertFails(setDoc(m('d1', 'm3'), msg('d2'))); // sender must be me
+    await assertFails(setDoc(m('d3', 'm4'), msg('d3'))); // not a member
+    await assertFails(setDoc(m('d1', 'm5'), msg('d1', { text: '' }))); // nothing to send
+    await assertFails(setDoc(m('d1', 'm6'), msg('d1', { text: 'x'.repeat(501) })));
+    await assertFails(setDoc(m('d1', 'm7'), msg('d1', { loadCard: card({ weight: 0 }) })));
+    await assertFails(setDoc(m('d1', 'm8'), msg('d1', { loadCard: card({ phone: '9999999999' }) })));
+    await assertFails(setDoc(m('d1', 'm9'), msg('d1', { loadCard: card({ budgetPaise: 1.5 }) })));
+    await assertSucceeds(getDoc(m('d2', 'm1')));
+    await assertFails(getDoc(m('d3', 'm1')));
+    await assertFails(updateDoc(m('d1', 'm1'), { text: 'edited' }));
+    await assertFails(deleteDoc(m('d1', 'm1')));
+    await seed((db) => setDoc(doc(db, 'users', 'd2', 'blocked', 'd1'), { createdAt: Timestamp.now() }));
+    await assertFails(setDoc(m('d1', 'm10'), msg('d1')));
+  });
+
+  const group = (over = {}) => ({ name: 'Pune-Delhi convoy', kind: 'convoy', ownerId: 'd1', memberIds: ['d1'], createdAt: serverTimestamp(), updatedAt: serverTimestamp(), ...over });
+
+  test('groups: owner creates alone, adds only connected drivers, members leave, owner deletes', async () => {
+    await assertSucceeds(setDoc(doc(as('d1'), 'driver_groups', 'g1'), group()));
+    await assertFails(setDoc(doc(as('d1'), 'driver_groups', 'g2'), group({ memberIds: ['d1', 'd2'] }))); // alone at first
+    await assertFails(setDoc(doc(as('d1'), 'driver_groups', 'g3'), group({ kind: 'party' })));
+    await assertFails(setDoc(doc(as('d1'), 'driver_groups', 'g4'), group({ name: '' })));
+    await assertFails(setDoc(doc(as('d2'), 'driver_groups', 'g5'), group())); // owner must be me
+    const add = (uid, ids) => updateDoc(doc(as(uid), 'driver_groups', 'g1'), { memberIds: ids, updatedAt: serverTimestamp() });
+    await assertFails(add('d1', ['d1', 'd2'])); // not connected
+    await seed((db) => setDoc(doc(db, 'driver_links', 'd1_d2'), link('d1', 'd2', { status: 'connected' })));
+    await assertFails(add('d2', ['d1', 'd2'])); // a non-member cannot add themselves
+    await assertFails(add('d1', ['d1', 'd2', 'd3'])); // one at a time
+    await assertSucceeds(add('d1', ['d1', 'd2']));
+    await assertSucceeds(getDoc(doc(as('d2'), 'driver_groups', 'g1')));
+    await assertFails(getDoc(doc(as('d3'), 'driver_groups', 'g1')));
+    await assertFails(add('d2', ['d1', 'd2', 'd3'])); // members cannot invite
+    const gm = (uid, id) => doc(as(uid), 'driver_groups', 'g1', 'messages', id);
+    await assertSucceeds(setDoc(gm('d2', 'm1'), msg('d2', { loadCard: card() })));
+    await assertSucceeds(getDoc(gm('d1', 'm1')));
+    await assertFails(setDoc(gm('d3', 'm2'), msg('d3')));
+    await assertFails(getDoc(gm('d3', 'm1')));
+    await assertFails(add('d1', ['d2'])); // owner stays
+    await assertSucceeds(add('d2', ['d1'])); // d2 leaves
+    await assertFails(setDoc(gm('d2', 'm3'), msg('d2'))); // and can no longer write
+    await assertFails(deleteDoc(doc(as('d2'), 'driver_groups', 'g1')));
+    await assertSucceeds(deleteDoc(doc(as('d1'), 'driver_groups', 'g1')));
   });
 });

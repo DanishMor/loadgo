@@ -363,6 +363,7 @@ class _AvailableLoadsViewState extends State<AvailableLoadsView> {
                             LoadCard(
                               key: ValueKey('rec_${m.load.id}'),
                               load: m.load,
+                              networkShare: true,
                               action: AcceptLoadButton(load: m.load, onAccepted: widget.onAccepted),
                             ),
                           ],
@@ -379,6 +380,7 @@ class _AvailableLoadsViewState extends State<AvailableLoadsView> {
                         LoadCard(
                           key: ValueKey(item.load.id),
                           load: item.load,
+                          networkShare: true,
                           action: AcceptLoadButton(load: item.load, onAccepted: widget.onAccepted),
                         ),
                       ],
