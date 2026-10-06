@@ -2949,3 +2949,41 @@ describe('account deletion', () => {
     await assertSucceeds(deleteDoc(doc(as('d1'), 'users', 'd1')));
   });
 });
+
+describe('profile extras and review flag', () => {
+  const seedUser = (extra = {}) => seed((db) => setDoc(doc(db, 'users', 'u1'), { role: 'customer', selectedRole: 'customer', name: 'Asha', ...extra }));
+
+  test('addresses, business type and payout UPI id are validated', async () => {
+    await seedUser();
+    const ref = doc(as('u1'), 'users', 'u1');
+    await assertSucceeds(updateDoc(ref, { addresses: { current: 'House 1', permanent: 'Village' }, businessType: 'importer', payoutProfile: { upiId: 'asha.k@okaxis', holder: 'Asha K' } }));
+    await assertFails(updateDoc(ref, { businessType: 'pirate' }));
+    await assertFails(updateDoc(ref, { payoutProfile: { upiId: 'not a upi', holder: 'x' } }));
+    await assertFails(updateDoc(ref, { payoutProfile: { upiId: 'a@bank', holder: 'x', iban: 'DE00' } }));
+    await assertFails(updateDoc(ref, { addresses: { current: 'x'.repeat(201) } }));
+    await assertFails(updateDoc(ref, { addresses: { current: 'ok', office: 'extra key' } }));
+  });
+
+  test('only an admin sets or clears the review flag, in the allowed shape', async () => {
+    await seedUser();
+    const flag = (over = {}) => ({ kind: 'name', note: 'Name differs from licence', by: 'admin1', at: serverTimestamp(), ...over });
+    await assertFails(updateDoc(doc(as('u1'), 'users', 'u1'), { reviewFlag: flag({ by: 'u1' }) }));
+    await assertFails(updateDoc(doc(as('u2'), 'users', 'u1'), { reviewFlag: flag() }));
+    await assertFails(updateDoc(doc(asAdmin(), 'users', 'u1'), { reviewFlag: flag({ kind: 'bogus' }) }));
+    await assertFails(updateDoc(doc(asAdmin(), 'users', 'u1'), { reviewFlag: flag({ by: 'someone' }) }));
+    await assertFails(updateDoc(doc(asAdmin(), 'users', 'u1'), { reviewFlag: flag(), name: 'Changed' }));
+    await assertSucceeds(updateDoc(doc(asAdmin(), 'users', 'u1'), { reviewFlag: flag(), updatedAt: serverTimestamp() }));
+    // the owner cannot clear or edit it
+    await assertFails(updateDoc(doc(as('u1'), 'users', 'u1'), { reviewFlag: deleteField() }));
+    await assertSucceeds(updateDoc(doc(asAdmin(), 'users', 'u1'), { reviewFlag: deleteField(), updatedAt: serverTimestamp() }));
+  });
+
+  test('a new profile cannot arrive with a review flag', async () => {
+    await assertFails(setDoc(doc(as('u3'), 'users', 'u3'), { role: 'customer', selectedRole: 'customer', reviewFlag: { kind: 'name', note: 'x', by: 'u3', at: serverTimestamp() } }));
+  });
+
+  test('mobile change writes a phone_change signal for oneself only', async () => {
+    await assertSucceeds(setDoc(doc(as('u1'), 'risk_signals', 'S1'), { uid: 'u1', type: 'phone_change', note: 'from •••3210 to •••6789', createdAt: serverTimestamp() }));
+    await assertFails(setDoc(doc(as('u1'), 'risk_signals', 'S2'), { uid: 'u2', type: 'phone_change', createdAt: serverTimestamp() }));
+  });
+});

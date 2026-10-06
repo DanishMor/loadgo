@@ -14,6 +14,7 @@ import '../core/services/match_service.dart';
 import '../core/services/user_service.dart';
 import '../core/services/vehicle_service.dart';
 import '../core/widgets/common.dart';
+import '../core/widgets/kyc_check_widgets.dart';
 import '../core/l10n/l10n.dart';
 import '../core/l10n/language_widgets.dart';
 import '../core/widgets/booking_list_view.dart';
@@ -287,6 +288,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
               ),
             ),
             _noVehiclePrompt(),
+            const ReviewFlagBanner(),
             RemindersBanner(isDriver: true, onOpen: _openReminder),
             UpcomingTripsCard(onOpen: (id) => openDriverTrip(context, id)),
             DocSuspensionBanner(vehicles: _vehicles, profile: _profile, onOpenVehicles: _openVehicles, onOpenLicence: _openLicence),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import 'account_deletion_screen.dart';
+import 'account_tools_screens.dart';
 import 'devices_screen.dart';
 import 'help_screen.dart';
 import 'legal_screens.dart';
@@ -186,6 +187,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 trailing: const Text(appVersion, key: ValueKey('appVersion')),
               ),
               const Divider(),
+              ListTile(
+                key: const ValueKey('settingsLinked'),
+                leading: const Icon(Icons.link_rounded),
+                title: Text(tr(context, 'linkedAccounts')),
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () => _open(const LinkedAccountsScreen()),
+              ),
+              ListTile(
+                key: const ValueKey('settingsPhone'),
+                leading: const Icon(Icons.phone_android_rounded),
+                title: Text(tr(context, 'phoneChange')),
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () => _open(const PhoneChangeScreen()),
+              ),
+              ListTile(
+                key: const ValueKey('settingsExport'),
+                leading: const Icon(Icons.download_rounded),
+                title: Text(tr(context, 'dataExport')),
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () => _open(const DataExportScreen()),
+              ),
               ListTile(
                 key: const ValueKey('deleteAccount'),
                 leading: const Icon(Icons.delete_forever_outlined, color: Colors.redAccent),

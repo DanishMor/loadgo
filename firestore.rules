@@ -59,6 +59,21 @@ service cloud.firestore {
           && d.get('companyName', '') is string && d.get('companyName', '').size() <= 100;
     }
 
+    // Optional profile extras: addresses (K6), business type (A5), payout UPI id (K8).
+    function validProfileExtras(d) {
+      return (!('addresses' in d)
+              || (d.addresses is map && d.addresses.keys().hasOnly(['current', 'permanent'])
+                  && d.addresses.get('current', '') is string && d.addresses.get('current', '').size() <= 200
+                  && d.addresses.get('permanent', '') is string && d.addresses.get('permanent', '').size() <= 200))
+          && (!('businessType' in d)
+              || d.businessType in ['shipper', 'importer', 'exporter', 'trader', 'transporter'])
+          && (!('payoutProfile' in d)
+              || (d.payoutProfile is map && d.payoutProfile.keys().hasOnly(['upiId', 'holder'])
+                  && d.payoutProfile.get('upiId', '') is string
+                  && d.payoutProfile.get('upiId', '').matches('^$|^[a-zA-Z0-9._-]{2,40}@[a-zA-Z]{2,20}$')
+                  && d.payoutProfile.get('holder', '') is string && d.payoutProfile.get('holder', '').size() <= 80));
+    }
+
     // At most three {name, phone} emergency contacts on the profile.
     function validEmergencyContacts(d) {
       return !('emergencyContacts' in d)
@@ -141,13 +156,27 @@ service cloud.firestore {
     // Anti-fraud fields. riskTier/riskReason/riskUpdatedAt are admin-only;
     // cancelCount only goes up by one (see cancelCounted()).
     function riskFieldsAbsent(d) {
-      return !d.keys().hasAny(['riskTier', 'riskReason', 'riskUpdatedAt']) && d.get('cancelCount', 0) in [0, 1];
+      return !d.keys().hasAny(['riskTier', 'riskReason', 'riskUpdatedAt', 'reviewFlag']) && d.get('cancelCount', 0) in [0, 1];
     }
 
     function ownerRiskFieldsUntouched() {
-      return !changedKeys().hasAny(['riskTier', 'riskReason', 'riskUpdatedAt'])
+      return !changedKeys().hasAny(['riskTier', 'riskReason', 'riskUpdatedAt', 'reviewFlag'])
           && (!changedKeys().hasAny(['cancelCount'])
               || request.resource.data.cancelCount == resource.data.get('cancelCount', 0) + 1);
+    }
+
+    // K13: an admin marks a mismatch (name, RC owner, vehicle...) for manual
+    // review, or clears it by removing the field. The owner cannot touch it.
+    function adminReviewFlagUpdate() {
+      let d = request.resource.data;
+      return isAdmin()
+          && changedKeys().hasOnly(['reviewFlag', 'updatedAt'])
+          && (!('reviewFlag' in d)
+              || (d.reviewFlag.keys().hasOnly(['kind', 'note', 'by', 'at'])
+                  && d.reviewFlag.kind in ['name', 'rc_owner', 'vehicle', 'document', 'other']
+                  && d.reviewFlag.note is string && d.reviewFlag.note.size() <= 200
+                  && d.reviewFlag.by == request.auth.uid
+                  && d.reviewFlag.at == request.time));
     }
 
     function adminRiskUpdate() {
@@ -233,11 +262,11 @@ service cloud.firestore {
           && validKyc(request.resource.data) && validProfileText(request.resource.data) && reviewMetaAbsent(request.resource.data) && planFieldsAbsent(request.resource.data) && !('docOverrideUntil' in request.resource.data) && referralCodeOk(request.resource.data) && validIdentityHashes(request.resource.data) && validLastLocation(request.resource.data) && validRole(request.resource.data.get('role', null))
           && (request.resource.data.get('role', null) == null
               || request.resource.data.get('selectedRole', request.resource.data.role) == request.resource.data.role)
-          && validEmergencyContacts(request.resource.data) && riskFieldsAbsent(request.resource.data)
+          && validEmergencyContacts(request.resource.data) && validProfileExtras(request.resource.data) && riskFieldsAbsent(request.resource.data)
           && validPrefs(request.resource.data) && validBusiness(request.resource.data);
-      allow update: if adminVerificationUpdate() || adminRiskUpdate() || adminPlanUpdate() || adminDocOverride() || (isUser(userId)
+      allow update: if adminVerificationUpdate() || adminReviewFlagUpdate() || adminRiskUpdate() || adminPlanUpdate() || adminDocOverride() || (isUser(userId)
           && roleLockOk() && validKyc(request.resource.data) && validProfileText(request.resource.data) && !changedKeys().hasAny(['plan', 'planUntil', 'verificationMeta', 'docOverrideUntil']) && referralCodeOk(request.resource.data) && referralCodeKept() && validIdentityHashes(request.resource.data) && validLastLocation(request.resource.data)
-          && validEmergencyContacts(request.resource.data)
+          && validEmergencyContacts(request.resource.data) && validProfileExtras(request.resource.data)
           && validPrefs(request.resource.data) && validBusiness(request.resource.data)
           && ownerRiskFieldsUntouched()
           && (!changedKeys().hasAny(['verified', 'verificationStatus'])

@@ -113,7 +113,7 @@ class _BusinessScreenState extends State<BusinessScreen> {
                         ),
                       ),
                     ),
-                    validator: (v) => (v ?? '').trim().isEmpty || isValidGstinFormat(v!) ? null : tr(context, 'gstinInvalid'),
+                    validator: (v) => (v ?? '').trim().isEmpty || isValidGstin(v!) ? null : tr(context, 'gstinInvalid'),
                   ),
                   Padding(
                     padding: const EdgeInsets.only(bottom: 8),

@@ -4,6 +4,7 @@ import '../enterprise/validators.dart';
 import '../identity/identity_index.dart';
 import '../location/geohash.dart';
 import '../identity/kyc_validators.dart';
+import '../identity/profile_extras.dart';
 import 'backend.dart';
 import 'push_service.dart';
 
@@ -273,13 +274,26 @@ class UserService {
     required String name,
     required String email,
     required String companyName,
+    String? currentAddress,
+    String? permanentAddress,
+    String? businessType,
+    String? upiId,
+    String? holder,
   }) async {
     final uid = Backend.requireUid();
-    String? clean(String v) => v.trim().isEmpty ? null : v.trim();
+    String? clean(String? v) => (v ?? '').trim().isEmpty ? null : v!.trim();
+    final addr = {'current': ?clean(currentAddress), 'permanent': ?clean(permanentAddress)};
+    final upi = clean(upiId);
+    if (upi != null && !isValidUpiId(upi)) throw ArgumentError.value(upi, 'upiId');
+    final pay = {'upiId': ?upi, 'holder': ?clean(holder)};
     await _db.collection('users').doc(uid).update({
       isDriver ? 'driverName' : 'name': name.trim(),
       'email': clean(email) ?? FieldValue.delete(),
       'companyName': clean(companyName) ?? FieldValue.delete(),
+      // null = leave as it is (callers that do not show the field)
+      if (currentAddress != null || permanentAddress != null) 'addresses': addr.isEmpty ? FieldValue.delete() : addr,
+      if (businessType != null) 'businessType': BusinessType.all.contains(businessType) ? businessType : FieldValue.delete(),
+      if (upiId != null || holder != null) 'payoutProfile': pay.isEmpty ? FieldValue.delete() : pay,
       'updatedAt': FieldValue.serverTimestamp(),
     });
   }

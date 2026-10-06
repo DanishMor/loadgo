@@ -4,6 +4,7 @@ import '../core/l10n/l10n.dart';
 import '../core/services/admin_service.dart';
 import '../core/widgets/common.dart';
 import '../core/widgets/live_stream.dart';
+import '../core/widgets/kyc_check_widgets.dart';
 import '../core/widgets/verification_badges.dart';
 
 /// Driver verification queue for admins (opened from the admin panel; the
@@ -133,6 +134,8 @@ class _DriverCardState extends State<_DriverCard> {
           ),
           const SizedBox(height: 8),
           VerificationBadges(user: d.data, isDriver: true, reveal: _reveal),
+          const SizedBox(height: 6),
+          AutoCheckChips(user: d.data),
           Align(
             alignment: Alignment.centerLeft,
             child: TextButton.icon(

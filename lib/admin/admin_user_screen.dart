@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 
 import '../core/l10n/l10n.dart';
 import '../core/models/risk.dart';
+import '../core/identity/profile_extras.dart';
 import '../core/services/admin_user_service.dart';
+import '../core/widgets/kyc_check_widgets.dart';
 import '../core/widgets/common.dart';
 import '../core/widgets/live_stream.dart';
 import 'flagged_users_screen.dart' show riskTierLabel;
@@ -72,6 +74,35 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
     await _run(() => AdminUserService.forceReverify(widget.uid, reason: reason));
   }
 
+  Future<void> _flag() async {
+    var kind = ReviewKind.name;
+    final ctrl = TextEditingController();
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (c) => StatefulBuilder(
+        builder: (c, setSt) => AlertDialog(
+          title: Text(tr(c, 'flagMismatch')),
+          content: Column(mainAxisSize: MainAxisSize.min, children: [
+            DropdownButtonFormField<String>(
+              key: const ValueKey('flagKind'),
+              isExpanded: true,
+              initialValue: kind,
+              items: [for (final k in ReviewKind.all) DropdownMenuItem(value: k, child: Text(reviewKindLabel(c, k)))],
+              onChanged: (v) => setSt(() => kind = v ?? kind),
+            ),
+            TextField(key: const ValueKey('flagNote'), controller: ctrl, maxLength: 200, decoration: InputDecoration(labelText: tr(c, 'auReason'))),
+          ]),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(c, false), child: Text(tr(c, 'cancel'))),
+            FilledButton(key: const ValueKey('flagConfirm'), onPressed: () => Navigator.pop(c, true), child: Text(tr(c, 'save'))),
+          ],
+        ),
+      ),
+    );
+    if (ok != true) return;
+    await _run(() => AdminUserService.setReviewFlag(widget.uid, kind, ctrl.text));
+  }
+
   Future<void> _addNote() async {
     final text = _note.text;
     if (text.trim().isEmpty) return;
@@ -100,6 +131,9 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
                 Text('${tr(context, 'auStatus')}: ${riskTierLabel(context, tier)}', key: const ValueKey('userStanding'), style: const TextStyle(fontWeight: FontWeight.w700)),
                 if ((u['riskReason'] as String?)?.isNotEmpty ?? false) Text(u['riskReason'] as String, style: TextStyle(color: AppColors.muted)),
                 if (isDriver) Text('${tr(context, 'driverVerification')}: ${u['verificationStatus'] ?? 'pending'}', style: TextStyle(color: AppColors.muted)),
+                if (isDriver) ...[const SizedBox(height: 8), Text(tr(context, 'autoCheckTitle'), style: const TextStyle(fontWeight: FontWeight.w700)), const SizedBox(height: 4), AutoCheckChips(user: u)],
+                if (ProfileExtras.fromProfile(u).currentAddress.isNotEmpty) Text('${tr(context, 'addrCurrent')}: ${maskAddress(ProfileExtras.fromProfile(u).currentAddress)}', key: const ValueKey('maskedAddr'), style: TextStyle(color: AppColors.muted)),
+                if (ProfileExtras.fromProfile(u).upiId.isNotEmpty) Text('UPI: ${maskUpiId(ProfileExtras.fromProfile(u).upiId)}', key: const ValueKey('maskedUpi'), style: TextStyle(color: AppColors.muted)),
               ]),
             ),
             const SizedBox(height: 12),
@@ -111,6 +145,8 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
               if (tier == RiskTier.suspended || tier == RiskTier.banned || tier == RiskTier.restricted)
                 FilledButton(key: const ValueKey('actUnban'), onPressed: () => _standing(UserAction.unban, 'auUnban'), child: Text(tr(context, 'auUnban'))),
               if (isDriver) OutlinedButton(key: const ValueKey('actReverify'), onPressed: _reverify, child: Text(tr(context, 'auReverify'))),
+              if (isDriver && u['reviewFlag'] is! Map) OutlinedButton(key: const ValueKey('actFlag'), onPressed: _flag, child: Text(tr(context, 'flagMismatch'))),
+              if (u['reviewFlag'] is Map) OutlinedButton(key: const ValueKey('actUnflag'), onPressed: () => _run(() => AdminUserService.clearReviewFlag(widget.uid)), child: Text(tr(context, 'clearFlag'))),
             ]),
             const SizedBox(height: 20),
             Text(tr(context, 'auNotes'), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),

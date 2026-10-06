@@ -7,6 +7,25 @@ final _gstin = RegExp(r'^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$');
 /// Format only (the check character is not verified).
 bool isValidGstinFormat(String s) => _gstin.hasMatch(s.trim().toUpperCase());
 
+const _gstinChars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
+/// The 15th GSTIN character from the first 14 (mod-36 weighted checksum).
+String gstinCheckChar(String first14) {
+  var sum = 0;
+  for (var i = 0; i < 14; i++) {
+    final v = _gstinChars.indexOf(first14[i]) * (i.isEven ? 1 : 2);
+    sum += v ~/ 36 + v % 36;
+  }
+  return _gstinChars[(36 - sum % 36) % 36];
+}
+
+/// Format plus the check character. Still does not prove the number exists:
+/// LATER(paid) look it up on the GST portal / a KYC API.
+bool isValidGstin(String s) {
+  final g = normaliseGstin(s);
+  return isValidGstinFormat(g) && gstinCheckChar(g.substring(0, 14)) == g[14];
+}
+
 String normaliseGstin(String s) => s.trim().toUpperCase();
 
 final _containerFormat = RegExp(r'^[A-Z]{4}[0-9]{7}$');

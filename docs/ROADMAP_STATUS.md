@@ -9,9 +9,9 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | Module | Items | Done | Partial | Todo-free | Paid-or-Later | Unsure |
 |---|---|---|---|---|---|---|
 | P0 Principles | 6 | 3 | 3 | 0 | 0 | 0 |
-| A Authentication | 10 | 5 | 2 | 2 | 1 | 0 |
-| K Identity, KYC | 14 | 3 | 4 | 1 | 6 | 0 |
-| R Re-KYC | 12 | 5 | 1 | 2 | 4 | 0 |
+| A Authentication | 10 | 7 | 0 | 2 | 1 | 0 |
+| K Identity, KYC | 14 | 5 | 1 | 0 | 8 | 0 |
+| R Re-KYC | 12 | 8 | 0 | 0 | 4 | 0 |
 | C Customer app | 14 | 8 | 6 | 0 | 0 | 0 |
 | B Bike | 14 | 11 | 2 | 0 | 1 | 0 |
 | V Truck + fleet | 12 | 8 | 2 | 1 | 1 | 0 |
@@ -31,9 +31,9 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | SAFE Safety | 12 | 9 | 1 | 0 | 2 | 0 |
 | N Notifications | 15 | 10 | 1 | 2 | 2 | 0 |
 | AI AI | 14 | 0 | 0 | 0 | 14 | 0 |
-| BE Backend | 18 | 4 | 6 | 1 | 7 | 0 |
+| BE Backend | 18 | 5 | 5 | 1 | 7 | 0 |
 | TEST Testing | 14 | 4 | 3 | 0 | 7 | 0 |
-| **Total** | **347** | **172** | **72** | **27** | **76** | **0** |
+| **Total** | **347** | **180** | **65** | **24** | **78** | **0** |
 
 ## P0 Principles
 
@@ -54,11 +54,11 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | A2 | Google login Optional secondary auth; Firebase identity linking ke saath. | Todo-free | Google button only shows "coming soon" (customer_login_screen.dart); google_sign_in is free |
 | A3 | Driver mobile OTP Driver signup/login with dedicated role. | Done | lib/auth/driver_login_screen.dart |
 | A4 | Business accounts Company owner, manager, dispatch, accounts, viewer roles. | Todo-free | No manager/dispatch/accounts/viewer roles |
-| A5 | Role-based access Customer, driver, transporter, fleet, shipper, importer, exporter, trader, | Partial | Customer, driver and fleet roles are locked once set; no transporter/importer roles |
+| A5 | Role-based access Customer, driver, transporter, fleet, shipper, importer, exporter, trader, | Done | Customer, driver and fleet roles are locked once set;  (shipper, importer, exporter, trader, transporter) in Edit profile, rules-validated; transporters also have the fleet role |
 | A6 | New-device verification Naye device par extra verification / risk challenge. | Done | Device id kept per installation; a new device on an account with other devices raises a risk signal and shows as New in Settings > My devices |
 | A7 | Session management Trusted devices, logout all, session revoke. | Done | My devices: trust, sign out a device, log out everywhere (checked when the app starts; token revoke is TODO(functions)) |
 | A8 | Account recovery Secure recovery workflow; identity checks required for sensitive changes. | Paid-or-Later | No recovery flow; identity checks need KYC provider |
-| A9 | Account linking Individual se business role / fleet / company profiles link karna. | Partial | users.business profile on a customer; no fleet/company linking |
+| A9 | Account linking Individual se business role / fleet / company profiles link karna. | Done | Settings > Linked accounts lists the own company profile, company teams (booker) and fleets the login belongs to |
 | A10 | Consent center Privacy, location, document, face-verification aur communication | Done | Settings > consent center (users.consents), core/settings/settings_screen.dart |
 
 ## K Identity, KYC
@@ -70,14 +70,14 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | K3 | Driving Licence DigiLocker/transport-authorised source se available document | Partial | Licence number + expiry are collected and format-checked in driver onboarding, never verified against a source (DigiLocker/Parivahan is the paid part) |
 | K4 | RC verification Vehicle registration record/document verification through permitted | Paid-or-Later | RC number is text only (vehicle.rcNumber), no source check |
 | K5 | DigiLocker consent User consent ke baad supported documents fetch/share/verify. | Paid-or-Later | DigiLocker needs registration |
-| K6 | Current + permanent address User/business profile mein structured address records; sensitive display | Partial | Address text in profile, saved_places, branches; no current/permanent split or masking |
+| K6 | Current + permanent address User/business profile mein structured address records; sensitive display | Done | Edit profile keeps  {current, permanent} (rules: 200 chars each); admins see them masked |
 | K7 | Face verification Identity match workflow; liveness/provider controls as appropriate. | Paid-or-Later | Needs face-match provider |
-| K8 | Driver KYC pack Aadhaar, PAN, DL, address, photo, payout profile, vehicle relationship. | Partial | Driver onboarding (lib/auth/driver_kyc_screen.dart): DL number + expiry, RC number, Aadhaar last 4, PAN, then admin approval; no photo, address or payout profile |
-| K9 | Business KYC GSTIN, PAN, business name, trade name, addresses, company | Partial | users.business with GSTIN format check, always "Not verified" |
+| K8 | Driver KYC pack Aadhaar, PAN, DL, address, photo, payout profile, vehicle relationship. | Paid-or-Later | Driver KYC pack has licence, RC, Aadhaar last 4, PAN, address and a payout UPI id record (Edit profile); the photo needs Storage (paid) |
+| K9 | Business KYC GSTIN, PAN, business name, trade name, addresses, company | Paid-or-Later | GSTIN format and mod-36 check character are verified offline in all three forms; confirming that the number exists needs the GST portal / a KYC API (paid) |
 | K10 | MCA / EntityLocker path Eligible company/entity documents ke authorised verification workflow ke | Paid-or-Later | MCA/EntityLocker integration |
 | K11 | Verification badge Mobile/identity/PAN/DL/RC/GST/business/face status alag-alag visible. | Done | Per-document badges (OTP, provided/unverified, reviewed, missing) on the profile and in the admin queue; no source verification yet |
 | K12 | Expiry tracking DL, RC, insurance, PUC, fitness, permits and other relevant document | Done | Vehicle papers, tyre/service and the driving licence expiry feed in-app reminders; push is the paid part |
-| K13 | Mismatch workflow Name/entity/vehicle relationship mismatch -> pending/manual review, | Todo-free | Admin approves manually; no mismatch workflow |
+| K13 | Mismatch workflow Name/entity/vehicle relationship mismatch -> pending/manual review, | Done | Admin > Users: Mark for review (name, RC owner, vehicle, document, other) with a note, audited; driver sees a banner on Home; clear when settled |
 | K14 | Source + timestamp Har verification result ke saath source/type/status/timestamp/expiry | Done | Admin review writes verificationMeta {source: manual_review, by, status, at}; shown on the profile; external sources are LATER(paid) |
 
 ## R Re-KYC
@@ -86,16 +86,16 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 |---|---|---|---|
 | R1 | Scheduled re-KYC Configured policy interval par face/identity re-check. | Paid-or-Later | Needs face-KYC provider |
 | R2 | New device trigger Naya phone/device detect ho to re-verification. | Done | New-device detection writes a `new_device` risk signal for admins (re-verification is manual) |
-| R3 | SIM/mobile change Sensitive mobile change par stronger authentication. | Todo-free | No mobile-change flow or extra challenge |
+| R3 | SIM/mobile change Sensitive mobile change par stronger authentication. | Done | Settings > Change mobile number: SMS code to the new number (Firebase), profile phone updated,  risk signal for admins |
 | R4 | Payout/bank change Payout account change se pehle re-KYC/risk challenge. | Paid-or-Later | No payout/bank profile exists yet |
 | R5 | High-value transaction High-value shipment/payout par additional verification. | Done | Loads of Rs 50,000 or more write a high_value risk signal for admins |
 | R6 | Suspicious activity trigger Behavioural risk score high ho to re-KYC/manual review. | Done | RiskRules.score (cancels, reports, new devices, expired papers, tier) shown in the flagged list with a review suggestion |
-| R7 | Document expiry trigger Expired/changed document ke baad verification refresh. | Todo-free | Expired papers only filter recommendations; no re-verify trigger |
+| R7 | Document expiry trigger Expired/changed document ke baad verification refresh. | Done | Automatic check flags an expired licence and any KYC edit made after the last admin review; shown as chips in the verification queue and on the user screen; vehicle papers already move to doc_expired (Task 20) |
 | R8 | Random verification Selected accounts par periodic random checks. | Done | Admin > Risk signals > Random check draws 5 approved drivers and can send them to re-verification |
 | R9 | Trusted device list Device history + revoke access. | Done | Device list with revoke in Settings > My devices |
 | R10 | Face-KYC freshness Current verification timestamp aur next verification due date track karna. | Paid-or-Later | Needs face-KYC |
 | R11 | Recovery protection Passwordless ecosystem mein identity-sensitive recovery ko KYC se | Paid-or-Later | Needs KYC |
-| R12 | Manual review Auto check fail hone par human verification queue. | Partial | Admin verification queue + flagged users list; no auto-check to fail |
+| R12 | Manual review Auto check fail hone par human verification queue. | Done | Verification queue and Admin > Users show the automatic check result (formats, expiry, edits after review, admin flag); admins decide |
 
 ## C Customer app
 
@@ -486,7 +486,7 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | BE15 | Backup/recovery Firestore/storage backups, disaster recovery and operational restore plan. | Paid-or-Later | Backups need Blaze |
 | BE16 | Secrets management API keys, service credentials and signing secrets not embedded in app. | Paid-or-Later | Needs Functions/secret manager |
 | BE17 | Data retention Sensitive data ke liye explicit retention/deletion policy. | Done | docs/DATA_RETENTION.md (what is kept, how long, who removes it); in-app text comes with the legal screens |
-| BE18 | Privacy controls Consent, purpose limitation, access minimisation, masking. | Partial | Consent center, masking of phone, deletion request |
+| BE18 | Privacy controls Consent, purpose limitation, access minimisation, masking. | Done | Consent center, phone masking, account deletion (Task 28) and Settings > Download my data (JSON copy of own records) |
 
 ## TEST Testing
 

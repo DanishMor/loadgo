@@ -19,6 +19,18 @@ class UserAction {
   static const unban = 'unban';
   static const reverify = 'reverify';
   static const note = 'note';
+  static const flag = 'flag';
+  static const unflag = 'unflag';
+}
+
+class ReviewKind {
+  ReviewKind._();
+  static const name = 'name';
+  static const rcOwner = 'rc_owner';
+  static const vehicle = 'vehicle';
+  static const document = 'document';
+  static const other = 'other';
+  static const all = [name, rcOwner, vehicle, document, other];
 }
 
 /// One line of the admin action history of a user (from `audit_events`).
@@ -82,6 +94,29 @@ class AdminUserService {
       'updatedAt': FieldValue.serverTimestamp(),
     });
     AuditService.inBatch(batch, AuditType.userAction, targetId: uid, data: {'action': UserAction.reverify, 'reason': r});
+    await batch.commit();
+  }
+
+  /// K13: marks a mismatch (name, RC owner, vehicle...) so the profile needs a
+  /// manual look. The driver sees the note on Home; clear it when settled.
+  static Future<void> setReviewFlag(String uid, String kind, String note) async {
+    final n = note.trim();
+    if (!ReviewKind.all.contains(kind)) throw ArgumentError.value(kind, 'kind');
+    if (n.length < 3) throw UserActionException('reason');
+    final me = Backend.requireUid();
+    final batch = Backend.db.batch();
+    batch.update(_user(uid), {
+      'reviewFlag': {'kind': kind, 'note': n, 'by': me, 'at': FieldValue.serverTimestamp()},
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+    AuditService.inBatch(batch, AuditType.userAction, targetId: uid, data: {'action': UserAction.flag, 'reason': '$kind: $n'});
+    await batch.commit();
+  }
+
+  static Future<void> clearReviewFlag(String uid) async {
+    final batch = Backend.db.batch();
+    batch.update(_user(uid), {'reviewFlag': FieldValue.delete(), 'updatedAt': FieldValue.serverTimestamp()});
+    AuditService.inBatch(batch, AuditType.userAction, targetId: uid, data: {'action': UserAction.unflag, 'reason': ''});
     await batch.commit();
   }
 

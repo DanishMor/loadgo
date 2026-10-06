@@ -155,7 +155,7 @@ class _CustomerProfileSetupScreenState extends State<CustomerProfileSetupScreen>
                     validator: (v) {
                       final g = v?.trim() ?? '';
                       if (g.isEmpty) return null;
-                      return isValidGstinFormat(g) ? null : tr(context, 'gstinInvalid');
+                      return isValidGstin(g) ? null : tr(context, 'gstinInvalid');
                     },
                   ),
                   const SizedBox(height: 30),

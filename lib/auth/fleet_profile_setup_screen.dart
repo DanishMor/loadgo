@@ -121,7 +121,7 @@ class _FleetProfileSetupScreenState extends State<FleetProfileSetupScreen> {
                   decoration: InputDecoration(labelText: tr(context, 'gstOptional'), counterText: ''),
                   validator: (v) {
                     final g = (v ?? '').trim();
-                    return g.isEmpty || isValidGstinFormat(g) ? null : tr(context, 'gstinInvalid');
+                    return g.isEmpty || isValidGstin(g) ? null : tr(context, 'gstinInvalid');
                   },
                 ),
                 const SizedBox(height: 28),
