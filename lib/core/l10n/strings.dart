@@ -46,6 +46,7 @@ import 'admin_user_strings.dart';
 import 'trend_strings.dart';
 import 'trip_watch_strings.dart';
 import 'vehicle_strings.dart';
+import 'help_strings.dart';
 
 const List<Map<String, List<String>>> stringTables = [
   authStrings,
@@ -90,6 +91,7 @@ const List<Map<String, List<String>>> stringTables = [
   matchStrings,
   settingsStrings,
   enterpriseStrings,
+  helpStrings,
 ];
 
 final Map<String, List<String>> extraStrings = {

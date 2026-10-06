@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'account_deletion_screen.dart';
 import 'devices_screen.dart';
+import 'help_screen.dart';
+import 'legal_screens.dart';
 
 import '../app_info.dart';
 import '../l10n/l10n.dart';
@@ -9,7 +12,7 @@ import '../services/settings_service.dart';
 import '../widgets/common.dart';
 
 /// Settings for both roles: language, notification preferences, consent
-/// center, delete-account request, terms/privacy placeholders, app version
+/// center, help and policies, account deletion, app version
 /// and logout. [onLogout] is supplied by the caller so core/ does not need
 /// to know the app's login screen.
 class SettingsScreen extends StatefulWidget {
@@ -24,7 +27,6 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   NotificationPrefs? _prefs;
   Consents? _consents;
-  bool _deletionPending = false;
 
   @override
   void initState() {
@@ -36,12 +38,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
     try {
       final prefs = await SettingsService.loadPrefs();
       final consents = await SettingsService.loadConsents();
-      final pending = await SettingsService.hasPendingDeletion();
       if (!mounted) return;
       setState(() {
         _prefs = prefs;
         _consents = consents;
-        _deletionPending = pending;
       });
     } catch (_) {
       if (!mounted) return;
@@ -73,40 +73,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _save(() => SettingsService.saveConsents(c));
   }
 
-  Future<void> _requestDeletion() async {
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(tr(ctx, 'deleteAccount')),
-        content: Text(tr(ctx, 'deleteAccountInfo')),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(tr(ctx, 'cancel'))),
-          FilledButton(
-            key: const ValueKey('confirmDeletion'),
-            style: FilledButton.styleFrom(backgroundColor: Colors.redAccent),
-            onPressed: () => Navigator.pop(ctx, true),
-            child: Text(tr(ctx, 'requestDeletion')),
-          ),
-        ],
-      ),
-    );
-    if (ok != true || !mounted) return;
-    try {
-      await SettingsService.requestDeletion();
-      if (!mounted) return;
-      setState(() => _deletionPending = true);
-      showSnack(context, tr(context, 'deleteRequestSent'));
-    } catch (_) {
-      if (mounted) showSnack(context, tr(context, 'somethingWrong'));
-    }
-  }
-
-  void _legal(String titleKey) => Navigator.of(context).push(MaterialPageRoute(
-        builder: (_) => Scaffold(
-          appBar: AppBar(title: Text(tr(context, titleKey))),
-          body: Padding(padding: const EdgeInsets.all(20), child: Text(tr(context, 'legalPlaceholder'))),
-        ),
-      ));
+  void _open(Widget screen) => Navigator.of(context).push(MaterialPageRoute(builder: (_) => screen));
 
   Widget _header(String key) => Padding(
         padding: const EdgeInsets.fromLTRB(16, 20, 16, 4),
@@ -158,14 +125,28 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 leading: const Icon(Icons.description_outlined),
                 title: Text(tr(context, 'termsOfService')),
                 trailing: const Icon(Icons.chevron_right_rounded),
-                onTap: () => _legal('termsOfService'),
+                onTap: () => _open(PolicyScreen.terms),
               ),
               ListTile(
                 key: const ValueKey('settingsPrivacy'),
                 leading: const Icon(Icons.privacy_tip_outlined),
                 title: Text(tr(context, 'privacyPolicy')),
                 trailing: const Icon(Icons.chevron_right_rounded),
-                onTap: () => _legal('privacyPolicy'),
+                onTap: () => _open(PolicyScreen.privacy),
+              ),
+              ListTile(
+                key: const ValueKey('settingsRefund'),
+                leading: const Icon(Icons.currency_rupee_rounded),
+                title: Text(tr(context, 'refundPolicy')),
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () => _open(PolicyScreen.refund),
+              ),
+              ListTile(
+                key: const ValueKey('settingsHelp'),
+                leading: const Icon(Icons.help_outline_rounded),
+                title: Text(tr(context, 'helpCenter')),
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () => _open(const HelpScreen()),
               ),
               ListTile(
                 leading: const Icon(Icons.info_outline_rounded),
@@ -177,8 +158,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 key: const ValueKey('deleteAccount'),
                 leading: const Icon(Icons.delete_forever_outlined, color: Colors.redAccent),
                 title: Text(tr(context, 'deleteAccount'), style: const TextStyle(color: Colors.redAccent)),
-                subtitle: _deletionPending ? Text(tr(context, 'deleteRequestPending')) : null,
-                onTap: _deletionPending ? null : _requestDeletion,
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () => _open(const AccountDeletionScreen()),
               ),
               Padding(
                 padding: const EdgeInsets.all(16),

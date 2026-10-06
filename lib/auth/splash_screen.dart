@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import '../core/l10n/l10n.dart';
 import '../core/services/device_service.dart';
 import '../core/services/user_service.dart';
+import '../core/settings/onboarding_screen.dart';
 import 'start_resolvers.dart';
 import 'role_selection_screen.dart';
 
@@ -34,6 +35,16 @@ class _SplashScreenState extends State<SplashScreen> {
 
     Widget next = const RoleSelectionScreen();
     final user = FirebaseAuth.instance.currentUser;
+
+    if (user == null && !await OnboardingStore.seen()) {
+      if (!mounted) return;
+      Navigator.of(context).pushReplacement(MaterialPageRoute(
+        builder: (_) => OnboardingScreen(
+          onDone: () => Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => const RoleSelectionScreen())),
+        ),
+      ));
+      return;
+    }
 
     if (user != null) {
       try {

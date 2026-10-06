@@ -243,7 +243,11 @@ service cloud.firestore {
           && (!changedKeys().hasAny(['verified', 'verificationStatus'])
               || (resource.data.get('verificationStatus', null) == null
                   && verificationInitOk(request.resource.data))));
-      allow delete: if false;
+      // Account deletion from the app. Restricted, suspended and banned
+      // accounts go through support so a ban cannot be dodged.
+      // TODO(functions): do the whole deletion with the Admin SDK.
+      allow delete: if isUser(userId)
+          && resource.data.get('riskTier', 'normal') in ['normal', 'review'];
     }
 
     // users/{uid}/admin_notes: internal notes about a user. Admins only, append-only.
@@ -544,6 +548,8 @@ service cloud.firestore {
           && identityHashAfter(request.resource.data.type) == hash;
       allow update: if isAdmin();
       allow delete: if isAdmin()
+          || (signedIn() && resource.data.uid == request.auth.uid
+              && !existsAfter(docPath('users', request.auth.uid)))
           || (signedIn() && resource.data.uid == request.auth.uid
               && (resource.data.get('type', null) == null
                   ? legacyIdentityReplaced(hash)

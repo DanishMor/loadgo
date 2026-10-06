@@ -2908,3 +2908,44 @@ describe('hardening', () => {
     await assertSucceeds(acceptBatch(as('driver1'), 'L1'));
   });
 });
+
+describe('account deletion', () => {
+  const H = 'c'.repeat(64);
+  const seedAccount = (extra = {}) => seed(async (db) => {
+    await setDoc(doc(db, 'users', 'd1'), { role: 'driver', selectedRole: 'driver', identityHashes: { dl: H }, ...extra });
+    await setDoc(doc(db, 'identity_index', H), { uid: 'd1', role: 'driver', type: 'dl' });
+    await setDoc(doc(db, 'users', 'd1', 'saved_places', 'p1'), { label: 'home' });
+    await setDoc(doc(db, 'notifications', 'n1'), { userId: 'd1' });
+  });
+
+  test('owner deletes profile, index entry and private data in one batch', async () => {
+    await seedAccount();
+    const db = as('d1');
+    const b = writeBatch(db);
+    b.delete(doc(db, 'identity_index', H));
+    b.delete(doc(db, 'users', 'd1'));
+    await assertSucceeds(b.commit());
+    await assertSucceeds(deleteDoc(doc(db, 'users', 'd1', 'saved_places', 'p1')));
+    await assertSucceeds(deleteDoc(doc(db, 'notifications', 'n1')));
+  });
+
+  test('an index entry cannot be dropped while the profile stays, nor for another user', async () => {
+    await seedAccount();
+    await assertFails(deleteDoc(doc(as('d1'), 'identity_index', H)));
+    const other = as('d2');
+    const b = writeBatch(other);
+    b.delete(doc(other, 'identity_index', H));
+    b.delete(doc(other, 'users', 'd2'));
+    await assertFails(b.commit());
+    await assertFails(deleteDoc(doc(as('d2'), 'users', 'd1')));
+  });
+
+  test('restricted, suspended and banned accounts cannot delete themselves', async () => {
+    for (const tier of ['restricted', 'suspended', 'banned']) {
+      await seedAccount({ riskTier: tier });
+      await assertFails(deleteDoc(doc(as('d1'), 'users', 'd1')));
+    }
+    await seedAccount({ riskTier: 'review' });
+    await assertSucceeds(deleteDoc(doc(as('d1'), 'users', 'd1')));
+  });
+});

@@ -142,22 +142,19 @@ void main() {
 
     await tester.tap(find.byKey(const ValueKey('settingsTerms')));
     await tester.pumpAndSettle();
-    expect(find.textContaining('Placeholder'), findsOneWidget);
+    expect(find.byKey(const ValueKey('tosC1')), findsOneWidget);
+    expect(find.textContaining('Placeholder'), findsNothing);
     await tester.pageBack();
     await tester.pumpAndSettle();
 
     expect(find.text(appVersion), findsOneWidget);
+    // Deletion opens its own screen; nothing is deleted until DELETE is typed.
     await tester.tap(find.byKey(const ValueKey('deleteAccount')));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Cancel'));
-    await tester.pumpAndSettle();
-    expect(await SettingsService.hasPendingDeletion(), isFalse);
-    await tester.tap(find.byKey(const ValueKey('deleteAccount')));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const ValueKey('confirmDeletion')));
     await settle(tester);
-    expect(await SettingsService.hasPendingDeletion(), isTrue);
-    expect(find.text('Your deletion request is pending'), findsOneWidget);
+    expect(find.byKey(const ValueKey('delConfirm')), findsOneWidget);
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    expect((await db.collection('users').doc('u1').get()).exists, isTrue);
 
     await tester.tap(find.byKey(const ValueKey('settingsLogout')));
     await tester.pump();
