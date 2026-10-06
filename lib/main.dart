@@ -10,11 +10,14 @@ import 'auth/splash_screen.dart';
 import 'core/l10n/l10n.dart';
 import 'core/navigation/app_routes.dart';
 import 'core/services/app_config.dart';
+import 'core/services/app_control_service.dart';
+import 'core/services/crash_service.dart';
 import 'core/services/connectivity_service.dart';
 import 'core/services/language_store.dart';
 import 'core/services/backend.dart';
 import 'core/services/push_service.dart';
 import 'core/theme/app_theme.dart';
+import 'core/widgets/app_control_gate.dart';
 import 'core/widgets/live_stream.dart' show OfflineBanner;
 import 'firebase_options.dart';
 
@@ -29,15 +32,18 @@ Future<void> main() async {
     return true;
   };
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await CrashService.init();
   Backend.enableOfflinePersistence();
   await ConnectivityService.start();
   applyLanguageName(await LanguageStore.loadLocal());
+  AppControlService.refresh();
   await ThemeStore.load();
   // Register for push whenever a user is signed in (also after app restarts).
   String? configUid;
   FirebaseAuth.instance.authStateChanges().listen((user) {
     if (user != null) {
       PushService.register();
+      AppControlService.refresh();
       // Another account needs its own settings; the same one reuses the cache.
       refreshAppConfig(force: user.uid != configUid);
       configUid = user.uid;
@@ -75,7 +81,7 @@ class LoadGoApp extends StatelessWidget {
             data: mq.copyWith(textScaler: mq.textScaler.clamp(maxScaleFactor: maxTextScale)),
             child: Column(
               children: [
-                Expanded(child: child ?? const SizedBox.shrink()),
+                Expanded(child: AppControlGate(child: child ?? const SizedBox.shrink())),
                 const OfflineBanner(),
               ],
             ),

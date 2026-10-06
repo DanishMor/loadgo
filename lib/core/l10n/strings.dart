@@ -57,6 +57,7 @@ import 'network_strings.dart';
 import 'pay_extra_strings.dart';
 import 'trip_alert_strings.dart';
 
+import 'app_control_strings.dart';
 import 'offers_switch_strings.dart';
 
 const List<Map<String, List<String>>> stringTables = [
@@ -113,6 +114,7 @@ const List<Map<String, List<String>>> stringTables = [
   businessRoleStrings,
   riskExtraStrings,
   offersSwitchStrings,
+  appControlStrings,
 ];
 
 final Map<String, List<String>> extraStrings = {

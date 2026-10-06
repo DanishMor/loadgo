@@ -1858,6 +1858,19 @@ describe('config', () => {
   });
 });
 
+describe('config/app (force update, maintenance, flags)', () => {
+  const APP = { minVersionCode: 5, maintenance: false, maintenanceMessage: '', flags: { surge: true } };
+
+  test('everyone signed in reads it, only a super admin writes it', async () => {
+    await seed((db) => setDoc(doc(db, 'config', 'app'), APP));
+    await assertSucceeds(getDoc(doc(as('driver1'), 'config', 'app')));
+    await assertFails(getDoc(doc(anon(), 'config', 'app')));
+    await assertFails(setDoc(doc(as('driver1'), 'config', 'app'), APP));
+    await assertSucceeds(setDoc(doc(asAdmin(), 'config', 'app'), { ...APP, minVersionCode: 6 }));
+    await assertFails(deleteDoc(doc(asAdmin(), 'config', 'app')));
+  });
+});
+
 describe('vehicle availability and bookings', () => {
   test('a vehicle in maintenance, suspended or on another trip cannot be booked', async () => {
     await seedOpenLoad();
