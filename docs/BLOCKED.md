@@ -10,3 +10,7 @@ Things the autonomous runs could not finish because they need something outside 
 | Push notifications | Needs Cloud Functions (Blaze) to send | Blaze plan |
 | Maps, live map, road ETA | Needs a Maps API key and billing | Maps account |
 | Payments, payouts, refunds | Needs a payment gateway | Gateway account |
+
+## Re-checked 2026-10-06 (Task 40)
+
+Nothing moved into the free stack: every item above still needs a paid service, a provider contract or a manual Console step. A2 and BE5 are manual (`docs/MANUAL_SETUP.md`); all other rows are listed with their cost reason in `docs/NEXT_TASKS.md`. Rules and indexes changed since the last deploy (Tasks 15-39) are **not deployed**.

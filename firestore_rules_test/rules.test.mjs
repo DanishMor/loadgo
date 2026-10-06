@@ -1,19 +1,55 @@
 // Security rules tests. Run with: npm test  (starts the Firestore emulator)
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { after, before, beforeEach, describe, test } from 'node:test';
+import { after, afterEach, before, beforeEach, describe as realDescribe, test } from 'node:test';
 import { assertFails, assertSucceeds, initializeTestEnvironment } from '@firebase/rules-unit-testing';
-import { GeoPoint, Timestamp, addDoc as rawAddDoc, deleteField, doc, getDoc, getDocs, collection, query, where, setDoc as rawSetDoc, updateDoc, deleteDoc, writeBatch as rawWriteBatch, serverTimestamp, increment } from 'firebase/firestore';
+import { GeoPoint, Timestamp, addDoc as rawAddDoc, deleteField, doc, getDoc, getDocs, collection, query, where, setDoc as rawSetDoc, updateDoc, deleteDoc, writeBatch as rawWriteBatch, serverTimestamp, increment, terminate } from 'firebase/firestore';
 
 let env;
+
+// The suite is large and a long run was cut off (SIGTERM after about a minute)
+// in a small codespace. `npm test` runs it in RULES_PARTS slices, one
+// emulator session each (RULES_PART=1..N). Without RULES_PART everything runs.
+const PARTS = Number(process.env.RULES_PARTS || 4);
+let describeIndex = 0;
+const describe = (...args) => {
+  const part = Number(process.env.RULES_PART || 0);
+  const mine = !part || describeIndex++ % PARTS === part - 1;
+  return mine ? realDescribe(...args) : undefined;
+};
 
 before(async () => {
   env = await initializeTestEnvironment({
     projectId: 'loadgo-rules-test',
     firestore: { rules: readFileSync(new URL('../firestore.rules', import.meta.url), 'utf8') },
   });
+  trackClients();
 });
 after(() => env.cleanup());
+
+// Every as()/anon() call opens a client. Close them after each test: a run of
+// several hundred tests otherwise grows until a small machine kills the process.
+const opened = new Set();
+function trackClients() {
+  for (const m of ['authenticatedContext', 'unauthenticatedContext']) {
+    const orig = env[m].bind(env);
+    env[m] = (...args) => {
+      const ctx = orig(...args);
+      const f = ctx.firestore.bind(ctx);
+      ctx.firestore = (...a) => {
+        const d = f(...a);
+        opened.add(d);
+        return d;
+      };
+      return ctx;
+    };
+  }
+}
+afterEach(async () => {
+  const list = [...opened];
+  opened.clear();
+  await Promise.all(list.map((d) => terminate(d._delegate ?? d).catch(() => {})));
+});
 // admins/{uid} allowlist: admin1 is an admin (created by hand in the Console in real life).
 beforeEach(async () => {
   await env.clearFirestore();

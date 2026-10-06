@@ -25,13 +25,19 @@ Truck and cargo booking app (Flutter + Firebase). Customers post loads; verified
 - Trip: waiting clock, odometer, GPS at pickup/delivery, signature, geofence alerts, SOS, breakdown and accident reports
 - Wallet (pending/available/paid-out, payout requests), tips, bonus targets, Free/Pro plan (lower commission), online switch
 
+**Added in the 2026-10 queue (Tasks 31 to 40)**
+- Customer: city typeahead and "use my location", home search, Book Bike, "pickup now", load visibility (public / favourites / invite), repeating loads, booking lifecycle bar, arrival ETA, business roles (owner, manager, dispatch, accounts, viewer, booker) with an approval limit, contract vehicles, approved driver pool, spend dashboard and company tickets
+- Driver and fleet: driver network (nearby list with privacy modes and expiring shares, connections, groups, chat with load cards), vehicle expenses, replacement vehicle after a breakdown, fleet allocation suggestions and analytics, multi-stop route match, pickup and stop alerts, trip share with emergency contacts, UPI pay link, advance payment record, e-way bill validity warning, container handover between two legs
+- Admin: staff roles (support, verifier, ops), editable risk thresholds, behaviour score, duplicate-account and vehicle/RC checks, bulk hold, evidence and document-view audit
+- Identity: addresses, payout UPI id, GSTIN checksum, mismatch review flag, auto KYC check, phone change, Download my data
+
 **Fleet owner**
 - Third role: vehicles, invited drivers, assignment, trips on the road, earnings per vehicle
 
 **Admin** (only users with an `admins/<uid>` document; rules enforce it)
 - Users and risk tier, driver verification with masked document numbers, vehicles, loads, bookings with manual reassign, tickets, SOS, reports and fraud cases, flagged users with a risk score, risk signals and shared devices, payout requests, promo codes and credits, driver bonuses and plans, audit log, config editors (pricing, vehicle types, support number)
 
-All of the above runs on the free stack: Flutter + Firebase Auth + Firestore. Paid or manual items are listed in `docs/MANUAL_TODO.md`; status per roadmap item is in `docs/ROADMAP_STATUS.md`.
+All of the above runs on the free stack: Flutter + Firebase Auth + Firestore. Paid or manual items are listed with their cost reason in `docs/NEXT_TASKS.md` (and `docs/MANUAL_TODO.md`); status per roadmap item is in `docs/ROADMAP_STATUS.md`.
 
 ## Setup
 
