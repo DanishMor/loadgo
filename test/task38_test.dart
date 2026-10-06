@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:firebase_auth_mocks/firebase_auth_mocks.dart';
 import 'package:flutter/material.dart';
@@ -9,7 +8,6 @@ import 'package:transport_app/core/constants/logistics.dart';
 import 'package:transport_app/core/enterprise/business_roles.dart';
 import 'package:transport_app/core/l10n/l10n.dart';
 import 'package:transport_app/core/models/booking.dart';
-import 'package:transport_app/core/models/business.dart';
 import 'package:transport_app/core/models/business_ops.dart';
 import 'package:transport_app/core/models/support_ticket.dart';
 import 'package:transport_app/core/services/backend.dart';
