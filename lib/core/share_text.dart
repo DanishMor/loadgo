@@ -1,9 +1,10 @@
 import 'models/booking.dart';
 import 'models/load.dart';
+import 'share/share_links.dart';
 import 'widgets/common.dart';
 
 /// Plain-text summaries to paste into chats. Kept in English on purpose: the
-/// receiver may not use the same app language, and there is no deep link yet.
+/// receiver may not use the same app language, and loads add a deep link when shared (ShareLinks).
 String loadShareText(Load load) => [
       'LoadGo load: ${load.route.join(' -> ')}',
       '${load.cargoType}, ${formatNum(load.weight)} T, ${load.vehicleType}',
@@ -18,7 +19,8 @@ String bookingShareText(Booking b) => [
       'Status: ${b.status.replaceAll('_', ' ')}',
       '${b.cargoType}, ${formatNum(b.weight)} T',
       'Vehicle: ${b.vehicleNumber} (${b.vehicleType})',
-      if (b.driverName.isNotEmpty) 'Driver: ${b.driverName}${b.driverPhone.isEmpty ? '' : ', ${b.driverPhone}'}',
+      if (b.driverName.isNotEmpty)
+        'Driver: ${b.driverName}${PhoneVisibility.visiblePhone(b.status, b.driverPhone).isEmpty ? '' : ', ${b.driverPhone}'}',
       'Pickup: ${formatDate(b.pickupDate)}',
       'Booking ID: ${b.id}',
     ].join('\n');

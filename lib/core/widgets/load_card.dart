@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../constants/logistics.dart';
 import '../models/load.dart';
 import '../services/backend.dart';
-import '../share_text.dart';
+import '../share/share_widgets.dart';
 import 'common.dart';
 import '../l10n/l10n.dart';
 import 'logistics_labels.dart';
@@ -71,11 +71,7 @@ class LoadCard extends StatelessWidget {
                   icon: const Icon(Icons.groups_2_outlined),
                   onPressed: () => showShareToNetwork(context, load),
                 ),
-              CopyShareButton(
-                text: loadShareText(load),
-                tooltip: tr(context, 'share'),
-                copiedMessage: tr(context, 'copiedToClipboard'),
-              ),
+              LoadShareButton(load: load),
             ],
           ),
           const SizedBox(height: 10),

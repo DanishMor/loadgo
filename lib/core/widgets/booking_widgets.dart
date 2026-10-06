@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import '../constants/logistics.dart';
 import '../models/booking.dart';
 import '../services/booking_service.dart';
+import '../share/share_links.dart';
+import '../share/share_widgets.dart';
 import '../share_text.dart';
 import 'common.dart';
 import '../trip/trip_eta.dart';
@@ -92,9 +94,14 @@ class BookingSummary extends StatelessWidget {
           _row(Icons.local_shipping_outlined, tr(context, 'vehicle'), '${b.vehicleNumber} (${vehicleTypeLabel(context, b.vehicleType)})'),
           _row(Icons.currency_rupee_rounded, tr(context, 'budget'),
               b.budget == null ? tr(context, 'budgetNegotiable') : formatRupees(b.budget!)),
-          if (showDriver)
+          if (showDriver) ...[
             _row(Icons.person_outline_rounded, tr(context, 'driver'),
-                [b.driverName, b.driverPhone].where((s) => s.isNotEmpty).join(' • ')),
+                [b.driverName, PhoneVisibility.visiblePhone(b.status, b.driverPhone)].where((s) => s.isNotEmpty).join(' • ')),
+            Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: ConfirmedPhoneButton(status: b.status, phone: b.driverPhone, label: tr(context, 'callDriver')),
+            ),
+          ],
           if (b.agreedFarePaise != null)
             _row(Icons.handshake_outlined, tr(context, 'agreedFare'), formatPaise(b.agreedFarePaise!)),
           if (b.fareEstimate != null)

@@ -59,6 +59,7 @@ import 'trip_alert_strings.dart';
 
 import 'app_control_strings.dart';
 import 'offers_switch_strings.dart';
+import 'share_nav_strings.dart';
 
 const List<Map<String, List<String>>> stringTables = [
   authStrings,
@@ -115,6 +116,7 @@ const List<Map<String, List<String>>> stringTables = [
   riskExtraStrings,
   offersSwitchStrings,
   appControlStrings,
+  shareNavStrings,
 ];
 
 final Map<String, List<String>> extraStrings = {

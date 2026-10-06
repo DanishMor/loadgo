@@ -21,7 +21,7 @@ void main() {
     expect(t, contains('ID: L1'));
   });
 
-  testWidgets('share button copies the summary', (tester) async {
+  testWidgets('share menu copies the summary and the link', (tester) async {
     String? copied;
     tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(SystemChannels.platform, (call) async {
       if (call.method == 'Clipboard.setData') copied = (call.arguments as Map)['text'] as String;
@@ -31,8 +31,10 @@ void main() {
 
     await tester.pumpWidget(MaterialApp(home: Scaffold(body: LoadCard(load: load))));
     await tester.tap(find.byTooltip('Share'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Copy text and link'));
     await tester.pump();
-    expect(copied, loadShareText(load));
+    expect(copied, '${loadShareText(load)}\nhttps://loadgo-defc2.web.app/load/L1');
     expect(find.text('Details copied to clipboard'), findsOneWidget);
   });
 }

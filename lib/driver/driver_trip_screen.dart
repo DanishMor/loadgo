@@ -4,6 +4,7 @@ import '../core/claims/claim_screens.dart';
 import '../core/constants/logistics.dart';
 import '../core/models/booking.dart';
 import '../core/services/booking_service.dart';
+import '../core/share/share_widgets.dart';
 import '../core/widgets/common.dart';
 import '../core/widgets/trip_eta_card.dart';
 import '../core/l10n/l10n.dart';
@@ -45,6 +46,16 @@ class DriverTripScreen extends StatelessWidget {
         children: [
           BookingSummary(booking: booking),
           if (booking.isActive) ...[
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                if (BookingStatus.flow.indexOf(booking.status) < BookingStatus.flow.indexOf(BookingStatus.pickedUp))
+                  NavigateButton(label: tr(context, 'navPickup'), place: booking.pickup),
+                NavigateButton(label: tr(context, 'navDrop'), place: booking.drop),
+              ],
+            ),
             const SizedBox(height: 14),
             TripSafetyCard(booking: booking),
           ],
