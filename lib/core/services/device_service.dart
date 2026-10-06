@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../risk/risk_config.dart';
 import 'backend.dart';
 
 /// One signed-in device of a user (`users/{uid}/devices/{deviceId}`).
@@ -40,12 +41,13 @@ class SharedDevice {
   static const clusterThreshold = 3;
 
   /// Groups `device_links` rows by device and keeps the busy ones.
-  static List<SharedDevice> clusters(Iterable<({String deviceId, String uid})> links, {int threshold = clusterThreshold}) {
+  static List<SharedDevice> clusters(Iterable<({String deviceId, String uid})> links, {int? threshold}) {
+    final limit = threshold ?? RiskConfigStore.current.deviceCluster;
     final by = <String, Set<String>>{};
     for (final l in links) {
       by.putIfAbsent(l.deviceId, () => {}).add(l.uid);
     }
-    final out = [for (final e in by.entries) if (e.value.length >= threshold) SharedDevice(e.key, e.value.toList()..sort())]
+    final out = [for (final e in by.entries) if (e.value.length >= limit) SharedDevice(e.key, e.value.toList()..sort())]
       ..sort((a, b) => b.uids.length.compareTo(a.uids.length));
     return out;
   }
@@ -94,7 +96,11 @@ class DeviceService {
     final id = await deviceId();
     final ref = _devices(uid).doc(id);
     final existing = await ref.get();
-    final others = (await _devices(uid).get()).docs.where((d) => d.id != id).length;
+    final all = (await _devices(uid).get()).docs;
+    final others = all.where((d) => d.id != id).length;
+    // F5: this new device plus the ones first seen in the last 24 hours.
+    final day = DateTime.now().subtract(const Duration(hours: 24));
+    final recent = all.where((d) => d.id != id && ((d.data()['firstSeenAt'] as Timestamp?)?.toDate().isAfter(day) ?? false)).length + 1;
     if (existing.exists) {
       // Signing in again on a revoked device brings it back (the user just
       // proved themselves with a new OTP).
@@ -124,6 +130,15 @@ class DeviceService {
         'uid': uid,
         'type': 'new_device',
         'deviceId': id,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+    }
+    if (recent >= RiskConfigStore.current.manyDevices24h) {
+      batch.set(_db.collection('risk_signals').doc(), {
+        'uid': uid,
+        'type': 'many_devices',
+        'deviceId': id,
+        'note': '$recent devices in 24 hours',
         'createdAt': FieldValue.serverTimestamp(),
       });
     }

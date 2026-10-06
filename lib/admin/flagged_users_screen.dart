@@ -68,10 +68,36 @@ Future<bool> editRiskTier(BuildContext context, {required String uid, required S
 
 class _FlaggedUsersScreenState extends State<FlaggedUsersScreen> {
   late Future<List<FlaggedUser>> _future = RiskService.flagged();
+  final _selected = <String>{};
+  List<FlaggedUser> _list = const [];
 
   void _reload() => setState(() {
+        _selected.clear();
         _future = RiskService.flagged();
       });
+
+  /// F14: restrict the selected accounts in one go (admin confirms first).
+  Future<void> _hold() async {
+    final chosen = [for (final u in _list) if (_selected.contains(u.uid)) u];
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (c) => AlertDialog(
+        content: Text(trf(c, 'riskHoldConfirm', {'n': chosen.length})),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(c, false), child: Text(tr(c, 'cancel'))),
+          FilledButton(key: const ValueKey('holdConfirm'), onPressed: () => Navigator.pop(c, true), child: Text(tr(c, 'save'))),
+        ],
+      ),
+    );
+    if (ok != true || !mounted) return;
+    try {
+      final n = await RiskService.bulkHold(chosen, reason: 'bulk hold (score)');
+      if (mounted) showSnack(context, trf(context, 'riskHeld', {'n': n}));
+      _reload();
+    } catch (_) {
+      if (mounted) showSnack(context, tr(context, 'somethingWrong'));
+    }
+  }
 
   Future<void> _edit(FlaggedUser u) async {
     if (await editRiskTier(context, uid: u.uid, name: u.name.isEmpty ? u.phone : u.name, tier: u.riskTier)) _reload();
@@ -86,12 +112,31 @@ class _FlaggedUsersScreenState extends State<FlaggedUsersScreen> {
         builder: (context, snap) {
           if (snap.hasError) return Center(child: Text(tr(context, 'somethingWrong')));
           if (!snap.hasData) return const Center(child: CircularProgressIndicator());
-          final list = snap.data!;
+          final list = _list = snap.data!;
           if (list.isEmpty) return Center(child: Text(tr(context, 'noFlaggedUsers')));
           return ListView(children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+              child: Wrap(spacing: 8, children: [
+                OutlinedButton(
+                  key: const ValueKey('selectHold'),
+                  onPressed: () => setState(() => _selected
+                    ..clear()
+                    ..addAll([for (final u in list) if (RiskRules.suggestHold(u.assessment.score) && u.riskTier != RiskTier.restricted && u.riskTier != RiskTier.suspended && u.riskTier != RiskTier.banned) u.uid])),
+                  child: Text(tr(context, 'riskSelectSuggested')),
+                ),
+                if (_selected.isNotEmpty)
+                  FilledButton(key: const ValueKey('holdSelected'), onPressed: _hold, child: Text(trf(context, 'riskHoldSelected', {'n': _selected.length}))),
+              ]),
+            ),
             for (final u in list)
               ListTile(
                 key: ValueKey('flagged_${u.uid}'),
+                leading: Checkbox(
+                  key: ValueKey('flagPick_${u.uid}'),
+                  value: _selected.contains(u.uid),
+                  onChanged: (v) => setState(() => v == true ? _selected.add(u.uid) : _selected.remove(u.uid)),
+                ),
                 title: Text(u.name.isEmpty ? u.phone : u.name),
                 subtitle: Text([
                   riskTierLabel(context, u.riskTier),
@@ -99,6 +144,8 @@ class _FlaggedUsersScreenState extends State<FlaggedUsersScreen> {
                   trf(context, 'openReportsCount', {'n': u.openReports}),
                   trf(context, 'riskScoreN', {'n': u.assessment.score}),
                   if (RiskRules.suggestReview(u.assessment.score)) tr(context, 'riskSuggestReview'),
+                  for (final r in u.assessment.reasons)
+                    if (const ['booking_burst', 'booking_burst_warn', 'profile_changes', 'many_devices_24h', 'gps_mismatch'].contains(r)) tr(context, 'riskWhy_$r'),
                 ].join(' · ')),
                 trailing: const Icon(Icons.edit_outlined),
                 onTap: () => _edit(u),

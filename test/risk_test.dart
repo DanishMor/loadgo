@@ -85,10 +85,11 @@ void main() {
     await RiskService.setTier('d1', RiskTier.restricted, reason: 'fraud');
 
     final flagged = await RiskService.flagged();
-    expect(flagged.map((u) => u.uid), ['d1', 'c1', 'd2']);
+    // Ranked by behaviour score first: restricted 30, four cancels 20, one report 15.
+    expect(flagged.map((u) => u.uid), ['d1', 'd2', 'c1']);
     expect(flagged.first.riskTier, RiskTier.restricted);
-    expect(flagged[1].openReports, 1);
-    expect(flagged.last.cancelCount, 4);
+    expect(flagged[1].cancelCount, 4);
+    expect(flagged.last.openReports, 1);
     expect(await auditTypes(), unorderedEquals([AuditType.verification, AuditType.riskChange]));
     expect(() => RiskService.setTier('d1', 'bogus'), throwsArgumentError);
   });

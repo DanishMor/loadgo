@@ -8,6 +8,7 @@ import '../core/widgets/kyc_check_widgets.dart';
 import '../core/widgets/common.dart';
 import '../core/widgets/live_stream.dart';
 import 'flagged_users_screen.dart' show riskTierLabel;
+import 'user_risk_checks.dart';
 
 /// Admin > Users > one user: status, suspend / ban / restore, force
 /// re-verification, internal notes and the history of admin actions.
@@ -148,6 +149,8 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
               if (isDriver && u['reviewFlag'] is! Map) OutlinedButton(key: const ValueKey('actFlag'), onPressed: _flag, child: Text(tr(context, 'flagMismatch'))),
               if (u['reviewFlag'] is Map) OutlinedButton(key: const ValueKey('actUnflag'), onPressed: () => _run(() => AdminUserService.clearReviewFlag(widget.uid)), child: Text(tr(context, 'clearFlag'))),
             ]),
+            const SizedBox(height: 20),
+            UserRiskChecks(uid: widget.uid, isDriver: isDriver),
             const SizedBox(height: 20),
             Text(tr(context, 'auNotes'), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
             Row(children: [

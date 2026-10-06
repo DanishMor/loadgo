@@ -3514,3 +3514,76 @@ describe('business roles, approvals, contracts, pool, expenses, support', () => 
     await assertSucceeds(getDoc(doc(asAdmin(), 'tickets', 't1')));
   });
 });
+
+describe('staff roles and risk signals', () => {
+  const staff = (uid) => env.authenticatedContext(uid).firestore();
+
+  beforeEach(async () => {
+    await seed(async (db) => {
+      await setDoc(doc(db, 'admins', 'sup1'), { role: 'support' });
+      await setDoc(doc(db, 'admins', 'ver1'), { role: 'verifier' });
+      await setDoc(doc(db, 'admins', 'ops1'), { role: 'ops' });
+      await setDoc(doc(db, 'admins', 'sup2'), { role: 'owner-of-the-universe' }); // unknown role = no staff powers
+      await setDoc(doc(db, 'users', 'driver1'), { role: 'driver', selectedRole: 'driver', verificationStatus: 'pending', verified: false });
+    });
+  });
+
+  test('driver verification: verifier and super; not support or ops', async () => {
+    const verify = (db) => updateDoc(doc(db, 'users', 'driver1'), { verified: true, verificationStatus: 'approved', updatedAt: serverTimestamp() });
+    await assertFails(verify(staff('sup1')));
+    await assertFails(verify(staff('ops1')));
+    await assertFails(verify(staff('sup2')));
+    await assertSucceeds(verify(staff('ver1')));
+    await assertSucceeds(updateDoc(doc(asAdmin(), 'users', 'driver1'), { verified: false, verificationStatus: 'pending', updatedAt: serverTimestamp() })); // super (no role field)
+  });
+
+  test('risk tier: ops and super; not support or verifier', async () => {
+    const hold = (db) => updateDoc(doc(db, 'users', 'driver1'), { riskTier: 'restricted', riskReason: 'burst', riskUpdatedAt: serverTimestamp() });
+    await assertFails(hold(staff('sup1')));
+    await assertFails(hold(staff('ver1')));
+    await assertSucceeds(hold(staff('ops1')));
+    await assertSucceeds(updateDoc(doc(asAdmin(), 'users', 'driver1'), { riskTier: 'normal', riskReason: '', riskUpdatedAt: serverTimestamp() }));
+  });
+
+  test('tickets: support and super answer and change them; others read only', async () => {
+    await seed((db) => setDoc(doc(db, 'tickets', 't1'), { userId: 'driver1', category: 'other', priority: 'normal', status: 'open', subject: 'Help me', description: '', escalationLevel: 0, createdAt: Timestamp.now(), updatedAt: Timestamp.now() }));
+    const status = (db) => updateDoc(doc(db, 'tickets', 't1'), { status: 'in_progress', updatedAt: serverTimestamp() });
+    const reply = (db) => addDoc(collection(db, 'tickets', 't1', 'replies'), { authorId: db.__uid, text: 'On it', fromAdmin: true, createdAt: serverTimestamp() });
+    const asStaff = (uid) => { const d = staff(uid); d.__uid = uid; return d; };
+    await assertSucceeds(getDoc(doc(staff('ver1'), 'tickets', 't1')));
+    await assertFails(status(staff('ver1')));
+    await assertFails(status(staff('ops1')));
+    await assertFails(reply(asStaff('ver1')));
+    await assertSucceeds(status(staff('sup1')));
+    await assertSucceeds(reply(asStaff('sup1')));
+    await assertSucceeds(status(asAdmin()));
+  });
+
+  test('config, plans and incentives are for super admins only', async () => {
+    const cfg = (db) => setDoc(doc(db, 'config', 'pricing'), { platformFeePercent: 7 });
+    await assertFails(cfg(staff('sup1')));
+    await assertFails(cfg(staff('ops1')));
+    await assertFails(cfg(staff('ver1')));
+    await assertSucceeds(cfg(asAdmin()));
+    await assertSucceeds(setDoc(doc(asAdmin(), 'config', 'risk'), { reviewScore: 40, holdScore: 60 }));
+    await assertFails(setDoc(doc(staff('ops1'), 'config', 'risk'), { reviewScore: 1 }));
+    await assertFails(updateDoc(doc(staff('sup1'), 'users', 'driver1'), { plan: 'pro', planUntil: Timestamp.fromMillis(Date.now() + 86400000), updatedAt: serverTimestamp() }));
+    await assertSucceeds(updateDoc(doc(asAdmin(), 'users', 'driver1'), { plan: 'pro', planUntil: Timestamp.fromMillis(Date.now() + 86400000), updatedAt: serverTimestamp() }));
+  });
+
+  test('every staff role still reads what the panel lists', async () => {
+    await seed((db) => setDoc(doc(db, 'risk_signals', 's1'), { uid: 'driver1', type: 'many_devices', createdAt: Timestamp.now() }));
+    for (const u of ['sup1', 'ver1', 'ops1']) {
+      await assertSucceeds(getDoc(doc(staff(u), 'risk_signals', 's1')));
+      await assertSucceeds(getDoc(doc(staff(u), 'users', 'driver1')));
+    }
+    await assertFails(getDoc(doc(as('driver2'), 'risk_signals', 's1')));
+  });
+
+  test('many_devices is a signal a user writes about themselves', async () => {
+    const sig = (uid, over = {}) => ({ uid, type: 'many_devices', deviceId: 'dev12345', note: '3 devices in 24 hours', createdAt: serverTimestamp(), ...over });
+    await assertSucceeds(addDoc(collection(as('driver1'), 'risk_signals'), sig('driver1')));
+    await assertFails(addDoc(collection(as('driver1'), 'risk_signals'), sig('driver2')));
+    await assertFails(addDoc(collection(as('driver1'), 'risk_signals'), sig('driver1', { type: 'made_up' })));
+  });
+});

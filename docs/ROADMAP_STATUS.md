@@ -27,13 +27,13 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | DOC Documents | 14 | 10 | 3 | 0 | 1 | 0 |
 | IE Import/export | 14 | 13 | 1 | 0 | 0 | 0 |
 | BIZ Business | 15 | 12 | 0 | 0 | 3 | 0 |
-| F Anti-fraud | 18 | 6 | 7 | 0 | 5 | 0 |
+| F Anti-fraud | 18 | 10 | 2 | 0 | 6 | 0 |
 | SAFE Safety | 12 | 10 | 0 | 0 | 2 | 0 |
 | N Notifications | 15 | 13 | 0 | 0 | 2 | 0 |
 | AI AI | 14 | 0 | 0 | 0 | 14 | 0 |
-| BE Backend | 18 | 5 | 5 | 1 | 7 | 0 |
-| TEST Testing | 14 | 4 | 2 | 0 | 8 | 0 |
-| **Total** | **347** | **226** | **33** | **2** | **86** | **0** |
+| BE Backend | 18 | 7 | 3 | 1 | 7 | 0 |
+| TEST Testing | 14 | 6 | 0 | 0 | 8 | 0 |
+| **Total** | **347** | **234** | **24** | **2** | **87** | **0** |
 
 ## P0 Principles
 
@@ -390,20 +390,20 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 
 | Code | Item | Status | Where / why |
 |---|---|---|---|
-| F1 | Duplicate identity patterns Same identity-related signals se duplicate accounts detect. | Partial | identity_index/{sha256(type+number)}: one licence, PAN, RC or GST per account, create-only rules, translated error; phone/name/device patterns not compared |
+| F1 | Duplicate identity patterns Same identity-related signals se duplicate accounts detect. | Done | Task 39: admin user card lists accounts that share a device or a name (RiskRules.duplicates) |
 | F2 | Duplicate PAN patterns Authorised verification data ke basis par risk check. | Paid-or-Later | Needs PAN data |
-| F3 | Duplicate DL/RC Vehicle/driver relationship anomalies. | Partial | Duplicate vehicle number blocked (vehicle_numbers) and duplicate DL/RC/PAN blocked at onboarding (identity_index); no DL/RC relationship anomaly checks |
+| F3 | Duplicate DL/RC Vehicle/driver relationship anomalies. | Done | Task 39: vehicle vs RC state/number anomaly and more than 5 vehicles on a non-fleet account, shown to admins; Vahan check needs a provider |
 | F4 | Same-device clusters Multiple suspicious accounts from same device. | Done | device_links groups accounts per device; admins see devices with 3+ accounts |
-| F5 | Account takeover New device, SIM/mobile change, unusual login. | Partial | New-device signal only; SIM/mobile change and unusual-login timing are not detected |
+| F5 | Account takeover New device, SIM/mobile change, unusual login. | Done | Task 39: many_devices signal when 3+ new devices appear in 24 h; new-device and phone-change signals already existed |
 | F6 | Payout risk Bank/payout changes + high-value activity. | Paid-or-Later | No payout yet |
-| F7 | Behavioural risk Abnormal cancellations, bookings, profile changes. | Partial | cancelCount only |
+| F7 | Behavioural risk Abnormal cancellations, bookings, profile changes. | Done | Task 39: score adds load bursts, phone changes, many devices, GPS mismatches; flagged list ranks by score |
 | F8 | Impossible travel Location sequence inconsistency. | Paid-or-Later | Needs continuous GPS history |
 | F9 | Fake GPS risk Mock-location/device/GPS consistency checks where feasible. | Paid-or-Later | Needs platform mock-location checks |
 | F10 | Pickup fraud OTP + GPS + photo + timestamp. | Done | Task 36: pickup GPS far (60 km) from the booked city writes a gps_mismatch risk signal; photo needs Storage |
 | F11 | Delivery fraud OTP + receiver + POD + GPS. | Done | Task 36: delivery GPS vs drop city mismatch signal + OTP + receiver; photo needs Storage |
 | F12 | Document tampering Uploaded docs suspicious -> verification queue. | Paid-or-Later | Needs uploads + analysis |
 | F13 | Off-platform scam risk Chat/payment warnings + report flow. | Partial | Warning + report flow (chat) |
-| F14 | Auto hold Risk condition par transaction/account hold. | Partial | Admin sets restricted/suspended; blocks in rules; not automatic |
+| F14 | Auto hold Risk condition par transaction/account hold. | Paid-or-Later | Free part done: admin bulk hold of high-score accounts with audit. Automatic hold needs Cloud Functions |
 | F15 | Human review High-risk cases manual operations queue. | Done | Admin flagged users + reports queue |
 | F16 | Audit trail Critical events immutable-style logging architecture. | Partial | audit_events append-only but client-written |
 | F17 | Risk tiers Normal / review / restricted / suspended states. | Done | riskTier normal/review/restricted/suspended |
@@ -475,13 +475,13 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | BE4 | Storage Documents, cargo photos, POD, profile/vehicle media with strict rules. | Paid-or-Later | storage.rules written, Storage not deployed (needs Blaze) |
 | BE5 | App Check Untrusted app requests ko reduce/deny karne ke liye. | Todo-free | App Check not set up; free |
 | BE6 | Security Rules Role and document-level access control. | Done | firestore.rules (951 lines) + 105 emulator tests |
-| BE7 | Role model Customer/driver/business/admin/verification/support permissions. | Partial | Customer/driver/admin only |
+| BE7 | Role model Customer/driver/business/admin/verification/support permissions. | Done | Task 39: admins.role super/support/verifier/ops enforced in rules (verification, risk, tickets, config, plans); dashboard hides what a role cannot use |
 | BE8 | Maps service layer Map/routing/geocoding provider wrapper so vendor change is easier. | Paid-or-Later | Needs Maps provider |
 | BE9 | Payment service layer Gateway-agnostic interface for UPI/cards/refunds/payouts. | Paid-or-Later | Needs gateway |
 | BE10 | KYC service layer Aadhaar/PAN/DigiLocker/GST/MCA/vehicle-source integrations via | Paid-or-Later | Needs KYC providers |
 | BE11 | Notification service FCM/push + transactional message layer. | Partial | In-app + push_service.dart token; sender needs Blaze |
 | BE12 | Audit event store Critical security/booking/payment/KYC events. | Partial | audit_events; client-written |
-| BE13 | Risk engine Rules + signals + manual review queues. | Partial | riskTier + admin queue; no rules/signals engine |
+| BE13 | Risk engine Rules + signals + manual review queues. | Done | Task 39: thresholds in config/risk (admin JSON editor), signals and score rules; manual review queue |
 | BE14 | Analytics pipeline Operational and business analytics. | Partial | Admin counters + stats classes; no pipeline |
 | BE15 | Backup/recovery Firestore/storage backups, disaster recovery and operational restore plan. | Paid-or-Later | Backups need Blaze |
 | BE16 | Secrets management API keys, service credentials and signing secrets not embedded in app. | Paid-or-Later | Needs Functions/secret manager |
@@ -496,11 +496,11 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | TEST2 | Widget tests Login, booking, map, forms, chat, dashboards. | Done | widget tests for login, forms, chat, dashboards |
 | TEST3 | Integration tests Firebase/KYC/payment/map/provider flows. | Done | test/e2e_flow_test.dart runs the whole customer to driver flow on fake Firestore + firebase_auth_mocks (rules are covered by firestore_rules_test); provider and map flows stay paid |
 | TEST4 | Security tests Rules, role escalation, document access, auth takeover scenarios. | Done | firestore_rules_test (105 cases) |
-| TEST5 | Location tests Background location, GPS loss, route deviation, low network. | Partial | live_location_test.dart; no background/GPS-loss tests |
+| TEST5 | Location tests Background location, GPS loss, route deviation, low network. | Done | Task 39: GPS loss, stream errors, no fix, long gaps tests; live_location_test for sharing |
 | TEST6 | Payment tests Success/failure/refund/payout/duplicate transaction. | Paid-or-Later | Free part done: duplicate mark/confirm/advance/handover tests in app and rules. Gateway success/failure/refund/payout tests need a gateway |
 | TEST7 | Load tests Many drivers, loads, tracking events. | Paid-or-Later | Needs load tooling and environment |
 | TEST8 | Device coverage Android ranges + different screen sizes. | Paid-or-Later | Manual device lab |
-| TEST9 | Language QA All 12 languages across customer/driver flows. | Partial | translations_test.dart checks keys; no human QA |
+| TEST9 | Language QA All 12 languages across customer/driver flows. | Done | Task 39: language_qa_test checks placeholders, padding, scripts and untranslated text in all 12 languages; human review still advised |
 | TEST10 | Pilot city 1-2 city controlled launch. | Paid-or-Later | Business pilot |
 | TEST11 | Operational feedback Driver + shipper feedback, fraud cases, support patterns. | Paid-or-Later | After pilot |
 | TEST12 | Scale-up More cities after operational readiness. | Paid-or-Later | After pilot |

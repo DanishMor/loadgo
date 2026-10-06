@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../constants/logistics.dart';
 import '../models/booking.dart';
 import 'audit_service.dart';
+import '../admin/staff_roles.dart';
 import 'backend.dart';
 import 'load_service.dart';
 
@@ -51,6 +52,17 @@ class AdminConsoleService {
       return (await _db.collection('admins').doc(uid).get()).exists;
     } catch (_) {
       return false;
+    }
+  }
+
+  /// The signed-in admin's staff role (BE7); super when the field is missing.
+  static Future<String> staffRole() async {
+    final uid = Backend.uid;
+    if (uid == null) return StaffRole.superAdmin;
+    try {
+      return StaffRole.normalise((await _db.collection('admins').doc(uid).get()).data()?['role']);
+    } catch (_) {
+      return StaffRole.superAdmin;
     }
   }
 

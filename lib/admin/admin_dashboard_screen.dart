@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../core/admin/staff_roles.dart';
 import '../core/constants/logistics.dart';
 import '../core/l10n/l10n.dart';
 import '../core/services/admin_console_service.dart';
@@ -18,9 +19,23 @@ import 'admin_signals_screen.dart';
 import 'admin_verification_screen.dart';
 import 'flagged_users_screen.dart';
 
+String staffRoleKey(String role) => switch (role) {
+      StaffRole.support => 'staffRoleSupport',
+      StaffRole.verifier => 'staffRoleVerifier',
+      StaffRole.ops => 'staffRoleOps',
+      _ => 'staffRoleSuper',
+    };
+
 /// Entry to every admin screen. Reached from the profile menu for admins.
-class AdminDashboardScreen extends StatelessWidget {
+class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({super.key});
+
+  @override
+  State<AdminDashboardScreen> createState() => _AdminDashboardScreenState();
+}
+
+class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
+  late final Future<String> _role = AdminConsoleService.staffRole();
 
   @override
   Widget build(BuildContext context) {
@@ -47,20 +62,36 @@ class AdminDashboardScreen extends StatelessWidget {
       ('adminOffers', 'adminOffers', Icons.local_offer_outlined, const AdminOffersScreen()),
       ('adminConfig', 'adminConfig', Icons.tune_rounded, const AdminConfigScreen()),
     ];
-    return Scaffold(
-      appBar: AppBar(title: Text(tr(context, 'adminPanel'))),
-      body: ListView(
-        children: [
-          for (final (key, label, icon, screen) in items)
-            ListTile(
-              key: ValueKey('admin_$key'),
-              leading: Icon(icon),
-              title: Text(tr(context, label)),
-              trailing: const Icon(Icons.chevron_right_rounded),
-              onTap: () => open(screen),
-            ),
-        ],
-      ),
+    return FutureBuilder<String>(
+      future: _role,
+      builder: (context, snap) {
+        final role = snap.data;
+        return Scaffold(
+          appBar: AppBar(
+            title: Text(tr(context, 'adminPanel')),
+            actions: [
+              if (role != null)
+                Padding(
+                  padding: const EdgeInsets.only(right: 16),
+                  child: Center(child: Text(tr(context, staffRoleKey(role)), key: const ValueKey('staffRole'), style: const TextStyle(fontSize: 12))),
+                ),
+            ],
+          ),
+          body: ListView(
+            children: [
+              for (final (key, label, icon, screen) in items)
+                if (role == null || staffCan(role, key))
+                  ListTile(
+                    key: ValueKey('admin_$key'),
+                    leading: Icon(icon),
+                    title: Text(tr(context, label)),
+                    trailing: const Icon(Icons.chevron_right_rounded),
+                    onTap: () => open(screen),
+                  ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 
 import '../core/l10n/l10n.dart';
 import '../core/models/vehicle_type.dart';
+import '../core/risk/risk_config.dart';
 import '../core/services/admin_console_service.dart';
 import '../core/services/pricing_service.dart';
 import '../core/services/vehicle_type_service.dart';
@@ -34,6 +35,13 @@ class AdminConfigScreen extends StatelessWidget {
           title: Text(tr(context, 'adminVehicleTypes')),
           trailing: const Icon(Icons.chevron_right_rounded),
           onTap: () => open('vehicle_types', 'adminVehicleTypes'),
+        ),
+        ListTile(
+          key: const ValueKey('editRisk'),
+          title: Text(tr(context, 'adminRiskConfig')),
+          subtitle: Text(tr(context, 'adminRiskConfigSub')),
+          trailing: const Icon(Icons.chevron_right_rounded),
+          onTap: () => open('risk', 'adminRiskConfig'),
         ),
         ListTile(
           key: const ValueKey('editSupport'),
@@ -95,7 +103,9 @@ class _ConfigEditorScreenState extends State<ConfigEditorScreen> {
     // No document yet: start from what the app currently uses.
     data ??= widget.docId == 'pricing'
         ? PricingService.config.toMap()
-        : {'types': [for (final VehicleTypeInfo t in VehicleTypeService.notifier.value) t.toMap()]};
+        : widget.docId == 'risk'
+            ? RiskConfigStore.current.toMap()
+            : {'types': [for (final VehicleTypeInfo t in VehicleTypeService.notifier.value) t.toMap()]};
     data = Map<String, dynamic>.of(data)..remove('updatedAt');
     if (!mounted) return;
     setState(() {
@@ -120,6 +130,7 @@ class _ConfigEditorScreenState extends State<ConfigEditorScreen> {
       await AdminConsoleService.writeConfig(widget.docId, parsed);
       if (widget.docId == 'pricing') await PricingService.refresh();
       if (widget.docId == 'vehicle_types') await VehicleTypeService.refresh();
+      if (widget.docId == 'risk') await RiskConfigStore.refresh();
       if (mounted) showSnack(context, tr(context, 'adminConfigSaved'));
     } catch (_) {
       if (mounted) showSnack(context, tr(context, 'somethingWrong'));

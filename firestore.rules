@@ -38,8 +38,17 @@ service cloud.firestore {
       return signedIn() && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
     }
 
-    function adminVerificationUpdate() {
+    // Staff roles (BE7): admins/{uid}.role is super (default, also when the
+    // field is missing), support, verifier or ops. Reading stays open to every
+    // admin; writes are split by what each role works on. Keep in sync with
+    // lib/core/admin/staff_roles.dart.
+    function adminIn(roles) {
       return isAdmin()
+          && get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.get('role', 'super') in roles;
+    }
+
+    function adminVerificationUpdate() {
+      return adminIn(['super', 'verifier'])
           && changedKeys().hasOnly(['verified', 'verificationStatus', 'verificationMeta', 'updatedAt'])
           && (!('verificationMeta' in request.resource.data)
               || (request.resource.data.verificationMeta.keys().hasOnly(['source', 'by', 'status', 'at'])
@@ -134,7 +143,7 @@ service cloud.firestore {
     }
 
     function adminPlanUpdate() {
-      return isAdmin()
+      return adminIn(['super'])
           && changedKeys().hasOnly(['plan', 'planUntil', 'updatedAt'])
           && request.resource.data.get('plan', 'free') in ['free', 'pro']
           && (!('planUntil' in request.resource.data) || request.resource.data.planUntil is timestamp);
@@ -143,7 +152,7 @@ service cloud.firestore {
     // users.docOverrideUntil: an admin lets a driver with an expired licence
     // work until that date (see canTransact). Admin-only.
     function adminDocOverride() {
-      return isAdmin()
+      return adminIn(['super', 'verifier'])
           && changedKeys().hasOnly(['docOverrideUntil', 'updatedAt'])
           && request.resource.data.docOverrideUntil is timestamp;
     }
@@ -169,7 +178,7 @@ service cloud.firestore {
     // review, or clears it by removing the field. The owner cannot touch it.
     function adminReviewFlagUpdate() {
       let d = request.resource.data;
-      return isAdmin()
+      return adminIn(['super', 'verifier'])
           && changedKeys().hasOnly(['reviewFlag', 'updatedAt'])
           && (!('reviewFlag' in d)
               || (d.reviewFlag.keys().hasOnly(['kind', 'note', 'by', 'at'])
@@ -181,7 +190,7 @@ service cloud.firestore {
 
     function adminRiskUpdate() {
       let d = request.resource.data;
-      return isAdmin()
+      return adminIn(['super', 'ops'])
           && changedKeys().hasOnly(['riskTier', 'riskReason', 'riskUpdatedAt'])
           && d.riskTier in ['normal', 'review', 'restricted', 'suspended', 'banned']
           && d.riskReason is string && d.riskReason.size() <= 200
@@ -1692,7 +1701,7 @@ service cloud.firestore {
           || bizActs(resource.data.get('businessId', ''), ['manager', 'accounts']));
       allow create: if signedIn() && validTicketCreate();
       allow update: if signedIn() && (ownerTicketUpdate()
-          || (isAdmin()
+          || (adminIn(['super', 'support'])
               && changedKeys().hasOnly(['status', 'priority', 'escalationLevel', 'assignedTo', 'updatedAt'])
               && request.resource.data.status in ['open', 'in_progress', 'resolved', 'closed']
               && request.resource.data.priority in ['low', 'normal', 'high', 'urgent']));
@@ -1711,7 +1720,7 @@ service cloud.firestore {
             && ((request.resource.data.fromAdmin == false
                     && get(docPath('tickets', ticketId)).data.userId == request.auth.uid
                     && get(docPath('tickets', ticketId)).data.status != 'closed')
-                || (request.resource.data.fromAdmin == true && isAdmin()));
+                || (request.resource.data.fromAdmin == true && adminIn(['super', 'support'])));
         allow update, delete: if false;
       }
     }
@@ -1729,7 +1738,7 @@ service cloud.firestore {
           && request.resource.data.createdAt == request.time
           && (request.resource.data.get('location', null) == null || request.resource.data.location is latlng)
           && (!('bookingId' in request.resource.data) || isBookingParty(request.resource.data.bookingId));
-      allow update: if isAdmin()
+      allow update: if adminIn(['super', 'support', 'ops'])
           && changedKeys().hasOnly(['status', 'handledBy', 'handledAt', 'adminNote'])
           && request.resource.data.status in ['open', 'acknowledged', 'resolved'];
       allow delete: if false;
@@ -1755,7 +1764,7 @@ service cloud.firestore {
           && request.resource.data.details is string && request.resource.data.details.size() <= 300
           && request.resource.data.status == 'open'
           && reportAboutOtherParty(request.resource.data);
-      allow update: if isAdmin() && changedKeys().hasOnly(['status', 'resolvedAt', 'resolvedBy', 'adminNote']);
+      allow update: if adminIn(['super', 'support', 'ops']) && changedKeys().hasOnly(['status', 'resolvedAt', 'resolvedBy', 'adminNote']);
       allow delete: if false;
     }
 
@@ -1882,7 +1891,7 @@ service cloud.firestore {
     match /claims/{claimId} {
       allow read: if signedIn() && (claimParty(resource.data) || isAdmin());
       allow create: if signedIn() && validClaim(claimId);
-      allow update: if isAdmin()
+      allow update: if adminIn(['super', 'support'])
           && changedKeys().hasOnly(['status', 'outcome', 'awardedPaise', 'resolutionNote', 'resolvedBy', 'resolvedAt', 'updatedAt'])
           && request.resource.data.status in ['under_review', 'resolved']
           && (request.resource.data.status != 'resolved'
@@ -2028,7 +2037,7 @@ service cloud.firestore {
       allow create: if signedIn()
           && request.resource.data.keys().hasOnly(['uid', 'type', 'deviceId', 'amountPaise', 'bookingId', 'note', 'createdAt'])
           && request.resource.data.uid == request.auth.uid
-          && request.resource.data.type in ['new_device', 'phone_change', 'high_value', 'random_check', 'gps_mismatch']
+          && request.resource.data.type in ['new_device', 'phone_change', 'high_value', 'random_check', 'gps_mismatch', 'many_devices']
           && request.resource.data.createdAt == request.time;
       allow update: if isAdmin() && changedKeys().hasOnly(['reviewed', 'reviewedBy', 'reviewedAt']);
       allow delete: if false;
@@ -2040,7 +2049,7 @@ service cloud.firestore {
     // ------------------------------------------------------------------
     match /fraud_cases/{caseId} {
       allow read: if isAdmin();
-      allow create: if isAdmin()
+      allow create: if adminIn(['super', 'ops'])
           && request.resource.data.keys().hasOnly(['userId', 'summary', 'status', 'reportIds', 'createdBy', 'createdAt', 'updatedAt'])
           && request.resource.data.userId is string && request.resource.data.userId.size() >= 1
           && request.resource.data.summary is string && request.resource.data.summary.size() >= 3 && request.resource.data.summary.size() <= 300
@@ -2048,7 +2057,7 @@ service cloud.firestore {
           && request.resource.data.reportIds is list && request.resource.data.reportIds.size() <= 20
           && request.resource.data.createdBy == request.auth.uid
           && request.resource.data.createdAt == request.time;
-      allow update: if isAdmin()
+      allow update: if adminIn(['super', 'ops'])
           && changedKeys().hasOnly(['status', 'outcome', 'resolvedBy', 'resolvedAt', 'reportIds', 'updatedAt'])
           && request.resource.data.status in ['open', 'investigating', 'resolved', 'dismissed']
           && (!('outcome' in request.resource.data) || request.resource.data.outcome in ['no_action', 'warned', 'restricted', 'suspended'])
@@ -2369,7 +2378,7 @@ service cloud.firestore {
 
     match /incentives/{incentiveId} {
       allow read: if signedIn();
-      allow create, update: if isAdmin() && validIncentive();
+      allow create, update: if adminIn(['super']) && validIncentive();
       allow delete: if false;
     }
 
@@ -2470,7 +2479,7 @@ service cloud.firestore {
     match /promos/{code} {
       allow get: if signedIn();
       allow list: if isAdmin();
-      allow create, update: if isAdmin() && validPromoDoc(code);
+      allow create, update: if adminIn(['super']) && validPromoDoc(code);
       allow delete: if false;
 
       // One document per redemption, numbered 1..usageLimit (no user id, so a
@@ -2604,7 +2613,7 @@ service cloud.firestore {
 
     match /config/{docId} {
       allow read: if signedIn();
-      allow create, update: if isAdmin() && validConfig(docId);
+      allow create, update: if adminIn(['super']) && validConfig(docId);
       allow delete: if false;
     }
 
