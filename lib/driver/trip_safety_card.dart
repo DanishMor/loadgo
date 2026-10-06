@@ -7,6 +7,7 @@ import '../core/models/vehicle.dart';
 import '../core/services/booking_service.dart';
 import '../core/services/vehicle_service.dart';
 import '../core/safety/call.dart';
+import '../core/safety/share_trip.dart';
 import '../core/services/safety_service.dart';
 import '../core/services/trip_evidence_service.dart';
 import '../core/services/user_service.dart';
@@ -158,6 +159,7 @@ class _TripSafetyCardState extends State<TripSafetyCard> {
             label: Text(tr(context, 'switchVehicle')),
           ),
         ),
+      ShareTripButton(booking: widget.booking),
       Align(
         alignment: Alignment.centerLeft,
         child: TextButton.icon(

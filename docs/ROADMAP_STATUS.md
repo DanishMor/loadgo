@@ -21,19 +21,19 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | SM Smart matching | 14 | 14 | 0 | 0 | 0 | 0 |
 | D Driver app | 16 | 15 | 0 | 0 | 1 | 0 |
 | CH Chat | 14 | 9 | 1 | 0 | 4 | 0 |
-| T Trip lifecycle | 14 | 10 | 3 | 0 | 1 | 0 |
-| S Pickup, cargo, POD | 15 | 10 | 2 | 0 | 3 | 0 |
+| T Trip lifecycle | 14 | 12 | 1 | 0 | 1 | 0 |
+| S Pickup, cargo, POD | 15 | 11 | 1 | 0 | 3 | 0 |
 | PAY Payments | 14 | 5 | 3 | 1 | 5 | 0 |
-| DOC Documents | 14 | 8 | 6 | 0 | 0 | 0 |
+| DOC Documents | 14 | 9 | 5 | 0 | 0 | 0 |
 | IE Import/export | 14 | 12 | 1 | 1 | 0 | 0 |
 | BIZ Business | 15 | 5 | 4 | 3 | 3 | 0 |
-| F Anti-fraud | 18 | 4 | 9 | 0 | 5 | 0 |
-| SAFE Safety | 12 | 9 | 1 | 0 | 2 | 0 |
-| N Notifications | 15 | 11 | 1 | 1 | 2 | 0 |
+| F Anti-fraud | 18 | 6 | 7 | 0 | 5 | 0 |
+| SAFE Safety | 12 | 10 | 0 | 0 | 2 | 0 |
+| N Notifications | 15 | 13 | 0 | 0 | 2 | 0 |
 | AI AI | 14 | 0 | 0 | 0 | 14 | 0 |
 | BE Backend | 18 | 5 | 5 | 1 | 7 | 0 |
 | TEST Testing | 14 | 4 | 3 | 0 | 7 | 0 |
-| **Total** | **347** | **204** | **51** | **9** | **83** | **0** |
+| **Total** | **347** | **213** | **43** | **8** | **83** | **0** |
 
 ## P0 Principles
 
@@ -275,12 +275,12 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | Code | Item | Status | Where / why |
 |---|---|---|---|
 | T1 | Driver assigned Customer gets driver + vehicle details. | Done | Booking has driver + vehicle, shown to customer |
-| T2 | Driver arriving ETA and route. | Done | Driver shares position while driver_arriving; the customer sees distance and arrival time to the pickup (offline estimate); a route line needs Maps |
-| T3 | Pickup reached Geofence + optional OTP. | Partial | Pickup OTP; no geofence |
+| T2 | Driver arriving ETA and route. | Done | Task 33/36: arrival ETA card plus arriving alert |
+| T3 | Pickup reached Geofence + optional OTP. | Done | Task 36: PickupGeofenceBanner on driver_arriving (km to pickup, at pickup), offline city table; exact address needs a geocoder |
 | T4 | Loading Loading state. | Done | loading status |
 | T5 | Loading complete Cargo confirmation. | Done | Pickup proof (packages, weight, seal, damage) |
 | T6 | Trip started Live location begins. | Done | picked_up / in_transit, location sharing starts |
-| T7 | In transit Route, ETA, stops, alerts. | Partial | in_transit status; no route/ETA/stops alerts |
+| T7 | In transit Route, ETA, stops, alerts. | Done | Task 36: StopProgressCard (stops reached, next stop and km, alert line) on multi-stop trips; route line/traffic ETA need Maps |
 | T8 | Long halt Operational alert if configured. | Done | Long halt alert after 30 minutes without moving while in transit (in-app) |
 | T9 | Route deviation Off-route alert. | Paid-or-Later | Needs planned route |
 | T10 | Near destination Receiver preparation. | Done | Near-destination alert within 25 km of the drop city |
@@ -307,7 +307,7 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | S12 | Delivery photo Delivered cargo evidence. | Paid-or-Later | Needs Storage |
 | S13 | Signature Optional digital signature. | Done | Receiver signature captured as strokes and shown in the POD packet |
 | S14 | POD Final proof-of-delivery packet. | Partial | pod_screen.dart text + timeline; no photos/signature |
-| S15 | Evidence audit Who/when/where for evidence events. | Partial | audit_events for status changes; not every evidence event |
+| S15 | Evidence audit Who/when/where for evidence events. | Done | Task 36: every evidence write (GPS, odometer, signature, cargo doc, accident) adds an audit_events 'evidence' event in the same batch |
 
 ## PAY Payments
 
@@ -345,7 +345,7 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | DOC11 | Masking Sensitive identifiers partially masked on UI. | Done | Phone, PAN, licence, RC, GST masked on the profile; admins can reveal in the verification queue |
 | DOC12 | Verification source Document source and verification status. | Partial | "Unverified" label only |
 | DOC13 | Expiry reminders Upcoming expiry notifications. | Done | Expiry reminders for vehicle papers and the licence in-app (no push) |
-| DOC14 | Audit Document upload/update/view verification logs where required. | Partial | Audit covers verification and status changes, not document views |
+| DOC14 | Audit Document upload/update/view verification logs where required. | Done | Task 36: opening cargo documents writes a doc_view audit event; upload/update were already versioned records |
 
 ## IE Import/export
 
@@ -399,8 +399,8 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | F7 | Behavioural risk Abnormal cancellations, bookings, profile changes. | Partial | cancelCount only |
 | F8 | Impossible travel Location sequence inconsistency. | Paid-or-Later | Needs continuous GPS history |
 | F9 | Fake GPS risk Mock-location/device/GPS consistency checks where feasible. | Paid-or-Later | Needs platform mock-location checks |
-| F10 | Pickup fraud OTP + GPS + photo + timestamp. | Partial | OTP (+photos/GPS missing) |
-| F11 | Delivery fraud OTP + receiver + POD + GPS. | Partial | OTP + receiver; no GPS/photo |
+| F10 | Pickup fraud OTP + GPS + photo + timestamp. | Done | Task 36: pickup GPS far (60 km) from the booked city writes a gps_mismatch risk signal; photo needs Storage |
+| F11 | Delivery fraud OTP + receiver + POD + GPS. | Done | Task 36: delivery GPS vs drop city mismatch signal + OTP + receiver; photo needs Storage |
 | F12 | Document tampering Uploaded docs suspicious -> verification queue. | Paid-or-Later | Needs uploads + analysis |
 | F13 | Off-platform scam risk Chat/payment warnings + report flow. | Partial | Warning + report flow (chat) |
 | F14 | Auto hold Risk condition par transaction/account hold. | Partial | Admin sets restricted/suspended; blocks in rules; not automatic |
@@ -414,7 +414,7 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | Code | Item | Status | Where / why |
 |---|---|---|---|
 | SAFE1 | SOS Driver safety escalation. | Done | sos_alerts + trip_safety_card.dart |
-| SAFE2 | Emergency contacts Trip share and emergency contact flow. | Partial | Up to 3 emergency contacts; no trip share, SMS needs provider |
+| SAFE2 | Emergency contacts Trip share and emergency contact flow. | Done | Task 36: Share trip with emergency contacts opens the phone's SMS app with the summary (copy fallback); no SMS provider |
 | SAFE3 | Breakdown Roadside/replacement process. | Done | Breakdown report |
 | SAFE4 | Accident workflow Incident report + support escalation. | Done | Driver accident report opens an urgent safety ticket and notifies the customer |
 | SAFE5 | Customer support Booking/payment/delivery issues. | Done | Tickets from bookings |
@@ -431,7 +431,7 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | Code | Item | Status | Where / why |
 |---|---|---|---|
 | N1 | Booking notification Booking created/accepted/confirmed. | Done | In-app notifications |
-| N2 | Driver arriving ETA alert. | Todo-free | No ETA alerts |
+| N2 | Driver arriving ETA alert. | Done | Task 36: one in-app notification to the customer when the driver is within 25 km of the pickup (id arrive_<booking>, sent once); push needs FCM |
 | N3 | Trip started Live trip started. | Done | status_changed notification |
 | N4 | Route deviation Alert. | Paid-or-Later | Needs route deviation |
 | N5 | Delivery complete POD/settlement notification. | Done | Delivered notification |
@@ -439,7 +439,7 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | N7 | Document expiry DL/RC/insurance/etc. | Done | Vehicle paper, licence, service and tyre reminders in the Home banner and the notification list (no push) |
 | N8 | Return load alert Driver route related opportunity. | Done | Driver reminder when open loads start near the drop city of a trip in transit or unloading |
 | N9 | Payment notification Payment/payout/refund. | Done | In-app notifications when the customer marks payment and when the driver confirms it |
-| N10 | Chat notification Message/group alerts. | Partial | Unread badge on Chat; no notification |
+| N10 | Chat notification Message/group alerts. | Done | Task 36: chat notification once per burst (10 min) in the bell; network chat unread and push need FCM |
 | N11 | Customer analytics Shipments, spend, routes, delivery success. | Done | customer_analytics_screen.dart |
 | N12 | Driver analytics Trips, earnings, acceptance, empty km. | Done | driver_analytics_screen.dart (no empty km) |
 | N13 | Fleet analytics Utilisation, idle time, revenue, maintenance. | Done | Task 34: Fleet analytics screen: utilisation, idle days, revenue, expenses, maintenance due (30-day window) |

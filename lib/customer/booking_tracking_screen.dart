@@ -17,6 +17,7 @@ import 'trip_otp_card.dart';
 import '../core/documents/trip_document_buttons.dart';
 import '../core/documents/payment_card.dart';
 import '../core/claims/claim_screens.dart';
+import '../core/safety/share_trip.dart';
 
 void openBookingTracking(BuildContext context, String bookingId) {
   Navigator.of(context).push(MaterialPageRoute(builder: (_) => BookingTrackingScreen(bookingId: bookingId)));
@@ -43,6 +44,7 @@ class BookingTrackingScreen extends StatelessWidget {
           if (booking.isActive) ...[
             const SizedBox(height: 8),
             TripOtpCard(key: ValueKey('otp_${booking.id}'), booking: booking),
+            ShareTripButton(booking: booking),
           ],
           const SizedBox(height: 8),
           Align(alignment: Alignment.centerLeft, child: RatingBadge(userId: booking.driverId)),

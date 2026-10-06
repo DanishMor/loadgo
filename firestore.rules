@@ -1632,10 +1632,13 @@ service cloud.firestore {
       allow create: if signedIn()
           && request.resource.data.keys().hasOnly(['type', 'actorId', 'targetId', 'bookingId', 'loadId', 'data', 'createdAt'])
           && request.resource.data.actorId == request.auth.uid
-          && request.resource.data.type in ['verification', 'accept', 'status_change', 'cancel', 'risk_change', 'reassign', 'config_change', 'user_action']
+          && request.resource.data.type in ['verification', 'accept', 'status_change', 'cancel', 'risk_change', 'reassign', 'config_change', 'user_action', 'evidence', 'doc_view']
           && request.resource.data.data is map
           && request.resource.data.createdAt == request.time
-          && (!(request.resource.data.type in ['verification', 'risk_change', 'reassign', 'config_change', 'user_action']) || isAdmin());
+          && (!(request.resource.data.type in ['verification', 'risk_change', 'reassign', 'config_change', 'user_action']) || isAdmin())
+          && (!(request.resource.data.type in ['evidence', 'doc_view'])
+              || (request.resource.data.bookingId is string
+                  && request.auth.uid in [get(docPath('bookings', request.resource.data.bookingId)).data.driverId, get(docPath('bookings', request.resource.data.bookingId)).data.customerId]));
       allow update, delete: if false;
     }
 
@@ -1887,7 +1890,7 @@ service cloud.firestore {
       allow create: if signedIn()
           && request.resource.data.keys().hasOnly(['uid', 'type', 'deviceId', 'amountPaise', 'bookingId', 'note', 'createdAt'])
           && request.resource.data.uid == request.auth.uid
-          && request.resource.data.type in ['new_device', 'phone_change', 'high_value', 'random_check']
+          && request.resource.data.type in ['new_device', 'phone_change', 'high_value', 'random_check', 'gps_mismatch']
           && request.resource.data.createdAt == request.time;
       allow update: if isAdmin() && changedKeys().hasOnly(['reviewed', 'reviewedBy', 'reviewedAt']);
       allow delete: if false;
@@ -2406,7 +2409,7 @@ service cloud.firestore {
       let n = request.resource.data;
       let b = getAfter(docPath('bookings', n.relatedId)).data;
       return n.keys().hasOnly(['userId', 'type', 'message', 'relatedId', 'status', 'read', 'createdAt'])
-          && n.type in ['load_accepted', 'status_changed', 'rating_received', 'booking_cancelled', 'breakdown_reported', 'payment_marked', 'payment_confirmed', 'accident_reported']
+          && n.type in ['load_accepted', 'status_changed', 'rating_received', 'booking_cancelled', 'breakdown_reported', 'payment_marked', 'payment_confirmed', 'accident_reported', 'driver_arriving_soon', 'chat_message']
           && n.message is string && n.message.size() <= 200
           && n.read == false
           && n.userId != request.auth.uid

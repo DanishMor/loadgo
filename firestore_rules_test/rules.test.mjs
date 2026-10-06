@@ -3193,3 +3193,34 @@ describe('driver network: presence, connections, groups, chat', () => {
     await assertSucceeds(deleteDoc(doc(as('d1'), 'driver_groups', 'g1')));
   });
 });
+
+describe('trip alerts, evidence audit and document views', () => {
+  const ev = (type, over = {}) => ({ type, actorId: 'driver1', bookingId: 'L1', data: { kind: 'pickup_gps' }, createdAt: serverTimestamp(), ...over });
+  const notif = (over = {}) => ({ userId: 'customer1', type: 'driver_arriving_soon', message: 'Pune → Delhi', relatedId: 'L1', read: false, createdAt: serverTimestamp(), ...over });
+
+  test('evidence and doc_view events: only a party of that booking writes them', async () => {
+    await seedBooking('loading');
+    await assertSucceeds(addDoc(collection(as('driver1'), 'audit_events'), ev('evidence')));
+    await assertSucceeds(addDoc(collection(as('customer1'), 'audit_events'), ev('doc_view', { actorId: 'customer1', data: { doc: 'cargo_docs' } })));
+    await assertFails(addDoc(collection(as('driver2'), 'audit_events'), ev('evidence', { actorId: 'driver2' }))); // not a party
+    await assertFails(addDoc(collection(as('driver1'), 'audit_events'), (({ bookingId, ...rest }) => rest)(ev('evidence')))); // needs a booking
+    await assertFails(addDoc(collection(as('driver1'), 'audit_events'), ev('evidence', { actorId: 'customer1' }))); // self-attributed
+    await assertFails(addDoc(collection(as('driver1'), 'audit_events'), ev('evidence', { bookingId: 'NOPE' })));
+  });
+
+  test('arriving and chat notifications: to the other party of the booking only; a second write to the same id is refused', async () => {
+    await seedBooking('driver_arriving');
+    await assertSucceeds(setDoc(doc(as('driver1'), 'notifications', 'arrive_L1'), notif()));
+    await assertFails(setDoc(doc(as('driver1'), 'notifications', 'arrive_L1'), notif())); // already exists: only 'read' may change, by the owner
+    await assertSucceeds(addDoc(collection(as('customer1'), 'notifications'), notif({ userId: 'driver1', type: 'chat_message' })));
+    await assertFails(addDoc(collection(as('driver1'), 'notifications'), notif({ userId: 'driver2' }))); // not in the booking
+    await assertFails(addDoc(collection(as('driver1'), 'notifications'), notif({ type: 'made_up' })));
+    await assertFails(addDoc(collection(as('driver2'), 'notifications'), notif({ userId: 'customer1' }))); // not a party
+  });
+
+  test('gps_mismatch risk signal: self-attributed, with the booking', async () => {
+    await assertSucceeds(addDoc(collection(as('driver1'), 'risk_signals'), { uid: 'driver1', type: 'gps_mismatch', bookingId: 'L1', note: 'delivery GPS 900 km from Delhi', createdAt: serverTimestamp() }));
+    await assertFails(addDoc(collection(as('driver1'), 'risk_signals'), { uid: 'driver2', type: 'gps_mismatch', bookingId: 'L1', createdAt: serverTimestamp() }));
+    await assertFails(getDoc(doc(as('driver1'), 'risk_signals', 'x')));
+  });
+});

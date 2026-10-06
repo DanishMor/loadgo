@@ -130,6 +130,13 @@ class CargoDocsCard extends StatefulWidget {
 class _CargoDocsCardState extends State<CargoDocsCard> {
   late final Stream<List<CargoDoc>> _docs = TripEvidenceService.watchCargoDocs(widget.booking.id).asBroadcastStream();
   String _type = CargoDocType.invoice;
+
+  @override
+  void initState() {
+    super.initState();
+    // DOC14: opening the documents of a booking is logged.
+    TripEvidenceService.logDocView(widget.booking.id).catchError((_) {});
+  }
   final _number = TextEditingController();
   final _note = TextEditingController();
   int? _leg;

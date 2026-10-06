@@ -4,6 +4,8 @@ import '../models/app_notification.dart';
 import '../models/booking.dart';
 import '../models/support_ticket.dart';
 import '../models/trip_evidence.dart';
+import '../trip/trip_alerts.dart';
+import 'audit_service.dart';
 import 'backend.dart';
 import 'location_service.dart';
 import 'notification_service.dart';
@@ -26,16 +28,35 @@ class TripEvidenceService {
   static DocumentReference<Map<String, dynamic>> _booking(String id) => Backend.db.collection('bookings').doc(id);
 
   /// Driver: saves where the phone is now with the pickup or delivery event.
-  /// Best effort: returns false when no position is available.
-  static Future<bool> saveGps(String bookingId, {required bool pickup}) async {
+  /// Best effort: returns false when no position is available. When [place]
+  /// (the booking's pickup or drop) is a known city and the point is far from
+  /// it, a `gps_mismatch` risk signal is written for admins (F10, F11).
+  static Future<bool> saveGps(String bookingId, {required bool pickup, String? place}) async {
     final pos = await LocationService.current();
     if (pos == null) return false;
     final key = pickup ? 'pickupGps' : 'deliveryGps';
-    await _booking(bookingId).update({
+    final batch = Backend.db.batch();
+    batch.update(_booking(bookingId), {
       key: GeoPoint(pos.lat, pos.lng),
       '${key}At': FieldValue.serverTimestamp(),
       'updatedAt': FieldValue.serverTimestamp(),
     });
+    AuditService.inBatch(batch, AuditType.evidence, bookingId: bookingId, data: {
+      'kind': pickup ? 'pickup_gps' : 'delivery_gps',
+      'lat': double.parse(pos.lat.toStringAsFixed(4)),
+      'lng': double.parse(pos.lng.toStringAsFixed(4)),
+    });
+    final km = place == null ? null : gpsMismatchKm(pos.lat, pos.lng, place);
+    if (km != null) {
+      batch.set(Backend.db.collection('risk_signals').doc(), {
+        'uid': Backend.requireUid(),
+        'type': 'gps_mismatch',
+        'bookingId': bookingId,
+        'note': '${pickup ? 'pickup' : 'delivery'} GPS ${km.round()} km from $place',
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+    }
+    await batch.commit();
     return true;
   }
 
@@ -43,10 +64,13 @@ class TripEvidenceService {
   static Future<void> setOdometer(Booking b, {required bool start, required int km}) async {
     if (km < 0 || km > 9999999) throw const EvidenceException('km');
     if (!start && b.odometerStart != null && km < b.odometerStart!) throw const EvidenceException('end_before_start');
-    await _booking(b.id).update({
+    final batch = Backend.db.batch();
+    batch.update(_booking(b.id), {
       start ? 'odometerStart' : 'odometerEnd': km,
       'updatedAt': FieldValue.serverTimestamp(),
     });
+    AuditService.inBatch(batch, AuditType.evidence, bookingId: b.id, data: {'kind': start ? 'odometer_start' : 'odometer_end', 'km': km});
+    await batch.commit();
   }
 
   // ---- signature ----
@@ -58,11 +82,14 @@ class TripEvidenceService {
   static Future<void> saveSignature(Booking b, SignatureStrokes sig) async {
     if (sig.isEmpty) throw const EvidenceException('empty');
     if ((await _signature(b.id).get()).exists) throw const EvidenceException('already');
-    await _signature(b.id).set({
+    final batch = Backend.db.batch();
+    batch.set(_signature(b.id), {
       'strokes': sig.toFirestore(),
       'driverId': Backend.requireUid(),
       'createdAt': FieldValue.serverTimestamp(),
     });
+    AuditService.inBatch(batch, AuditType.evidence, bookingId: b.id, data: {'kind': 'signature'});
+    await batch.commit();
   }
 
   static Stream<SignatureStrokes?> watchSignature(String bookingId) =>
@@ -79,7 +106,8 @@ class TripEvidenceService {
     if (!CargoDocType.all.contains(type)) throw ArgumentError.value(type, 'type');
     if (n.isEmpty || n.length > 40 || note.trim().length > 200) throw const EvidenceException('invalid');
     if (leg != null && leg != 1 && leg != 2) throw ArgumentError.value(leg, 'leg');
-    await _docs(b.id).add({
+    final batch = Backend.db.batch();
+    batch.set(_docs(b.id).doc(), {
       'type': type,
       'number': n,
       if (note.trim().isNotEmpty) 'note': note.trim(),
@@ -87,6 +115,8 @@ class TripEvidenceService {
       'addedBy': Backend.requireUid(),
       'createdAt': FieldValue.serverTimestamp(),
     });
+    AuditService.inBatch(batch, AuditType.evidence, bookingId: b.id, data: {'kind': 'cargo_doc', 'docType': type, 'leg': ?leg});
+    await batch.commit();
   }
 
   /// Every record, oldest first (the history of each document).
@@ -95,6 +125,10 @@ class TripEvidenceService {
         list.sort((a, b) => (a.createdAt ?? DateTime(3000)).compareTo(b.createdAt ?? DateTime(3000)));
         return list;
       });
+
+  /// A party opened the cargo documents of the booking (DOC14).
+  static Future<void> logDocView(String bookingId) =>
+      AuditService.record(AuditType.docView, bookingId: bookingId, data: {'doc': 'cargo_docs'});
 
   // ---- accident ----
 
@@ -117,6 +151,7 @@ class TripEvidenceService {
       message: '${b.pickup} → ${b.drop}',
       relatedId: b.id,
     );
+    AuditService.inBatch(batch, AuditType.evidence, bookingId: b.id, data: {'kind': 'accident', 'ticketId': ticketId});
     await batch.commit();
     return ticketId;
   }

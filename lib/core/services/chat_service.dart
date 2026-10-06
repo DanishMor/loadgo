@@ -4,8 +4,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../chat/off_platform.dart';
 import '../models/booking.dart';
+import '../models/app_notification.dart';
 import '../models/chat_message.dart';
 import 'backend.dart';
+import 'notification_service.dart';
 import 'rate_limit_service.dart';
 
 /// Empty, too long, or the other person blocked you.
@@ -57,6 +59,7 @@ class ChatService {
     if (t.length > ChatMessage.maxLength) throw ChatSendException('tooLong');
     final msgRef = _messages(booking.id).doc();
     final rate = await RateLimit.prepare(RateLimit.messageKind, docId: msgRef.id);
+    final notify = await _shouldNotify(booking.id, uid);
     try {
       final batch = Backend.db.batch();
       batch.set(msgRef, {
@@ -66,6 +69,16 @@ class ChatService {
         'createdAt': FieldValue.serverTimestamp(),
       });
       rate.addToBatch(batch);
+      // N10: the other person gets one in-app notification per burst of messages.
+      if (notify) {
+        NotificationService.addInBatch(
+          batch,
+          userId: otherParty(booking),
+          type: NotificationType.chatMessage,
+          message: '${booking.pickup} → ${booking.drop}',
+          relatedId: booking.id,
+        );
+      }
       await batch.commit();
     } on FirebaseException catch (e) {
       // The rules refuse messages to someone who blocked you.
@@ -73,6 +86,23 @@ class ChatService {
       rethrow;
     }
     await markRead(booking.id);
+  }
+
+  /// How long my own messages count as one burst (N10).
+  static const notifyBurst = Duration(minutes: 10);
+
+  /// False when the last message of the chat is mine and recent: the other
+  /// person was already notified for this burst. LATER(paid): push (FCM sender).
+  static Future<bool> _shouldNotify(String bookingId, String uid) async {
+    try {
+      final last = await _messages(bookingId).orderBy('createdAt', descending: true).limit(1).get();
+      if (last.docs.isEmpty) return true;
+      final d = last.docs.first.data();
+      final at = (d['createdAt'] as Timestamp?)?.toDate();
+      return d['senderId'] != uid || at == null || DateTime.now().difference(at) > notifyBurst;
+    } on FirebaseException {
+      return true;
+    }
   }
 
   static Future<void> markRead(String bookingId) async {

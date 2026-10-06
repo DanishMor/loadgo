@@ -18,6 +18,7 @@ import 'trip_proof_dialogs.dart';
 import '../core/documents/trip_document_buttons.dart';
 import 'trip_safety_card.dart';
 import 'trip_geofence_banner.dart';
+import 'pickup_alerts.dart';
 import 'return_loads_section.dart';
 import '../core/documents/payment_card.dart';
 
@@ -47,11 +48,17 @@ class DriverTripScreen extends StatelessWidget {
           ],
           if (booking.status == BookingStatus.driverArriving) ...[
             const SizedBox(height: 14),
+            PickupGeofenceBanner(booking: booking),
+            const SizedBox(height: 14),
             LocationSharingCard(booking: booking),
           ],
           if (booking.isInTransit) ...[
             const SizedBox(height: 14),
             TripGeofenceBanner(dropPlace: booking.drop),
+            if (booking.extraDrops.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              StopProgressCard(booking: booking),
+            ],
             LocationSharingCard(booking: booking),
           ],
           const SizedBox(height: 14),
@@ -152,7 +159,7 @@ class _NextStatusButtonState extends State<_NextStatusButton> {
       await BookingService.advance(widget.booking.id, otp: otp, pickup: pickup, delivery: delivery);
       // GPS evidence with the event (best effort; needs the location permission).
       if (next == BookingStatus.pickedUp || next == BookingStatus.delivered) {
-        TripEvidenceService.saveGps(widget.booking.id, pickup: next == BookingStatus.pickedUp).then((_) {}, onError: (_) {});
+        TripEvidenceService.saveGps(widget.booking.id, pickup: next == BookingStatus.pickedUp, place: next == BookingStatus.pickedUp ? widget.booking.pickup : widget.booking.drop).then((_) {}, onError: (_) {});
       }
       if (mounted) showSnack(context, tr(context, 'statusUpdated'));
     } on WrongOtpException {

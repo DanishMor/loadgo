@@ -10,6 +10,8 @@ class NotificationType {
   static const paymentMarked = 'payment_marked';
   static const paymentConfirmed = 'payment_confirmed';
   static const accidentReported = 'accident_reported';
+  static const arrivingSoon = 'driver_arriving_soon';
+  static const chatMessage = 'chat_message';
 
   /// Must stay in sync with firestore.rules.
   static const all = [
@@ -21,6 +23,8 @@ class NotificationType {
     paymentMarked,
     paymentConfirmed,
     accidentReported,
+    arrivingSoon,
+    chatMessage,
   ];
 }
 

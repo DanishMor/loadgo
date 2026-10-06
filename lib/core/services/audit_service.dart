@@ -14,7 +14,13 @@ class AuditType {
   static const reassign = 'reassign';
   static const configChange = 'config_change';
   static const userAction = 'user_action';
-  static const all = [verification, accept, statusChange, cancel, riskChange, reassign, configChange, userAction];
+
+  /// A party wrote evidence on a booking (GPS, odometer, signature, cargo document, accident).
+  static const evidence = 'evidence';
+
+  /// A party opened the cargo documents of a booking.
+  static const docView = 'doc_view';
+  static const all = [verification, accept, statusChange, cancel, riskChange, reassign, configChange, userAction, evidence, docView];
 }
 
 class AuditService {
@@ -39,4 +45,8 @@ class AuditService {
   static void inBatch(WriteBatch batch, String type,
           {String? targetId, String? bookingId, String? loadId, Map<String, Object?>? data}) =>
       batch.set(_newRef(), _event(type, targetId: targetId, bookingId: bookingId, loadId: loadId, data: data));
+
+  /// Writes one event on its own (for actions that are not part of a batch).
+  static Future<void> record(String type, {String? targetId, String? bookingId, String? loadId, Map<String, Object?>? data}) =>
+      _newRef().set(_event(type, targetId: targetId, bookingId: bookingId, loadId: loadId, data: data));
 }

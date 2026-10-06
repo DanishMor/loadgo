@@ -23,6 +23,8 @@ String notificationTitle(
   NotificationType.ratingReceived => tr(context, 'notifRatingReceived'),
   NotificationType.bookingCancelled => tr(context, 'notifBookingCancelled'),
   NotificationType.breakdownReported => tr(context, 'notifBreakdown'),
+  NotificationType.arrivingSoon => tr(context, 'notifArrivingSoon'),
+  NotificationType.chatMessage => tr(context, 'notifChat'),
   _ => n.type,
 };
 
@@ -32,6 +34,8 @@ IconData _iconFor(String type) => switch (type) {
   NotificationType.ratingReceived => Icons.star_outline_rounded,
   NotificationType.bookingCancelled => Icons.cancel_outlined,
   NotificationType.breakdownReported => Icons.car_crash_outlined,
+  NotificationType.arrivingSoon => Icons.near_me_rounded,
+  NotificationType.chatMessage => Icons.chat_bubble_outline_rounded,
   _ => Icons.notifications_none_rounded,
 };
 

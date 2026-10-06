@@ -51,6 +51,29 @@ class NotificationService {
     });
   }
 
+  /// One notification with a fixed id: sending it twice does nothing (the rules
+  /// refuse a second write to the same id, which is swallowed here).
+  static Future<void> sendOnce({
+    required String id,
+    required String userId,
+    required String type,
+    required String message,
+    required String relatedId,
+  }) async {
+    try {
+      await _col.doc(id).set({
+        'userId': userId,
+        'type': type,
+        'message': message,
+        'relatedId': relatedId,
+        'read': false,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+    } on FirebaseException catch (e) {
+      if (e.code != 'permission-denied') rethrow;
+    }
+  }
+
   /// The signed-in user's notifications, newest first.
   ///
   /// With [applyPrefs] false the user's category switches are not applied
