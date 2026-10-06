@@ -14,26 +14,26 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | R Re-KYC | 12 | 8 | 0 | 0 | 4 | 0 |
 | C Customer app | 14 | 10 | 2 | 0 | 2 | 0 |
 | B Bike | 14 | 12 | 1 | 0 | 1 | 0 |
-| V Truck + fleet | 12 | 8 | 2 | 1 | 1 | 0 |
+| V Truck + fleet | 12 | 10 | 0 | 0 | 2 | 0 |
 | L Load marketplace | 14 | 13 | 1 | 0 | 0 | 0 |
 | P Booking + pricing | 14 | 12 | 1 | 0 | 1 | 0 |
 | M Map | 16 | 3 | 3 | 0 | 10 | 0 |
-| SM Smart matching | 14 | 11 | 1 | 2 | 0 | 0 |
-| D Driver app | 16 | 11 | 2 | 3 | 0 | 0 |
+| SM Smart matching | 14 | 14 | 0 | 0 | 0 | 0 |
+| D Driver app | 16 | 11 | 1 | 3 | 1 | 0 |
 | CH Chat | 14 | 4 | 1 | 5 | 4 | 0 |
 | T Trip lifecycle | 14 | 10 | 3 | 0 | 1 | 0 |
 | S Pickup, cargo, POD | 15 | 10 | 2 | 0 | 3 | 0 |
 | PAY Payments | 14 | 5 | 3 | 1 | 5 | 0 |
 | DOC Documents | 14 | 8 | 6 | 0 | 0 | 0 |
 | IE Import/export | 14 | 12 | 1 | 1 | 0 | 0 |
-| BIZ Business | 15 | 4 | 4 | 4 | 3 | 0 |
+| BIZ Business | 15 | 5 | 4 | 3 | 3 | 0 |
 | F Anti-fraud | 18 | 4 | 9 | 0 | 5 | 0 |
 | SAFE Safety | 12 | 9 | 1 | 0 | 2 | 0 |
-| N Notifications | 15 | 10 | 1 | 2 | 2 | 0 |
+| N Notifications | 15 | 11 | 1 | 1 | 2 | 0 |
 | AI AI | 14 | 0 | 0 | 0 | 14 | 0 |
 | BE Backend | 18 | 5 | 5 | 1 | 7 | 0 |
 | TEST Testing | 14 | 4 | 3 | 0 | 7 | 0 |
-| **Total** | **347** | **188** | **56** | **22** | **81** | **0** |
+| **Total** | **347** | **195** | **52** | **17** | **83** | **0** |
 
 ## P0 Principles
 
@@ -148,9 +148,9 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | V7 | Vehicle availability Available, busy, on-trip, maintenance, suspended. | Done | available/on_trip/maintenance/suspended, auto on_trip |
 | V8 | Maintenance reminders Service, tyre, insurance, PUC, fitness, permit. | Done | Next service and next tyre-check dates + in-app reminders (Home banner and notification list); push is the paid part |
 | V9 | FASTag layer Future partner/API integration for supported FASTag flows. | Paid-or-Later | FASTag partner API |
-| V10 | Fuel layer Fuel station map, expense tracking, future partner integration. | Todo-free | Expense tracking buildable; fuel station map is paid |
-| V11 | Replacement vehicle Breakdown/availability issue par replacement workflow. | Partial | Breakdown report sets replacement flag; no replacement vehicle assignment |
-| V12 | Vehicle verification badge RC/transport-source verification + document freshness. | Partial | Doc freshness + "Unverified"; no transport-source verification |
+| V10 | Fuel layer Fuel station map, expense tracking, future partner integration. | Done | Task 34: per-vehicle fuel/toll/repair/service lines (paise), monthly totals, rules vehicle_expenses; fuel station map is paid (Maps) |
+| V11 | Replacement vehicle Breakdown/availability issue par replacement workflow. | Done | Task 34: driver swaps the trip's vehicle after a breakdown (rules driverReplacesVehicle, replacedVehicleIds audit) |
+| V12 | Vehicle verification badge RC/transport-source verification + document freshness. | Paid-or-Later | Free part done (document freshness badge, Unverified). Transport-source/Vahan verification needs a paid provider |
 
 ## L Load marketplace
 
@@ -223,10 +223,10 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | SM6 | Return-load match Empty return reduce karne ke liye. | Done | Return-load bonus |
 | SM7 | Verification filter Required KYC/document status valid. | Done | Verified driver + no expired papers |
 | SM8 | Risk filter High-risk/suspended accounts exclude/hold. | Done | LoadRanker returns nothing for restricted or suspended drivers |
-| SM9 | Fleet matching Fleet ke available vehicles se auto allocation. | Todo-free | No fleet auto allocation |
+| SM9 | Fleet matching Fleet ke available vehicles se auto allocation. | Done | Task 34: suggestAllocation shows idle vehicle -> open load on fleet dashboard |
 | SM10 | Scheduled matching Pickup slot ke according. | Done | A vehicle that is busy now can match a load scheduled more than 24 h ahead; advance bookings do not block the vehicle until started |
-| SM11 | Multi-stop matching Compatible route and capacity. | Todo-free | No multi-stop matching |
-| SM12 | Emergency replacement Breakdown/cancellation ke baad replacement. | Partial | Breakdown flag; manual replacement |
+| SM11 | Multi-stop matching Compatible route and capacity. | Done | Task 34: stops inside the route corridor add ranker bonus (8 per stop, max 24) with reason |
+| SM12 | Emergency replacement Breakdown/cancellation ke baad replacement. | Done | Task 34: breakdown card on fleet dashboard suggests idle same-owner vehicles that fit |
 | SM13 | Load ranking Distance, ETA, route fit and operational factors. | Done | LoadRanker score + reason chips |
 | SM14 | Human override Operations team exceptional cases manually reassign kar sake. | Done | Admin manual reassign by vehicle number (audited) |
 
@@ -242,7 +242,7 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | D6 | Trip dashboard Current assignment and steps. | Done | driver_trip_screen.dart |
 | D7 | Earnings Day/week/month and trip level. | Done | earnings_view.dart + driver_analytics_screen.dart |
 | D8 | Wallet Pending/available/payout records. | Done | Wallet shows pending, available and paid-out figures, payout requests and history (records only) |
-| D9 | Documents KYC + vehicle docs + expiry. | Partial | Vehicle docs + expiry; driver licence, RC, Aadhaar last 4 and PAN at onboarding; no document photos |
+| D9 | Documents KYC + vehicle docs + expiry. | Paid-or-Later | Free part done (expiry + freshness badge). Document photos need Storage (Blaze) |
 | D10 | Driver profile Verified badges, vehicles, service info, languages. | Done | Profile shows verified badge, per-document badges, vehicle count, language and plan |
 | D11 | Nearby drivers Privacy-controlled network map/list. | Todo-free | No driver network |
 | D12 | Connect Driver-to-driver connection request. | Todo-free | No driver connections |
@@ -381,7 +381,7 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | BIZ9 | Driver pool Assigned/approved drivers. | Todo-free | No driver pool |
 | BIZ10 | Expense dashboard Transport spend, fuel, toll etc. | Todo-free | No expense dashboard |
 | BIZ11 | Reports Routes, trips, payments, POD. | Done | route_report_screen.dart with CSV copy |
-| BIZ12 | Transporter dashboard Multiple vehicles/drivers/customers. | Todo-free | No transporter dashboard |
+| BIZ12 | Transporter dashboard Multiple vehicles/drivers/customers. | Done | Task 34: dashboard shows customers served, vehicles, drivers |
 | BIZ13 | API integration ERP/TMS/WMS integration layer. | Paid-or-Later | Needs server/Functions |
 | BIZ14 | Webhooks Trip/status/POD events where integration supports. | Paid-or-Later | Needs Functions |
 | BIZ15 | Business support Dedicated ticket/operations workflow. | Partial | Same tickets; no business queue |
@@ -442,7 +442,7 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | N10 | Chat notification Message/group alerts. | Partial | Unread badge on Chat; no notification |
 | N11 | Customer analytics Shipments, spend, routes, delivery success. | Done | customer_analytics_screen.dart |
 | N12 | Driver analytics Trips, earnings, acceptance, empty km. | Done | driver_analytics_screen.dart (no empty km) |
-| N13 | Fleet analytics Utilisation, idle time, revenue, maintenance. | Todo-free | No fleet analytics |
+| N13 | Fleet analytics Utilisation, idle time, revenue, maintenance. | Done | Task 34: Fleet analytics screen: utilisation, idle days, revenue, expenses, maintenance due (30-day window) |
 | N14 | Admin analytics Users, loads, bookings, GMV-like metrics, fraud alerts. | Done | admin dashboard counters (no fraud alert metric) |
 | N15 | Enterprise reports Branch-wise, route-wise, driver-wise reports. | Done | Route, branch and driver-wise report with CSV |
 

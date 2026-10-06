@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 
 import '../core/l10n/l10n.dart';
 import '../core/models/booking.dart';
+import '../core/fleet/fleet_logic.dart';
 import '../core/models/fleet.dart';
+import '../core/models/load.dart';
+import '../core/services/load_service.dart';
 import '../core/models/vehicle.dart';
 import '../core/services/fleet_service.dart';
 import '../core/services/vehicle_service.dart';
@@ -17,9 +20,10 @@ class FleetDashboard extends StatefulWidget {
   final Stream<List<Vehicle>>? vehicles;
   final Stream<List<Booking>>? bookings;
   final Stream<List<FleetMember>>? members;
+  final Stream<List<Load>>? openLoads;
   final DateTime Function() now;
 
-  const FleetDashboard({super.key, this.vehicles, this.bookings, this.members, this.now = DateTime.now});
+  const FleetDashboard({super.key, this.vehicles, this.bookings, this.members, this.openLoads, this.now = DateTime.now});
 
   @override
   State<FleetDashboard> createState() => _FleetDashboardState();
@@ -28,6 +32,7 @@ class FleetDashboard extends StatefulWidget {
 class _FleetDashboardState extends State<FleetDashboard> {
   late final Stream<List<Vehicle>> _vehicles = (widget.vehicles ?? VehicleService.watchMine()).asBroadcastStream();
   late final Stream<List<Booking>> _bookings = (widget.bookings ?? FleetService.watchFleetBookings()).asBroadcastStream();
+  late final Stream<List<Load>> _loads = (widget.openLoads ?? LoadService.watchOpen()).asBroadcastStream();
   late final Stream<List<FleetMember>> _members = (widget.members ?? FleetService.watchMembers()).asBroadcastStream();
 
   Widget _stat(String label, String value, {Key? key}) => Expanded(
@@ -39,6 +44,69 @@ class _FleetDashboardState extends State<FleetDashboard> {
           ]),
         ),
       );
+
+  /// SM12: trips with a breakdown that asked for a replacement, and the idle
+  /// vehicles of this fleet that could take over.
+  Widget _breakdowns(BuildContext context, List<Vehicle> vehicles, List<Booking> bookings) {
+    final broken = [for (final b in bookings) if (b.isActive && b.breakdown?.replacementRequested == true) b];
+    if (broken.isEmpty) return const SizedBox.shrink();
+    final now = widget.now();
+    return Padding(
+      padding: const EdgeInsets.only(top: 14),
+      child: AppCard(
+        key: const ValueKey('fleetBreakdowns'),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Row(children: [
+            const Icon(Icons.car_crash_outlined, color: AppColors.warning),
+            const SizedBox(width: 8),
+            Text(tr(context, 'fleetBreakdownTitle'), style: const TextStyle(fontWeight: FontWeight.w800)),
+          ]),
+          for (final b in broken)
+            Builder(builder: (context) {
+              final options = replacementCandidates(vehicles, weight: b.weight, preferType: b.vehicleType, excludeId: b.vehicleId, now: now);
+              return Padding(
+                padding: const EdgeInsets.only(top: 6),
+                child: Text(
+                  options.isEmpty
+                      ? trf(context, 'fleetBreakdownNone', {'vehicle': b.vehicleNumber})
+                      : trf(context, 'fleetBreakdownLine', {'vehicle': b.vehicleNumber, 'list': options.map((v) => v.number).join(', ')}),
+                  key: ValueKey('breakdownLine_${b.id}'),
+                ),
+              );
+            }),
+        ]),
+      ),
+    );
+  }
+
+  /// SM9: open loads that fit an idle vehicle which has a driver.
+  Widget _suggestions(BuildContext context, List<Vehicle> vehicles) {
+    return StreamBuilder<List<Load>>(
+      stream: _loads,
+      builder: (context, snap) {
+        final idle = [for (final v in vehicles) if (v.canTakeBooking) v];
+        final list = suggestAllocation(snap.data ?? const [], idle, now: widget.now());
+        if (list.isEmpty) return const SizedBox.shrink();
+        return Padding(
+          padding: const EdgeInsets.only(top: 14),
+          child: AppCard(
+            key: const ValueKey('fleetSuggestions'),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(tr(context, 'fleetSuggestTitle'), style: const TextStyle(fontWeight: FontWeight.w800)),
+              const SizedBox(height: 4),
+              for (final s in list.take(5))
+                Padding(
+                  padding: const EdgeInsets.only(top: 4),
+                  child: Text(trf(context, 'fleetSuggestLine', {'load': '${s.load.pickup} → ${s.load.drop} (${formatNum(s.load.weight)} T)', 'vehicle': s.vehicle.number}), key: ValueKey('suggest_${s.load.id}')),
+                ),
+              const SizedBox(height: 6),
+              Text(tr(context, 'fleetSuggestNote'), style: TextStyle(fontSize: 12, color: AppColors.faint)),
+            ]),
+          ),
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -75,6 +143,8 @@ class _FleetDashboardState extends State<FleetDashboard> {
               ]),
               const SizedBox(height: 6),
               Text(tr(context, 'fleetEarningsNote'), style: TextStyle(color: AppColors.faint, fontSize: 12)),
+              _breakdowns(context, vehicles, bookings),
+              _suggestions(context, vehicles),
               const SizedBox(height: 14),
               Text(tr(context, 'fleetPerVehicle'), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
               const SizedBox(height: 8),

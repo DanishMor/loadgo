@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../core/l10n/l10n.dart';
 import '../core/notifications/notifications_screen.dart';
 import '../core/profile/profile_view.dart';
+import 'fleet_analytics_screen.dart';
 import 'fleet_dashboard.dart';
 import 'fleet_drivers_screen.dart';
 import 'fleet_vehicles_screen.dart';
@@ -25,11 +26,12 @@ class _FleetHomeScreenState extends State<FleetHomeScreen> {
       const FleetDashboard(),
       const FleetVehiclesScreen(),
       const FleetDriversScreen(),
+      const FleetAnalyticsScreen(),
       const ProfileView(isDriver: false),
     ];
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: _index == 3
+      appBar: _index == 4
           ? null
           : AppBar(
               backgroundColor: AppColors.background,
@@ -46,6 +48,7 @@ class _FleetHomeScreenState extends State<FleetHomeScreen> {
           NavigationDestination(icon: const Icon(Icons.dashboard_outlined), selectedIcon: const Icon(Icons.dashboard_rounded), label: tr(context, 'fleetDashboard')),
           NavigationDestination(icon: const Icon(Icons.local_shipping_outlined), selectedIcon: const Icon(Icons.local_shipping_rounded), label: tr(context, 'fleetVehicles')),
           NavigationDestination(icon: const Icon(Icons.people_outline_rounded), selectedIcon: const Icon(Icons.people_rounded), label: tr(context, 'fleetDrivers')),
+          NavigationDestination(icon: const Icon(Icons.insights_outlined), selectedIcon: const Icon(Icons.insights_rounded), label: tr(context, 'fleetAnalytics')),
           NavigationDestination(icon: const Icon(Icons.person_outline_rounded), selectedIcon: const Icon(Icons.person_rounded), label: tr(context, 'profile')),
         ],
       ),

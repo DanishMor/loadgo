@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 
 import '../core/l10n/l10n.dart';
+import '../core/fleet/fleet_logic.dart';
 import '../core/models/booking.dart';
+import '../core/models/vehicle.dart';
+import '../core/services/booking_service.dart';
+import '../core/services/vehicle_service.dart';
 import '../core/safety/call.dart';
 import '../core/services/safety_service.dart';
 import '../core/services/trip_evidence_service.dart';
@@ -66,6 +70,39 @@ class _TripSafetyCardState extends State<TripSafetyCard> {
     );
   }
 
+  /// After a breakdown with a replacement requested: pick another vehicle of
+  /// the driver's that is free and can carry the load, and move the trip to it.
+  Future<void> _switchVehicle() async {
+    setState(() => _busy = true);
+    try {
+      final all = await VehicleService.fetchMyActive();
+      final options = replacementCandidates(all, weight: widget.booking.weight, preferType: widget.booking.vehicleType, excludeId: widget.booking.vehicleId);
+      if (!mounted) return;
+      if (options.isEmpty) return showSnack(context, tr(context, 'switchNone'));
+      final pick = await showDialog<Vehicle>(
+        context: context,
+        builder: (c) => SimpleDialog(
+          title: Text(tr(c, 'switchVehicleTitle')),
+          children: [
+            for (final v in options)
+              ListTile(key: ValueKey('switchTo_${v.id}'), leading: const Icon(Icons.local_shipping_rounded), title: Text(v.number), subtitle: Text('${v.type} · ${formatNum(v.capacity)} T'), onTap: () => Navigator.pop(c, v)),
+          ],
+        ),
+      );
+      if (pick == null || !mounted) return;
+      Vehicle? old;
+      for (final v in all) {
+        if (v.id == widget.booking.vehicleId) old = v;
+      }
+      await BookingService.replaceVehicle(widget.booking, pick, old: old);
+      if (mounted) showSnack(context, tr(context, 'vehicleSwitched'));
+    } catch (_) {
+      if (mounted) showSnack(context, tr(context, 'somethingWrong'));
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
   Future<void> _breakdown() async {
     final result = await showDialog<(String, bool)>(context: context, builder: (_) => const _BreakdownDialog());
     if (result == null || !mounted) return;
@@ -111,6 +148,16 @@ class _TripSafetyCardState extends State<TripSafetyCard> {
   Widget build(BuildContext context) {
     return Column(children: [
       _buttons(),
+      if (widget.booking.breakdown?.replacementRequested == true && widget.booking.isActive)
+        Align(
+          alignment: Alignment.centerLeft,
+          child: TextButton.icon(
+            key: const ValueKey('switchVehicleButton'),
+            onPressed: _busy ? null : _switchVehicle,
+            icon: const Icon(Icons.swap_horiz_rounded, size: 18),
+            label: Text(tr(context, 'switchVehicle')),
+          ),
+        ),
       Align(
         alignment: Alignment.centerLeft,
         child: TextButton.icon(

@@ -48,6 +48,7 @@ import 'trip_watch_strings.dart';
 import 'vehicle_strings.dart';
 import 'help_strings.dart';
 import 'ui_strings.dart';
+import 'fleet_extra_strings.dart';
 import 'booking_extra_strings.dart';
 import 'profile_extra_strings.dart';
 
@@ -96,6 +97,7 @@ const List<Map<String, List<String>>> stringTables = [
   enterpriseStrings,
   helpStrings,
   uiStrings,
+  fleetExtraStrings,
   bookingExtraStrings,
   profileExtraStrings,
 ];

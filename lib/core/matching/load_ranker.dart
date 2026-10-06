@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../constants/logistics.dart';
@@ -7,7 +9,7 @@ import '../pricing/cities.dart';
 import 'nearest.dart';
 
 /// Why a load was recommended. Shown as chips on the driver's card.
-enum MatchReason { nearPickup, returnLoad, favouriteRoute, bestFit, onYourRoute }
+enum MatchReason { nearPickup, returnLoad, favouriteRoute, bestFit, onYourRoute, stopsOnRoute }
 
 /// A route the driver saved (city names as typed).
 class FavouriteRoute {
@@ -50,6 +52,37 @@ class PlannedRoute {
     final a = findCity(from), b = findCity(to), p = findCity(load.pickup), d = findCity(load.drop);
     if (a == null || b == null || p == null || d == null) return false;
     return haversineKm(a.lat, a.lng, p.lat, p.lng) <= radiusKm && haversineKm(b.lat, b.lng, d.lat, d.lng) <= radiusKm;
+  }
+
+  /// How far from the straight line [from] -> [to] a stop may be to count as
+  /// "on the way" (SM11).
+  static const corridorKm = 60.0;
+
+  /// Number of the load's extra pickups and drops that lie along the planned
+  /// route (inside [corridorKm] of the line, between the two ends).
+  int stopsAlong(Load load) {
+    final a = findCity(from), b = findCity(to);
+    if (a == null || b == null) return 0;
+    var n = 0;
+    for (final stop in [...load.extraPickups, ...load.extraDrops]) {
+      final c = findCity(stop);
+      if (c != null && _distToSegmentKm(c, a, b) <= corridorKm) n++;
+    }
+    return n;
+  }
+
+  /// Kilometres from [p] to the segment [a]-[b] (flat-earth projection around
+  /// [a], good enough for a corridor test inside India).
+  static double _distToSegmentKm(City p, City a, City b) {
+    const kmPerDeg = 111.19;
+    final cosLat = math.cos(a.lat * math.pi / 180);
+    double px = (p.lng - a.lng) * kmPerDeg * cosLat, py = (p.lat - a.lat) * kmPerDeg;
+    final bx = (b.lng - a.lng) * kmPerDeg * cosLat, by = (b.lat - a.lat) * kmPerDeg;
+    final len2 = bx * bx + by * by;
+    final t = len2 == 0 ? 0.0 : ((px * bx + py * by) / len2).clamp(0.0, 1.0);
+    px -= t * bx;
+    py -= t * by;
+    return math.sqrt(px * px + py * py);
   }
 
   factory PlannedRoute.fromMap(Map<dynamic, dynamic> m) => PlannedRoute(
@@ -203,6 +236,13 @@ class LoadRanker {
     if (ctx.plannedRoute?.fits(load) == true) {
       score += 35;
       reasons.add(MatchReason.onYourRoute);
+    }
+
+    // Extra stops on the way of the planned route: a multi-stop load that fits.
+    final along = ctx.plannedRoute?.stopsAlong(load) ?? 0;
+    if (along > 0) {
+      score += (along * 8).clamp(0, 24);
+      reasons.add(MatchReason.stopsOnRoute);
     }
 
     if (ctx.favourites.any((f) => f.matches(load))) {

@@ -96,6 +96,9 @@ class Booking {
   /// Set when the driver reported a breakdown on this trip.
   final BookingBreakdown? breakdown;
 
+  /// Vehicles this trip was moved away from after breakdowns (oldest first).
+  final List<String> replacedVehicleIds;
+
   /// E-way bill number (12 digits), entered by either party.
   final String ewayBillNo;
 
@@ -137,6 +140,7 @@ class Booking {
     this.deliveryOtpVerified = false,
     this.ewayBillNo = '',
     this.breakdown,
+    this.replacedVehicleIds = const [],
     this.paymentMode = 'cash',
     this.paymentStatus = 'pending',
     this.paidAmountPaise,
@@ -177,12 +181,13 @@ class Booking {
   bool get canDriverCancel => BookingStatus.driverCancellable.contains(status);
   String? get nextStatus => BookingStatus.next(status);
 
-  factory Booking.fromDoc(DocumentSnapshot<Map<String, dynamic>> doc) {
-    final d = doc.data() ?? const {};
+  factory Booking.fromDoc(DocumentSnapshot<Map<String, dynamic>> doc) => Booking.fromMap(doc.id, doc.data() ?? const {});
+
+  factory Booking.fromMap(String docId, Map<String, dynamic> d) {
     final rawTimeline = (d['timeline'] as Map?) ?? const {};
     return Booking(
-      id: doc.id,
-      loadId: d['loadId'] as String? ?? doc.id,
+      id: docId,
+      loadId: d['loadId'] as String? ?? docId,
       driverId: d['driverId'] as String? ?? '',
       vehicleId: d['vehicleId'] as String? ?? '',
       customerId: d['customerId'] as String? ?? '',
@@ -217,6 +222,7 @@ class Booking {
       paymentMode: d['paymentMode'] as String? ?? 'cash',
       paymentStatus: d['paymentStatus'] as String? ?? 'pending',
       paidAmountPaise: (d['paidAmountPaise'] as num?)?.round(),
+      replacedVehicleIds: [for (final x in (d['replacedVehicleIds'] as List?) ?? const []) x.toString()],
       breakdown: d['breakdown'] is Map ? BookingBreakdown.fromMap(Map<String, dynamic>.from(d['breakdown'] as Map)) : null,
       extraPickups: [for (final s in (d['extraPickups'] as List?) ?? const []) s.toString()],
       extraDrops: [for (final s in (d['extraDrops'] as List?) ?? const []) s.toString()],

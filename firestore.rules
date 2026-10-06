@@ -553,6 +553,24 @@ service cloud.firestore {
       allow delete: if signedIn() && resource.data.ownerId == request.auth.uid;
     }
 
+    // vehicle_expenses/{id}: fuel, toll, repair and service lines the vehicle's
+    // owner keeps for their own books (paise). Private to the owner; a wrong
+    // line is deleted and entered again.
+    match /vehicle_expenses/{expenseId} {
+      allow read, delete: if signedIn() && resource.data.ownerId == request.auth.uid;
+      allow create: if signedIn()
+          && request.resource.data.keys().hasOnly(['ownerId', 'vehicleId', 'kind', 'amountPaise', 'note', 'date', 'createdAt'])
+          && request.resource.data.ownerId == request.auth.uid
+          && request.resource.data.vehicleId is string
+          && get(docPath('vehicles', request.resource.data.vehicleId)).data.ownerId == request.auth.uid
+          && request.resource.data.kind in ['fuel', 'toll', 'repair', 'service', 'other']
+          && request.resource.data.amountPaise is int && request.resource.data.amountPaise >= 1 && request.resource.data.amountPaise <= 10000000
+          && request.resource.data.note is string && request.resource.data.note.size() <= 100
+          && request.resource.data.date is timestamp
+          && request.resource.data.createdAt == request.time;
+      allow update: if false;
+    }
+
     // identity_index/{sha256(type + number)} = {uid, role, type, createdAt}.
     // One document (licence, PAN, RC, GST) can belong to one account only: the
     // id is derived from the number, so a second create is an update and
@@ -964,6 +982,24 @@ service cloud.firestore {
           && b.reportedAt == request.time;
     }
 
+    // After a breakdown with a replacement requested, the driver moves the trip
+    // to another vehicle they own or are assigned, one that can carry the load.
+    function driverReplacesVehicle() {
+      let nv = request.resource.data.get('vehicleId', '');
+      let v = get(docPath('vehicles', nv)).data;
+      return resource.data.status in ['accepted', 'driver_arriving', 'loading', 'picked_up', 'in_transit']
+          && request.resource.data.status == resource.data.status
+          && resource.data.get('breakdown', {}).get('replacementRequested', false) == true
+          && changedKeys().hasOnly(['vehicleId', 'vehicleNumber', 'replacedVehicleIds', 'updatedAt'])
+          && nv is string && nv != resource.data.vehicleId
+          && (v.ownerId == request.auth.uid || v.get('assignedDriverId', '') == request.auth.uid)
+          && v.get('status', 'active') == 'active'
+          && v.capacity >= resource.data.weight
+          && request.resource.data.vehicleNumber == v.number
+          && request.resource.data.replacedVehicleIds is list && request.resource.data.replacedVehicleIds.size() <= 3
+          && resource.data.vehicleId in request.resource.data.replacedVehicleIds;
+    }
+
     // Either party records the e-way bill number (12 digits) or clears it.
     function ewayBillUpdate() {
       return changedKeys().hasOnly(['ewayBillNo', 'updatedAt'])
@@ -1139,6 +1175,7 @@ service cloud.firestore {
               || evidenceUpdate()
               || driverConfirmsPayment(bookingId)
               || breakdownReport()
+              || driverReplacesVehicle()
               || driverStep(bookingId)
               || (changedKeys().hasOnly(['status', 'timeline', 'updatedAt', 'cancellation'])
                   && resource.data.status in ['accepted', 'driver_arriving']

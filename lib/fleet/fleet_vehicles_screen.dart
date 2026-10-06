@@ -7,6 +7,7 @@ import '../core/models/vehicle.dart';
 import '../core/services/fleet_service.dart';
 import '../core/services/vehicle_service.dart';
 import '../core/services/vehicle_type_service.dart';
+import '../core/vehicles/vehicle_expenses_screen.dart';
 import '../core/widgets/common.dart';
 import '../core/widgets/live_stream.dart';
 import '../core/widgets/logistics_labels.dart';
@@ -106,6 +107,15 @@ class _FleetVehiclesScreenState extends State<FleetVehiclesScreen> {
                       Text(v.number, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
                       Text('${vehicleTypeLabel(context, v.type)} • ${formatNum(v.capacity)} T', style: TextStyle(color: AppColors.muted)),
                       Wrap(spacing: 6, children: [StatusChip(label: availabilityLabel(context, v.availability), color: availabilityColor(v.availability))]),
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: TextButton.icon(
+                          key: ValueKey('expenses_${v.id}'),
+                          onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => VehicleExpensesScreen(vehicleId: v.id, vehicleNumber: v.number))),
+                          icon: const Icon(Icons.receipt_long_outlined, size: 18),
+                          label: Text(tr(context, 'exTitle')),
+                        ),
+                      ),
                       DropdownButtonFormField<String?>(
                         isExpanded: true,
                         key: ValueKey('assign_${v.id}'),

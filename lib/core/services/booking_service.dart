@@ -288,6 +288,32 @@ class BookingService {
     });
   }
 
+  /// After a breakdown with a replacement requested: the driver moves the trip
+  /// to [replacement] (their own or assigned vehicle that can carry the load).
+  /// The new vehicle goes on_trip; the old one goes to maintenance when the
+  /// driver owns it.
+  static Future<void> replaceVehicle(Booking booking, Vehicle replacement, {Vehicle? old}) async {
+    final uid = Backend.requireUid();
+    if (booking.driverId != uid) throw StateError('not your trip');
+    if (booking.breakdown?.replacementRequested != true) throw StateError('no replacement requested');
+    if (!replacement.canTakeBooking || replacement.capacity < booking.weight || replacement.id == booking.vehicleId) {
+      throw ArgumentError.value(replacement.id, 'replacement');
+    }
+    final db = Backend.db;
+    final batch = db.batch();
+    batch.update(_col.doc(booking.id), {
+      'vehicleId': replacement.id,
+      'vehicleNumber': replacement.number,
+      'replacedVehicleIds': [...booking.replacedVehicleIds, booking.vehicleId],
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+    batch.update(db.collection('vehicles').doc(replacement.id), {'availability': VehicleAvailability.onTrip, 'updatedAt': FieldValue.serverTimestamp()});
+    if (old != null && old.ownerId == uid) {
+      batch.update(db.collection('vehicles').doc(old.id), {'availability': VehicleAvailability.maintenance, 'updatedAt': FieldValue.serverTimestamp()});
+    }
+    await batch.commit();
+  }
+
   /// Driver backs out of an accepted (not yet picked up) booking: the booking
   /// becomes cancelled, the load reopens for other drivers and the customer
   /// is notified.

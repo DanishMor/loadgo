@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../core/services/backend.dart';
+import '../core/vehicles/vehicle_expenses_screen.dart';
+
 import '../core/models/vehicle.dart';
 import '../core/services/vehicle_service.dart';
 import '../core/widgets/common.dart';
@@ -149,6 +152,15 @@ class _VehicleCardState extends State<_VehicleCard> {
                   icon: const Icon(Icons.assignment_outlined, size: 18),
                   label: Text(tr(context, 'vehicleDocs')),
                 ),
+                if (v.ownerId == Backend.uid)
+                  TextButton.icon(
+                    key: ValueKey('expenses_${v.id}'),
+                    style: TextButton.styleFrom(padding: EdgeInsets.zero),
+                    onPressed: () => Navigator.of(context)
+                        .push(MaterialPageRoute(builder: (_) => VehicleExpensesScreen(vehicleId: v.id, vehicleNumber: v.number))),
+                    icon: const Icon(Icons.receipt_long_outlined, size: 18),
+                    label: Text(tr(context, 'exTitle')),
+                  ),
               ],
             ),
           ),

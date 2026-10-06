@@ -12,6 +12,7 @@ String matchReasonLabel(BuildContext context, MatchReason r) => tr(context, swit
       MatchReason.favouriteRoute => 'matchFavouriteRoute',
       MatchReason.bestFit => 'matchBestFit',
       MatchReason.onYourRoute => 'matchOnYourRoute',
+      MatchReason.stopsOnRoute => 'matchStopsOnRoute',
     });
 
 /// Small chips telling the driver why a load was recommended.

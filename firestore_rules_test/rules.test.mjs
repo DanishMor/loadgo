@@ -3029,3 +3029,56 @@ describe('load visibility, pickup now and repeating loads', () => {
     await assertSucceeds(deleteDoc(doc(as('u1'), 'users', 'u1', 'recurring_loads', 'R1')));
   });
 });
+
+describe('vehicle expenses and switching vehicle after a breakdown', () => {
+  const expense = (over = {}) => ({ ownerId: 'driver1', vehicleId: 'v1', kind: 'fuel', amountPaise: 450000, note: 'Kherki', date: Timestamp.fromDate(new Date('2026-10-05')), createdAt: serverTimestamp(), ...over });
+
+  test('expense lines: owner of the vehicle only, shaped, private', async () => {
+    await seedOpenLoad();
+    await assertSucceeds(setDoc(doc(as('driver1'), 'vehicle_expenses', 'E1'), expense()));
+    await assertFails(setDoc(doc(as('driver1'), 'vehicle_expenses', 'E2'), expense({ kind: 'beer' })));
+    await assertFails(setDoc(doc(as('driver1'), 'vehicle_expenses', 'E3'), expense({ amountPaise: 0 })));
+    await assertFails(setDoc(doc(as('driver1'), 'vehicle_expenses', 'E4'), expense({ amountPaise: 10000001 })));
+    await assertFails(setDoc(doc(as('driver1'), 'vehicle_expenses', 'E5'), expense({ amountPaise: 12.5 })));
+    await assertFails(setDoc(doc(as('driver1'), 'vehicle_expenses', 'E6'), expense({ extra: 1 })));
+    await assertFails(setDoc(doc(as('driver1'), 'vehicle_expenses', 'E7'), expense({ vehicleId: 'v2' }))); // not their vehicle
+    await assertFails(setDoc(doc(as('driver2'), 'vehicle_expenses', 'E8'), expense({ ownerId: 'driver2' }))); // vehicle v1 is not theirs
+    await assertFails(getDoc(doc(as('driver2'), 'vehicle_expenses', 'E1')));
+    await assertSucceeds(getDoc(doc(as('driver1'), 'vehicle_expenses', 'E1')));
+    await assertFails(updateDoc(doc(as('driver1'), 'vehicle_expenses', 'E1'), { amountPaise: 1 }));
+    await assertFails(deleteDoc(doc(as('driver2'), 'vehicle_expenses', 'E1')));
+    await assertSucceeds(deleteDoc(doc(as('driver1'), 'vehicle_expenses', 'E1')));
+  });
+
+  const swap = (over = {}) => ({ vehicleId: 'v3', vehicleNumber: 'GJ01CD9999', replacedVehicleIds: ['v1'], updatedAt: serverTimestamp(), ...over });
+
+  async function seedBroken(replacement = true) {
+    await seedBooking('in_transit');
+    await seed(async (db) => {
+      await setDoc(doc(db, 'vehicles', 'v3'), { ...VEHICLE, number: 'GJ01CD9999', capacity: 12 });
+      await updateDoc(doc(db, 'bookings', 'L1'), { breakdown: { note: 'axle', replacementRequested: replacement, reportedAt: Timestamp.now() } });
+    });
+  }
+
+  test('the driver moves the trip to another of their vehicles after a breakdown', async () => {
+    await seedBroken();
+    const ref = doc(as('driver1'), 'bookings', 'L1');
+    await assertFails(updateDoc(doc(as('customer1'), 'bookings', 'L1'), swap()));
+    await assertFails(updateDoc(doc(as('driver2'), 'bookings', 'L1'), swap()));
+    await assertFails(updateDoc(ref, swap({ vehicleNumber: 'WRONG' })));
+    await assertFails(updateDoc(ref, swap({ replacedVehicleIds: [] })));
+    await assertFails(updateDoc(ref, swap({ vehicleId: 'v1', vehicleNumber: 'MH12AB1234' }))); // same vehicle
+    await assertFails(updateDoc(ref, swap({ vehicleId: 'v2', vehicleNumber: 'KA01CD5678' }))); // driver2's vehicle
+    await assertFails(updateDoc(ref, { ...swap(), status: 'delivered' }));
+    await assertFails(updateDoc(ref, { ...swap(), budget: 1 }));
+    await assertSucceeds(updateDoc(ref, swap()));
+  });
+
+  test('without a replacement request the vehicle cannot be changed; a vehicle that is too small is refused', async () => {
+    await seedBroken(false);
+    await assertFails(updateDoc(doc(as('driver1'), 'bookings', 'L1'), swap()));
+    await seed((db) => updateDoc(doc(db, 'bookings', 'L1'), { breakdown: { note: 'x', replacementRequested: true, reportedAt: Timestamp.now() } }));
+    await seed((db) => updateDoc(doc(db, 'vehicles', 'v3'), { capacity: 2 }));
+    await assertFails(updateDoc(doc(as('driver1'), 'bookings', 'L1'), swap()));
+  });
+});
