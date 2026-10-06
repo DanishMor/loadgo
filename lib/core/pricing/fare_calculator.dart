@@ -6,6 +6,8 @@
 /// customer sees; Firestore rules only check its shape.
 library;
 
+import 'surge.dart';
+
 int _pct(int amount, num percent) => (amount * (percent * 100).round() / 10000).round();
 
 /// Rate card for one vehicle type (or category).
@@ -237,6 +239,12 @@ class FareBreakdown {
 
   /// Top-up so the trip fare reaches the minimum fare (0 if not needed).
   final int minimumFareAdjustment;
+
+  /// Peak/night/festival surge on the base freight (0 when off) with the
+  /// percent applied and its [SurgeKind].
+  final int surgeCharge;
+  final int surgePercent;
+  final String surgeKind;
   final int platformFee;
   final int gst;
   final num platformFeePercent;
@@ -258,6 +266,9 @@ class FareBreakdown {
     this.floorCharge = 0,
     this.packingCharge = 0,
     required this.minimumFareAdjustment,
+    this.surgeCharge = 0,
+    this.surgePercent = 0,
+    this.surgeKind = SurgeKind.none,
     required this.platformFee,
     required this.gst,
     required this.platformFeePercent,
@@ -267,11 +278,11 @@ class FareBreakdown {
   /// What the trip itself costs (driver side), before platform fee and GST.
   int get tripFare =>
       baseFare + distanceCharge + loadingCharge + unloadingCharge + waitingCharge + extraStopCharge + minimumFareAdjustment +
-      helperCharge + rentalCharge + extraKmCharge + extraHourCharge + itemHandlingCharge + floorCharge + packingCharge;
+      helperCharge + rentalCharge + extraKmCharge + extraHourCharge + itemHandlingCharge + floorCharge + packingCharge + surgeCharge;
 
   int get total => tripFare + platformFee + gst;
 
-  Map<String, num> toMap() => {
+  Map<String, Object> toMap() => {
         'distanceKm': distanceKm,
         'baseFare': baseFare,
         'distanceCharge': distanceCharge,
@@ -287,6 +298,7 @@ class FareBreakdown {
         'floorCharge': floorCharge,
         'packingCharge': packingCharge,
         'minimumFareAdjustment': minimumFareAdjustment,
+        if (surgeCharge > 0) ...{'surgeCharge': surgeCharge, 'surgePercent': surgePercent, 'surgeKind': surgeKind},
         'platformFee': platformFee,
         'gst': gst,
         'platformFeePercent': platformFeePercent,
@@ -313,6 +325,9 @@ class FareBreakdown {
       floorCharge: v('floorCharge'),
       packingCharge: v('packingCharge'),
       minimumFareAdjustment: v('minimumFareAdjustment'),
+      surgeCharge: v('surgeCharge'),
+      surgePercent: v('surgePercent'),
+      surgeKind: m['surgeKind'] is String ? m['surgeKind'] as String : SurgeKind.none,
       platformFee: v('platformFee'),
       gst: v('gst'),
       platformFeePercent: m['platformFeePercent'] as num? ?? 0,
@@ -345,6 +360,7 @@ class FareCalculator {
     int extraStops = 0,
     int helpers = 0,
     MoversDetails? movers,
+    SurgeQuote surge = SurgeQuote.none,
   }) {
     if (distanceKm < 0) throw ArgumentError.value(distanceKm, 'distanceKm');
     if (helpers < 0 || helpers > maxHelpers) throw ArgumentError.value(helpers, 'helpers');
@@ -361,7 +377,9 @@ class FareCalculator {
     final packing = movers == null || !movers.packingNeeded ? 0 : rule.packingPerItem * movers.units;
     final sum = base + distance + load + unload + waiting + stops;
     final topUp = sum < rule.minimumFare ? rule.minimumFare - sum : 0;
-    final trip = sum + topUp + helper + handling + floors + packing;
+    // Surge applies to the base freight only (not helpers, handling or fees).
+    final surgeCharge = surge.active ? _pct(sum + topUp, surge.percent) : 0;
+    final trip = sum + topUp + surgeCharge + helper + handling + floors + packing;
     final fee = _pct(trip, platformFeePercent);
     final gst = _pct(trip + fee, gstPercent);
     return FareBreakdown(
@@ -377,6 +395,9 @@ class FareCalculator {
       waitingCharge: waiting,
       extraStopCharge: stops,
       minimumFareAdjustment: topUp,
+      surgeCharge: surgeCharge,
+      surgePercent: surgeCharge > 0 ? surge.percent : 0,
+      surgeKind: surgeCharge > 0 ? surge.kind : SurgeKind.none,
       platformFee: fee,
       gst: gst,
       platformFeePercent: platformFeePercent,

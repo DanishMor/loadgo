@@ -1011,6 +1011,9 @@ service cloud.firestore {
           && e.get('itemHandlingCharge', 0) is int && e.get('itemHandlingCharge', 0) >= 0
           && e.get('floorCharge', 0) is int && e.get('floorCharge', 0) >= 0
           && e.get('packingCharge', 0) is int && e.get('packingCharge', 0) >= 0;
+    // surgeCharge / surgePercent / surgeKind are not checked here: the promo
+    // load create rules sit at the 1000-expression limit. They only sit inside
+    // the estimate, which is a client-side figure anyway (TODO(functions)).
     }
 
     // Shipper edits/cancels a load that nobody has accepted yet.

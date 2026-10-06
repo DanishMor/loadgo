@@ -1,5 +1,6 @@
 import '../scheduling/schedule.dart';
 import 'fare_calculator.dart';
+import 'surge.dart';
 
 /// `config/pricing`: rate cards per vehicle category with optional
 /// per-vehicle-type overrides, plus fee/tax/cancellation settings.
@@ -26,6 +27,9 @@ class PricingConfig {
   final double roadFactor;
   final CancellationPolicy cancellation;
 
+  /// Peak / night / festival surge (OFF unless an admin enables it).
+  final SurgeRule surge;
+
   const PricingConfig({
     required this.categories,
     this.types = const {},
@@ -37,6 +41,7 @@ class PricingConfig {
     this.schedule = const ScheduleRules(),
     this.roadFactor = 1.25,
     this.cancellation = const CancellationPolicy(),
+    this.surge = SurgeRule.off,
   });
 
   PricingRule ruleFor(String vehicleTypeId, String category) =>
@@ -71,6 +76,7 @@ class PricingConfig {
       ),
       roadFactor: (m['roadFactor'] as num?)?.toDouble() ?? defaultPricing.roadFactor,
       cancellation: CancellationPolicy.fromMap(m['cancellation'] as Map<String, dynamic>?),
+      surge: SurgeRule.fromMap(m['surge']),
     );
   }
 
@@ -85,6 +91,7 @@ class PricingConfig {
         'schedule': schedule.toMap(),
         'roadFactor': roadFactor,
         'cancellation': cancellation.toMap(),
+        'surge': surge.toMap(),
       };
 }
 

@@ -2,7 +2,15 @@ import 'package:flutter/material.dart';
 
 import '../l10n/l10n.dart';
 import '../pricing/fare_calculator.dart';
+import '../pricing/surge.dart';
 import 'common.dart';
+
+/// String key of the surge line for a `SurgeKind`.
+String surgeLabelKey(String kind) => switch (kind) {
+      SurgeKind.night => 'fareSurgeNight',
+      SurgeKind.festival => 'fareSurgeFestival',
+      _ => 'fareSurgePeak',
+    };
 
 /// Line-by-line fare breakdown (all paise). Zero lines are skipped.
 class FareBreakdownView extends StatelessWidget {
@@ -46,6 +54,7 @@ class FareBreakdownView extends StatelessWidget {
         if (f.waitingCharge > 0) _row(tr(context, 'fareWaiting'), f.waitingCharge),
         if (f.extraStopCharge > 0) _row(tr(context, 'fareExtraStops'), f.extraStopCharge),
         if (f.minimumFareAdjustment > 0) _row(tr(context, 'fareMinimum'), f.minimumFareAdjustment),
+        if (f.surgeCharge > 0) _row(trf(context, surgeLabelKey(f.surgeKind), {'p': f.surgePercent}), f.surgeCharge),
         const Divider(),
         _row(tr(context, 'fareTrip'), f.tripFare, bold: true),
         _row(trf(context, 'farePlatform', {'p': formatNum(f.platformFeePercent)}), f.platformFee),

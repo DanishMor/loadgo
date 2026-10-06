@@ -268,6 +268,7 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
       extraStops: _extraPickups.length + _extraDrops.length,
       helpers: _helpers,
       movers: movers,
+      at: _scheduledAt ?? _pickupDate?.add(const Duration(hours: 12)),
     );
   }
 

@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import '../pricing/cities.dart';
 import '../pricing/fare_calculator.dart';
 import '../pricing/pricing_config.dart';
+import '../pricing/surge.dart';
 import 'backend.dart';
 import 'vehicle_type_service.dart';
 
@@ -62,6 +63,9 @@ class PricingService {
     int waitingMinutes = 0,
     int helpers = 0,
     MoversDetails? movers,
+
+    /// Pickup moment; surge (when enabled) is looked up at this time.
+    DateTime? at,
   }) {
     final category = VehicleTypeService.byId(vehicleType)?.category ?? 'lcv';
     final c = config;
@@ -74,6 +78,7 @@ class PricingService {
       waitingMinutes: waitingMinutes,
       helpers: helpers,
       movers: movers,
+      surge: at == null ? SurgeQuote.none : SurgeCalculator.at(at, c.surge),
     );
   }
 
