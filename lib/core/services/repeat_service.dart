@@ -63,6 +63,10 @@ class RepeatService {
     await batch.commit();
   }
 
+  /// Ids of the favourite drivers (for a load limited to them).
+  static Future<List<String>> favouriteIds([String? uid]) async =>
+      [for (final d in (await _me(uid).collection('favourite_drivers').get()).docs) d.id];
+
   static Future<void> removeFavourite(String driverId) => _me().collection('favourite_drivers').doc(driverId).delete();
 
   // ---- block list ----

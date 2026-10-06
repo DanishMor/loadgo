@@ -117,3 +117,36 @@ int roadKmBetween(City a, City b, {double roadFactor = 1.25, int sameCityKm = 15
   if (a.name == b.name) return sameCityKm;
   return (haversineKm(a.lat, a.lng, b.lat, b.lng) * roadFactor).ceil();
 }
+
+/// Cities whose name or alias starts with / contains [query], prefix matches
+/// first (for the typeahead on place fields). Empty query gives nothing.
+List<City> suggestCities(String query, {int limit = 6}) {
+  final q = _norm(query);
+  if (q.isEmpty) return const [];
+  final starts = <City>[];
+  final contains = <City>[];
+  for (final c in indianCities) {
+    final names = [c.name, ...c.aliases].map(_norm);
+    if (names.any((n) => n.startsWith(q))) {
+      starts.add(c);
+    } else if (q.length >= 2 && names.any((n) => n.contains(q))) {
+      contains.add(c);
+    }
+  }
+  return [...starts, ...contains].take(limit).toList();
+}
+
+/// The city of the table closest to a position, or null when none lies
+/// within [maxKm] (a position far outside the table is not "in" any city).
+City? nearestCity(double lat, double lng, {double maxKm = 80}) {
+  City? best;
+  var bestKm = double.infinity;
+  for (final c in indianCities) {
+    final km = haversineKm(lat, lng, c.lat, c.lng);
+    if (km < bestKm) {
+      bestKm = km;
+      best = c;
+    }
+  }
+  return bestKm <= maxKm ? best : null;
+}

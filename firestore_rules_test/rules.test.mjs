@@ -1611,9 +1611,14 @@ describe('bookings', () => {
     await assertFails(deleteDoc(doc(as('driver1'), 'bookings', 'L1')));
   });
 
-  test('driver shares live location only while in transit', async () => {
+  test('driver shares live location only while on the way to the pickup or in transit', async () => {
     const loc = () => ({ lastKnownLocation: new GeoPoint(28.6, 77.2), locationUpdatedAt: serverTimestamp() });
-    await seedBooking('picked_up');
+    await seedBooking('loading');
+    await assertFails(updateDoc(doc(as('driver1'), 'bookings', 'L1'), loc()));
+    await seed((db) => updateDoc(doc(db, 'bookings', 'L1'), { status: 'driver_arriving' }));
+    await assertSucceeds(updateDoc(doc(as('driver1'), 'bookings', 'L1'), loc()));
+    await assertFails(updateDoc(doc(as('driver1'), 'bookings', 'L1'), { ...loc(), status: 'in_transit' }));
+    await seed((db) => updateDoc(doc(db, 'bookings', 'L1'), { status: 'picked_up' }));
     await assertFails(updateDoc(doc(as('driver1'), 'bookings', 'L1'), loc()));
     await seed((db) => updateDoc(doc(db, 'bookings', 'L1'), { status: 'in_transit' }));
     await assertSucceeds(updateDoc(doc(as('driver1'), 'bookings', 'L1'), loc()));
@@ -2985,5 +2990,42 @@ describe('profile extras and review flag', () => {
   test('mobile change writes a phone_change signal for oneself only', async () => {
     await assertSucceeds(setDoc(doc(as('u1'), 'risk_signals', 'S1'), { uid: 'u1', type: 'phone_change', note: 'from •••3210 to •••6789', createdAt: serverTimestamp() }));
     await assertFails(setDoc(doc(as('u1'), 'risk_signals', 'S2'), { uid: 'u2', type: 'phone_change', createdAt: serverTimestamp() }));
+  });
+});
+
+describe('load visibility, pickup now and repeating loads', () => {
+  const post = (over) => setDoc(doc(as('customer1'), 'loads', 'N1'), { ...LOAD, ...over });
+
+  test('visibility is public, or favourites/invite with 1 to 20 allowed drivers', async () => {
+    await assertSucceeds(post({ instant: true }));
+    await assertSucceeds(post({ visibility: 'public' }));
+    await assertSucceeds(post({ visibility: 'favourites', allowedDriverIds: ['driver1'] }));
+    await assertSucceeds(post({ visibility: 'invite', allowedDriverIds: ['driver1'] }));
+    await assertFails(post({ visibility: 'favourites' }));
+    await assertFails(post({ visibility: 'favourites', allowedDriverIds: [] }));
+    await assertFails(post({ visibility: 'favourites', allowedDriverIds: Array.from({ length: 21 }, (_, i) => `d${i}`) }));
+    await assertFails(post({ visibility: 'public', allowedDriverIds: ['driver1'] }));
+    await assertFails(post({ visibility: 'secret', allowedDriverIds: ['driver1'] }));
+    await assertFails(post({ instant: 'yes' }));
+  });
+
+  test('only an allowed driver can accept a restricted load', async () => {
+    await seedOpenLoad();
+    await seed((db) => setDoc(doc(db, 'loads', 'L1'), { ...LOAD, visibility: 'favourites', allowedDriverIds: ['driver2'] }));
+    await assertFails(acceptBatch(as('driver1'), 'L1'));
+    await assertSucceeds(acceptBatch(as('driver2'), 'L1', 'driver2', { vehicleId: 'v2', vehicleNumber: 'KA01CD5678' }));
+  });
+
+  test('repeating loads are private to the customer, weekly or monthly, and shaped', async () => {
+    const r = (over = {}) => ({ name: 'Pune - Delhi', pickup: 'Pune', drop: 'Delhi', cargoType: 'FMCG', weight: 8, vehicleType: '20ft',
+      frequency: 'weekly', nextDueAt: Timestamp.fromDate(new Date('2026-10-13')), active: true, createdAt: serverTimestamp(), ...over });
+    await assertSucceeds(setDoc(doc(as('u1'), 'users', 'u1', 'recurring_loads', 'R1'), r()));
+    await assertFails(setDoc(doc(as('u1'), 'users', 'u1', 'recurring_loads', 'R2'), r({ frequency: 'daily' })));
+    await assertFails(setDoc(doc(as('u1'), 'users', 'u1', 'recurring_loads', 'R3'), r({ extra: 1 })));
+    await assertFails(setDoc(doc(as('u1'), 'users', 'u1', 'recurring_loads', 'R4'), r({ weight: 0 })));
+    await assertFails(setDoc(doc(as('u2'), 'users', 'u1', 'recurring_loads', 'R5'), r()));
+    await assertFails(getDoc(doc(as('u2'), 'users', 'u1', 'recurring_loads', 'R1')));
+    await assertSucceeds(updateDoc(doc(as('u1'), 'users', 'u1', 'recurring_loads', 'R1'), { nextDueAt: Timestamp.fromDate(new Date('2026-10-20')) }));
+    await assertSucceeds(deleteDoc(doc(as('u1'), 'users', 'u1', 'recurring_loads', 'R1')));
   });
 });

@@ -344,6 +344,31 @@ service cloud.firestore {
           && request.resource.data.createdAt == request.time;
     }
 
+    // users/{uid}/recurring_loads: a shipment that repeats weekly or monthly.
+    // Nothing posts by itself; the app offers it when due. The 10-per-user cap
+    // is enforced by the app.
+    match /users/{userId}/recurring_loads/{recurringId} {
+      allow read, delete: if isUser(userId);
+      allow create, update: if isUser(userId)
+          && request.resource.data.keys().hasOnly(['name', 'pickup', 'drop', 'cargoType', 'weight', 'vehicleType', 'budget', 'notes',
+                                                   'pickupSlot', 'fragile', 'highValue', 'costCenter', 'frequency', 'nextDueAt', 'active', 'createdAt'])
+          && request.resource.data.name is string && request.resource.data.name.size() >= 1 && request.resource.data.name.size() <= 40
+          && request.resource.data.pickup is string && request.resource.data.pickup.size() >= 2 && request.resource.data.pickup.size() <= 200
+          && request.resource.data.drop is string && request.resource.data.drop.size() >= 2 && request.resource.data.drop.size() <= 200
+          && request.resource.data.cargoType is string && request.resource.data.cargoType.size() <= 60
+          && request.resource.data.weight is number && request.resource.data.weight > 0 && request.resource.data.weight <= 1000
+          && request.resource.data.vehicleType is string && request.resource.data.vehicleType.size() <= 40
+          && (request.resource.data.get('budget', null) == null || (request.resource.data.budget is number && request.resource.data.budget > 0))
+          && request.resource.data.get('notes', '') is string && request.resource.data.get('notes', '').size() <= 300
+          && request.resource.data.get('pickupSlot', 'any') in ['any', 'morning', 'midday', 'afternoon', 'evening']
+          && request.resource.data.get('fragile', false) is bool
+          && request.resource.data.get('highValue', false) is bool
+          && request.resource.data.get('costCenter', 'x') is string && request.resource.data.get('costCenter', 'x').size() <= 30
+          && request.resource.data.frequency in ['weekly', 'monthly']
+          && request.resource.data.nextDueAt is timestamp
+          && request.resource.data.active is bool;
+    }
+
     // users/{uid}/favourite_drivers and blocked_drivers: private lists keyed by
     // the driver's uid. A blocked driver is copied onto new loads
     // (blockedDriverIds) so the driver cannot accept them; the app also hides
@@ -616,6 +641,14 @@ service cloud.firestore {
           && get(docPath('business_members', ownerId + '_' + memberId)).data.active == true;
     }
 
+    // public (default) | favourites | invite: the last two list the drivers who may accept.
+    function validVisibility(d) {
+      return !('visibility' in d)
+          || (d.visibility == 'public' && !('allowedDriverIds' in d))
+          || (d.visibility in ['favourites', 'invite'] && d.get('allowedDriverIds', []) is list
+              && d.get('allowedDriverIds', []).size() >= 1 && d.get('allowedDriverIds', []).size() <= 20);
+    }
+
     function validLoad(d) {
       return d.pickup is string && d.pickup.size() > 1 && d.pickup.size() <= 200
           && d.drop is string && d.drop.size() > 1 && d.drop.size() <= 200
@@ -634,6 +667,8 @@ service cloud.firestore {
           && validBookingType(d)
           && (!('invitedDriverId' in d) || (d.invitedDriverId is string && d.invitedDriverId.size() >= 1 && d.invitedDriverId.size() <= 60))
           && (!('blockedDriverIds' in d) || (d.blockedDriverIds is list && d.blockedDriverIds.size() <= 50))
+          && validVisibility(d)
+          && (!('instant' in d) || d.instant is bool)
           && (!('costCenter' in d) || (d.costCenter is string && d.costCenter.size() >= 1 && d.costCenter.size() <= 30))
           && (!('businessId' in d) || (d.businessId is string && (d.businessId == d.shipperId || activeBooker(d.businessId, d.shipperId))))
           && (!('scheduledAt' in d) || d.scheduledAt is timestamp)
@@ -997,6 +1032,7 @@ service cloud.firestore {
           && load.status == 'open'
           && load.shipperId != request.auth.uid
           && !(request.auth.uid in load.get('blockedDriverIds', []))
+          && (load.get('visibility', 'public') == 'public' || request.auth.uid in load.get('allowedDriverIds', []))
           && b.customerId == load.shipperId
           // Denormalized copy must match the load the customer posted.
           && b.pickup == load.pickup
@@ -1043,11 +1079,11 @@ service cloud.firestore {
               && getAfter(docPath('offers', b.offerId)).data.bookingId == bookingId);
     }
 
-    // Live location: the driver may refresh their position only while the
-    // trip is in transit, without touching anything else.
+    // Live location: the driver may refresh their position only while on the
+    // way to the pickup or in transit, without touching anything else.
     function driverLocationUpdate() {
-      return resource.data.status == 'in_transit'
-          && request.resource.data.status == 'in_transit'
+      return resource.data.status in ['driver_arriving', 'in_transit']
+          && request.resource.data.status == resource.data.status
           && changedKeys().hasOnly(['lastKnownLocation', 'locationUpdatedAt'])
           && request.resource.data.lastKnownLocation is latlng;
     }

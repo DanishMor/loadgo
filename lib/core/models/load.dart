@@ -3,6 +3,17 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../constants/logistics.dart';
 import '../pricing/fare_calculator.dart';
 
+/// Who may see and accept a load. `favourites` and `invite` copy the allowed
+/// driver ids onto the load (`allowedDriverIds`); the rules refuse anyone else.
+class LoadVisibility {
+  LoadVisibility._();
+  static const public = 'public';
+  static const favourites = 'favourites';
+  static const invite = 'invite';
+  static const all = [public, favourites, invite];
+  static const maxAllowed = 20;
+}
+
 class Load {
   final String id;
   final String shipperId;
@@ -71,6 +82,13 @@ class Load {
   /// and cannot accept it.
   final List<String> blockedDriverIds;
 
+  /// [LoadVisibility] value and, when not public, the drivers who may accept.
+  final String visibility;
+  final List<String> allowedDriverIds;
+
+  /// "Pickup now": wanted within the hour (drivers see a chip, ranked first).
+  final bool instant;
+
   /// Exact pickup time for an advance booking (null = no fixed time).
   final DateTime? scheduledAt;
 
@@ -119,6 +137,9 @@ class Load {
     this.businessId,
     this.costCenter,
     this.blockedDriverIds = const [],
+    this.visibility = LoadVisibility.public,
+    this.allowedDriverIds = const [],
+    this.instant = false,
     this.fragile = false,
     this.highValue = false,
     this.promoCode,
@@ -129,7 +150,10 @@ class Load {
   bool get isOpen => status == LoadStatus.open;
 
   /// True when [driverId] is on this load's block list.
-  bool blocks(String? driverId) => driverId != null && blockedDriverIds.contains(driverId);
+  bool blocks(String? driverId) => driverId != null && (blockedDriverIds.contains(driverId) || !allows(driverId));
+
+  /// False when the load is limited to chosen drivers and [driverId] is not one.
+  bool allows(String? driverId) => visibility == LoadVisibility.public || (driverId != null && allowedDriverIds.contains(driverId));
 
   /// Every stop in visiting order: pickups, extra drops, final drop.
   List<String> get route => [pickup, ...extraPickups, ...extraDrops, drop];
@@ -174,6 +198,9 @@ class Load {
       businessId: d['businessId'] as String?,
       costCenter: d['costCenter'] as String?,
       blockedDriverIds: [for (final s in (d['blockedDriverIds'] as List?) ?? const []) s.toString()],
+      visibility: LoadVisibility.all.contains(d['visibility']) ? d['visibility'] as String : LoadVisibility.public,
+      allowedDriverIds: [for (final s in (d['allowedDriverIds'] as List?) ?? const []) s.toString()],
+      instant: d['instant'] == true,
       fragile: d['fragile'] == true,
       highValue: d['highValue'] == true,
       promoCode: (d['promo'] as Map?)?['code'] as String?,

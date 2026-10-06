@@ -10,6 +10,8 @@ import 'cancel_scheduled_button.dart';
 import 'driver_trust_row.dart';
 import '../core/widgets/booking_widgets.dart';
 import '../core/widgets/trip_eta_card.dart';
+import '../core/models/lifecycle.dart';
+import '../core/widgets/lifecycle_bar.dart';
 import '../core/widgets/location_widgets.dart';
 import 'trip_otp_card.dart';
 import '../core/documents/trip_document_buttons.dart';
@@ -34,6 +36,8 @@ class BookingTrackingScreen extends StatelessWidget {
       builder: (context, booking) => ListView(
         padding: const EdgeInsets.fromLTRB(20, 10, 20, 30),
         children: [
+          LifecycleBar(stage: lifecycleOf(booking: booking)),
+          const SizedBox(height: 10),
           BookingSummary(booking: booking, showDriver: true),
           if (booking.canCustomerCancelScheduled) CancelScheduledButton(booking: booking),
           if (booking.isActive) ...[
@@ -45,6 +49,7 @@ class BookingTrackingScreen extends StatelessWidget {
           const SizedBox(height: 4),
           DriverTrustRow(booking: booking),
           const SizedBox(height: 8),
+          ArrivalEtaCard(booking: booking),
           TripEtaCard(booking: booking),
           if (booking.isInTransit) ...[
             const SizedBox(height: 8),

@@ -83,6 +83,9 @@ class LoadService {
     String? invitedDriverId,
     String? businessId,
     String? costCenter,
+    String visibility = LoadVisibility.public,
+    List<String> allowedDriverIds = const [],
+    bool instant = false,
   }) async {
     if (scheduledAt != null) {
       final problem = Schedule.check(scheduledAt, DateTime.now(), PricingService.config.schedule);
@@ -97,6 +100,10 @@ class LoadService {
     if (bookingType == BookingType.movers && (movers == null || movers.items.isEmpty)) {
       throw ArgumentError('A movers request needs at least one item');
     }
+    if (!LoadVisibility.all.contains(visibility)) throw ArgumentError.value(visibility, 'visibility');
+    if (visibility != LoadVisibility.public && (allowedDriverIds.isEmpty || allowedDriverIds.length > LoadVisibility.maxAllowed)) {
+      throw ArgumentError.value(allowedDriverIds, 'allowedDriverIds');
+    }
     if (costCenter != null && costCenter.trim().length > 30) throw ArgumentError.value(costCenter, 'costCenter');
     final uid = Backend.requireUid();
     await RiskService.ensureCanTransact();
@@ -110,6 +117,9 @@ class LoadService {
     final rate = await RateLimit.prepare(RateLimit.loadKind, docId: ref.id);
     final data = <String, Object?>{
       if (blocked.isNotEmpty) 'blockedDriverIds': blocked,
+      if (visibility != LoadVisibility.public) 'visibility': visibility,
+      if (visibility != LoadVisibility.public) 'allowedDriverIds': allowedDriverIds,
+      if (instant) 'instant': true,
       'pickupGeohash': ?geohash,
       'bookingType': bookingType,
       'invitedDriverId': ?invitedDriverId,

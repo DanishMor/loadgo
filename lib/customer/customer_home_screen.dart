@@ -23,7 +23,9 @@ import 'customer_bookings_view.dart';
 import '../core/documents/invoice_screen.dart';
 import 'my_loads_view.dart';
 import '../core/notifications/notifications_screen.dart';
+import 'home_search_screen.dart';
 import 'post_load_screen.dart';
+import 'recurring_due_card.dart';
 import '../core/profile/profile_view.dart';
 import '../core/documents/documents_center_screen.dart';
 import '../core/widgets/common.dart';
@@ -230,6 +232,9 @@ class _CustomerHomeContent extends StatelessWidget {
                 border: Border.all(color: AppColors.border),
               ),
               child: TextField(
+                key: const ValueKey('homeSearch'),
+                readOnly: true,
+                onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const HomeSearchScreen())),
                 decoration: InputDecoration(
                   border: InputBorder.none,
                   prefixIcon: Icon(Icons.search_rounded, color: AppColors.muted),
@@ -238,6 +243,7 @@ class _CustomerHomeContent extends StatelessWidget {
                 ), inputFormatters: [LengthLimitingTextInputFormatter(100)]),
             ),
             RemindersBanner(isDriver: false, onOpen: (r) => _openReminder(context, r)),
+            const RecurringDueCard(),
             const BusinessInvitesCard(),
             const SizedBox(height: 25),
             Container(
@@ -340,7 +346,14 @@ class _CustomerHomeContent extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 12),
-                const Expanded(child: SizedBox.shrink()),
+                Expanded(
+                  child: _QuickActionCard(
+                    icon: Icons.two_wheeler_rounded,
+                    title: tr(context, 'bookBike'),
+                    subtitle: tr(context, 'bookBikeSub'),
+                    onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const PostLoadScreen(initialVehicleType: 'Bike'))),
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 28),

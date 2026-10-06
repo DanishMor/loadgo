@@ -12,16 +12,16 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | A Authentication | 10 | 7 | 0 | 2 | 1 | 0 |
 | K Identity, KYC | 14 | 5 | 1 | 0 | 8 | 0 |
 | R Re-KYC | 12 | 8 | 0 | 0 | 4 | 0 |
-| C Customer app | 14 | 8 | 6 | 0 | 0 | 0 |
-| B Bike | 14 | 11 | 2 | 0 | 1 | 0 |
+| C Customer app | 14 | 10 | 2 | 0 | 2 | 0 |
+| B Bike | 14 | 12 | 1 | 0 | 1 | 0 |
 | V Truck + fleet | 12 | 8 | 2 | 1 | 1 | 0 |
-| L Load marketplace | 14 | 12 | 1 | 1 | 0 | 0 |
-| P Booking + pricing | 14 | 10 | 2 | 1 | 1 | 0 |
-| M Map | 16 | 2 | 5 | 0 | 9 | 0 |
+| L Load marketplace | 14 | 13 | 1 | 0 | 0 | 0 |
+| P Booking + pricing | 14 | 12 | 1 | 0 | 1 | 0 |
+| M Map | 16 | 3 | 3 | 0 | 10 | 0 |
 | SM Smart matching | 14 | 11 | 1 | 2 | 0 | 0 |
 | D Driver app | 16 | 11 | 2 | 3 | 0 | 0 |
 | CH Chat | 14 | 4 | 1 | 5 | 4 | 0 |
-| T Trip lifecycle | 14 | 9 | 4 | 0 | 1 | 0 |
+| T Trip lifecycle | 14 | 10 | 3 | 0 | 1 | 0 |
 | S Pickup, cargo, POD | 15 | 10 | 2 | 0 | 3 | 0 |
 | PAY Payments | 14 | 5 | 3 | 1 | 5 | 0 |
 | DOC Documents | 14 | 8 | 6 | 0 | 0 | 0 |
@@ -33,7 +33,7 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | AI AI | 14 | 0 | 0 | 0 | 14 | 0 |
 | BE Backend | 18 | 5 | 5 | 1 | 7 | 0 |
 | TEST Testing | 14 | 4 | 3 | 0 | 7 | 0 |
-| **Total** | **347** | **180** | **65** | **24** | **78** | **0** |
+| **Total** | **347** | **188** | **56** | **22** | **81** | **0** |
 
 ## P0 Principles
 
@@ -101,16 +101,16 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 
 | Code | Item | Status | Where / why |
 |---|---|---|---|
-| C1 | Home dashboard Search, Book Bike, Book Truck, Post Load, Live Map, recent trips, alerts. | Partial | customer_home_screen.dart: Book Truck, recent; search box not wired, no Live Map |
-| C2 | Book Bike Small parcel/local goods ke liye two-wheeler flow. | Partial | Bike/Scooter/EV 2W are vehicle types in post load; no dedicated bike flow |
+| C1 | Home dashboard Search, Book Bike, Book Truck, Post Load, Live Map, recent trips, alerts. | Done | Customer Home search opens a results screen over own loads and bookings (places, goods, vehicle, driver, status); Book Truck, Book Bike, Post Load, recent trips, reminders; the Live Map is tracked in the M rows |
+| C2 | Book Bike Small parcel/local goods ke liye two-wheeler flow. | Done | Book Bike quick action on Home opens Post Load on the Bike vehicle type (Cycle, Scooter, EV 2W also in the list) |
 | C3 | Book Truck Truck category + cargo + route + schedule. | Done | lib/customer/post_load_screen.dart |
 | C4 | Post Load Customer budget ke saath marketplace par load publish kar sake. | Done | Post load with fare/budget, offers (load_offers_screen.dart) |
 | C5 | Pickup/drop Single, multi-pickup, multi-drop location selection. | Done | Up to 3 pickups/3 drops (post_load_screen.dart) |
 | C6 | Saved places Home, office, factory, warehouse, port, CFS, mandi etc. | Done | saved_place_picker.dart, users/{uid}/saved_places |
 | C7 | Fare estimate Route, vehicle, weight and options ke basis par estimate. | Done | core/pricing/fare_calculator.dart, 64-city table (offline distance) |
-| C8 | Available vehicles Nearby/verified vehicle options with ETA, vehicle info and verification | Partial | Matching vehicle count (matching_vehicles_line.dart); no ETA, no nearby vehicle list |
+| C8 | Available vehicles Nearby/verified vehicle options with ETA, vehicle info and verification | Paid-or-Later | Matching vehicle count is shown while posting; a nearby-vehicle list with ETA needs vehicle positions that customers may not read (privacy) or a Maps layer |
 | C9 | Booking history Upcoming, active, completed, cancelled. | Done | customer_bookings_view.dart, my_loads_view.dart |
-| C10 | Active trip Live vehicle map + ETA + status timeline. | Partial | booking_tracking_screen.dart: status timeline + last location as text; no map/ETA |
+| C10 | Active trip Live vehicle map + ETA + status timeline. | Paid-or-Later | Status timeline, trip ETA and last location as text are done; the live vehicle map needs Maps |
 | C11 | Documents Invoice, LR/Bilty, e-way reference, POD, proofs. | Done | core/documents (invoice, LR, POD, documents center) |
 | C12 | Payments UPI/card/other supported methods, receipts and refunds. | Partial | Cash/UPI-direct records only, receipts via invoice; no gateway, no refunds |
 | C13 | Support Issue categories, ticket/chat/call. | Done | core/support/support_screens.dart tickets with category/priority |
@@ -126,7 +126,7 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | B4 | Cycle Optional low-cost local delivery. | Done | Cycle is a vehicle type (two-wheeler category, 15 kg) |
 | B5 | Goods auto 3-wheeler category. | Done | Vehicle type "3-Wheeler" |
 | B6 | Mini truck Tata Ace / similar category. | Done | Vehicle type "Mini" |
-| B7 | Instant local booking Pickup now -> nearby rider/vehicle -> ETA -> delivery. | Partial | Post load + driver accept; no nearby-rider ETA |
+| B7 | Instant local booking Pickup now -> nearby rider/vehicle -> ETA -> delivery. | Done | Pickup now switch on a load (instant flag): drivers see a chip and the ranker puts it first; the driver shares position on the way to the pickup so the customer sees the arrival ETA; push to nearby riders is paid |
 | B8 | Schedule local delivery Future date/time slot. | Done | Pickup date + time slot on loads |
 | B9 | Package details Weight, size, quantity, fragile/high-value flag. | Done | Weight, packages, seal, damage plus fragile and high-value flags |
 | B10 | Photo capture Pickup/delivery proof for parcel. | Paid-or-Later | Needs Storage (POD screen placeholder) |
@@ -168,7 +168,7 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | L10 | Offers Driver/transporter controlled quote/accept flow. | Done | make_offer.dart, offer_service.dart |
 | L11 | Negotiation Optional controlled negotiation with platform rules. | Done | One counter by customer, driver confirms |
 | L12 | Double confirmation Customer + driver confirmation ke baad booking lock. | Done | Booking transaction creates booking only after selected offer is confirmed |
-| L13 | Load visibility controls Public marketplace, selected network, direct invite etc. | Todo-free | Loads are public only |
+| L13 | Load visibility controls Public marketplace, selected network, direct invite etc. | Done | Load visibility: everyone, only my favourite drivers, or only the invited driver; allowed ids on the load, hidden from others and refused by the accept rules |
 | L14 | Prohibited cargo rules Restricted goods ke liye policy and booking filters. | Done | core/constants/prohibited_cargo.dart + rules regex |
 
 ## P Booking + pricing
@@ -177,7 +177,7 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 |---|---|---|---|
 | P1 | Book Now Immediate vehicle search and booking. | Done | Post load + accept |
 | P2 | Schedule Future pickup date/time. | Done | Exact pickup date and time, upcoming list, activation lead time and cancel window from config/pricing |
-| P3 | Recurring Repeat route/shipments. | Todo-free | No recurring shipments |
+| P3 | Recurring Repeat route/shipments. | Done | Repeat a load weekly or monthly from Post Load; due ones show on Home with Post now / Skip / Stop (users/{uid}/recurring_loads). Unattended posting needs Functions: TODO(functions) |
 | P4 | Multi-stop Multiple pickup/drop points. | Done | 3 pickups/3 drops with per-stop charge |
 | P5 | Fare estimate Distance + vehicle + cargo + weight + demand factors. | Done | FareCalculator + estimate card |
 | P6 | Fare breakdown Base, distance, toll, loading, unloading, waiting, platform fee, GST etc. | Done | fare_breakdown.dart: base, distance, loading, waiting, stops, fee, GST |
@@ -186,7 +186,7 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | P9 | Hybrid pricing System estimate + offers. | Done | Estimate + offers |
 | P10 | Detention Loading/unloading waiting record and configured charge. | Done | Driver starts/stops a waiting clock at loading/unloading; minutes and the charge from config shown to both; record only |
 | P11 | Cancellation policy Reason + charge/refund logic. | Partial | Config charge recorded on driver cancel; no refund moves |
-| P12 | Booking state machine Created -> matched -> accepted -> confirmed -> active -> delivered -> | Partial | accepted..delivered (+cancelled); no created/matched/settled |
+| P12 | Booking state machine Created -> matched -> accepted -> confirmed -> active -> delivered -> | Done | Lifecycle bar on the tracking screen: posted, offer picked, confirmed, picked up, on the way, delivered, paid (derived from load, booking and payment record) |
 | P13 | Server-side pricing Client estimate is not authoritative; final quote from secure backend. | Paid-or-Later | TODO(functions); needs Blaze |
 | P14 | Pricing admin Admin-configurable rates/rules with audit trail. | Done | Config edits write config_change audit events; Admin > Audit log lists them |
 
@@ -194,8 +194,8 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 
 | Code | Item | Status | Where / why |
 |---|---|---|---|
-| M1 | My location User current location with permission. | Partial | LocationService permission used for trip location sharing; not a user-facing "my location" |
-| M2 | Pickup/drop Search, pin, geocoding and saved place. | Partial | City table + free-text addresses; no search/pin/geocoding |
+| M1 | My location User current location with permission. | Done | Pickup field has Use my location: GPS fix mapped to the nearest city of the offline table (needs permission) |
+| M2 | Pickup/drop Search, pin, geocoding and saved place. | Paid-or-Later | City typeahead over the offline table, saved places and free text are done; pin on a map and real geocoding need a Maps API |
 | M3 | Vehicle markers Nearby trucks, bikes and active vehicles. | Paid-or-Later | Needs Maps |
 | M4 | Load markers Available/public loads on map. | Paid-or-Later | Needs Maps |
 | M5 | Driver network layer Eligible connected/nearby drivers based on privacy settings. | Paid-or-Later | Needs Maps |
@@ -275,7 +275,7 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | Code | Item | Status | Where / why |
 |---|---|---|---|
 | T1 | Driver assigned Customer gets driver + vehicle details. | Done | Booking has driver + vehicle, shown to customer |
-| T2 | Driver arriving ETA and route. | Partial | driver_arriving status; no ETA/route |
+| T2 | Driver arriving ETA and route. | Done | Driver shares position while driver_arriving; the customer sees distance and arrival time to the pickup (offline estimate); a route line needs Maps |
 | T3 | Pickup reached Geofence + optional OTP. | Partial | Pickup OTP; no geofence |
 | T4 | Loading Loading state. | Done | loading status |
 | T5 | Loading complete Cargo confirmation. | Done | Pickup proof (packages, weight, seal, damage) |

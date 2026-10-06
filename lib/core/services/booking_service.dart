@@ -281,7 +281,7 @@ class BookingService {
     final snap = await ref.get();
     if (!snap.exists) throw StateError('Booking not found');
     final booking = Booking.fromDoc(snap);
-    if (booking.driverId != uid || !booking.isInTransit) return;
+    if (booking.driverId != uid || !(booking.isInTransit || booking.status == BookingStatus.driverArriving)) return;
     await ref.update({
       'lastKnownLocation': GeoPoint(lat, lng),
       'locationUpdatedAt': FieldValue.serverTimestamp(),

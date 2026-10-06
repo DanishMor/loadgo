@@ -5,6 +5,7 @@ import '../core/constants/logistics.dart';
 import '../core/services/load_service.dart';
 import 'matching_vehicles_line.dart';
 import '../core/widgets/common.dart';
+import 'place_field.dart';
 import '../core/models/risk.dart';
 import '../core/l10n/l10n.dart';
 import '../core/services/vehicle_type_service.dart';
@@ -24,7 +25,9 @@ import '../core/scheduling/schedule.dart';
 import '../core/offers/promo.dart';
 import '../core/services/rewards_service.dart';
 import '../core/services/business_service.dart';
+import '../core/models/recurring.dart';
 import '../core/models/repeat.dart';
+import '../core/services/recurring_service.dart';
 import '../core/services/repeat_service.dart';
 import '../core/services/rate_limit_service.dart';
 
@@ -36,7 +39,15 @@ class PostLoadScreen extends StatefulWidget {
   /// Reserve the load for this driver (from an accepted truck request).
   final String? invitedDriverId;
 
-  const PostLoadScreen({super.key, this.repostFrom, this.invitedDriverId});
+  /// Starts on this vehicle type (Book Bike).
+  final String? initialVehicleType;
+
+  /// A repeating load that came due: its pickup date starts at [dueDate] and
+  /// it moves to the next date once posted.
+  final RecurringLoad? recurring;
+  final DateTime? dueDate;
+
+  const PostLoadScreen({super.key, this.repostFrom, this.invitedDriverId, this.initialVehicleType, this.recurring, this.dueDate});
 
   @override
   State<PostLoadScreen> createState() => _PostLoadScreenState();
@@ -64,6 +75,9 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
   OffersChoice _offers = const OffersChoice();
   TimeOfDay? _pickupTime;
   bool _fragile = false;
+  bool _instant = false;
+  String _visibility = LoadVisibility.public;
+  String _repeat = '';
   bool _highValue = false;
   String _bookingType = BookingType.freight;
   int _helpers = 0;
@@ -185,6 +199,12 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
   void initState() {
     super.initState();
     if (widget.repostFrom != null) _prefill(widget.repostFrom!);
+    if (widget.initialVehicleType != null) _vehicleType = widget.initialVehicleType!;
+    if (widget.dueDate != null) {
+      final today = DateUtils.dateOnly(DateTime.now());
+      final due = DateUtils.dateOnly(widget.dueDate!);
+      _pickupDate = due.isBefore(today) ? today : due;
+    }
     BusinessService.postingBusinessId().then((id) {
       if (mounted && id != null) setState(() => _businessId = id);
     }, onError: (_) {});
@@ -309,7 +329,10 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
       lastDate: today.add(const Duration(days: 90)),
     );
     if (picked == null) return;
-    setState(() => _pickupDate = picked);
+    setState(() {
+      _pickupDate = picked;
+      if (picked != today) _instant = false;
+    });
     field.didChange(picked);
   }
 
@@ -352,6 +375,47 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
     }
   }
 
+  /// Repeating loads: a new schedule from this form, or the due one moves on.
+  Future<void> _afterPosted() async {
+    try {
+      if (widget.recurring != null) {
+        await RecurringService.advance(widget.recurring!, from: widget.dueDate ?? widget.recurring!.nextDueAt);
+      } else if (_repeat.isNotEmpty) {
+        final budgetText = _budgetCtrl.text.trim();
+        await RecurringService.create(
+          LoadTemplate(
+            id: '',
+            name: _repeatName(),
+            pickup: _pickupCtrl.text.trim(),
+            drop: _dropCtrl.text.trim().isEmpty ? _pickupCtrl.text.trim() : _dropCtrl.text.trim(),
+            cargoType: _cargoType,
+            weight: num.parse(_weightCtrl.text.trim()),
+            vehicleType: _vehicleType,
+            budget: budgetText.isEmpty ? null : num.parse(budgetText),
+            notes: _notesCtrl.text.trim(),
+            pickupSlot: _slot,
+            fragile: _fragile,
+            highValue: _highValue,
+            costCenter: _businessId == null ? null : _costCenterCtrl.text.trim(),
+          ),
+          _repeat,
+          first: _scheduledAt ?? _pickupDate!,
+        );
+      }
+    } on RecurringLimitException {
+      if (mounted) showSnack(context, tr(context, 'repeatLimit'));
+    } catch (_) {
+      // The load itself is posted; the schedule can be set up again.
+    }
+  }
+
+  String _repeatName() {
+    final a = _pickupCtrl.text.trim();
+    final b = _dropCtrl.text.trim().isEmpty ? a : _dropCtrl.text.trim();
+    final n = '$a - $b';
+    return n.length <= 40 ? n : n.substring(0, 40);
+  }
+
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     final when = _scheduledAt;
@@ -379,7 +443,22 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
               total: quote.total, promo: _offers.promo, creditsBalance: await RewardsService.balance(), useCredits: true);
         }
       }
+      var allowed = const <String>[];
+      if (_visibility == LoadVisibility.favourites) {
+        allowed = (await RepeatService.favouriteIds()).take(LoadVisibility.maxAllowed).toList();
+        if (allowed.isEmpty) {
+          if (!mounted) return;
+          setState(() => _saving = false);
+          showSnack(context, tr(context, 'visNoFavourites'));
+          return;
+        }
+      } else if (_visibility == LoadVisibility.invite && widget.invitedDriverId != null) {
+        allowed = [widget.invitedDriverId!];
+      }
       await LoadService.post(
+        visibility: _visibility,
+        allowedDriverIds: allowed,
+        instant: _instant,
         promo: promo,
         creditsUsedPaise: credits,
         fragile: _fragile,
@@ -410,6 +489,8 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
         sealNumber: _sealCtrl.text,
         branchId: _branchId,
       );
+      if (!mounted) return;
+      await _afterPosted();
       if (!mounted) return;
       showSnack(context, tr(context, 'loadPosted'));
       Navigator.of(context).pop(true);
@@ -461,15 +542,13 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
                 BookingTypePicker(value: _bookingType, onChanged: (t) => setState(() => _bookingType = t)),
                 const SizedBox(height: 18),
                 FieldLabel(tr(context, 'pickupLocation')),
-                TextFormField(
+                PlaceField(
                   controller: _pickupCtrl,
-                  textCapitalization: TextCapitalization.words,
-                  textInputAction: TextInputAction.next,
-                  decoration: InputDecoration(
-                    prefixIcon: const Icon(Icons.trip_origin_rounded, color: AppColors.success),
-                    suffixIcon: _savedPlaceButton(_pickupCtrl),
-                  ),
-                  validator: _requiredText, inputFormatters: [LengthLimitingTextInputFormatter(100)]),
+                  icon: const Icon(Icons.trip_origin_rounded, color: AppColors.success),
+                  myLocation: true,
+                  trailing: _savedPlaceButton(_pickupCtrl),
+                  validator: _requiredText,
+                ),
                 for (final (i, c) in _extraPickups.indexed)
                   _stopField(c, trf(context, 'pickupStopN', {'n': i + 2}), _extraPickups, pickup: true),
                 _addStopButton(_extraPickups, 'addPickupStop', 'addPickupStop'),
@@ -478,15 +557,12 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
                 for (final (i, c) in _extraDrops.indexed)
                   _stopField(c, trf(context, 'dropStopN', {'n': i + 1}), _extraDrops, pickup: false),
                 if (_extraDrops.isNotEmpty) const SizedBox(height: 10),
-                TextFormField(
+                PlaceField(
                   controller: _dropCtrl,
-                  textCapitalization: TextCapitalization.words,
-                  textInputAction: TextInputAction.next,
-                  decoration: InputDecoration(
-                    prefixIcon: const Icon(Icons.location_on_rounded, color: Colors.redAccent),
-                    suffixIcon: _savedPlaceButton(_dropCtrl),
-                  ),
-                  validator: (v) => _bookingType == BookingType.rental ? null : _requiredText(v), inputFormatters: [LengthLimitingTextInputFormatter(100)]),
+                  icon: const Icon(Icons.location_on_rounded, color: Colors.redAccent),
+                  trailing: _savedPlaceButton(_dropCtrl),
+                  validator: (v) => _bookingType == BookingType.rental ? null : _requiredText(v),
+                ),
                 _addStopButton(_extraDrops, 'addDropStop', 'addDropStop'),
                 const SizedBox(height: 18),
                 FieldLabel(tr(context, 'cargoType')),
@@ -594,6 +670,20 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
                 ),
                 const SizedBox(height: 18),
                 SwitchListTile(
+                  key: const ValueKey('instantSwitch'),
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(tr(context, 'instantLabel')),
+                  subtitle: Text(tr(context, 'instantSub')),
+                  value: _instant,
+                  onChanged: (v) => setState(() {
+                    _instant = v;
+                    if (v) {
+                      _pickupDate = DateUtils.dateOnly(DateTime.now());
+                      _pickupTime = null;
+                    }
+                  }),
+                ),
+                SwitchListTile(
                   key: const ValueKey('scheduleSwitch'),
                   contentPadding: EdgeInsets.zero,
                   title: Text(tr(context, 'scheduleExactTime')),
@@ -601,6 +691,7 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
                   value: _pickupTime != null,
                   onChanged: (v) {
                     if (v) {
+                      setState(() => _instant = false);
                       _pickTime();
                     } else {
                       setState(() => _pickupTime = null);
@@ -634,6 +725,34 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
                   decoration: const InputDecoration(prefixIcon: Icon(Icons.payments_outlined)),
                   items: [for (final m in PaymentMode.all) DropdownMenuItem(value: m, child: Text(paymentModeLabel(context, m)))],
                   onChanged: (v) => setState(() => _paymentMode = v ?? _paymentMode),
+                ),
+                const SizedBox(height: 18),
+                FieldLabel(tr(context, 'visibilityLabel')),
+                DropdownButtonFormField<String>(
+                  key: const ValueKey('visibility'),
+                  isExpanded: true,
+                  initialValue: _visibility,
+                  decoration: const InputDecoration(prefixIcon: Icon(Icons.visibility_outlined)),
+                  items: [
+                    DropdownMenuItem(value: LoadVisibility.public, child: Text(tr(context, 'visPublic'))),
+                    DropdownMenuItem(value: LoadVisibility.favourites, child: Text(tr(context, 'visFavourites'))),
+                    if (widget.invitedDriverId != null) DropdownMenuItem(value: LoadVisibility.invite, child: Text(tr(context, 'visInvite'))),
+                  ],
+                  onChanged: (v) => setState(() => _visibility = v ?? _visibility),
+                ),
+                const SizedBox(height: 18),
+                FieldLabel(tr(context, 'repeatLabel')),
+                DropdownButtonFormField<String>(
+                  key: const ValueKey('repeat'),
+                  isExpanded: true,
+                  initialValue: _repeat,
+                  decoration: const InputDecoration(prefixIcon: Icon(Icons.repeat_rounded)),
+                  items: [
+                    DropdownMenuItem(value: '', child: Text(tr(context, 'repeatNone'))),
+                    DropdownMenuItem(value: Frequency.weekly, child: Text(tr(context, 'repeatWeekly'))),
+                    DropdownMenuItem(value: Frequency.monthly, child: Text(tr(context, 'repeatMonthly'))),
+                  ],
+                  onChanged: (v) => setState(() => _repeat = v ?? ''),
                 ),
                 TradeDetailsSection(
                   container: _containerCtrl,

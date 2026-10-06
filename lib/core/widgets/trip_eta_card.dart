@@ -4,6 +4,7 @@ import '../constants/logistics.dart';
 import '../l10n/l10n.dart';
 import '../models/booking.dart';
 import '../services/pricing_service.dart';
+import '../trip/arrival_eta.dart';
 import '../trip/trip_eta.dart';
 import 'common.dart';
 
@@ -61,6 +62,35 @@ class TripEtaCard extends StatelessWidget {
           Expanded(child: Text(line, key: const ValueKey('tripEtaLine'), style: TextStyle(fontWeight: FontWeight.w800, color: late ? AppColors.warning : AppColors.title))),
         ]),
         if (took == null) Padding(padding: const EdgeInsets.only(top: 6), child: Text(tr(context, 'etaNote'), style: TextStyle(fontSize: 12, color: AppColors.faint))),
+      ]),
+    );
+  }
+}
+
+/// Before pickup: how far the driver still is, from the position the driver
+/// app shares on the way to the pickup. Hidden without a shared position.
+class ArrivalEtaCard extends StatelessWidget {
+  final Booking booking;
+  final DateTime Function()? clock;
+
+  const ArrivalEtaCard({super.key, required this.booking, this.clock});
+
+  @override
+  Widget build(BuildContext context) {
+    final eta = ArrivalEta.of(booking, now: (clock ?? DateTime.now)());
+    if (eta == null) return const SizedBox.shrink();
+    return AppCard(
+      key: const ValueKey('arrivalEtaCard'),
+      child: Row(children: [
+        Icon(eta.arrived ? Icons.where_to_vote_rounded : Icons.directions_car_rounded, color: AppColors.primary),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            eta.arrived ? tr(context, 'arrivalAtPickup') : trf(context, 'arrivalEtaLine', {'km': eta.km, 'time': durationText(context, eta.time)}),
+            key: const ValueKey('arrivalEtaLine'),
+            style: TextStyle(fontWeight: FontWeight.w800, color: AppColors.title),
+          ),
+        ),
       ]),
     );
   }

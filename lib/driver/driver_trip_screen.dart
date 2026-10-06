@@ -45,6 +45,10 @@ class DriverTripScreen extends StatelessWidget {
             const SizedBox(height: 14),
             TripSafetyCard(booking: booking),
           ],
+          if (booking.status == BookingStatus.driverArriving) ...[
+            const SizedBox(height: 14),
+            LocationSharingCard(booking: booking),
+          ],
           if (booking.isInTransit) ...[
             const SizedBox(height: 14),
             TripGeofenceBanner(dropPlace: booking.drop),

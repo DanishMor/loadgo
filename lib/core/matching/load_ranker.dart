@@ -216,6 +216,8 @@ class LoadRanker {
       reasons.add(MatchReason.bestFit);
     }
     if (load.budget != null) score += 5;
+    // "Pickup now" loads go first: someone is waiting.
+    if (load.instant) score += 30;
     return LoadMatch(load: load, vehicle: v, score: score, reasons: reasons);
   }
 
