@@ -8,6 +8,7 @@ import '../core/wallet/txn_history_screen.dart';
 import 'my_drivers_screen.dart';
 import 'templates_screen.dart';
 import 'business_invites_card.dart';
+import '../core/widgets/offers_gate.dart';
 import 'offers_screen.dart';
 import 'truck_board_screen.dart';
 import '../core/widgets/reminder_widgets.dart';
@@ -74,11 +75,14 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
         titleKey: 'myAnalytics',
         screen: (_) => const CustomerAnalyticsScreen(),
       ),
-      ProfileNavTile(
-        key: const ValueKey('profileOffers'),
-        icon: Icons.local_offer_outlined,
-        titleKey: 'offersAndCredits',
-        screen: (_) => const OffersScreen(),
+      OffersGate(
+        test: (s) => s.any,
+        child: ProfileNavTile(
+          key: const ValueKey('profileOffers'),
+          icon: Icons.local_offer_outlined,
+          titleKey: 'offersAndCredits',
+          screen: (_) => const OffersScreen(),
+        ),
       ),
       ProfileNavTile(
         key: const ValueKey('profileBusiness'),

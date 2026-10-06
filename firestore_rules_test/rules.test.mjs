@@ -471,6 +471,22 @@ describe('booking types', () => {
   });
 });
 
+function seedUsersForSwitch() {
+  return seed(async (db) => {
+    await setDoc(doc(db, 'users', 'referrer'), { role: 'customer', createdAt: Timestamp.fromDate(new Date(Date.now() - 9 * 86400000)), referralCode: 'FRIEND' });
+    await setDoc(doc(db, 'referral_codes', 'FRIEND'), { uid: 'referrer' });
+    await setDoc(doc(db, 'users', 'newbie'), { role: 'customer', createdAt: Timestamp.now() });
+  });
+}
+function referralBatch(uid) {
+  const db = as(uid);
+  const b = writeBatch(db);
+  b.set(doc(db, 'referrals', uid), { referrerUid: 'referrer', code: 'FRIEND', createdAt: serverTimestamp() });
+  b.set(doc(db, 'users', uid, 'credits', 'referral_in'), { amountPaise: 10000, kind: 'referral', createdAt: serverTimestamp() });
+  b.set(doc(db, 'users', 'referrer', 'credits', `referral_from_${uid}`), { amountPaise: 10000, kind: 'referral', createdAt: serverTimestamp() });
+  return b.commit();
+}
+
 describe('customer offers', () => {
   const future = Timestamp.fromDate(new Date('2035-01-01'));
   const past = Timestamp.fromDate(new Date('2020-01-01'));
@@ -480,6 +496,9 @@ describe('customer offers', () => {
   });
   const seedPromo = (over = {}) => seed((db) => setDoc(doc(db, 'promos', over.code ?? 'SAVE10'), promoDoc({ ...over, createdAt: Timestamp.now(), updatedAt: Timestamp.now() })));
   const EST = { total: 50000, tripFare: 45000, distanceKm: 10 };
+  const ALL_ON = { promoEnabled: true, creditsEnabled: true, referralEnabled: true };
+  // The offers are OFF until an admin switches them on; most tests need them on.
+  beforeEach(() => seed((db) => setDoc(doc(db, 'config', 'offers'), ALL_ON)));
 
   // One batch: the load with its promo / credits, plus the documents the rules ask for.
   function postOffer(uid, { id = 'L9', promo, credits = 0, slot, use, est = EST, extra = [] } = {}) {
@@ -603,6 +622,25 @@ describe('customer offers', () => {
     await assertFails(getDocs(collection(as('customer2'), 'users', 'customer1', 'credits')));
   });
 
+  test('switches: with config/offers missing or a flag off, promo, credits and referral are refused', async () => {
+    await seedPromo();
+    await seedUsersForSwitch();
+    await seed((db) => setDoc(doc(db, 'config', 'offers'), { promoEnabled: false, creditsEnabled: false, referralEnabled: false }));
+    await assertFails(postOffer('customer1', { promo: { code: 'SAVE10', discountPaise: 5000 } }));
+    await assertFails(postOffer('customer1', { id: 'L2', credits: 1000 }));
+    await assertFails(referralBatch('newbie'));
+    await assertSucceeds(postOffer('customer1', { id: 'L3' }), 'a plain load needs no switch');
+    await seed((db) => setDoc(doc(db, 'config', 'offers'), { promoEnabled: true }));
+    await assertSucceeds(postOffer('customer1', { id: 'L4', promo: { code: 'SAVE10', discountPaise: 5000 } }));
+    await assertFails(postOffer('customer1', { id: 'L5', credits: 1000 }), 'credits still off');
+    await assertFails(referralBatch('newbie'), 'referral still off');
+    await seed((db) => setDoc(doc(db, 'config', 'offers'), { creditsEnabled: true, referralEnabled: true }));
+    await assertSucceeds(postOffer('customer1', { id: 'L6', credits: 1000 }));
+    await assertSucceeds(referralBatch('newbie'));
+    await seed((db) => deleteDoc(doc(db, 'config', 'offers')));
+    await assertFails(postOffer('customer1', { id: 'L7', credits: 1000 }), 'no config doc = off');
+  });
+
   describe('referral', () => {
     const fresh = Timestamp.now();
     const old = Timestamp.fromDate(new Date(Date.now() - 9 * 86400000));
@@ -643,7 +681,7 @@ describe('customer offers', () => {
 
     test('the bonus follows config/offers', async () => {
       await seedUsers();
-      await seed((db) => setDoc(doc(db, 'config', 'offers'), { referralBonusPaise: 25000 }));
+      await seed((db) => setDoc(doc(db, 'config', 'offers'), { ...ALL_ON, referralBonusPaise: 25000 }));
       await assertFails(apply('newbie'));
       await assertSucceeds(apply('newbie', { amountIn: 25000, amountFrom: 25000 }));
     });

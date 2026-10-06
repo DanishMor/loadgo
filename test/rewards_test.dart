@@ -7,7 +7,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:transport_app/admin/admin_offers_screen.dart';
 import 'package:transport_app/core/l10n/l10n.dart';
 import 'package:transport_app/core/models/load.dart';
+import 'package:transport_app/core/offers/offers_switch.dart';
 import 'package:transport_app/core/offers/promo.dart';
+import 'package:transport_app/core/services/offers_switch_service.dart';
 import 'package:transport_app/core/services/backend.dart';
 import 'package:transport_app/core/services/load_service.dart';
 import 'package:transport_app/core/services/rewards_service.dart';
@@ -42,7 +44,9 @@ void main() {
     uid = 'c1';
     Backend.useFakes(db: db, uid: () => uid);
     languageNotifier.value = AppLanguage.english;
+    OffersSwitchService.notifier.value = const OffersSwitch(promo: true, credits: true, referral: true);
   });
+  tearDown(OffersSwitchService.reset);
 
   group('promo maths', () {
     test('percent rounds down, is capped, and never exceeds the order', () {

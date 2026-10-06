@@ -205,11 +205,14 @@ class LoadService {
     }
   }
 
+  /// No live listener reads more than this many documents.
+  static const watchLimit = 200;
+
   /// Loads posted by the signed-in customer, newest first.
   static Stream<List<Load>> watchMine() {
     final uid = Backend.uid;
     if (uid == null) return Stream.value(const []);
-    return _col.where('shipperId', isEqualTo: uid).snapshots().map(_sorted);
+    return _col.where('shipperId', isEqualTo: uid).limit(watchLimit).snapshots().map(_sorted);
   }
 
   /// Open loads for drivers, excluding loads the signed-in user posted.
@@ -217,6 +220,7 @@ class LoadService {
     final uid = Backend.uid;
     return _col
         .where('status', isEqualTo: LoadStatus.open)
+        .limit(watchLimit)
         .snapshots()
         .map((snap) => _sorted(snap).where((l) => l.shipperId != uid && !l.blocks(uid)).toList());
   }
@@ -241,12 +245,12 @@ class LoadService {
 
   /// Open loads whose pickup city is in the driver's geohash cell or the
   /// cells around it, found with prefix range queries on `pickupGeohash`
-  /// (no need to page through everything). Merged from up to 9 live queries;
+  /// (no need to page through everything). Merged from up to 4 live queries;
   /// own loads are hidden. Sort the result by distance.
   static Stream<List<Load>> watchNearby(LatLng origin, {double radiusKm = 150}) {
     final uid = Backend.uid;
     final precision = geohashPrecisionForKm(radiusKm);
-    final cells = geohashCells(origin.lat, origin.lng, precision);
+    final cells = geohashCoreCells(origin.lat, origin.lng, precision);
     late StreamController<List<Load>> out;
     final latest = <String, List<Load>>{};
     final subs = <StreamSubscription>[];

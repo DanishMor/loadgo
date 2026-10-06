@@ -68,6 +68,32 @@ List<String> geohashCells(double lat, double lng, int precision) {
   return out.toList()..sort();
 }
 
+/// The point's cell plus the three neighbours on the side the point leans to
+/// (a 2 x 2 block, so 4 live queries instead of 9). Everything within half a
+/// cell width of the point is covered; farther loads stay in the full list.
+List<String> geohashCoreCells(double lat, double lng, int precision) {
+  final size = geohashCellSize(precision);
+  double frac(double v, double offset, double step) {
+    final x = (v + offset) / step;
+    return x - x.floorToDouble();
+  }
+
+  final dLat = frac(lat, 90, size.lat) < 0.5 ? -1 : 1;
+  final dLng = frac(lng, 180, size.lng) < 0.5 ? -1 : 1;
+  final out = <String>{};
+  for (final a in [0, dLat]) {
+    for (final b in [0, dLng]) {
+      final la = lat + a * size.lat;
+      var lo = lng + b * size.lng;
+      if (la < -90 || la > 90) continue;
+      if (lo > 180) lo -= 360;
+      if (lo < -180) lo += 360;
+      out.add(geohashEncode(la, lo, precision: precision));
+    }
+  }
+  return out.toList()..sort();
+}
+
 /// Cell length (characters) whose cell is at least [radiusKm] wide, so the
 /// 3 x 3 block around the driver covers that radius. Capped to 3..5.
 int geohashPrecisionForKm(double radiusKm) {

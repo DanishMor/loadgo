@@ -2520,10 +2520,17 @@ service cloud.firestore {
     // The offer on a new load: the code must be usable, the order big enough,
     // the discount exactly what the code gives, and the slot / per-user
     // documents must be created in the same batch.
+    // config/offers switches (promoEnabled, creditsEnabled, referralEnabled):
+    // all OFF until an admin turns them on.
+    function offersOn(flag) {
+      return exists(docPath('config', 'offers')) && get(docPath('config', 'offers')).data.get(flag, false) == true;
+    }
+
     function validPromoOnCreate(loadId, d) {
       let pr = d.get('promo', null);
       let p = get(docPath('promos', pr.code)).data;
-      return pr.keys().hasOnly(['code', 'discountPaise', 'slot', 'use'])
+      return offersOn('promoEnabled')
+          && pr.keys().hasOnly(['code', 'discountPaise', 'slot', 'use'])
           && pr.slot is int && pr.use is int
           && 'estimate' in d
           && promoUsable(p)
@@ -2537,7 +2544,7 @@ service cloud.firestore {
     function validCreditsOnCreate(loadId, d) {
       let used = d.get('creditsUsedPaise', 0);
       return used is int && used >= 0
-          && (used == 0 || (d.get('estimate', null) != null && used <= d.estimate.total
+          && (used == 0 || (offersOn('creditsEnabled') && d.get('estimate', null) != null && used <= d.estimate.total
               && getAfter(creditPath(d.shipperId, 'spend_' + loadId)).data.amountPaise == -used
               && getAfter(creditPath(d.shipperId, 'spend_' + loadId)).data.loadId == loadId));
     }
@@ -2566,11 +2573,13 @@ service cloud.firestore {
           && request.resource.data.amountPaise is int
           && request.resource.data.keys().hasOnly(['amountPaise', 'kind', 'loadId', 'note', 'createdAt'])
           && ((isUser(userId) && request.resource.data.kind == 'spend'
+                  && offersOn('creditsEnabled')
                   && request.resource.data.amountPaise < 0
                   && lineId == 'spend_' + request.resource.data.loadId
                   && getAfter(docPath('loads', request.resource.data.loadId)).data.shipperId == userId
                   && getAfter(docPath('loads', request.resource.data.loadId)).data.get('creditsUsedPaise', 0) == -request.resource.data.amountPaise)
               || (request.resource.data.kind == 'referral'
+                  && offersOn('referralEnabled')
                   && request.resource.data.amountPaise == referralBonus()
                   && existsAfter(docPath('referrals', request.auth.uid))
                   && ((isUser(userId) && lineId == 'referral_in')
@@ -2601,6 +2610,7 @@ service cloud.firestore {
     match /referrals/{refereeUid} {
       allow read: if isUser(refereeUid) || isAdmin() || resource.data.referrerUid == request.auth.uid;
       allow create: if isUser(refereeUid)
+          && offersOn('referralEnabled')
           && request.resource.data.keys().hasOnly(['referrerUid', 'code', 'createdAt'])
           && request.resource.data.referrerUid != request.auth.uid
           && get(docPath('referral_codes', request.resource.data.code)).data.uid == request.resource.data.referrerUid

@@ -3,7 +3,9 @@ import 'package:flutter/services.dart';
 
 import '../core/l10n/l10n.dart';
 import '../core/offers/promo.dart';
+import '../core/services/offers_switch_service.dart';
 import '../core/services/rewards_service.dart';
+import '../core/widgets/offers_gate.dart';
 import '../core/widgets/common.dart';
 import '../core/widgets/live_stream.dart';
 
@@ -38,6 +40,7 @@ class _OffersScreenState extends State<OffersScreen> {
 
   Future<void> _load() async {
     try {
+      if (!OffersSwitchService.current.referral) return;
       final code = await RewardsService.ensureReferralCode();
       final referred = await RewardsService.hasReferrer();
       if (mounted) {
@@ -106,8 +109,7 @@ class _OffersScreenState extends State<OffersScreen> {
                     Text(tr(context, 'offersRecordNote'), style: TextStyle(color: AppColors.faint, fontSize: 12)),
                   ]),
                 ),
-                const SizedBox(height: 16),
-                _referralCard(),
+                OffersGate(test: (s) => s.referral, child: Padding(padding: const EdgeInsets.only(bottom: 16), child: _referralCard())),
                 const SizedBox(height: 16),
                 Text(tr(context, 'creditHistory'), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
                 const SizedBox(height: 8),

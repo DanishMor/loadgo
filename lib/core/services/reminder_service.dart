@@ -18,12 +18,12 @@ import '../trip/trip_eta.dart';
 
 /// Live in-app reminders for the signed-in user: the latest bookings, loads,
 /// offers, vehicles and licence expiry fed through [ReminderEngine], and
-/// re-worked every minute so "pickup in 40 minutes" stays current.
+/// re-worked every 5 minutes (the cheapest period that keeps the wording right) so "pickup in 40 minutes" stays current.
 class ReminderService {
   ReminderService._();
 
   /// Re-evaluation period (the rules depend on the clock).
-  static const tick = Duration(minutes: 1);
+  static const tick = Duration(minutes: 5);
 
   static Stream<List<Reminder>> watch({required bool isDriver, DateTime Function()? clock}) {
     final now = clock ?? DateTime.now;
@@ -37,10 +37,11 @@ class ReminderService {
     var vehicles = const <Vehicle>[];
     DateTime? licence;
 
+    String? lastKey;
     void emit() {
       if (out.isClosed) return;
       final prefs = SettingsService.prefs.value;
-      out.add([for (final r in ReminderEngine.compute(ReminderInput(
+      final list = [for (final r in ReminderEngine.compute(ReminderInput(
         now: now(),
         isDriver: isDriver,
         bookings: bookings,
@@ -49,7 +50,12 @@ class ReminderService {
         vehicles: vehicles,
         licenceExpiry: licence,
         etaOf: (b) => TripEta.eta(b, PricingService.estimateRouteKm([b.pickup, ...b.extraPickups, ...b.extraDrops, b.drop])),
-      ))) if (prefs.allowsReminder(r.kind)) r]);
+      ))) if (prefs.allowsReminder(r.kind)) r];
+      // Same reminders as last time: do not wake the UI.
+      final key = list.map((r) => '${r.kind}|${r.id}|${r.args}|${r.priority}').join(';');
+      if (key == lastKey) return;
+      lastKey = key;
+      out.add(list);
     }
 
     void onPrefs() => emit();
@@ -66,7 +72,7 @@ class ReminderService {
         if (isDriver) {
           listen(BookingService.watchForDriver(), (v) => bookings = v);
           listen(OfferService.watchMine(), (v) => offers = v);
-          listen(LoadService.watchOpen(), (v) => loads = v);
+          listen(LoadService.watchOpenPage(50), (v) => loads = v.items);
           listen(VehicleService.watchMine(), (v) => vehicles = v);
           final uid = Backend.uid;
           if (uid != null) {

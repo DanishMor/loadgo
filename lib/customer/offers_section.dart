@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 
 import '../core/l10n/l10n.dart';
 import '../core/offers/promo.dart';
+import '../core/offers/offers_switch.dart';
+import '../core/services/offers_switch_service.dart';
 import '../core/services/rewards_service.dart';
 import '../core/widgets/common.dart';
 
@@ -122,7 +124,12 @@ class _OffersSectionState extends State<OffersSection> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => ValueListenableBuilder<OffersSwitch>(
+        valueListenable: OffersSwitchService.notifier,
+        builder: (context, sw, _) => (sw.promo || sw.credits) ? _body(context, sw) : const SizedBox.shrink(),
+      );
+
+  Widget _body(BuildContext context, OffersSwitch sw) {
     final total = widget.total;
     final discount = total == null ? 0 : (_promo?.discountFor(total) ?? 0);
     // A code applied for a smaller order may stop fitting when the quote changes.
@@ -131,7 +138,7 @@ class _OffersSectionState extends State<OffersSection> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Row(children: [
+          if (sw.promo) Row(children: [
             Expanded(
               child: TextField(
                 key: const ValueKey('promoCode'),
@@ -162,7 +169,7 @@ class _OffersSectionState extends State<OffersSection> {
                 style: TextStyle(color: stale ? AppColors.warning : AppColors.success, fontWeight: FontWeight.w700),
               ),
             ),
-          if (_balance > 0)
+          if (sw.credits && _balance > 0)
             SwitchListTile(
               key: const ValueKey('useCredits'),
               contentPadding: EdgeInsets.zero,

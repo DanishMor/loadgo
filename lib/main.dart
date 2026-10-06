@@ -34,10 +34,13 @@ Future<void> main() async {
   applyLanguageName(await LanguageStore.loadLocal());
   await ThemeStore.load();
   // Register for push whenever a user is signed in (also after app restarts).
+  String? configUid;
   FirebaseAuth.instance.authStateChanges().listen((user) {
     if (user != null) {
       PushService.register();
-      refreshAppConfig();
+      // Another account needs its own settings; the same one reuses the cache.
+      refreshAppConfig(force: user.uid != configUid);
+      configUid = user.uid;
     }
   });
   runApp(const LoadGoApp());

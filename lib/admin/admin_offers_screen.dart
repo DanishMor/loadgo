@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 
 import '../core/l10n/l10n.dart';
 import '../core/offers/promo.dart';
+import '../core/offers/offers_switch.dart';
+import '../core/services/offers_switch_service.dart';
 import '../core/services/rewards_service.dart';
 import '../core/widgets/common.dart';
 import '../core/widgets/live_stream.dart';
@@ -37,6 +39,7 @@ class _AdminOffersScreenState extends State<AdminOffersScreen> {
   @override
   void initState() {
     super.initState();
+    OffersSwitchService.refresh(force: true);
     RewardsService.referralBonus().then((b) {
       if (mounted) _bonusCtrl.text = (b / 100).toStringAsFixed(b % 100 == 0 ? 0 : 2);
     }).catchError((_) {});
@@ -88,6 +91,37 @@ class _AdminOffersScreenState extends State<AdminOffersScreen> {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 8, 20, 90),
         children: [
+          ValueListenableBuilder<OffersSwitch>(
+            valueListenable: OffersSwitchService.notifier,
+            builder: (context, sw, _) => AppCard(
+              child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+                Text(tr(context, 'offersSwitches'), style: const TextStyle(fontWeight: FontWeight.w800)),
+                Text(tr(context, 'offersSwitchesNote'), style: TextStyle(color: AppColors.muted, fontSize: 12)),
+                SwitchListTile(
+                  key: const ValueKey('switchPromo'),
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(tr(context, 'promoCodes')),
+                  value: sw.promo,
+                  onChanged: (v) => OffersSwitchService.save(sw.copyWith(promo: v)),
+                ),
+                SwitchListTile(
+                  key: const ValueKey('switchCredits'),
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(tr(context, 'creditBalance')),
+                  value: sw.credits,
+                  onChanged: (v) => OffersSwitchService.save(sw.copyWith(credits: v)),
+                ),
+                SwitchListTile(
+                  key: const ValueKey('switchReferral'),
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(tr(context, 'yourReferralCode')),
+                  value: sw.referral,
+                  onChanged: (v) => OffersSwitchService.save(sw.copyWith(referral: v)),
+                ),
+              ]),
+            ),
+          ),
+          const SizedBox(height: 12),
           AppCard(
             child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
               Text(tr(context, 'referralBonus'), style: const TextStyle(fontWeight: FontWeight.w800)),
