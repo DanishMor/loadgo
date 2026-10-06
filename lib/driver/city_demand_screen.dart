@@ -50,7 +50,7 @@ class _CityDemandScreenState extends State<CityDemandScreen> {
                 return ListView(
                   padding: const EdgeInsets.fromLTRB(20, 8, 20, 30),
                   children: [
-                    Text(trf(context, 'demandTotal', {'n': summary.totalLoads}), style: const TextStyle(color: AppColors.muted)),
+                    Text(trf(context, 'demandTotal', {'n': summary.totalLoads}), style: TextStyle(color: AppColors.muted)),
                     const SizedBox(height: 16),
                     Text(tr(context, 'demandByType'), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
                     const SizedBox(height: 8),
@@ -95,7 +95,7 @@ class _CityDemandScreenState extends State<CityDemandScreen> {
                           ]),
                         ),
                       ),
-                    Text(tr(context, 'demandNote'), style: const TextStyle(color: AppColors.faint, fontSize: 12)),
+                    Text(tr(context, 'demandNote'), style: TextStyle(color: AppColors.faint, fontSize: 12)),
                   ],
                 );
               },

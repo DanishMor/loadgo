@@ -45,15 +45,15 @@ class _BusinessStatementScreenState extends State<BusinessStatementScreen> {
           final s = MonthlyStatement.from(bookings, _month);
           return ListView(padding: const EdgeInsets.all(16), children: [
             Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-              IconButton(key: const ValueKey('stmtPrev'), onPressed: () => _shift(-1), icon: const Icon(Icons.chevron_left_rounded)),
+              IconButton(tooltip: tr(context, 'a11yPrev'), key: const ValueKey('stmtPrev'), onPressed: () => _shift(-1), icon: const Icon(Icons.chevron_left_rounded)),
               Text(s.month, key: const ValueKey('stmtMonth'), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
-              IconButton(key: const ValueKey('stmtNext'), onPressed: () => _shift(1), icon: const Icon(Icons.chevron_right_rounded)),
+              IconButton(tooltip: tr(context, 'a11yNext'), key: const ValueKey('stmtNext'), onPressed: () => _shift(1), icon: const Icon(Icons.chevron_right_rounded)),
             ]),
             AppCard(
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(tr(context, 'statementTotal'), style: const TextStyle(color: AppColors.muted)),
+                Text(tr(context, 'statementTotal'), style: TextStyle(color: AppColors.muted)),
                 Text(formatPaise(s.totalPaise), key: const ValueKey('stmtTotal'), style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800)),
-                Text(trf(context, 'fleetTripsDone', {'n': s.trips}), style: const TextStyle(color: AppColors.muted)),
+                Text(trf(context, 'fleetTripsDone', {'n': s.trips}), style: TextStyle(color: AppColors.muted)),
               ]),
             ),
             const SizedBox(height: 12),
@@ -67,7 +67,7 @@ class _BusinessStatementScreenState extends State<BusinessStatementScreen> {
                 trailing: Text(formatPaise(e.value), style: const TextStyle(fontWeight: FontWeight.w800)),
               ),
             const SizedBox(height: 8),
-            Text(tr(context, 'statementNote'), style: const TextStyle(color: AppColors.faint, fontSize: 12)),
+            Text(tr(context, 'statementNote'), style: TextStyle(color: AppColors.faint, fontSize: 12)),
             const SizedBox(height: 12),
             Row(children: [
               Expanded(

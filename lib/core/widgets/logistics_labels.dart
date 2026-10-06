@@ -135,7 +135,7 @@ class _PriceDialogState extends State<_PriceDialog> {
             ),
             if (widget.note != null) ...[
               const SizedBox(height: 8),
-              Text(widget.note!, style: const TextStyle(color: AppColors.muted, fontSize: 12)),
+              Text(widget.note!, style: TextStyle(color: AppColors.muted, fontSize: 12)),
             ],
           ],
         ),

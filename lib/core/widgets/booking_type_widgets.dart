@@ -84,7 +84,7 @@ class HelpersStepper extends StatelessWidget {
           icon: const Icon(Icons.add_rounded),
         ),
         const SizedBox(width: 12),
-        Expanded(child: Text(tr(context, 'helpersHint'), style: const TextStyle(color: AppColors.muted, fontSize: 12))),
+        Expanded(child: Text(tr(context, 'helpersHint'), style: TextStyle(color: AppColors.muted, fontSize: 12))),
       ],
     );
   }

@@ -22,12 +22,12 @@ class PodScreen extends StatelessWidget {
       children: [
         SizedBox(
           width: 140,
-          child: Text(label, style: const TextStyle(color: AppColors.muted)),
+          child: Text(label, style: TextStyle(color: AppColors.muted)),
         ),
         Expanded(
           child: Text(
             value,
-            style: const TextStyle(fontWeight: FontWeight.w600, color: AppColors.title),
+            style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.title),
           ),
         ),
       ],
@@ -40,7 +40,7 @@ class PodScreen extends StatelessWidget {
       children: [
         Text(
           title,
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.title),
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.title),
         ),
         const SizedBox(height: 6),
         ...children,
@@ -116,10 +116,10 @@ class PodScreen extends StatelessWidget {
               AppCard(
                 child: Row(
                   children: [
-                    const Icon(Icons.photo_library_outlined, color: AppColors.faint),
+                    Icon(Icons.photo_library_outlined, color: AppColors.faint),
                     const SizedBox(width: 10),
                     Expanded(
-                      child: Text(tr(context, 'photosLater'), style: const TextStyle(color: AppColors.muted)),
+                      child: Text(tr(context, 'photosLater'), style: TextStyle(color: AppColors.muted)),
                     ),
                   ],
                 ),

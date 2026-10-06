@@ -44,8 +44,8 @@ class _ProfileViewState extends State<ProfileView> {
     return ListTile(
       contentPadding: EdgeInsets.zero,
       leading: Icon(icon, color: AppColors.muted),
-      title: Text(label, style: const TextStyle(fontSize: 13, color: AppColors.muted)),
-      subtitle: Text(value, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.title)),
+      title: Text(label, style: TextStyle(fontSize: 13, color: AppColors.muted)),
+      subtitle: Text(value, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.title)),
     );
   }
 
@@ -55,7 +55,7 @@ class _ProfileViewState extends State<ProfileView> {
       builder: (context, snap) {
         final s = snap.data ?? RatingSummary.empty;
         if (s.count == 0) {
-          return Text(tr(context, 'noRatingsYet'), style: const TextStyle(color: AppColors.muted));
+          return Text(tr(context, 'noRatingsYet'), style: TextStyle(color: AppColors.muted));
         }
         return InkWell(
           key: const ValueKey('openReviews'),
@@ -67,7 +67,7 @@ class _ProfileViewState extends State<ProfileView> {
                 StarRow(stars: s.average.round(), size: 22),
                 const SizedBox(width: 8),
                 Text('${s.average.toStringAsFixed(1)} (${s.count} ${tr(context, 'ratings')})',
-                    style: const TextStyle(fontWeight: FontWeight.w700, color: AppColors.body)),
+                    style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.body)),
               ],
             ),
             SizedBox(width: 260, child: RatingCategoryRows(scores: s.categoryAverages)),
@@ -110,11 +110,11 @@ class _ProfileViewState extends State<ProfileView> {
             builder: (context, snap) => Text(
               trf(context, 'profileVehicles', {'n': snap.data?.length ?? 0}),
               key: const ValueKey('profileVehicleCount'),
-              style: const TextStyle(color: AppColors.muted),
+              style: TextStyle(color: AppColors.muted),
             ),
           ),
-          Text(trf(context, 'profileLanguage', {'lang': trLanguageName(LanguageScope.of(context))}), style: const TextStyle(color: AppColors.muted)),
-          Text(tr(context, pro ? 'planPro' : 'planFree'), key: const ValueKey('profilePlan'), style: const TextStyle(color: AppColors.muted)),
+          Text(trf(context, 'profileLanguage', {'lang': trLanguageName(LanguageScope.of(context))}), style: TextStyle(color: AppColors.muted)),
+          Text(tr(context, pro ? 'planPro' : 'planFree'), key: const ValueKey('profilePlan'), style: TextStyle(color: AppColors.muted)),
         ],
       ]),
     );
@@ -134,7 +134,7 @@ class _ProfileViewState extends State<ProfileView> {
                 children: [
                   Expanded(
                     child: Text(tr(context, 'profile'),
-                        style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: AppColors.title)),
+                        style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: AppColors.title)),
                   ),
                   TextButton.icon(
                     onPressed: () => Navigator.of(context).push(MaterialPageRoute(
@@ -157,9 +157,9 @@ class _ProfileViewState extends State<ProfileView> {
                     ),
                     const SizedBox(height: 12),
                     Text(name?.isNotEmpty == true ? name! : '--',
-                        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.title)),
+                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.title)),
                     const SizedBox(height: 4),
-                    Text(tr(context, widget.isDriver ? 'driver' : 'customer'), style: const TextStyle(color: AppColors.muted)),
+                    Text(tr(context, widget.isDriver ? 'driver' : 'customer'), style: TextStyle(color: AppColors.muted)),
                     const SizedBox(height: 10),
                     _ratingSection(),
                   ],
@@ -174,7 +174,7 @@ class _ProfileViewState extends State<ProfileView> {
                     _detail(Icons.business_outlined, tr(context, 'company'), data['companyName'] as String?),
                     ListTile(
                       contentPadding: EdgeInsets.zero,
-                      leading: const Icon(Icons.language_rounded, color: AppColors.muted),
+                      leading: Icon(Icons.language_rounded, color: AppColors.muted),
                       title: Text(tr(context, 'language')),
                       trailing: Text(trLanguageName(LanguageScope.of(context))),
                       onTap: () => showLanguageSelector(context),
@@ -183,7 +183,7 @@ class _ProfileViewState extends State<ProfileView> {
                     ListTile(
                       key: const ValueKey('profileSettings'),
                       contentPadding: EdgeInsets.zero,
-                      leading: const Icon(Icons.settings_outlined, color: AppColors.muted),
+                      leading: Icon(Icons.settings_outlined, color: AppColors.muted),
                       title: Text(tr(context, 'settings')),
                       trailing: const Icon(Icons.chevron_right_rounded),
                       onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => SettingsScreen(onLogout: _logout))),
@@ -192,7 +192,7 @@ class _ProfileViewState extends State<ProfileView> {
                     ListTile(
                       key: const ValueKey('profileSupport'),
                       contentPadding: EdgeInsets.zero,
-                      leading: const Icon(Icons.support_agent_rounded, color: AppColors.muted),
+                      leading: Icon(Icons.support_agent_rounded, color: AppColors.muted),
                       title: Text(tr(context, 'helpSupport')),
                       trailing: const Icon(Icons.chevron_right_rounded),
                       onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const SupportHomeScreen())),
@@ -200,7 +200,7 @@ class _ProfileViewState extends State<ProfileView> {
                     ListTile(
                       key: const ValueKey('profileEmergency'),
                       contentPadding: EdgeInsets.zero,
-                      leading: const Icon(Icons.contact_emergency_outlined, color: AppColors.muted),
+                      leading: Icon(Icons.contact_emergency_outlined, color: AppColors.muted),
                       title: Text(tr(context, 'emergencyContacts')),
                       trailing: const Icon(Icons.chevron_right_rounded),
                       onTap: () =>

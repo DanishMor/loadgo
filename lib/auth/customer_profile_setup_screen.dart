@@ -8,6 +8,7 @@ import '../core/l10n/l10n.dart';
 import '../core/l10n/language_widgets.dart';
 import '../customer/customer_home_screen.dart';
 import 'role_selection_screen.dart';
+import '../core/widgets/common.dart';
 
 class CustomerProfileSetupScreen extends StatefulWidget {
   final String phoneNumber;
@@ -87,7 +88,7 @@ class _CustomerProfileSetupScreenState extends State<CustomerProfileSetupScreen>
 
   Widget _label(String text) => Padding(
         padding: const EdgeInsets.only(bottom: 8),
-        child: Text(text, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: Color(0xFF344054))),
+        child: Text(text, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.body)),
       );
 
   @override
@@ -95,9 +96,9 @@ class _CustomerProfileSetupScreenState extends State<CustomerProfileSetupScreen>
     return PopScope(
       canPop: false,
       child: Scaffold(
-        backgroundColor: const Color(0xFFF6F8FC),
+        backgroundColor: AppColors.background,
         appBar: AppBar(
-          backgroundColor: const Color(0xFFF6F8FC),
+          backgroundColor: AppColors.background,
           elevation: 0,
           scrolledUnderElevation: 0,
           automaticallyImplyLeading: false,
@@ -114,9 +115,9 @@ class _CustomerProfileSetupScreenState extends State<CustomerProfileSetupScreen>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(tr(context, 'profileSetupTitle'), style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: Color(0xFF111827))),
+                  Text(tr(context, 'profileSetupTitle'), style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: AppColors.title)),
                   const SizedBox(height: 8),
-                  Text(tr(context, 'profileSetupSub'), style: const TextStyle(fontSize: 15, color: Color(0xFF667085))),
+                  Text(tr(context, 'profileSetupSub'), style: TextStyle(fontSize: 15, color: AppColors.muted)),
                   const SizedBox(height: 30),
                   _label(tr(context, 'fullName')),
                   TextFormField(

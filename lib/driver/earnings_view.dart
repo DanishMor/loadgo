@@ -22,7 +22,7 @@ class EarningsView extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(label, style: const TextStyle(color: AppColors.muted, fontSize: 13)),
+              Text(label, style: TextStyle(color: AppColors.muted, fontSize: 13)),
               const SizedBox(height: 6),
               Text(value,
                   style: TextStyle(
@@ -43,7 +43,7 @@ class EarningsView extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(20, 18, 20, 30),
             children: [
               Text(tr(context, 'earnings'),
-                  style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: AppColors.title)),
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: AppColors.title)),
               const SizedBox(height: 16),
               ListTile(
                 key: const ValueKey('openRewards'),
@@ -79,10 +79,10 @@ class EarningsView extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 8),
-              Text(tr(context, 'earningsNote'), style: const TextStyle(fontSize: 12, color: AppColors.faint)),
+              Text(tr(context, 'earningsNote'), style: TextStyle(fontSize: 12, color: AppColors.faint)),
               const SizedBox(height: 20),
               Text(tr(context, 'recentTrips'),
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.title)),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.title)),
               const SizedBox(height: 10),
               if (e.delivered.isEmpty)
                 EmptyState(icon: Icons.account_balance_wallet_outlined, title: tr(context, 'noEarningsYet'))
@@ -99,7 +99,7 @@ class EarningsView extends StatelessWidget {
                               RouteText(pickup: b.pickup, drop: b.drop, fontSize: 15),
                               const SizedBox(height: 4),
                               Text(formatDate(EarningsSummary.deliveredAt(b)),
-                                  style: const TextStyle(color: AppColors.muted, fontSize: 13)),
+                                  style: TextStyle(color: AppColors.muted, fontSize: 13)),
                             ],
                           ),
                         ),

@@ -126,17 +126,17 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
     return tr(context, 'goodEvening');
   }
 
-  Widget _title(String text) => Text(text, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: Color(0xFF111827)));
+  Widget _title(String text) => Text(text, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.title));
 
   Widget _emptyCard(IconData icon, String text) => Container(
         width: double.infinity,
         padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(18), border: Border.all(color: const Color(0xFFE4E7EC))),
+        decoration: BoxDecoration(color: AppColors.card, borderRadius: BorderRadius.circular(18), border: Border.all(color: AppColors.border)),
         child: Row(
           children: [
-            Icon(icon, color: const Color(0xFF98A2B3)),
+            Icon(icon, color: AppColors.faint),
             const SizedBox(width: 12),
-            Expanded(child: Text(text, style: const TextStyle(color: Color(0xFF667085)))),
+            Expanded(child: Text(text, style: TextStyle(color: AppColors.muted))),
           ],
         ),
       );
@@ -147,7 +147,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
           onTap: onTap ?? () => _snack(tr(context, 'comingSoon')),
           child: Container(
             padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(18), border: Border.all(color: const Color(0xFFE4E7EC))),
+            decoration: BoxDecoration(color: AppColors.card, borderRadius: BorderRadius.circular(18), border: Border.all(color: AppColors.border)),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -228,15 +228,17 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(tr(context, 'noVehicleTitle'), style: const TextStyle(fontWeight: FontWeight.w800, color: AppColors.title)),
+                      Text(tr(context, 'noVehicleTitle'), style: TextStyle(fontWeight: FontWeight.w800, color: AppColors.title)),
                       const SizedBox(height: 2),
-                      Text(tr(context, 'noVehicleSub'), style: const TextStyle(fontSize: 12, color: AppColors.muted)),
+                      Text(tr(context, 'noVehicleSub'), style: TextStyle(fontSize: 12, color: AppColors.muted)),
                     ],
                   ),
                 ),
-                TextButton(
-                  onPressed: () => openAddVehicle(context, prefillFromProfile: true),
-                  child: Text(tr(context, 'addVehicle')),
+                Flexible(
+                  child: TextButton(
+                    onPressed: () => openAddVehicle(context, prefillFromProfile: true),
+                    child: Text(tr(context, 'addVehicle'), textAlign: TextAlign.center),
+                  ),
                 ),
               ],
             ),
@@ -261,21 +263,21 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                     children: [
                       Text(_greeting(), style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800)),
                       const SizedBox(height: 2),
-                      Text(tr(context, 'driver'), style: const TextStyle(color: Color(0xFF667085))),
+                      Text(tr(context, 'driver'), style: TextStyle(color: AppColors.muted)),
                     ],
                   ),
                 ),
-                IconButton(onPressed: () => showLanguageSelector(context), icon: const Icon(Icons.language_rounded), color: const Color(0xFF1565C0)),
+                IconButton(tooltip: tr(context, 'language'), onPressed: () => showLanguageSelector(context), icon: const Icon(Icons.language_rounded), color: const Color(0xFF1565C0)),
                 NotificationBell(isDriver: true, onOpenBooking: (id) => openDriverTrip(context, id)),
               ],
             ),
             const SizedBox(height: 18),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
-              decoration: BoxDecoration(color: _isOnline ? const Color(0xFFE7F8EF) : const Color(0xFFF2F4F7), borderRadius: BorderRadius.circular(18)),
+              decoration: BoxDecoration(color: _isOnline ? const Color(0xFFE7F8EF) : AppColors.chip, borderRadius: BorderRadius.circular(18)),
               child: Row(
                 children: [
-                  Icon(Icons.circle, size: 14, color: _isOnline ? const Color(0xFF12B76A) : const Color(0xFF98A2B3)),
+                  Icon(Icons.circle, size: 14, color: _isOnline ? const Color(0xFF12B76A) : AppColors.faint),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(_isOnline ? tr(context, 'online') : tr(context, 'offline'), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
@@ -414,13 +416,13 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
     ];
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF6F8FC),
+      backgroundColor: AppColors.background,
       body: IndexedStack(index: _index, children: pages),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _index,
         onDestinationSelected: _selectTab,
-        backgroundColor: Colors.white,
-        indicatorColor: const Color(0xFFE8F1FF),
+        backgroundColor: AppColors.card,
+        indicatorColor: AppColors.primaryLight,
         destinations: [
           NavigationDestination(icon: const Icon(Icons.home_outlined), selectedIcon: const Icon(Icons.home_rounded), label: tr(context, 'home')),
           NavigationDestination(icon: _loadsIcon(Icons.inventory_2_outlined), selectedIcon: const Icon(Icons.inventory_2_rounded), label: tr(context, 'loads')),

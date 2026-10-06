@@ -37,7 +37,7 @@ class LoadCard extends StatelessWidget {
         children: [
           Icon(icon, size: 16, color: AppColors.muted),
           const SizedBox(width: 4),
-          Text(text, style: const TextStyle(color: AppColors.body, fontSize: 13, fontWeight: FontWeight.w600)),
+          Text(text, style: TextStyle(color: AppColors.body, fontSize: 13, fontWeight: FontWeight.w600)),
         ],
       );
 
@@ -97,7 +97,7 @@ class LoadCard extends StatelessWidget {
           ),
           if (load.notes.isNotEmpty) ...[
             const SizedBox(height: 6),
-            Text(load.notes, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(color: AppColors.muted, fontSize: 13)),
+            Text(load.notes, maxLines: 2, overflow: TextOverflow.ellipsis, style: TextStyle(color: AppColors.muted, fontSize: 13)),
           ],
           if (action != null) ...[const SizedBox(height: 12), action!],
         ],

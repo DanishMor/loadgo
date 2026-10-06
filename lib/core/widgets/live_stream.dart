@@ -198,12 +198,12 @@ class ErrorRetry extends StatelessWidget {
       return AppCard(
         child: Row(
           children: [
-            const Icon(Icons.cloud_off_rounded, color: AppColors.faint),
+            Icon(Icons.cloud_off_rounded, color: AppColors.faint),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
                 tr(context, messageKey),
-                style: const TextStyle(color: AppColors.muted),
+                style: TextStyle(color: AppColors.muted),
               ),
             ),
             retry,
@@ -238,10 +238,10 @@ class OfflineBanner extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Row(
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.wifi_off_rounded,
                     size: 16,
-                    color: Colors.white,
+                    color: AppColors.card,
                   ),
                   const SizedBox(width: 8),
                   Expanded(

@@ -52,7 +52,7 @@ class _DriverRewardsScreenState extends State<DriverRewardsScreen> {
 
   Widget _section(String key) => Padding(
         padding: const EdgeInsets.only(top: 18, bottom: 8),
-        child: Text(tr(context, key), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.title)),
+        child: Text(tr(context, key), style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.title)),
       );
 
   Widget _planCard() {
@@ -72,7 +72,7 @@ class _DriverRewardsScreenState extends State<DriverRewardsScreen> {
             ]),
             const SizedBox(height: 8),
             Text(trf(context, 'planCommissions', {'free': formatNum(cfg.commissionPercent), 'pro': formatNum(cfg.proCommissionPercent)}),
-                style: const TextStyle(color: AppColors.muted)),
+                style: TextStyle(color: AppColors.muted)),
             if (!pro)
               StreamBuilder<Map<String, dynamic>?>(
                 stream: DriverExtrasService.watchMyPlanRequest(),
@@ -87,7 +87,7 @@ class _DriverRewardsScreenState extends State<DriverRewardsScreen> {
                 },
               ),
             const SizedBox(height: 6),
-            Text(tr(context, 'planNote'), style: const TextStyle(color: AppColors.faint, fontSize: 12)),
+            Text(tr(context, 'planNote'), style: TextStyle(color: AppColors.faint, fontSize: 12)),
           ]),
         );
       },
@@ -116,7 +116,7 @@ class _DriverRewardsScreenState extends State<DriverRewardsScreen> {
                 builder: (context, list) {
                   final now = DateTime.now();
                   final shown = [for (final i in list) if (i.isRunning(now) || claims.any((c) => c.incentiveId == i.id) || i.canClaim(bookings, now)) i];
-                  if (shown.isEmpty) return Text(tr(context, 'noIncentives'), style: const TextStyle(color: AppColors.muted));
+                  if (shown.isEmpty) return Text(tr(context, 'noIncentives'), style: TextStyle(color: AppColors.muted));
                   return Column(children: [for (final i in shown) _incentiveCard(i, bookings, claims, now)]);
                 },
               ),
@@ -129,7 +129,7 @@ class _DriverRewardsScreenState extends State<DriverRewardsScreen> {
           compact: true,
           builder: (context, tips) => AppCard(
             child: Row(children: [
-              Expanded(child: Text(trf(context, 'tipsCount', {'n': tips.length}), style: const TextStyle(color: AppColors.muted))),
+              Expanded(child: Text(trf(context, 'tipsCount', {'n': tips.length}), style: TextStyle(color: AppColors.muted))),
               Text(formatPaise(Tip.total(tips)),
                   key: const ValueKey('tipsTotal'), style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.primary)),
             ]),
@@ -151,13 +151,13 @@ class _DriverRewardsScreenState extends State<DriverRewardsScreen> {
           Text(i.title, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
           const SizedBox(height: 4),
           Text(trf(context, 'incentiveRule', {'trips': i.targetTrips, 'days': i.windowDays, 'bonus': formatPaise(i.bonusPaise)}),
-              style: const TextStyle(color: AppColors.muted, fontSize: 13)),
+              style: TextStyle(color: AppColors.muted, fontSize: 13)),
           const SizedBox(height: 10),
           LinearProgressIndicator(key: ValueKey('progress_${i.id}'), value: i.progress(bookings), minHeight: 8, borderRadius: BorderRadius.circular(8)),
           const SizedBox(height: 6),
           Text(trf(context, 'incentiveProgress', {'done': done > i.targetTrips ? i.targetTrips : done, 'target': i.targetTrips}),
               key: ValueKey('progressText_${i.id}'), style: const TextStyle(fontWeight: FontWeight.w700)),
-          if (daysLeft >= 0) Text(trf(context, 'incentiveDaysLeft', {'n': daysLeft}), style: const TextStyle(color: AppColors.faint, fontSize: 12)),
+          if (daysLeft >= 0) Text(trf(context, 'incentiveDaysLeft', {'n': daysLeft}), style: TextStyle(color: AppColors.faint, fontSize: 12)),
           if (claim != null)
             Padding(
               padding: const EdgeInsets.only(top: 8),

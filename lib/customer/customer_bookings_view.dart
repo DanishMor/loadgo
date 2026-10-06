@@ -39,7 +39,7 @@ class _CustomerBookingsViewState extends State<CustomerBookingsView> {
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 18, 20, 8),
             child: Text(tr(context, 'bookings'),
-                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: AppColors.title)),
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: AppColors.title)),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),

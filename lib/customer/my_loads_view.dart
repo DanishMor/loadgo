@@ -88,7 +88,7 @@ class _MyLoadsViewState extends State<MyLoadsView> {
               children: [
                 Expanded(
                   child: Text(tr(context, 'myLoads'),
-                      style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: AppColors.title)),
+                      style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: AppColors.title)),
                 ),
                 TextButton.icon(
                   onPressed: widget.onPostLoad,
@@ -141,13 +141,13 @@ class _ContactSupportNote extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(color: const Color(0xFFFFF6E5), borderRadius: BorderRadius.circular(12)),
+      decoration: BoxDecoration(color: AppColors.warnBg, borderRadius: BorderRadius.circular(12)),
       child: Row(
         children: [
           const Icon(Icons.info_outline_rounded, color: AppColors.warning),
           const SizedBox(width: 10),
           Expanded(
-            child: Text(tr(context, 'cannotCancelMatched'), style: const TextStyle(fontSize: 13, color: AppColors.body)),
+            child: Text(tr(context, 'cannotCancelMatched'), style: TextStyle(fontSize: 13, color: AppColors.body)),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const NewTicketScreen())),

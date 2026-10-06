@@ -72,7 +72,7 @@ class _DevicesScreenState extends State<DevicesScreen> {
                   else
                     StatusChip(label: tr(context, 'deviceNew'), color: AppColors.warning),
                 ]),
-                if (d.lastSeenAt != null) Text(formatDateTime(d.lastSeenAt!), style: const TextStyle(color: AppColors.muted, fontSize: 12)),
+                if (d.lastSeenAt != null) Text(formatDateTime(d.lastSeenAt!), style: TextStyle(color: AppColors.muted, fontSize: 12)),
                 if (!d.revoked)
                   Row(children: [
                     if (!d.trusted) TextButton(key: ValueKey('trust_${d.id}'), onPressed: () => _run(() => DeviceService.trust(d.id)), child: Text(tr(context, 'deviceTrust'))),

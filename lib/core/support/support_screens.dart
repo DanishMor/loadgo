@@ -62,7 +62,7 @@ class TicketTile extends StatelessWidget {
               Expanded(
                 child: Text(
                   t.subject,
-                  style: const TextStyle(fontWeight: FontWeight.w800, color: AppColors.title),
+                  style: TextStyle(fontWeight: FontWeight.w800, color: AppColors.title),
                 ),
               ),
               StatusChip(label: ticketStatusLabel(context, t.status), color: ticketStatusColor(t.status)),
@@ -76,7 +76,7 @@ class TicketTile extends StatelessWidget {
               if (t.escalationLevel > 0) trf(context, 'escalationLevel', {'n': t.escalationLevel}),
               if (t.updatedAt != null) formatDateTime(t.updatedAt!),
             ].join(' • '),
-            style: const TextStyle(color: AppColors.muted, fontSize: 12),
+            style: TextStyle(color: AppColors.muted, fontSize: 12),
           ),
         ],
       ),
@@ -121,7 +121,7 @@ class SupportHomeScreen extends StatelessWidget {
                     Expanded(
                       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                         Text(tr(context, 'callSupport'), style: const TextStyle(fontWeight: FontWeight.w800)),
-                        Text(c.hours.isEmpty ? c.phone : '${c.phone} · ${c.hours}', style: const TextStyle(color: AppColors.muted, fontSize: 13)),
+                        Text(c.hours.isEmpty ? c.phone : '${c.phone} · ${c.hours}', style: TextStyle(color: AppColors.muted, fontSize: 13)),
                       ]),
                     ),
                   ]),
@@ -238,6 +238,7 @@ class _NewTicketScreenState extends State<NewTicketScreen> {
               children: [
                 FieldLabel(tr(context, 'ticketCategory')),
                 DropdownButtonFormField<String>(
+                  isExpanded: true,
                   key: const ValueKey('ticketCategory'),
                   initialValue: _category,
                   items: [
@@ -249,6 +250,7 @@ class _NewTicketScreenState extends State<NewTicketScreen> {
                 const SizedBox(height: 14),
                 FieldLabel(tr(context, 'priority')),
                 DropdownButtonFormField<String>(
+                  isExpanded: true,
                   initialValue: _priority,
                   items: [
                     for (final p in TicketPriority.all)
@@ -405,7 +407,7 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                                     if (r.createdAt != null)
                                       Text(
                                         formatDateTime(r.createdAt!),
-                                        style: const TextStyle(fontSize: 11, color: AppColors.faint),
+                                        style: TextStyle(fontSize: 11, color: AppColors.faint),
                                       ),
                                   ],
                                 ),

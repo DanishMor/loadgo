@@ -5,6 +5,7 @@ import '../core/l10n/l10n.dart';
 import '../core/l10n/language_widgets.dart';
 import 'driver_login_screen.dart';
 import 'customer_login_screen.dart';
+import '../core/widgets/common.dart';
 
 
 // ROLE SELECTION
@@ -16,7 +17,7 @@ class RoleSelectionScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF6F8FC),
+      backgroundColor: AppColors.background,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(20, 18, 20, 30),
@@ -42,12 +43,12 @@ class RoleSelectionScreen extends StatelessWidget {
               const SizedBox(height: 12),
               Text(
                 tr(context, 'welcome'),
-                style: const TextStyle(fontSize: 30, fontWeight: FontWeight.w800, color: Color(0xFF111827)),
+                style: TextStyle(fontSize: 30, fontWeight: FontWeight.w800, color: AppColors.title),
               ),
               const SizedBox(height: 8),
               Text(
                 tr(context, 'chooseRole'),
-                style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
+                style: TextStyle(fontSize: 16, color: AppColors.muted),
               ),
               const SizedBox(height: 32),
               _RoleCard(
@@ -93,9 +94,9 @@ class RoleSelectionScreen extends StatelessWidget {
                   width: double.infinity,
                   padding: const EdgeInsets.all(18),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: AppColors.card,
                     borderRadius: BorderRadius.circular(18),
-                    border: Border.all(color: const Color(0xFFE4E7EC)),
+                    border: Border.all(color: AppColors.border),
                   ),
                   child: Row(
                     children: [
@@ -112,12 +113,12 @@ class RoleSelectionScreen extends StatelessWidget {
                             const SizedBox(height: 3),
                             Text(
                               trLanguageName(LanguageScope.of(context)),
-                              style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+                              style: TextStyle(fontSize: 13, color: AppColors.muted),
                             ),
                           ],
                         ),
                       ),
-                      const Icon(Icons.chevron_right_rounded, color: Color(0xFF667085)),
+                      Icon(Icons.chevron_right_rounded, color: AppColors.muted),
                     ],
                   ),
                 ),
@@ -127,7 +128,7 @@ class RoleSelectionScreen extends StatelessWidget {
                 child: Text(
                   tr(context, 'footer'),
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 13, color: Colors.grey.shade600, fontWeight: FontWeight.w500),
+                  style: TextStyle(fontSize: 13, color: AppColors.muted, fontWeight: FontWeight.w500),
                 ),
               ),
             ],
@@ -159,7 +160,7 @@ class _RoleCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.card,
         borderRadius: BorderRadius.circular(22),
         boxShadow: [
           BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 18, offset: const Offset(0, 8)),
@@ -171,13 +172,13 @@ class _RoleCard extends StatelessWidget {
           Container(
             width: 58,
             height: 58,
-            decoration: BoxDecoration(color: const Color(0xFFE8F1FF), borderRadius: BorderRadius.circular(16)),
+            decoration: BoxDecoration(color: AppColors.primaryLight, borderRadius: BorderRadius.circular(16)),
             child: Icon(icon, color: const Color(0xFF1565C0), size: 32),
           ),
           const SizedBox(height: 16),
-          Text(title, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: Color(0xFF111827))),
+          Text(title, style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: AppColors.title)),
           const SizedBox(height: 7),
-          Text(subtitle, style: const TextStyle(fontSize: 14, height: 1.45, color: Color(0xFF667085))),
+          Text(subtitle, style: TextStyle(fontSize: 14, height: 1.45, color: AppColors.muted)),
           const SizedBox(height: 18),
           SizedBox(
             width: double.infinity,

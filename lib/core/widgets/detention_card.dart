@@ -90,7 +90,7 @@ class _DetentionCardState extends State<DetentionCard> {
         const SizedBox(height: 8),
         Text(trf(context, 'detentionMinutes', {'n': minutes}), key: const ValueKey('detentionMinutes'), style: const TextStyle(fontWeight: FontWeight.w700)),
         Text(trf(context, 'detentionCharge', {'amount': formatPaise(_charge), 'free': cfg.detentionFreeMinutes}),
-            key: const ValueKey('detentionCharge'), style: const TextStyle(color: AppColors.muted, fontSize: 13)),
+            key: const ValueKey('detentionCharge'), style: TextStyle(color: AppColors.muted, fontSize: 13)),
         if (canControl)
           Padding(
             padding: const EdgeInsets.only(top: 8),
@@ -101,7 +101,7 @@ class _DetentionCardState extends State<DetentionCard> {
             ),
           ),
         const SizedBox(height: 4),
-        Text(tr(context, 'detentionNote'), style: const TextStyle(color: AppColors.faint, fontSize: 12)),
+        Text(tr(context, 'detentionNote'), style: TextStyle(color: AppColors.faint, fontSize: 12)),
       ]),
     );
   }

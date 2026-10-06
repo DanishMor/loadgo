@@ -61,7 +61,7 @@ class FareBreakdownView extends StatelessWidget {
 Future<void> showFareBreakdown(BuildContext context, FareBreakdown fare) => showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.card,
       isScrollControlled: true,
       builder: (c) => SafeArea(
         child: SingleChildScrollView(
@@ -73,7 +73,7 @@ Future<void> showFareBreakdown(BuildContext context, FareBreakdown fare) => show
               const SizedBox(height: 12),
               FareBreakdownView(fare: fare),
               const SizedBox(height: 10),
-              Text(tr(c, 'estimateNote'), style: const TextStyle(color: AppColors.muted, fontSize: 12)),
+              Text(tr(c, 'estimateNote'), style: TextStyle(color: AppColors.muted, fontSize: 12)),
             ],
           ),
         ),

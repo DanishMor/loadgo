@@ -16,7 +16,7 @@ Future<Vehicle?> _chooseVehicle(BuildContext context, Load load, List<Vehicle> v
   return showModalBottomSheet<Vehicle>(
     context: context,
     showDragHandle: true,
-    backgroundColor: Colors.white,
+    backgroundColor: AppColors.card,
     isScrollControlled: true,
     builder: (sheetContext) => SafeArea(
       child: Padding(
@@ -28,7 +28,7 @@ Future<Vehicle?> _chooseVehicle(BuildContext context, Load load, List<Vehicle> v
             RouteText(pickup: load.pickup, drop: load.drop),
             const SizedBox(height: 4),
             Text('${formatNum(load.weight)} T • ${vehicleTypeLabel(context, load.vehicleType)} • ${formatDate(load.pickupDate)}',
-                style: const TextStyle(color: AppColors.muted)),
+                style: TextStyle(color: AppColors.muted)),
             const SizedBox(height: 16),
             Text(tr(sheetContext, 'chooseVehicle'), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
             const SizedBox(height: 8),

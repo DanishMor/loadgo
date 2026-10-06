@@ -37,7 +37,7 @@ class BookingCard extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             '${formatNum(b.weight)} T • ${b.cargoType} • ${b.vehicleNumber} • ${formatDate(b.pickupDate)}',
-            style: const TextStyle(color: AppColors.muted, fontSize: 13),
+            style: TextStyle(color: AppColors.muted, fontSize: 13),
           ),
         ],
       ),
@@ -59,8 +59,8 @@ class BookingSummary extends StatelessWidget {
           children: [
             Icon(icon, size: 18, color: AppColors.muted),
             const SizedBox(width: 10),
-            SizedBox(width: 90, child: Text(label, style: const TextStyle(color: AppColors.muted))),
-            Expanded(child: Text(value, style: const TextStyle(fontWeight: FontWeight.w700, color: AppColors.body))),
+            SizedBox(width: 90, child: Text(label, style: TextStyle(color: AppColors.muted))),
+            Expanded(child: Text(value, style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.body))),
           ],
         ),
       );
@@ -175,7 +175,7 @@ class BookingTimeline extends StatelessWidget {
                   if (time != null)
                     Text(
                       [formatDateTime(time), if (_since[status] != null) '+${durationText(context, _since[status]!)}'].join('  '),
-                      style: const TextStyle(fontSize: 12, color: AppColors.muted),
+                      style: TextStyle(fontSize: 12, color: AppColors.muted),
                     ),
                 ],
               ),

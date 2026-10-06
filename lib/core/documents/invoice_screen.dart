@@ -67,7 +67,7 @@ class InvoiceScreen extends StatelessWidget {
                             const Text('LoadGo',
                                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.primary)),
                             const Spacer(),
-                            Text(invoiceNumber(b), style: const TextStyle(fontWeight: FontWeight.w700, color: AppColors.body)),
+                            Text(invoiceNumber(b), style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.body)),
                           ],
                         ),
                         const Divider(height: 28),
@@ -102,7 +102,7 @@ class InvoiceScreen extends StatelessWidget {
                           ),
                         ],
                         const SizedBox(height: 8),
-                        Text(tr(context, 'invoiceNote'), style: const TextStyle(fontSize: 12, color: AppColors.faint)),
+                        Text(tr(context, 'invoiceNote'), style: TextStyle(fontSize: 12, color: AppColors.faint)),
                       ],
                     ),
                   ),
@@ -131,10 +131,10 @@ class _InvoiceRow extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(width: 130, child: Text(label, style: const TextStyle(color: AppColors.muted))),
+            SizedBox(width: 130, child: Text(label, style: TextStyle(color: AppColors.muted))),
             Expanded(
               child: Text(value,
-                  textAlign: TextAlign.right, style: const TextStyle(fontWeight: FontWeight.w700, color: AppColors.title)),
+                  textAlign: TextAlign.right, style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.title)),
             ),
           ],
         ),

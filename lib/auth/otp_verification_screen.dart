@@ -10,6 +10,7 @@ import '../core/services/auth_helpers.dart';
 import '../core/services/device_service.dart';
 import '../core/services/user_service.dart';
 import 'start_resolvers.dart';
+import '../core/widgets/common.dart';
 
 
 // OTP (shared by Customer + Driver)
@@ -179,12 +180,12 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF6F8FC),
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF6F8FC),
+        backgroundColor: AppColors.background,
         elevation: 0,
         scrolledUnderElevation: 0,
-        leading: IconButton(
+        leading: IconButton(tooltip: tr(context, 'a11yBack'), 
           icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () => Navigator.of(context).pop(),
         ),
@@ -199,20 +200,20 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
               Container(
                 width: 82,
                 height: 82,
-                decoration: BoxDecoration(color: const Color(0xFFE8F1FF), borderRadius: BorderRadius.circular(24)),
+                decoration: BoxDecoration(color: AppColors.primaryLight, borderRadius: BorderRadius.circular(24)),
                 child: const Icon(Icons.sms_rounded, size: 42, color: Color(0xFF1565C0)),
               ),
               const SizedBox(height: 28),
               Text(
                 tr(context, 'verifyTitle'),
                 textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: Color(0xFF111827)),
+                style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: AppColors.title),
               ),
               const SizedBox(height: 10),
               Text(
                 '${tr(context, 'otpText')}\n${maskPhone('+91${widget.phoneNumber}')}',
                 textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 15, height: 1.5, color: Color(0xFF667085)),
+                style: TextStyle(fontSize: 15, height: 1.5, color: AppColors.muted),
               ),
               const SizedBox(height: 35),
               TextField(
@@ -259,7 +260,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                 child: Text(
                   _secondsLeft > 0 ? trf(context, 'resendIn', {'s': _secondsLeft}) : tr(context, 'resendOtp'),
                   style: TextStyle(
-                    color: _secondsLeft > 0 ? const Color(0xFF98A2B3) : const Color(0xFF1565C0),
+                    color: _secondsLeft > 0 ? AppColors.faint : const Color(0xFF1565C0),
                     fontWeight: FontWeight.w700,
                   ),
                 ),

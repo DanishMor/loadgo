@@ -95,11 +95,11 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
             AppCard(
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Text(name, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
-                Text('${u['phone'] ?? ''}  ·  ${widget.uid}', style: const TextStyle(color: AppColors.muted, fontSize: 12)),
+                Text('${u['phone'] ?? ''}  ·  ${widget.uid}', style: TextStyle(color: AppColors.muted, fontSize: 12)),
                 const SizedBox(height: 8),
                 Text('${tr(context, 'auStatus')}: ${riskTierLabel(context, tier)}', key: const ValueKey('userStanding'), style: const TextStyle(fontWeight: FontWeight.w700)),
-                if ((u['riskReason'] as String?)?.isNotEmpty ?? false) Text(u['riskReason'] as String, style: const TextStyle(color: AppColors.muted)),
-                if (isDriver) Text('${tr(context, 'driverVerification')}: ${u['verificationStatus'] ?? 'pending'}', style: const TextStyle(color: AppColors.muted)),
+                if ((u['riskReason'] as String?)?.isNotEmpty ?? false) Text(u['riskReason'] as String, style: TextStyle(color: AppColors.muted)),
+                if (isDriver) Text('${tr(context, 'driverVerification')}: ${u['verificationStatus'] ?? 'pending'}', style: TextStyle(color: AppColors.muted)),
               ]),
             ),
             const SizedBox(height: 12),
@@ -116,13 +116,13 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
             Text(tr(context, 'auNotes'), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
             Row(children: [
               Expanded(child: TextField(key: const ValueKey('noteField'), controller: _note, maxLength: 1000, decoration: InputDecoration(hintText: tr(context, 'auNoteHint'), counterText: ''))),
-              IconButton(key: const ValueKey('noteAdd'), icon: const Icon(Icons.add_comment_outlined), onPressed: _addNote),
+              IconButton(tooltip: tr(context, 'a11yAddNote'), key: const ValueKey('noteAdd'), icon: const Icon(Icons.add_comment_outlined), onPressed: _addNote),
             ]),
             LiveStream<List<AdminNote>>(
               stream: () => _notes,
               compact: true,
               builder: (context, notes) => notes.isEmpty
-                  ? Text(tr(context, 'auNoNotes'), style: const TextStyle(color: AppColors.muted))
+                  ? Text(tr(context, 'auNoNotes'), style: TextStyle(color: AppColors.muted))
                   : Column(children: [
                       for (final n in notes)
                         ListTile(contentPadding: EdgeInsets.zero, dense: true, title: Text(n.text), subtitle: Text(n.createdAt == null ? n.by : '${n.by} · ${formatDateTime(n.createdAt!)}')),
@@ -134,7 +134,7 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
               stream: () => _history,
               compact: true,
               builder: (context, events) => events.isEmpty
-                  ? Text(tr(context, 'auNoHistory'), style: const TextStyle(color: AppColors.muted))
+                  ? Text(tr(context, 'auNoHistory'), style: TextStyle(color: AppColors.muted))
                   : Column(children: [
                       for (final e in events)
                         ListTile(

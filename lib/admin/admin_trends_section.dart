@@ -28,7 +28,7 @@ class _AdminTrendsSectionState extends State<AdminTrendsSection> {
 
   Widget _stat(String label, String value, {Key? key}) => Expanded(
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(label, style: const TextStyle(fontSize: 12, color: AppColors.muted)),
+          Text(label, style: TextStyle(fontSize: 12, color: AppColors.muted)),
           Text(value, key: key, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
         ]),
       );
@@ -109,7 +109,7 @@ class _AdminTrendsSectionState extends State<AdminTrendsSection> {
           ),
           const SizedBox(height: 12),
           if (t.bookings == 0)
-            Padding(padding: const EdgeInsets.all(12), child: Text(tr(context, 'trendNone'), key: const ValueKey('trendNone'), style: const TextStyle(color: AppColors.muted)))
+            Padding(padding: const EdgeInsets.all(12), child: Text(tr(context, 'trendNone'), key: const ValueKey('trendNone'), style: TextStyle(color: AppColors.muted)))
           else ...[
             AppCard(
               child: Column(children: [

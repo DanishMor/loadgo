@@ -61,9 +61,9 @@ class _RatingBadgeState extends State<RatingBadge> {
           children: [
             const Icon(Icons.star_rounded, color: _starColor, size: 20),
             const SizedBox(width: 4),
-            Text(s.average.toStringAsFixed(1), style: const TextStyle(fontWeight: FontWeight.w800, color: AppColors.title)),
+            Text(s.average.toStringAsFixed(1), style: TextStyle(fontWeight: FontWeight.w800, color: AppColors.title)),
             const SizedBox(width: 4),
-            Text('(${s.count} ${tr(context, 'ratings')})', style: const TextStyle(color: AppColors.muted, fontSize: 13)),
+            Text('(${s.count} ${tr(context, 'ratings')})', style: TextStyle(color: AppColors.muted, fontSize: 13)),
           ],
         );
       },
@@ -124,19 +124,19 @@ class _RatingPromptState extends State<RatingPrompt> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(tr(context, mine == null ? widget.titleKey : 'yourRating'),
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.title)),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.title)),
               const SizedBox(height: 8),
               if (mine != null) ...[
                 StarRow(stars: mine.stars, size: 24),
                 if (mine.cats.isNotEmpty) RatingCategoryRows(scores: {for (final e in mine.cats.entries) e.key: e.value.toDouble()}),
                 if (mine.comment.isNotEmpty) ...[
                   const SizedBox(height: 6),
-                  Text(mine.comment, style: const TextStyle(color: AppColors.muted)),
+                  Text(mine.comment, style: TextStyle(color: AppColors.muted)),
                 ],
               ] else ...[
                 StarRow(stars: _stars, onChanged: _saving ? null : (v) => setState(() => _stars = v)),
                 const SizedBox(height: 4),
-                Text(tr(context, 'rateInDetail'), style: const TextStyle(fontSize: 13, color: AppColors.muted)),
+                Text(tr(context, 'rateInDetail'), style: TextStyle(fontSize: 13, color: AppColors.muted)),
                 for (final c in RatingCategory.all)
                   Row(children: [
                     Expanded(child: Text(tr(context, 'rating${c[0].toUpperCase()}${c.substring(1)}'))),
@@ -180,7 +180,7 @@ class RatingCategoryRows extends StatelessWidget {
       for (final c in RatingCategory.all)
         if (scores[c] != null)
           Row(children: [
-            Expanded(child: Text(tr(context, 'rating${c[0].toUpperCase()}${c.substring(1)}'), style: const TextStyle(color: AppColors.muted, fontSize: 13))),
+            Expanded(child: Text(tr(context, 'rating${c[0].toUpperCase()}${c.substring(1)}'), style: TextStyle(color: AppColors.muted, fontSize: 13))),
             StarRow(stars: scores[c]!.round(), size: 16),
             const SizedBox(width: 6),
             Text(scores[c]!.toStringAsFixed(1), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),

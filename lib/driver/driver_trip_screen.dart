@@ -209,7 +209,7 @@ class _CancelBookingButtonState extends State<_CancelBookingButton> {
                   ? trf(dialogContext, 'cancelFree', {'m': policy.freeMinutes})
                   : trf(dialogContext, 'cancelChargeNote', {'amount': formatPaise(charge)}),
               key: const ValueKey('cancelPolicyNote'),
-              style: const TextStyle(fontSize: 13, color: AppColors.muted),
+              style: TextStyle(fontSize: 13, color: AppColors.muted),
             ),
           ],
         ),

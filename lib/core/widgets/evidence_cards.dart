@@ -182,6 +182,7 @@ class _CargoDocsCardState extends State<CargoDocsCard> {
         ),
         const SizedBox(height: 8),
         DropdownButtonFormField<String>(
+          isExpanded: true,
           key: const ValueKey('cargoDocType'),
           initialValue: _type,
           items: [for (final t in CargoDocType.all) DropdownMenuItem(value: t, child: Text(cargoDocLabel(context, t)))],
@@ -196,7 +197,7 @@ class _CargoDocsCardState extends State<CargoDocsCard> {
           ]),
         FilledButton.tonal(key: const ValueKey('cargoDocAdd'), onPressed: _add, child: Text(tr(context, 'cargoDocAdd'))),
         const SizedBox(height: 4),
-        Text(tr(context, 'cargoDocsNote'), style: const TextStyle(color: AppColors.faint, fontSize: 12)),
+        Text(tr(context, 'cargoDocsNote'), style: TextStyle(color: AppColors.faint, fontSize: 12)),
       ]),
     );
   }

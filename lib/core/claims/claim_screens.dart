@@ -31,7 +31,7 @@ class ClaimCard extends StatelessWidget {
         if (claims.isEmpty && !ClaimService.canOpen(booking)) return const SizedBox.shrink();
         return AppCard(
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(tr(context, 'dspTitle'), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.title)),
+            Text(tr(context, 'dspTitle'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.title)),
             for (final c in claims)
               ListTile(
                 key: ValueKey('claim_${c.id}'),
@@ -104,10 +104,11 @@ class _NewClaimScreenState extends State<NewClaimScreen> {
     return Scaffold(
       appBar: AppBar(title: Text(tr(context, 'reportProblem'))),
       body: ListView(padding: const EdgeInsets.all(20), children: [
-        Text(tr(context, 'dspNote'), style: const TextStyle(color: AppColors.muted)),
+        Text(tr(context, 'dspNote'), style: TextStyle(color: AppColors.muted)),
         const SizedBox(height: 14),
         FieldLabel(tr(context, 'dspType')),
         DropdownButtonFormField<String>(
+          isExpanded: true,
           key: const ValueKey('claimType'),
           initialValue: _type,
           items: [for (final t in ClaimType.all) DropdownMenuItem(value: t, child: Text(tr(context, 'dspType_$t')))],
@@ -221,7 +222,7 @@ class _ClaimScreenState extends State<ClaimScreen> {
                 Text(c.description),
                 if (c.amountPaise != null) Text(trf(context, 'dspClaimed', {'amount': formatPaise(c.amountPaise!)})),
                 if (c.awardedPaise != null) Text(trf(context, 'dspAwardedLine', {'amount': formatPaise(c.awardedPaise!)})),
-                if (c.resolutionNote.isNotEmpty) Text(c.resolutionNote, style: const TextStyle(color: AppColors.muted)),
+                if (c.resolutionNote.isNotEmpty) Text(c.resolutionNote, style: TextStyle(color: AppColors.muted)),
               ]),
             ),
             if (widget.admin && !c.isClosed)

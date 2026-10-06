@@ -73,6 +73,7 @@ class TradeDetailsSection extends StatelessWidget {
             final branches = snap.data ?? const <Branch>[];
             if (branches.isEmpty) return const SizedBox.shrink();
             return DropdownButtonFormField<String?>(
+              isExpanded: true,
               key: const ValueKey('fromBranch'),
               initialValue: branches.any((b) => b.id == branchId) ? branchId : null,
               decoration: InputDecoration(labelText: tr(context, 'fromBranch')),

@@ -113,12 +113,12 @@ class _VehicleCardState extends State<_VehicleCard> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(v.number, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: AppColors.title)),
+                Text(v.number, style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: AppColors.title)),
                 const SizedBox(height: 4),
                 Text('${vehicleTypeLabel(context, v.type)} • ${formatNum(v.capacity)} T • RC ${v.rcNumber}',
-                    style: const TextStyle(color: AppColors.muted, fontSize: 13)),
+                    style: TextStyle(color: AppColors.muted, fontSize: 13)),
                 if (_profileLine(context, v) case final line?)
-                  Text(line, key: ValueKey('profile_${v.id}'), style: const TextStyle(color: AppColors.muted, fontSize: 12)),
+                  Text(line, key: ValueKey('profile_${v.id}'), style: TextStyle(color: AppColors.muted, fontSize: 12)),
                 const SizedBox(height: 8),
                 Wrap(
                   spacing: 6,

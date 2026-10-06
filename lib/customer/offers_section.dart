@@ -181,11 +181,11 @@ class _OffersSectionState extends State<OffersSection> {
                   'amount': formatPaise(payableAfterOffers(total: total, promo: stale ? null : _promo, creditsBalance: _balance, useCredits: _useCredits)),
                 }),
                 key: const ValueKey('payableAfterOffers'),
-                style: const TextStyle(fontWeight: FontWeight.w800, color: AppColors.title),
+                style: TextStyle(fontWeight: FontWeight.w800, color: AppColors.title),
               ),
             ),
           const SizedBox(height: 4),
-          Text(tr(context, 'offersRecordNote'), style: const TextStyle(color: AppColors.faint, fontSize: 12)),
+          Text(tr(context, 'offersRecordNote'), style: TextStyle(color: AppColors.faint, fontSize: 12)),
         ],
       ),
     );

@@ -283,7 +283,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                     children: [
                       CircleAvatar(
                         backgroundColor: n.read
-                            ? const Color(0xFFF2F4F7)
+                            ? AppColors.chip
                             : AppColors.primaryLight,
                         child: Icon(
                           _iconFor(n.type),
@@ -307,7 +307,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                             const SizedBox(height: 2),
                             Text(
                               n.message,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 color: AppColors.muted,
                                 fontSize: 13,
                               ),
@@ -315,7 +315,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                             if (n.createdAt != null)
                               Text(
                                 formatDateTime(n.createdAt!.toDate()),
-                                style: const TextStyle(
+                                style: TextStyle(
                                   color: AppColors.faint,
                                   fontSize: 12,
                                 ),
@@ -377,7 +377,7 @@ class _NotifSettingsSheetState extends State<_NotifSettingsSheet> {
             ),
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
-            child: Text(tr(context, 'notifCriticalNote'), style: const TextStyle(fontSize: 12, color: AppColors.faint)),
+            child: Text(tr(context, 'notifCriticalNote'), style: TextStyle(fontSize: 12, color: AppColors.faint)),
           ),
         ]),
       ),

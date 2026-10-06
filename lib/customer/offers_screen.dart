@@ -98,12 +98,12 @@ class _OffersScreenState extends State<OffersScreen> {
               return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
                 AppCard(
                   child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Text(tr(context, 'creditBalance'), style: const TextStyle(color: AppColors.muted)),
+                    Text(tr(context, 'creditBalance'), style: TextStyle(color: AppColors.muted)),
                     Text(formatPaise(balance),
                         key: const ValueKey('creditBalance'),
-                        style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: AppColors.title)),
+                        style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: AppColors.title)),
                     const SizedBox(height: 4),
-                    Text(tr(context, 'offersRecordNote'), style: const TextStyle(color: AppColors.faint, fontSize: 12)),
+                    Text(tr(context, 'offersRecordNote'), style: TextStyle(color: AppColors.faint, fontSize: 12)),
                   ]),
                 ),
                 const SizedBox(height: 16),
@@ -111,7 +111,7 @@ class _OffersScreenState extends State<OffersScreen> {
                 const SizedBox(height: 16),
                 Text(tr(context, 'creditHistory'), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
                 const SizedBox(height: 8),
-                if (lines.isEmpty) Text(tr(context, 'noCreditLines'), style: const TextStyle(color: AppColors.muted)),
+                if (lines.isEmpty) Text(tr(context, 'noCreditLines'), style: TextStyle(color: AppColors.muted)),
                 for (final l in lines)
                   ListTile(
                     contentPadding: EdgeInsets.zero,
@@ -133,7 +133,7 @@ class _OffersScreenState extends State<OffersScreen> {
   Widget _referralCard() {
     return AppCard(
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(tr(context, 'yourReferralCode'), style: const TextStyle(color: AppColors.muted)),
+        Text(tr(context, 'yourReferralCode'), style: TextStyle(color: AppColors.muted)),
         Row(children: [
           Expanded(
             child: Text(_myCode ?? '…',
@@ -150,7 +150,7 @@ class _OffersScreenState extends State<OffersScreen> {
               },
             ),
         ]),
-        Text(tr(context, 'referralExplain'), style: const TextStyle(color: AppColors.muted, fontSize: 13)),
+        Text(tr(context, 'referralExplain'), style: TextStyle(color: AppColors.muted, fontSize: 13)),
         if (!_referred) ...[
           const SizedBox(height: 12),
           Row(children: [

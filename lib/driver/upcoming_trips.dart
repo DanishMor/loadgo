@@ -93,12 +93,12 @@ class UpcomingTripsCard extends StatelessWidget {
                 const Icon(Icons.event_available_rounded, color: AppColors.primary),
                 const SizedBox(width: 8),
                 Expanded(child: Text(trf(context, 'upcomingCount', {'n': list.length}), style: const TextStyle(fontWeight: FontWeight.w800))),
-                const Icon(Icons.chevron_right_rounded, color: AppColors.faint),
+                Icon(Icons.chevron_right_rounded, color: AppColors.faint),
               ]),
               for (final b in list.take(2))
                 Padding(
                   padding: const EdgeInsets.only(top: 6),
-                  child: Text('${b.pickup} → ${b.drop} · ${countdownText(context, b.scheduledAt!, now())}', style: const TextStyle(color: AppColors.muted)),
+                  child: Text('${b.pickup} → ${b.drop} · ${countdownText(context, b.scheduledAt!, now())}', style: TextStyle(color: AppColors.muted)),
                 ),
             ]),
           ),

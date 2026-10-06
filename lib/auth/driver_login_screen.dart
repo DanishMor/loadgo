@@ -8,6 +8,7 @@ import '../core/l10n/l10n.dart';
 import '../core/l10n/language_widgets.dart';
 import 'start_resolvers.dart';
 import 'otp_verification_screen.dart';
+import '../core/widgets/common.dart';
 class DriverLoginScreen extends StatefulWidget {
   /// `driver` (default) or `fleet`: the same phone login with another door.
   final String role;
@@ -88,12 +89,12 @@ class _DriverLoginScreenState extends State<DriverLoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF6F8FC),
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF6F8FC),
+        backgroundColor: AppColors.background,
         elevation: 0,
         scrolledUnderElevation: 0,
-        leading: IconButton(icon: const Icon(Icons.arrow_back_rounded), onPressed: () => Navigator.of(context).pop()),
+        leading: IconButton(tooltip: tr(context, 'a11yBack'), icon: const Icon(Icons.arrow_back_rounded), onPressed: () => Navigator.of(context).pop()),
         title: Text(tr(context, widget.role == 'fleet' ? 'fleetLoginTitle' : 'driverLoginTitle'), style: const TextStyle(fontWeight: FontWeight.w700)),
         actions: const [LanguageButton()],
       ),
@@ -110,20 +111,20 @@ class _DriverLoginScreenState extends State<DriverLoginScreen> {
                   child: Container(
                     width: 82,
                     height: 82,
-                    decoration: BoxDecoration(color: const Color(0xFFE8F1FF), borderRadius: BorderRadius.circular(24)),
+                    decoration: BoxDecoration(color: AppColors.primaryLight, borderRadius: BorderRadius.circular(24)),
                     child: const Icon(Icons.local_shipping_rounded, size: 45, color: Color(0xFF1565C0)),
                   ),
                 ),
                 const SizedBox(height: 28),
                 Center(
-                  child: Text(tr(context, widget.role == 'fleet' ? 'fleetLoginTitle' : 'driverLoginTitle'), textAlign: TextAlign.center, style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: Color(0xFF111827))),
+                  child: Text(tr(context, widget.role == 'fleet' ? 'fleetLoginTitle' : 'driverLoginTitle'), textAlign: TextAlign.center, style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: AppColors.title)),
                 ),
                 const SizedBox(height: 8),
                 Center(
-                  child: Text(tr(context, widget.role == 'fleet' ? 'fleetLoginSub' : 'driverLoginSub'), textAlign: TextAlign.center, style: const TextStyle(fontSize: 15, color: Color(0xFF667085))),
+                  child: Text(tr(context, widget.role == 'fleet' ? 'fleetLoginSub' : 'driverLoginSub'), textAlign: TextAlign.center, style: TextStyle(fontSize: 15, color: AppColors.muted)),
                 ),
                 const SizedBox(height: 40),
-                Text(tr(context, 'mobile'), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: Color(0xFF344054))),
+                Text(tr(context, 'mobile'), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.body)),
                 const SizedBox(height: 8),
                 TextFormField(
                   controller: _phoneController,

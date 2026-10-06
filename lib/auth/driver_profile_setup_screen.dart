@@ -8,6 +8,7 @@ import '../core/services/vehicle_type_service.dart';
 import '../core/widgets/logistics_labels.dart';
 import 'start_resolvers.dart';
 import 'role_selection_screen.dart';
+import '../core/widgets/common.dart';
 
 class DriverProfileSetupScreen extends StatefulWidget {
   const DriverProfileSetupScreen({super.key});
@@ -68,7 +69,7 @@ class _DriverProfileSetupScreenState extends State<DriverProfileSetupScreen> {
 
   Widget _label(String text) => Padding(
         padding: const EdgeInsets.only(bottom: 8),
-        child: Text(text, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: Color(0xFF344054))),
+        child: Text(text, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.body)),
       );
 
   @override
@@ -76,9 +77,9 @@ class _DriverProfileSetupScreenState extends State<DriverProfileSetupScreen> {
     return PopScope(
       canPop: false,
       child: Scaffold(
-        backgroundColor: const Color(0xFFF6F8FC),
+        backgroundColor: AppColors.background,
         appBar: AppBar(
-          backgroundColor: const Color(0xFFF6F8FC),
+          backgroundColor: AppColors.background,
           elevation: 0,
           scrolledUnderElevation: 0,
           automaticallyImplyLeading: false,
@@ -95,9 +96,9 @@ class _DriverProfileSetupScreenState extends State<DriverProfileSetupScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(tr(context, 'driverProfileTitle'), style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: Color(0xFF111827))),
+                  Text(tr(context, 'driverProfileTitle'), style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: AppColors.title)),
                   const SizedBox(height: 8),
-                  Text(tr(context, 'driverProfileSub'), style: const TextStyle(fontSize: 15, color: Color(0xFF667085))),
+                  Text(tr(context, 'driverProfileSub'), style: TextStyle(fontSize: 15, color: AppColors.muted)),
                   const SizedBox(height: 30),
                   _label(tr(context, 'fullName')),
                   TextFormField(
@@ -124,7 +125,7 @@ class _DriverProfileSetupScreenState extends State<DriverProfileSetupScreen> {
                         label: Text(vehicleTypeLabel(context, t)),
                         selected: selected,
                         onSelected: (_) => setState(() => _vehicleType = t),
-                        selectedColor: const Color(0xFFE8F1FF),
+                        selectedColor: AppColors.primaryLight,
                       );
                     }).toList(),
                   ),

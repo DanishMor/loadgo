@@ -116,7 +116,7 @@ class _VehicleDocumentsScreenState extends State<VehicleDocumentsScreen> {
               Expanded(
                 child: Text(
                   vehicleDocLabel(context, kind),
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.title),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.title),
                 ),
               ),
               if (info.isExpired(now))
@@ -169,7 +169,7 @@ class _VehicleDocumentsScreenState extends State<VehicleDocumentsScreen> {
                   Expanded(
                     child: Text(
                       v.number,
-                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.title),
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.title),
                     ),
                   ),
                   StatusChip(
@@ -179,7 +179,7 @@ class _VehicleDocumentsScreenState extends State<VehicleDocumentsScreen> {
                 ],
               ),
               const SizedBox(height: 6),
-              Text(tr(context, 'docsTextOnly'), style: const TextStyle(color: AppColors.muted, fontSize: 12)),
+              Text(tr(context, 'docsTextOnly'), style: TextStyle(color: AppColors.muted, fontSize: 12)),
               const SizedBox(height: 14),
               for (final k in VehicleDocKind.all) ...[_docCard(k), const SizedBox(height: 12)],
               AppCard(

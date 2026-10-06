@@ -62,7 +62,7 @@ class _MatchingVehiclesLineState extends State<MatchingVehiclesLine> {
           child: Text(
             n > 0 ? trf(context, 'matchingVehiclesCount', {'n': n}) : tr(context, 'noMatchingVehicles'),
             key: const ValueKey('matchingVehicles'),
-            style: const TextStyle(fontSize: 13, color: AppColors.muted),
+            style: TextStyle(fontSize: 13, color: AppColors.muted),
           ),
         ),
       ]),

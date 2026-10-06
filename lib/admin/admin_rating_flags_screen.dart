@@ -28,7 +28,7 @@ class AdminRatingFlagsScreen extends StatelessWidget {
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   Text(trf(context, 'ratingFlagLine', {'stars': f.stars, 'rater': f.raterId, 'rated': f.ratedId}),
                       style: const TextStyle(fontWeight: FontWeight.w700)),
-                  Text(f.bookingId, style: const TextStyle(color: AppColors.muted, fontSize: 12)),
+                  Text(f.bookingId, style: TextStyle(color: AppColors.muted, fontSize: 12)),
                   if (f.status == RatingFlag.open)
                     Wrap(spacing: 8, children: [
                       FilledButton(
@@ -43,7 +43,7 @@ class AdminRatingFlagsScreen extends StatelessWidget {
                       ),
                     ])
                   else
-                    Text(f.status, style: const TextStyle(color: AppColors.muted)),
+                    Text(f.status, style: TextStyle(color: AppColors.muted)),
                 ]),
               );
             },

@@ -117,7 +117,7 @@ class _BusinessScreenState extends State<BusinessScreen> {
                   ),
                   Padding(
                     padding: const EdgeInsets.only(bottom: 8),
-                    child: Text(tr(context, 'gstinNote'), style: const TextStyle(fontSize: 12, color: AppColors.muted)),
+                    child: Text(tr(context, 'gstinNote'), style: TextStyle(fontSize: 12, color: AppColors.muted)),
                   ),
                   TextFormField(
                     key: const ValueKey('bizAddress'),
@@ -151,7 +151,7 @@ class _BusinessScreenState extends State<BusinessScreen> {
                         leading: Icon(branchTypeIcon(b.type)),
                         title: Text(b.name),
                         subtitle: Text([branchTypeLabel(context, b.type), b.address, b.city].where((e) => e.isNotEmpty).join(' · ')),
-                        trailing: IconButton(
+                        trailing: IconButton(tooltip: tr(context, 'a11yDelete'), 
                           key: ValueKey('branchDelete_${b.id}'),
                           icon: const Icon(Icons.delete_outline_rounded),
                           onPressed: () => EnterpriseService.removeBranch(b.id),
@@ -198,6 +198,7 @@ class _BranchDialogState extends State<_BranchDialog> {
       content: SingleChildScrollView(
         child: Column(mainAxisSize: MainAxisSize.min, children: [
           DropdownButtonFormField<String>(
+            isExpanded: true,
             key: const ValueKey('branchType'),
             initialValue: _type,
             items: [for (final t in BranchType.all) DropdownMenuItem(value: t, child: Text(branchTypeLabel(context, t)))],

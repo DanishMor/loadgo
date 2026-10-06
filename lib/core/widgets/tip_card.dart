@@ -87,7 +87,7 @@ class _TipCardState extends State<TipCard> {
                   FilledButton.tonal(key: const ValueKey('tipSend'), onPressed: _busy ? null : _custom, child: Text(tr(context, 'tipSendButton'))),
                 ]),
                 const SizedBox(height: 4),
-                Text(tr(context, 'tipNote'), style: const TextStyle(color: AppColors.faint, fontSize: 12)),
+                Text(tr(context, 'tipNote'), style: TextStyle(color: AppColors.faint, fontSize: 12)),
               ],
             ],
           ),

@@ -72,7 +72,7 @@ class _FleetDriversScreenState extends State<FleetDriversScreen> {
             const SizedBox(width: 8),
             FilledButton(key: const ValueKey('inviteSend'), onPressed: _busy ? null : _invite, child: Text(tr(context, 'fleetInvite'))),
           ]),
-          Text(tr(context, 'fleetInviteNote'), style: const TextStyle(color: AppColors.faint, fontSize: 12)),
+          Text(tr(context, 'fleetInviteNote'), style: TextStyle(color: AppColors.faint, fontSize: 12)),
         ]),
       ),
       const SizedBox(height: 14),

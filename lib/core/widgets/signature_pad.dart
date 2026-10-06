@@ -41,7 +41,7 @@ class SignatureView extends StatelessWidget {
     return Container(
       height: height,
       width: double.infinity,
-      decoration: BoxDecoration(color: Colors.white, border: Border.all(color: AppColors.faint), borderRadius: BorderRadius.circular(12)),
+      decoration: BoxDecoration(color: AppColors.card, border: Border.all(color: AppColors.faint), borderRadius: BorderRadius.circular(12)),
       child: CustomPaint(key: const ValueKey('signatureView'), painter: _StrokePainter(signature.strokes)),
     );
   }
@@ -84,7 +84,7 @@ class SignaturePadState extends State<SignaturePad> {
         child: Container(
           height: size.height,
           width: double.infinity,
-          decoration: BoxDecoration(color: Colors.white, border: Border.all(color: AppColors.primary), borderRadius: BorderRadius.circular(12)),
+          decoration: BoxDecoration(color: AppColors.card, border: Border.all(color: AppColors.primary), borderRadius: BorderRadius.circular(12)),
           child: CustomPaint(painter: _StrokePainter(_strokes)),
         ),
       );

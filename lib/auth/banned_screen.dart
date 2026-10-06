@@ -19,7 +19,7 @@ class BannedScreen extends StatelessWidget {
             const SizedBox(height: 20),
             Text(tr(context, 'auBannedTitle'), key: const ValueKey('bannedTitle'), textAlign: TextAlign.center, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800)),
             const SizedBox(height: 10),
-            Text(tr(context, 'auBannedBody'), textAlign: TextAlign.center, style: const TextStyle(color: AppColors.muted)),
+            Text(tr(context, 'auBannedBody'), textAlign: TextAlign.center, style: TextStyle(color: AppColors.muted)),
             const SizedBox(height: 24),
             OutlinedButton(key: const ValueKey('bannedLogout'), onPressed: () => AppRoutes.logout(context), child: Text(tr(context, 'logout'))),
           ]),

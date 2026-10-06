@@ -1,4 +1,4 @@
-import 'package:firebase_auth/firebase_auth.dart';
+import '../core/services/backend.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -26,6 +26,7 @@ import '../core/notifications/notifications_screen.dart';
 import 'post_load_screen.dart';
 import '../core/profile/profile_view.dart';
 import '../core/documents/documents_center_screen.dart';
+import '../core/widgets/common.dart';
 
 // ============================================================
 // CUSTOMER HOME DASHBOARD
@@ -107,13 +108,13 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF6F8FC),
+      backgroundColor: AppColors.background,
       body: IndexedStack(index: _currentIndex, children: _pages),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _currentIndex,
         onDestinationSelected: (index) => setState(() => _currentIndex = index),
-        backgroundColor: Colors.white,
-        indicatorColor: const Color(0xFFE8F1FF),
+        backgroundColor: AppColors.card,
+        indicatorColor: AppColors.primaryLight,
         destinations: [
           NavigationDestination(
               icon: const Icon(Icons.home_outlined),
@@ -160,7 +161,7 @@ class _CustomerHomeContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final user = FirebaseAuth.instance.currentUser;
+    final user = Backend.currentUser;
     final phone = user?.phoneNumber ?? '';
     final displayPhone = phone.isNotEmpty ? maskPhone(phone) : tr(context, 'customer');
 
@@ -175,7 +176,7 @@ class _CustomerHomeContent extends StatelessWidget {
                 Container(
                   width: 48,
                   height: 48,
-                  decoration: BoxDecoration(color: const Color(0xFFE8F1FF), borderRadius: BorderRadius.circular(15)),
+                  decoration: BoxDecoration(color: AppColors.primaryLight, borderRadius: BorderRadius.circular(15)),
                   child: const Icon(Icons.person_rounded, color: Color(0xFF1565C0), size: 27),
                 ),
                 const SizedBox(width: 12),
@@ -183,11 +184,11 @@ class _CustomerHomeContent extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(tr(context, 'welcomeBack'), style: const TextStyle(fontSize: 13, color: Color(0xFF667085))),
+                      Text(tr(context, 'welcomeBack'), style: TextStyle(fontSize: 13, color: AppColors.muted)),
                       const SizedBox(height: 3),
                       Text(
                         displayPhone,
-                        style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: Color(0xFF111827)),
+                        style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: AppColors.title),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ],
@@ -197,11 +198,11 @@ class _CustomerHomeContent extends StatelessWidget {
                   width: 46,
                   height: 46,
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: AppColors.card,
                     borderRadius: BorderRadius.circular(15),
-                    border: Border.all(color: const Color(0xFFE4E7EC)),
+                    border: Border.all(color: AppColors.border),
                   ),
-                  child: IconButton(
+                  child: IconButton(tooltip: tr(context, 'language'), 
                     onPressed: () => showLanguageSelector(context),
                     icon: const Icon(Icons.language_rounded),
                     color: const Color(0xFF1565C0),
@@ -212,9 +213,9 @@ class _CustomerHomeContent extends StatelessWidget {
                   width: 46,
                   height: 46,
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: AppColors.card,
                     borderRadius: BorderRadius.circular(15),
-                    border: Border.all(color: const Color(0xFFE4E7EC)),
+                    border: Border.all(color: AppColors.border),
                   ),
                   child: NotificationBell(onOpenBooking: (id) => openBookingTracking(context, id)),
                 ),
@@ -224,16 +225,16 @@ class _CustomerHomeContent extends StatelessWidget {
             Container(
               height: 54,
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: AppColors.card,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xFFE4E7EC)),
+                border: Border.all(color: AppColors.border),
               ),
               child: TextField(
                 decoration: InputDecoration(
                   border: InputBorder.none,
-                  prefixIcon: const Icon(Icons.search_rounded, color: Color(0xFF667085)),
+                  prefixIcon: Icon(Icons.search_rounded, color: AppColors.muted),
                   hintText: tr(context, 'search'),
-                  hintStyle: const TextStyle(color: Color(0xFF98A2B3), fontSize: 14),
+                  hintStyle: TextStyle(color: AppColors.faint, fontSize: 14),
                 ), inputFormatters: [LengthLimitingTextInputFormatter(100)]),
             ),
             RemindersBanner(isDriver: false, onOpen: (r) => _openReminder(context, r)),
@@ -270,7 +271,7 @@ class _CustomerHomeContent extends StatelessWidget {
                       icon: const Icon(Icons.local_shipping_rounded, size: 20),
                       label: Text(tr(context, 'bookTruck'), textAlign: TextAlign.center, style: const TextStyle(fontWeight: FontWeight.w700)),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
+                        backgroundColor: AppColors.card,
                         foregroundColor: const Color(0xFF1565C0),
                         elevation: 0,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(13)),
@@ -281,7 +282,7 @@ class _CustomerHomeContent extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 28),
-            Text(tr(context, 'quickActions'), style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: Color(0xFF111827))),
+            Text(tr(context, 'quickActions'), style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.title)),
             const SizedBox(height: 14),
             Row(
               children: [
@@ -343,7 +344,7 @@ class _CustomerHomeContent extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 28),
-            Text(tr(context, 'services'), style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: Color(0xFF111827))),
+            Text(tr(context, 'services'), style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.title)),
             const SizedBox(height: 14),
             SizedBox(
               height: 128,
@@ -361,7 +362,7 @@ class _CustomerHomeContent extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(tr(context, 'recent'), style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: Color(0xFF111827))),
+                Expanded(child: Text(tr(context, 'recent'), style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.title))),
                 TextButton(
                   onPressed: () {},
                   child: Text(tr(context, 'viewAll'), style: const TextStyle(color: Color(0xFF1565C0), fontWeight: FontWeight.w700)),
@@ -373,25 +374,25 @@ class _CustomerHomeContent extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(22),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: AppColors.card,
                 borderRadius: BorderRadius.circular(18),
-                border: Border.all(color: const Color(0xFFE4E7EC)),
+                border: Border.all(color: AppColors.border),
               ),
               child: Column(
                 children: [
                   Container(
                     width: 58,
                     height: 58,
-                    decoration: BoxDecoration(color: const Color(0xFFF2F4F7), borderRadius: BorderRadius.circular(18)),
-                    child: const Icon(Icons.inbox_outlined, size: 30, color: Color(0xFF667085)),
+                    decoration: BoxDecoration(color: AppColors.chip, borderRadius: BorderRadius.circular(18)),
+                    child: Icon(Icons.inbox_outlined, size: 30, color: AppColors.muted),
                   ),
                   const SizedBox(height: 12),
-                  Text(tr(context, 'noActivity'), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xFF344054))),
+                  Text(tr(context, 'noActivity'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.body)),
                   const SizedBox(height: 5),
                   Text(
                     tr(context, 'activitySub'),
                     textAlign: TextAlign.center,
-                    style: const TextStyle(fontSize: 13, color: Color(0xFF98A2B3)),
+                    style: TextStyle(fontSize: 13, color: AppColors.faint),
                   ),
                 ],
               ),
@@ -423,9 +424,9 @@ class _QuickActionCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.card,
           borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: const Color(0xFFE4E7EC)),
+          border: Border.all(color: AppColors.border),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -433,13 +434,13 @@ class _QuickActionCard extends StatelessWidget {
             Container(
               width: 46,
               height: 46,
-              decoration: BoxDecoration(color: const Color(0xFFE8F1FF), borderRadius: BorderRadius.circular(14)),
+              decoration: BoxDecoration(color: AppColors.primaryLight, borderRadius: BorderRadius.circular(14)),
               child: Icon(icon, color: const Color(0xFF1565C0), size: 25),
             ),
             const SizedBox(height: 12),
-            Text(title, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: Color(0xFF111827))),
+            Text(title, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.title)),
             const SizedBox(height: 3),
-            Text(subtitle, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 11, color: Color(0xFF667085))),
+            Text(subtitle, maxLines: 2, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 11, color: AppColors.muted)),
           ],
         ),
       ),
@@ -465,18 +466,18 @@ class _ServiceCard extends StatelessWidget {
       margin: const EdgeInsets.only(right: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.card,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFE4E7EC)),
+        border: Border.all(color: AppColors.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Icon(icon, color: const Color(0xFF1565C0), size: 32),
           const Spacer(),
-          Text(title, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: Color(0xFF111827))),
+          Text(title, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: AppColors.title)),
           const SizedBox(height: 3),
-          Text(subtitle, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 11, color: Color(0xFF667085))),
+          Text(subtitle, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 11, color: AppColors.muted)),
         ],
       ),
     );

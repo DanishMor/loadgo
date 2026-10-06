@@ -5,6 +5,7 @@ import '../core/l10n/l10n.dart';
 import '../driver/driver_home_screen.dart';
 import 'start_resolvers.dart';
 import 'role_selection_screen.dart';
+import '../core/widgets/common.dart';
 
 class DriverPendingScreen extends StatefulWidget {
   const DriverPendingScreen({super.key});
@@ -48,7 +49,7 @@ class _DriverPendingScreenState extends State<DriverPendingScreen> {
     return PopScope(
       canPop: false,
       child: Scaffold(
-        backgroundColor: const Color(0xFFF6F8FC),
+        backgroundColor: AppColors.background,
         body: SafeArea(
           child: Padding(
             padding: const EdgeInsets.all(24),
@@ -62,7 +63,7 @@ class _DriverPendingScreenState extends State<DriverPendingScreen> {
                 Container(
                   width: 110,
                   height: 110,
-                  decoration: BoxDecoration(color: const Color(0xFFFFF6E5), borderRadius: BorderRadius.circular(32)),
+                  decoration: BoxDecoration(color: AppColors.warnBg, borderRadius: BorderRadius.circular(32)),
                   child: const Icon(Icons.hourglass_top_rounded, size: 56, color: Color(0xFFB54708)),
                 ),
                 const SizedBox(height: 20),
@@ -70,13 +71,13 @@ class _DriverPendingScreenState extends State<DriverPendingScreen> {
                   key: const ValueKey('pendingChip'),
                   avatar: const Icon(Icons.pending_actions_rounded, size: 18, color: Color(0xFFB54708)),
                   label: Text(tr(context, 'pendingVerification'), style: const TextStyle(fontWeight: FontWeight.w700, color: Color(0xFFB54708))),
-                  backgroundColor: const Color(0xFFFFF6E5),
+                  backgroundColor: AppColors.warnBg,
                   side: BorderSide.none,
                 ),
                 const SizedBox(height: 16),
-                Text(tr(context, 'pendingTitle'), textAlign: TextAlign.center, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: Color(0xFF111827))),
+                Text(tr(context, 'pendingTitle'), textAlign: TextAlign.center, style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: AppColors.title)),
                 const SizedBox(height: 10),
-                Text(tr(context, 'pendingSub'), textAlign: TextAlign.center, style: const TextStyle(fontSize: 15, height: 1.5, color: Color(0xFF667085))),
+                Text(tr(context, 'pendingSub'), textAlign: TextAlign.center, style: TextStyle(fontSize: 15, height: 1.5, color: AppColors.muted)),
                 const Spacer(),
                 SizedBox(
                   width: double.infinity,

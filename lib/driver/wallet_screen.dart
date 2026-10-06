@@ -28,12 +28,12 @@ class _WalletScreenState extends State<WalletScreen> {
   late final Stream<List<Booking>> _bookings = BookingService.watchForDriver().asBroadcastStream();
   late final Stream<List<Payout>> _payouts = PayoutService.watchMine().asBroadcastStream();
 
-  Widget _total(String label, int paise, {Color color = AppColors.title, Key? key}) => Expanded(
+  Widget _total(String label, int paise, {Color? color, Key? key}) => Expanded(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(label, style: const TextStyle(color: AppColors.muted, fontSize: 12)),
-            Text(formatPaise(paise), key: key, style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: color)),
+            Text(label, style: TextStyle(color: AppColors.muted, fontSize: 12)),
+            Text(formatPaise(paise), key: key, style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: color ?? AppColors.title)),
           ],
         ),
       );
@@ -151,7 +151,7 @@ class _WalletScreenState extends State<WalletScreen> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    Text(tr(context, 'recordsOnly'), style: const TextStyle(fontSize: 12, color: AppColors.faint)),
+                    Text(tr(context, 'recordsOnly'), style: TextStyle(fontSize: 12, color: AppColors.faint)),
                     if (payouts.isNotEmpty) ...[
                       const SizedBox(height: 16),
                       Text(tr(context, 'payoutHistory'), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
@@ -166,7 +166,7 @@ class _WalletScreenState extends State<WalletScreen> {
                         ),
                     ],
                     const SizedBox(height: 12),
-                    if (entries.isEmpty) Text(tr(context, 'noLedger'), style: const TextStyle(color: AppColors.muted)),
+                    if (entries.isEmpty) Text(tr(context, 'noLedger'), style: TextStyle(color: AppColors.muted)),
                     for (final e in entries)
                       ListTile(
                         contentPadding: EdgeInsets.zero,

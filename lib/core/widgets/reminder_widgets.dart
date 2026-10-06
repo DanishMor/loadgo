@@ -45,8 +45,8 @@ class ReminderTile extends StatelessWidget {
       child: Row(children: [
         Icon(reminderIcon(reminder.kind), color: AppColors.warning),
         const SizedBox(width: 12),
-        Expanded(child: Text(reminderText(context, reminder), style: const TextStyle(fontWeight: FontWeight.w700, color: AppColors.title))),
-        if (onTap != null) const Icon(Icons.chevron_right_rounded, color: AppColors.faint),
+        Expanded(child: Text(reminderText(context, reminder), style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.title))),
+        if (onTap != null) Icon(Icons.chevron_right_rounded, color: AppColors.faint),
       ]),
     );
   }
@@ -87,7 +87,7 @@ class _RemindersBannerState extends State<RemindersBanner> {
                 child: KeyedSubtree(key: ValueKey('reminder_${r.id}'), child: ReminderTile(reminder: r, onTap: () => widget.onOpen(r))),
               ),
             if (list.length > widget.max)
-              Text(trf(context, 'remMore', {'n': list.length - widget.max}), style: const TextStyle(color: AppColors.muted, fontSize: 12)),
+              Text(trf(context, 'remMore', {'n': list.length - widget.max}), style: TextStyle(color: AppColors.muted, fontSize: 12)),
           ]),
         );
       },

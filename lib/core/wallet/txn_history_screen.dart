@@ -56,7 +56,7 @@ class _TxnHistoryScreenState extends State<TxnHistoryScreen> {
 
   Widget _total(String label, int paise, Color color) => Expanded(
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(label, style: const TextStyle(color: AppColors.muted, fontSize: 12)),
+          Text(label, style: TextStyle(color: AppColors.muted, fontSize: 12)),
           Text(formatPaise(paise), style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: color)),
         ]),
       );
@@ -122,7 +122,7 @@ class _TxnHistoryScreenState extends State<TxnHistoryScreen> {
                 label: Text(tr(context, 'txnCopyCsv')),
               ),
             ),
-            if (shown.isEmpty) Padding(padding: const EdgeInsets.all(20), child: Text(tr(context, 'txnNone'), style: const TextStyle(color: AppColors.muted))),
+            if (shown.isEmpty) Padding(padding: const EdgeInsets.all(20), child: Text(tr(context, 'txnNone'), style: TextStyle(color: AppColors.muted))),
             for (final l in shown)
               ListTile(
                 key: ValueKey('txn_${l.id}'),

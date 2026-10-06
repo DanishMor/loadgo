@@ -34,7 +34,7 @@ class ReturnLoadsSection extends StatelessWidget {
           key: const ValueKey('returnLoads'),
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(trf(context, 'returnLoadsTitle', {'city': booking.drop}), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.title)),
+            Text(trf(context, 'returnLoadsTitle', {'city': booking.drop}), style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.title)),
             const SizedBox(height: 8),
             for (final r in back) ...[
               if (r.towardsHome)

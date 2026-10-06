@@ -17,7 +17,7 @@ Future<Uint8List?> pickRcImageFromDevice(BuildContext context) async {
   final source = await showModalBottomSheet<ImageSource>(
     context: context,
     showDragHandle: true,
-    backgroundColor: Colors.white,
+    backgroundColor: AppColors.card,
     builder: (sheetContext) => SafeArea(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -111,7 +111,7 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
       image = Image.network(
         widget.vehicle!.rcImageUrl!,
         fit: BoxFit.cover,
-        errorBuilder: (_, _, _) => const Icon(Icons.broken_image_outlined, color: AppColors.faint),
+        errorBuilder: (_, _, _) => Icon(Icons.broken_image_outlined, color: AppColors.faint),
       );
     } else {
       return OutlinedButton.icon(
@@ -243,6 +243,7 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
                 const SizedBox(height: 18),
                 FieldLabel(tr(context, 'vehicleType')),
                 DropdownButtonFormField<String>(
+                  isExpanded: true,
                   initialValue: _type,
                   decoration: const InputDecoration(prefixIcon: Icon(Icons.local_shipping_outlined)),
                   items: vehicleTypeItems(context, keep: _type),
@@ -251,7 +252,7 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
                 if (VehicleTypeService.byId(_type) case final info?)
                   Padding(
                     padding: const EdgeInsets.only(top: 6, left: 4),
-                    child: Text(vehicleTypeRange(context, info), style: const TextStyle(color: AppColors.muted, fontSize: 12)),
+                    child: Text(vehicleTypeRange(context, info), style: TextStyle(color: AppColors.muted, fontSize: 12)),
                   ),
                 const SizedBox(height: 18),
                 FieldLabel(tr(context, 'capacityTons')),
@@ -298,6 +299,7 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
                 const SizedBox(height: 18),
                 FieldLabel(tr(context, 'fuelType')),
                 DropdownButtonFormField<String?>(
+                  isExpanded: true,
                   key: const ValueKey('vehFuel'),
                   initialValue: _fuel,
                   decoration: const InputDecoration(prefixIcon: Icon(Icons.local_gas_station_outlined)),
@@ -310,6 +312,7 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
                 const SizedBox(height: 18),
                 FieldLabel(tr(context, 'bodyTypeLabel')),
                 DropdownButtonFormField<String?>(
+                  isExpanded: true,
                   key: const ValueKey('vehBody'),
                   initialValue: _bodyType,
                   decoration: const InputDecoration(prefixIcon: Icon(Icons.view_in_ar_outlined)),

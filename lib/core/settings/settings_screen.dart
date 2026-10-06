@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../theme/app_theme.dart';
 import 'account_deletion_screen.dart';
 import 'devices_screen.dart';
 import 'help_screen.dart';
@@ -73,6 +74,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _save(() => SettingsService.saveConsents(c));
   }
 
+  String _themeLabel(ThemeMode m) => tr(context, switch (m) { ThemeMode.system => 'themeSystem', ThemeMode.light => 'themeLight', ThemeMode.dark => 'themeDark' });
+
+  Future<void> _pickTheme() async {
+    final picked = await showDialog<ThemeMode>(
+      context: context,
+      builder: (ctx) => SimpleDialog(
+        title: Text(tr(ctx, 'themeMode')),
+        children: [
+          for (final m in ThemeMode.values)
+            ListTile(
+              key: ValueKey('theme_${m.name}'),
+              leading: Icon(ThemeStore.mode.value == m ? Icons.radio_button_checked : Icons.radio_button_off),
+              title: Text(_themeLabel(m)),
+              onTap: () => Navigator.pop(ctx, m),
+            ),
+        ],
+      ),
+    );
+    if (picked != null) await ThemeStore.set(picked);
+  }
+
   void _open(Widget screen) => Navigator.of(context).push(MaterialPageRoute(builder: (_) => screen));
 
   Widget _header(String key) => Padding(
@@ -101,6 +123,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 title: Text(tr(context, 'language')),
                 trailing: Text(trLanguageName(LanguageScope.of(context))),
                 onTap: () => showLanguageSelector(context),
+              ),
+              ValueListenableBuilder<ThemeMode>(
+                valueListenable: ThemeStore.mode,
+                builder: (context, mode, _) => ListTile(
+                  key: const ValueKey('settingsTheme'),
+                  leading: const Icon(Icons.dark_mode_outlined),
+                  title: Text(tr(context, 'themeMode')),
+                  trailing: Text(_themeLabel(mode)),
+                  onTap: _pickTheme,
+                ),
               ),
               _header('notificationPrefs'),
               _switch('prefBookings', 'prefBookingUpdates', p.bookingUpdates, (v) => _setPrefs(p.copyWith(bookingUpdates: v))),

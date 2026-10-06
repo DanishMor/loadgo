@@ -79,7 +79,7 @@ class _FavouriteRoutesScreenState extends State<FavouriteRoutesScreen> {
                     key: ValueKey('fav_${r.id}'),
                     leading: const Icon(Icons.star_rounded, color: AppColors.warning),
                     title: Text('${r.pickup} → ${r.drop}'),
-                    trailing: IconButton(
+                    trailing: IconButton(tooltip: tr(context, 'a11yDelete'), 
                       key: ValueKey('favDelete_${r.id}'),
                       icon: const Icon(Icons.delete_outline_rounded),
                       onPressed: () => MatchService.removeFavourite(r.id),

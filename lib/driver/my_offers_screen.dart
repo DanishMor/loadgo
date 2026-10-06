@@ -89,9 +89,9 @@ class _DriverOfferCardState extends State<_DriverOfferCard> {
             ],
           ),
           const SizedBox(height: 6),
-          Text('${o.vehicleNumber} • ${vehicleTypeLabel(context, o.vehicleType)}', style: const TextStyle(color: AppColors.muted)),
+          Text('${o.vehicleNumber} • ${vehicleTypeLabel(context, o.vehicleType)}', style: TextStyle(color: AppColors.muted)),
           const SizedBox(height: 6),
-          Text(formatPaise(o.pricePaise), style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.title)),
+          Text(formatPaise(o.pricePaise), style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.title)),
           if (o.counterPaise != null && o.status == OfferStatus.countered)
             Text(trf(context, 'counterOf', {'amount': formatPaise(o.counterPaise!)}),
                 style: const TextStyle(color: AppColors.warning, fontWeight: FontWeight.w700)),

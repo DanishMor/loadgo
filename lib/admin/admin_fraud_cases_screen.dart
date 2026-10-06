@@ -90,7 +90,7 @@ class _AdminFraudCasesScreenState extends State<AdminFraudCasesScreen> {
                         Expanded(
                           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                             Text(c.summary, style: const TextStyle(fontWeight: FontWeight.w800)),
-                            Text(c.userId, style: const TextStyle(color: AppColors.muted, fontSize: 12)),
+                            Text(c.userId, style: TextStyle(color: AppColors.muted, fontSize: 12)),
                           ]),
                         ),
                         StatusChip(label: caseStatusLabel(context, c.status), color: _statusColor(c.status)),
@@ -152,8 +152,8 @@ class _FraudCaseScreenState extends State<FraudCaseScreen> {
           return ListView(padding: const EdgeInsets.all(16), children: [
             Text(c.summary, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
             const SizedBox(height: 4),
-            Text('${tr(context, 'userId')}: ${c.userId}', style: const TextStyle(color: AppColors.muted)),
-            if (c.reportIds.isNotEmpty) Text(trf(context, 'caseReports', {'n': c.reportIds.length}), style: const TextStyle(color: AppColors.muted)),
+            Text('${tr(context, 'userId')}: ${c.userId}', style: TextStyle(color: AppColors.muted)),
+            if (c.reportIds.isNotEmpty) Text(trf(context, 'caseReports', {'n': c.reportIds.length}), style: TextStyle(color: AppColors.muted)),
             const SizedBox(height: 10),
             Row(children: [
               StatusChip(label: caseStatusLabel(context, c.status), color: _statusColor(c.status)),
@@ -197,7 +197,7 @@ class _FraudCaseScreenState extends State<FraudCaseScreen> {
             ),
             Row(children: [
               Expanded(child: TextField(key: const ValueKey('noteField'), controller: _note, maxLength: 1000, decoration: InputDecoration(labelText: tr(context, 'addNote')))),
-              IconButton(key: const ValueKey('noteAdd'), onPressed: _addNote, icon: const Icon(Icons.send_rounded)),
+              IconButton(tooltip: tr(context, 'a11ySend'), key: const ValueKey('noteAdd'), onPressed: _addNote, icon: const Icon(Icons.send_rounded)),
             ]),
           ]);
         },

@@ -38,7 +38,7 @@ class DocumentsCenterScreen extends StatelessWidget {
                 if (header != null) ...[header!, const SizedBox(height: 16)],
                 Text(tr(context, 'tripDocuments'), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
                 const SizedBox(height: 10),
-                if (withDocs.isEmpty) Text(tr(context, 'noDocuments'), style: const TextStyle(color: AppColors.muted)),
+                if (withDocs.isEmpty) Text(tr(context, 'noDocuments'), style: TextStyle(color: AppColors.muted)),
                 for (final b in withDocs) ...[_BookingDocs(booking: b), const SizedBox(height: 10)],
               ],
             );
@@ -62,7 +62,7 @@ class _BookingDocs extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           RouteText(pickup: b.pickup, drop: b.drop),
-          Text('${b.lrNumber} • ${formatDate(b.pickupDate)}', style: const TextStyle(color: AppColors.muted, fontSize: 12)),
+          Text('${b.lrNumber} • ${formatDate(b.pickupDate)}', style: TextStyle(color: AppColors.muted, fontSize: 12)),
           const SizedBox(height: 6),
           Wrap(
             spacing: 6,

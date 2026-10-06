@@ -6,6 +6,7 @@ import '../core/profile/profile_view.dart';
 import 'fleet_dashboard.dart';
 import 'fleet_drivers_screen.dart';
 import 'fleet_vehicles_screen.dart';
+import '../core/widgets/common.dart';
 
 /// Fleet owner home: dashboard, vehicles, drivers, profile.
 class FleetHomeScreen extends StatefulWidget {
@@ -27,11 +28,11 @@ class _FleetHomeScreenState extends State<FleetHomeScreen> {
       const ProfileView(isDriver: false),
     ];
     return Scaffold(
-      backgroundColor: const Color(0xFFF6F8FC),
+      backgroundColor: AppColors.background,
       appBar: _index == 3
           ? null
           : AppBar(
-              backgroundColor: const Color(0xFFF6F8FC),
+              backgroundColor: AppColors.background,
               scrolledUnderElevation: 0,
               automaticallyImplyLeading: false,
               title: Text(tr(context, 'fleetOwner'), style: const TextStyle(fontWeight: FontWeight.w800)),

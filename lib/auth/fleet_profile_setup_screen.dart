@@ -9,6 +9,7 @@ import '../core/l10n/language_widgets.dart';
 import '../core/services/user_service.dart';
 import 'role_selection_screen.dart';
 import 'start_resolvers.dart';
+import '../core/widgets/common.dart';
 
 /// Fleet owner onboarding: name, company, PAN (unique across accounts) and an
 /// optional GSTIN. Format checks only; nothing is verified (LATER(paid)).
@@ -72,9 +73,9 @@ class _FleetProfileSetupScreenState extends State<FleetProfileSetupScreen> {
     return PopScope(
       canPop: false,
       child: Scaffold(
-        backgroundColor: const Color(0xFFF6F8FC),
+        backgroundColor: AppColors.background,
         appBar: AppBar(
-          backgroundColor: const Color(0xFFF6F8FC),
+          backgroundColor: AppColors.background,
           elevation: 0,
           automaticallyImplyLeading: false,
           actions: [const LanguageButton(), TextButton(onPressed: _saving ? null : _logout, child: Text(tr(context, 'logout')))],
@@ -85,9 +86,9 @@ class _FleetProfileSetupScreenState extends State<FleetProfileSetupScreen> {
             child: Form(
               key: _form,
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(tr(context, 'fleetProfileTitle'), style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: Color(0xFF111827))),
+                Text(tr(context, 'fleetProfileTitle'), style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: AppColors.title)),
                 const SizedBox(height: 8),
-                Text(tr(context, 'fleetProfileSub'), style: const TextStyle(fontSize: 15, color: Color(0xFF667085))),
+                Text(tr(context, 'fleetProfileSub'), style: TextStyle(fontSize: 15, color: AppColors.muted)),
                 const SizedBox(height: 24),
                 TextFormField(
                   key: const ValueKey('fleetName'),

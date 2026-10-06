@@ -9,6 +9,7 @@ import '../core/l10n/language_widgets.dart';
 import '../core/services/user_service.dart';
 import 'role_selection_screen.dart';
 import 'start_resolvers.dart';
+import '../core/widgets/common.dart';
 
 /// Compulsory step after the driver's profile: licence, RC, Aadhaar (last 4
 /// digits only) and PAN. Home and Loads stay closed until this is saved
@@ -126,7 +127,7 @@ class _DriverKycScreenState extends State<DriverKycScreen> {
 
   Widget _label(String text) => Padding(
         padding: const EdgeInsets.only(bottom: 8),
-        child: Text(text, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: Color(0xFF344054))),
+        child: Text(text, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.body)),
       );
 
   String _dateText(DateTime d) =>
@@ -138,9 +139,9 @@ class _DriverKycScreenState extends State<DriverKycScreen> {
     return PopScope(
       canPop: widget.edit,
       child: Scaffold(
-        backgroundColor: const Color(0xFFF6F8FC),
+        backgroundColor: AppColors.background,
         appBar: AppBar(
-          backgroundColor: const Color(0xFFF6F8FC),
+          backgroundColor: AppColors.background,
           elevation: 0,
           scrolledUnderElevation: 0,
           automaticallyImplyLeading: widget.edit,
@@ -157,9 +158,9 @@ class _DriverKycScreenState extends State<DriverKycScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(tr(context, 'kycTitle'), style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: Color(0xFF111827))),
+                  Text(tr(context, 'kycTitle'), style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: AppColors.title)),
                   const SizedBox(height: 8),
-                  Text(tr(context, 'kycSub'), style: const TextStyle(fontSize: 15, color: Color(0xFF667085))),
+                  Text(tr(context, 'kycSub'), style: TextStyle(fontSize: 15, color: AppColors.muted)),
                   const SizedBox(height: 24),
                   _label(tr(context, 'dlNumber')),
                   TextFormField(

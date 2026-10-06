@@ -120,7 +120,7 @@ class _DriverCardState extends State<_DriverCard> {
         children: [
           Text(
             d.name.isEmpty ? d.uid : d.name,
-            style: const TextStyle(
+            style: TextStyle(
               fontWeight: FontWeight.w800,
               fontSize: 16,
               color: AppColors.title,
@@ -129,7 +129,7 @@ class _DriverCardState extends State<_DriverCard> {
           const SizedBox(height: 4),
           Text(
             '${d.phone} • ${d.vehicleNumber} • ${d.vehicleType}',
-            style: const TextStyle(color: AppColors.muted),
+            style: TextStyle(color: AppColors.muted),
           ),
           const SizedBox(height: 8),
           VerificationBadges(user: d.data, isDriver: true, reveal: _reveal),

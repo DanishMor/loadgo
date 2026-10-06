@@ -69,7 +69,7 @@ class _BulkPostScreenState extends State<BulkPostScreen> {
     return Scaffold(
       appBar: AppBar(title: Text(tr(context, 'bulkPost'))),
       body: ListView(padding: const EdgeInsets.all(16), children: [
-        Text(tr(context, 'bulkHelp'), style: const TextStyle(color: AppColors.muted)),
+        Text(tr(context, 'bulkHelp'), style: TextStyle(color: AppColors.muted)),
         const SizedBox(height: 4),
         const Text('Delhi, Mumbai, FMCG, 8, 20ft, 25000', style: TextStyle(fontFamily: 'monospace', fontSize: 12)),
         const SizedBox(height: 12),

@@ -76,7 +76,7 @@ class _EmergencyContactsScreenState extends State<EmergencyContactsScreen> {
             : ListView(
                 padding: const EdgeInsets.fromLTRB(20, 10, 20, 100),
                 children: [
-                  Text(tr(context, 'maxContacts'), style: const TextStyle(color: AppColors.muted)),
+                  Text(tr(context, 'maxContacts'), style: TextStyle(color: AppColors.muted)),
                   const SizedBox(height: 10),
                   for (final (i, c) in contacts.indexed)
                     Card(
@@ -87,8 +87,8 @@ class _EmergencyContactsScreenState extends State<EmergencyContactsScreen> {
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            IconButton(icon: const Icon(Icons.call_rounded), onPressed: () => callNumber(context, c.phone)),
-                            IconButton(
+                            IconButton(tooltip: tr(context, 'a11yCall'), icon: const Icon(Icons.call_rounded), onPressed: () => callNumber(context, c.phone)),
+                            IconButton(tooltip: tr(context, 'a11yDelete'), 
                               icon: const Icon(Icons.delete_outline_rounded),
                               onPressed: _saving ? null : () => _save([...contacts]..removeAt(i)),
                             ),

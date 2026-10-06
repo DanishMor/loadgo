@@ -33,7 +33,7 @@ class BookingListView extends StatelessWidget {
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 18, 20, 8),
-            child: Text(title, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: AppColors.title)),
+            child: Text(title, style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: AppColors.title)),
           ),
           Expanded(
             child: PagedLiveStream<Booking>(

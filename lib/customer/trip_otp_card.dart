@@ -24,7 +24,7 @@ class _TripOtpCardState extends State<TripOtpCard> {
     child: Row(
       children: [
         Expanded(
-          child: Text(label, style: const TextStyle(color: AppColors.muted)),
+          child: Text(label, style: TextStyle(color: AppColors.muted)),
         ),
         SelectableText(
           code,
@@ -70,14 +70,14 @@ class _TripOtpCardState extends State<TripOtpCard> {
                   const SizedBox(width: 8),
                   Text(
                     tr(context, 'tripCodes'),
-                    style: const TextStyle(fontWeight: FontWeight.w800, color: AppColors.title),
+                    style: TextStyle(fontWeight: FontWeight.w800, color: AppColors.title),
                   ),
                 ],
               ),
               if (beforePickup) _code(tr(context, 'pickupOtp'), o.pickupOtp, big: true),
               _code(tr(context, 'deliveryOtp'), o.deliveryOtp, big: !beforePickup),
               const SizedBox(height: 8),
-              Text(tr(context, 'otpShareNote'), style: const TextStyle(color: AppColors.faint, fontSize: 12)),
+              Text(tr(context, 'otpShareNote'), style: TextStyle(color: AppColors.faint, fontSize: 12)),
             ],
           ),
         );

@@ -33,9 +33,9 @@ class _FleetDashboardState extends State<FleetDashboard> {
   Widget _stat(String label, String value, {Key? key}) => Expanded(
         child: AppCard(
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(label, style: const TextStyle(color: AppColors.muted, fontSize: 12)),
+            Text(label, style: TextStyle(color: AppColors.muted, fontSize: 12)),
             const SizedBox(height: 4),
-            Text(value, key: key, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.title)),
+            Text(value, key: key, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.title)),
           ]),
         ),
       );
@@ -74,7 +74,7 @@ class _FleetDashboardState extends State<FleetDashboard> {
                 _stat(tr(context, 'totalEarnings'), formatPaise(s.totalEarningsPaise), key: const ValueKey('statTotal')),
               ]),
               const SizedBox(height: 6),
-              Text(tr(context, 'fleetEarningsNote'), style: const TextStyle(color: AppColors.faint, fontSize: 12)),
+              Text(tr(context, 'fleetEarningsNote'), style: TextStyle(color: AppColors.faint, fontSize: 12)),
               const SizedBox(height: 14),
               Text(tr(context, 'fleetPerVehicle'), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
               const SizedBox(height: 8),
@@ -87,7 +87,7 @@ class _FleetDashboardState extends State<FleetDashboard> {
                       Expanded(
                         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                           Text(r.vehicle.number, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
-                          Text('${vehicleTypeLabel(context, r.vehicle.type)} • ${r.driverName ?? tr(context, 'fleetNoDriver')}', style: const TextStyle(color: AppColors.muted, fontSize: 13)),
+                          Text('${vehicleTypeLabel(context, r.vehicle.type)} • ${r.driverName ?? tr(context, 'fleetNoDriver')}', style: TextStyle(color: AppColors.muted, fontSize: 13)),
                           const SizedBox(height: 4),
                           Wrap(spacing: 6, children: [
                             StatusChip(label: availabilityLabel(context, r.vehicle.availability), color: availabilityColor(r.vehicle.availability)),
@@ -98,7 +98,7 @@ class _FleetDashboardState extends State<FleetDashboard> {
                       ),
                       Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
                         Text(formatPaise(r.earningsPaise), style: const TextStyle(fontWeight: FontWeight.w800, color: AppColors.primary)),
-                        Text(trf(context, 'fleetTripsDone', {'n': r.deliveredTrips}), style: const TextStyle(color: AppColors.muted, fontSize: 12)),
+                        Text(trf(context, 'fleetTripsDone', {'n': r.deliveredTrips}), style: TextStyle(color: AppColors.muted, fontSize: 12)),
                       ]),
                     ]),
                   ),

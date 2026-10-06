@@ -87,9 +87,9 @@ class VerificationBadges extends StatelessWidget {
             child: Row(children: [
               Expanded(
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text(tr(context, b.labelKey), style: const TextStyle(fontSize: 12, color: AppColors.muted)),
+                  Text(tr(context, b.labelKey), style: TextStyle(fontSize: 12, color: AppColors.muted)),
                   if ((b.value ?? '').isNotEmpty)
-                    Text(reveal ? (b.raw ?? '') : b.value!, style: const TextStyle(fontWeight: FontWeight.w700, color: AppColors.title)),
+                    Text(reveal ? (b.raw ?? '') : b.value!, style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.title)),
                 ]),
               ),
               StatusChip(label: _look(context, b.state).$1, color: _look(context, b.state).$2),
@@ -101,7 +101,7 @@ class VerificationBadges extends StatelessWidget {
             child: Text(
               info.at == null ? tr(context, 'badgeReviewedManual') : trf(context, 'badgeReviewedOn', {'date': formatDate(info.at)}),
               key: const ValueKey('reviewInfo'),
-              style: const TextStyle(fontSize: 12, color: AppColors.muted),
+              style: TextStyle(fontSize: 12, color: AppColors.muted),
             ),
           ),
       ],

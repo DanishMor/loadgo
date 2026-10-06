@@ -60,7 +60,7 @@ class TripEtaCard extends StatelessWidget {
           const SizedBox(width: 10),
           Expanded(child: Text(line, key: const ValueKey('tripEtaLine'), style: TextStyle(fontWeight: FontWeight.w800, color: late ? AppColors.warning : AppColors.title))),
         ]),
-        if (took == null) Padding(padding: const EdgeInsets.only(top: 6), child: Text(tr(context, 'etaNote'), style: const TextStyle(fontSize: 12, color: AppColors.faint))),
+        if (took == null) Padding(padding: const EdgeInsets.only(top: 6), child: Text(tr(context, 'etaNote'), style: TextStyle(fontSize: 12, color: AppColors.faint))),
       ]),
     );
   }

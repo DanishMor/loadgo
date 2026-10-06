@@ -68,13 +68,13 @@ class LoadOffersScreen extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.only(bottom: 12),
                     child: Text('${tr(context, 'fareEstimate')}: ${formatPaise(load.estimate!.total)}',
-                        style: const TextStyle(color: AppColors.muted)),
+                        style: TextStyle(color: AppColors.muted)),
                   ),
                 for (final o in offers) ...[
                   _CustomerOfferCard(key: ValueKey(o.id), offer: o, onOpenBooking: onOpenBooking),
                   const SizedBox(height: 12),
                 ],
-                Text(tr(context, 'selectOfferNote'), style: const TextStyle(color: AppColors.faint, fontSize: 12)),
+                Text(tr(context, 'selectOfferNote'), style: TextStyle(color: AppColors.faint, fontSize: 12)),
               ],
             );
           },
@@ -130,18 +130,18 @@ class _CustomerOfferCardState extends State<_CustomerOfferCard> {
             children: [
               Expanded(
                 child: Text(o.driverName.isEmpty ? tr(context, 'driver') : o.driverName,
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.title)),
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.title)),
               ),
               StatusChip(label: offerStatusLabel(context, o.status), color: offerStatusColor(o.status)),
             ],
           ),
-          Text('${o.vehicleNumber} • ${vehicleTypeLabel(context, o.vehicleType)}', style: const TextStyle(color: AppColors.muted)),
+          Text('${o.vehicleNumber} • ${vehicleTypeLabel(context, o.vehicleType)}', style: TextStyle(color: AppColors.muted)),
           const SizedBox(height: 6),
           Text(formatPaise(o.pricePaise),
               key: ValueKey('price_${o.id}'),
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.title)),
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.title)),
           if (o.originalPaise != o.pricePaise)
-            Text(trf(context, 'firstOffer', {'amount': formatPaise(o.originalPaise)}), style: const TextStyle(color: AppColors.faint)),
+            Text(trf(context, 'firstOffer', {'amount': formatPaise(o.originalPaise)}), style: TextStyle(color: AppColors.faint)),
           if (o.status == OfferStatus.countered)
             Text(trf(context, 'counterOf', {'amount': formatPaise(o.counterPaise!)}),
                 style: const TextStyle(color: AppColors.warning, fontWeight: FontWeight.w700)),

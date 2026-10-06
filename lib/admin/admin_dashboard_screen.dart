@@ -104,7 +104,7 @@ class _AdminAnalyticsScreenState extends State<AdminAnalyticsScreen> {
       appBar: AppBar(
         title: Text(tr(context, 'adminAnalytics')),
         actions: [
-          IconButton(
+          IconButton(tooltip: tr(context, 'a11yRefresh'), 
             icon: const Icon(Icons.refresh_rounded),
             onPressed: () => setState(() {
               _future = AdminConsoleService.counters();

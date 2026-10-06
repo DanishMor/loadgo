@@ -73,7 +73,7 @@ class _LocationSharingCardState extends State<LocationSharingCard> {
           Expanded(
             child: Text(
               tr(context, _denied ? 'locationSharingOff' : 'locationSharingOn'),
-              style: const TextStyle(fontWeight: FontWeight.w700, color: AppColors.body),
+              style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.body),
             ),
           ),
         ],
@@ -102,16 +102,16 @@ class DriverLocationCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(tr(context, 'driverLocation'), style: const TextStyle(fontWeight: FontWeight.w800, color: AppColors.title)),
+                Text(tr(context, 'driverLocation'), style: TextStyle(fontWeight: FontWeight.w800, color: AppColors.title)),
                 const SizedBox(height: 2),
                 if (loc == null)
-                  Text(tr(context, 'locationNotShared'), style: const TextStyle(color: AppColors.muted))
+                  Text(tr(context, 'locationNotShared'), style: TextStyle(color: AppColors.muted))
                 else ...[
                   Text('${loc.latitude.toStringAsFixed(5)}, ${loc.longitude.toStringAsFixed(5)}',
-                      style: const TextStyle(fontWeight: FontWeight.w700, color: AppColors.body)),
+                      style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.body)),
                   if (at != null)
                     Text('${tr(context, 'updatedAt')}: ${formatDateTime(at)}',
-                        style: const TextStyle(fontSize: 12, color: AppColors.muted)),
+                        style: TextStyle(fontSize: 12, color: AppColors.muted)),
                 ],
               ],
             ),

@@ -32,7 +32,7 @@ class DriverAnalyticsScreen extends StatelessWidget {
             const SizedBox(height: 16),
             Text(tr(context, 'statTopRoutes'), style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
             const SizedBox(height: 8),
-            if (s.topRoutes.isEmpty) Text(tr(context, 'statNoData'), style: const TextStyle(color: AppColors.muted)),
+            if (s.topRoutes.isEmpty) Text(tr(context, 'statNoData'), style: TextStyle(color: AppColors.muted)),
             for (final r in s.topRoutes)
               ListTile(
                 key: ValueKey('route_${r.route}'),

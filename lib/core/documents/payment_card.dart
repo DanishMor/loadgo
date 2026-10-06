@@ -69,7 +69,7 @@ class _PaymentCardState extends State<PaymentCard> {
               const SizedBox(width: 8),
               Expanded(
                 child: Text('${tr(context, 'paymentLabel')} • ${paymentModeLabel(context, b.paymentMode)}',
-                    style: const TextStyle(fontWeight: FontWeight.w800, color: AppColors.title)),
+                    style: TextStyle(fontWeight: FontWeight.w800, color: AppColors.title)),
               ),
               StatusChip(label: paymentStatusLabel(context, b.paymentStatus), color: color),
             ],
@@ -78,7 +78,7 @@ class _PaymentCardState extends State<PaymentCard> {
             Padding(
               padding: const EdgeInsets.only(top: 6),
               child: Text(formatPaise(b.paidAmountPaise!),
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.title)),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.title)),
             ),
           const SizedBox(height: 8),
           if (me == b.customerId && b.paymentStatus == PaymentStatus.pending)
@@ -96,7 +96,7 @@ class _PaymentCardState extends State<PaymentCard> {
               label: Text(tr(context, 'confirmReceived')),
             ),
           const SizedBox(height: 4),
-          Text(tr(context, 'recordsOnly'), style: const TextStyle(fontSize: 12, color: AppColors.faint)),
+          Text(tr(context, 'recordsOnly'), style: TextStyle(fontSize: 12, color: AppColors.faint)),
         ],
       ),
     );

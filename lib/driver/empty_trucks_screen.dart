@@ -100,6 +100,7 @@ class _EmptyTrucksScreenState extends State<EmptyTrucksScreen> {
           child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
             Text(tr(context, 'postEmptyTruck'), style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
             DropdownButtonFormField<String>(
+              isExpanded: true,
               key: const ValueKey('truckVehicle'),
               initialValue: _vehicleId,
               hint: Text(tr(context, 'chooseVehicle')),
@@ -136,7 +137,7 @@ class _EmptyTrucksScreenState extends State<EmptyTrucksScreen> {
                       Expanded(child: RouteText(pickup: r.pickup, drop: r.drop)),
                       StatusChip(label: tr(context, 'request_${r.status}'), color: _color(r.status)),
                     ]),
-                    Text('${r.customerName.isEmpty ? '' : '${r.customerName} • '}${formatNum(r.weight)} T${r.note.isEmpty ? '' : ' • ${r.note}'}', style: const TextStyle(color: AppColors.muted)),
+                    Text('${r.customerName.isEmpty ? '' : '${r.customerName} • '}${formatNum(r.weight)} T${r.note.isEmpty ? '' : ' • ${r.note}'}', style: TextStyle(color: AppColors.muted)),
                     if (r.status == TruckRequest.pending)
                       Row(children: [
                         TextButton(key: ValueKey('decline_${r.id}'), onPressed: () => TruckBoardService.answer(r, accept: false), child: Text(tr(context, 'decline'))),

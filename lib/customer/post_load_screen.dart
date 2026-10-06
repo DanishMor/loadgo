@@ -254,12 +254,12 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
                 'hours': _rentalHours,
               }),
               key: const ValueKey('rentalIncludes'),
-              style: const TextStyle(color: AppColors.muted, fontSize: 13),
+              style: TextStyle(color: AppColors.muted, fontSize: 13),
             )
           else
             Text(
               auto != null ? trf(context, 'distanceAuto', {'km': auto}) : tr(context, 'distanceUnknown'),
-              style: const TextStyle(color: AppColors.muted, fontSize: 13),
+              style: TextStyle(color: AppColors.muted, fontSize: 13),
             ),
           if (_bookingType != BookingType.rental) const SizedBox(height: 10),
           if (_bookingType != BookingType.rental) TextFormField(
@@ -282,10 +282,10 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(tr(context, 'fareTotal'), style: const TextStyle(color: AppColors.muted, fontSize: 12)),
+                      Text(tr(context, 'fareTotal'), style: TextStyle(color: AppColors.muted, fontSize: 12)),
                       Text(formatPaise(quote.total),
                           key: const ValueKey('fareTotal'),
-                          style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: AppColors.title)),
+                          style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: AppColors.title)),
                     ],
                   ),
                 ),
@@ -294,7 +294,7 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
             ),
           ],
           const SizedBox(height: 6),
-          Text(tr(context, 'estimateNote'), style: const TextStyle(color: AppColors.faint, fontSize: 12)),
+          Text(tr(context, 'estimateNote'), style: TextStyle(color: AppColors.faint, fontSize: 12)),
         ],
       ),
     );
@@ -491,6 +491,7 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
                 const SizedBox(height: 18),
                 FieldLabel(tr(context, 'cargoType')),
                 DropdownButtonFormField<String>(
+                  isExpanded: true,
                   initialValue: _cargoType,
                   decoration: const InputDecoration(prefixIcon: Icon(Icons.inventory_2_outlined)),
                   items: [for (final c in cargoTypes) DropdownMenuItem(value: c, child: Text(c))],
@@ -512,6 +513,7 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
                 const SizedBox(height: 18),
                 FieldLabel(tr(context, 'vehicleTypeNeeded')),
                 DropdownButtonFormField<String>(
+                  isExpanded: true,
                   initialValue: _vehicleType,
                   decoration: const InputDecoration(prefixIcon: Icon(Icons.local_shipping_outlined)),
                   items: vehicleTypeItems(context, keep: _vehicleType),
@@ -615,6 +617,7 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
                 else ...[
                 FieldLabel(tr(context, 'pickupSlot')),
                 DropdownButtonFormField<String>(
+                  isExpanded: true,
                   key: const ValueKey('pickupSlot'),
                   initialValue: _slot,
                   decoration: const InputDecoration(prefixIcon: Icon(Icons.schedule_rounded)),
@@ -625,6 +628,7 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
                 const SizedBox(height: 18),
                 FieldLabel(tr(context, 'paymentMode')),
                 DropdownButtonFormField<String>(
+                  isExpanded: true,
                   key: const ValueKey('paymentMode'),
                   initialValue: _paymentMode,
                   decoration: const InputDecoration(prefixIcon: Icon(Icons.payments_outlined)),

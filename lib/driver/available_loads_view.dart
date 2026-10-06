@@ -226,7 +226,7 @@ class _AvailableLoadsViewState extends State<AvailableLoadsView> {
       context: context,
       showDragHandle: true,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.card,
       builder: (_) => _FilterSheet(initial: _filter),
     );
     if (result != null && mounted) setState(() => _filter = result.copyWith(pickupQuery: _searchCtrl.text));
@@ -265,7 +265,7 @@ class _AvailableLoadsViewState extends State<AvailableLoadsView> {
             child: Row(children: [
               Expanded(
                 child: Text(tr(context, 'availableLoads'),
-                    style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: AppColors.title)),
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: AppColors.title)),
               ),
               IconButton(
                 key: const ValueKey('plannedRoute'),
@@ -474,6 +474,7 @@ class _FilterSheetState extends State<_FilterSheet> {
             const SizedBox(height: 16),
             FieldLabel(tr(context, 'vehicleType')),
             DropdownButtonFormField<String?>(
+              isExpanded: true,
               key: const ValueKey('vehicleTypeFilter'),
               initialValue: _type,
               items: [

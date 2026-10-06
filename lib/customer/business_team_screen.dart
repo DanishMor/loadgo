@@ -71,7 +71,7 @@ class _BusinessTeamScreenState extends State<BusinessTeamScreen> {
               const SizedBox(width: 8),
               FilledButton(key: const ValueKey('teamInvite'), onPressed: _busy ? null : _invite, child: Text(tr(context, 'fleetInvite'))),
             ]),
-            Text(tr(context, 'teamBookerNote'), style: const TextStyle(color: AppColors.faint, fontSize: 12)),
+            Text(tr(context, 'teamBookerNote'), style: TextStyle(color: AppColors.faint, fontSize: 12)),
           ]),
         ),
         const SizedBox(height: 14),

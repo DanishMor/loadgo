@@ -37,6 +37,7 @@ class _FleetVehiclesScreenState extends State<FleetVehiclesScreen> {
             child: Column(mainAxisSize: MainAxisSize.min, children: [
               TextField(key: const ValueKey('fvNumber'), controller: number, textCapitalization: TextCapitalization.characters, decoration: InputDecoration(labelText: tr(c, 'vehicleNumber')), inputFormatters: [LengthLimitingTextInputFormatter(30)]),
               DropdownButtonFormField<String>(
+                isExpanded: true,
                 key: const ValueKey('fvType'),
                 initialValue: type,
                 items: vehicleTypeItems(c, keep: type),
@@ -103,9 +104,10 @@ class _FleetVehiclesScreenState extends State<FleetVehiclesScreen> {
                     key: ValueKey('fleetVehicle_${v.id}'),
                     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                       Text(v.number, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
-                      Text('${vehicleTypeLabel(context, v.type)} • ${formatNum(v.capacity)} T', style: const TextStyle(color: AppColors.muted)),
+                      Text('${vehicleTypeLabel(context, v.type)} • ${formatNum(v.capacity)} T', style: TextStyle(color: AppColors.muted)),
                       Wrap(spacing: 6, children: [StatusChip(label: availabilityLabel(context, v.availability), color: availabilityColor(v.availability))]),
                       DropdownButtonFormField<String?>(
+                        isExpanded: true,
                         key: ValueKey('assign_${v.id}'),
                         initialValue: active.any((m) => m.driverId == v.assignedDriverId) ? v.assignedDriverId : null,
                         decoration: InputDecoration(labelText: tr(context, 'fleetAssignedDriver')),

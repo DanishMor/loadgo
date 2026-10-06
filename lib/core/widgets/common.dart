@@ -1,19 +1,23 @@
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import '../l10n/l10n.dart';
+import '../theme/app_theme.dart';
 
 /// Small UI building blocks shared by the vehicle, load and booking screens.
 /// Colors follow the palette already used across the app.
 class AppColors {
   AppColors._();
   static const primary = Color(0xFF1565C0);
-  static const primaryLight = Color(0xFFE8F1FF);
-  static const background = Color(0xFFF6F8FC);
-  static const border = Color(0xFFE4E7EC);
-  static const title = Color(0xFF111827);
-  static const body = Color(0xFF344054);
-  static const muted = Color(0xFF667085);
-  static const faint = Color(0xFF98A2B3);
+  static Color get primaryLight => AppPalette.current.tint;
+  static Color get background => AppPalette.current.bg;
+  static Color get border => AppPalette.current.border;
+  static Color get title => AppPalette.current.text;
+  static Color get body => AppPalette.current.strong;
+  static Color get muted => AppPalette.current.muted;
+  static Color get faint => AppPalette.current.hint;
+  static Color get card => AppPalette.current.card;
+  static Color get chip => AppPalette.current.chip;
+  static Color get warnBg => AppPalette.current.warnBg;
   static const success = Color(0xFF12B76A);
   static const warning = Color(0xFFF79009);
 }
@@ -100,7 +104,7 @@ class AppCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Colors.white,
+      color: AppColors.card,
       borderRadius: BorderRadius.circular(18),
       child: InkWell(
         onTap: onTap,
@@ -208,7 +212,7 @@ class EmptyState extends StatelessWidget {
             Text(
               title,
               textAlign: TextAlign.center,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w800,
                 color: AppColors.title,
@@ -219,7 +223,7 @@ class EmptyState extends StatelessWidget {
               Text(
                 subtitle!,
                 textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 14, color: AppColors.muted),
+                style: TextStyle(fontSize: 14, color: AppColors.muted),
               ),
             ],
             if (action != null) ...[const SizedBox(height: 20), action!],
@@ -302,7 +306,7 @@ class FieldLabel extends StatelessWidget {
     padding: const EdgeInsets.only(bottom: 8),
     child: Text(
       text,
-      style: const TextStyle(
+      style: TextStyle(
         fontSize: 14,
         fontWeight: FontWeight.w700,
         color: AppColors.body,
@@ -329,7 +333,7 @@ class CopyShareButton extends StatelessWidget {
     return IconButton(
       tooltip: tooltip,
       visualDensity: VisualDensity.compact,
-      icon: const Icon(Icons.share_outlined, size: 20, color: AppColors.muted),
+      icon: Icon(Icons.share_outlined, size: 20, color: AppColors.muted),
       onPressed: () async {
         final messenger = ScaffoldMessenger.of(context);
         await Clipboard.setData(ClipboardData(text: text));

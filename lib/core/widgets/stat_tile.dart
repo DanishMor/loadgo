@@ -16,8 +16,8 @@ class StatTile extends StatelessWidget {
       child: Row(children: [
         Icon(icon, color: AppColors.primary),
         const SizedBox(width: 12),
-        Expanded(child: Text(label, style: const TextStyle(color: AppColors.muted))),
-        Text(value, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.title)),
+        Expanded(child: Text(label, style: TextStyle(color: AppColors.muted))),
+        Text(value, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.title)),
       ]),
     );
   }

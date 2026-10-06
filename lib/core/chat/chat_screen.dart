@@ -124,9 +124,9 @@ class _ChatScreenState extends State<ChatScreen> {
           margin: const EdgeInsets.symmetric(vertical: 4),
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
           decoration: BoxDecoration(
-            color: mine ? AppColors.primary : Colors.white,
+            color: mine ? AppColors.primary : AppColors.card,
             borderRadius: BorderRadius.circular(16),
-            border: mine ? null : Border.all(color: const Color(0xFFE4E7EC)),
+            border: mine ? null : Border.all(color: AppColors.border),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -191,16 +191,16 @@ class _ChatScreenState extends State<ChatScreen> {
           children: [
             Container(
               width: double.infinity,
-              color: const Color(0xFFFFF6E5),
+              color: AppColors.warnBg,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              child: Text(tr(context, 'offPlatformWarning'), style: const TextStyle(fontSize: 12, color: AppColors.body)),
+              child: Text(tr(context, 'offPlatformWarning'), style: TextStyle(fontSize: 12, color: AppColors.body)),
             ),
             Expanded(
               child: LiveStream<List<ChatMessage>>(
                 stream: () => _messages,
                 builder: (context, list) {
                   if (list.isEmpty) {
-                    return Center(child: Text(tr(context, 'noMessages'), style: const TextStyle(color: AppColors.muted)));
+                    return Center(child: Text(tr(context, 'noMessages'), style: TextStyle(color: AppColors.muted)));
                   }
                   return ListView(
                     reverse: true,
@@ -216,7 +216,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 if (snap.data == true) {
                   return Padding(
                     padding: const EdgeInsets.all(16),
-                    child: Text(tr(context, 'youBlocked'), style: const TextStyle(color: AppColors.muted)),
+                    child: Text(tr(context, 'youBlocked'), style: TextStyle(color: AppColors.muted)),
                   );
                 }
                 return Padding(

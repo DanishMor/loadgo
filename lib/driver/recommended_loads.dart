@@ -68,7 +68,7 @@ class _RecommendedLoadsState extends State<RecommendedLoads> {
                 const Icon(Icons.auto_awesome_rounded, size: 18, color: AppColors.primary),
                 const SizedBox(width: 6),
                 Text(tr(context, 'recommendedLoads'),
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.title)),
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.title)),
               ]),
             ),
             for (final m in top) ...[widget.cardBuilder(m), const SizedBox(height: 12)],

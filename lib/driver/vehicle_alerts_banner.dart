@@ -44,14 +44,14 @@ class VehicleAlertsBanner extends StatelessWidget {
                       if (a.expiringDocs > 0)
                         Text(
                           trf(context, 'docsExpiringBanner', {'n': a.expiringDocs}),
-                          style: const TextStyle(fontWeight: FontWeight.w800, color: AppColors.title),
+                          style: TextStyle(fontWeight: FontWeight.w800, color: AppColors.title),
                         ),
                       if (a.serviceDue > 0)
-                        Text(tr(context, 'serviceDue'), style: const TextStyle(fontSize: 13, color: AppColors.muted)),
+                        Text(tr(context, 'serviceDue'), style: TextStyle(fontSize: 13, color: AppColors.muted)),
                     ],
                   ),
                 ),
-                const Icon(Icons.chevron_right_rounded, color: AppColors.faint),
+                Icon(Icons.chevron_right_rounded, color: AppColors.faint),
               ],
             ),
           ),

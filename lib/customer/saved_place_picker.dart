@@ -31,7 +31,7 @@ String savedPlaceText(SavedPlace p) => p.address.isEmpty ? p.name : '${p.name}, 
 Future<SavedPlace?> pickSavedPlace(BuildContext context) => showModalBottomSheet<SavedPlace>(
       context: context,
       showDragHandle: true,
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.card,
       isScrollControlled: true,
       builder: (_) => const _SavedPlacesSheet(),
     );
@@ -70,7 +70,7 @@ class _SavedPlacesSheetState extends State<_SavedPlacesSheet> {
                   if (snap.hasData && places.isEmpty) {
                     return Padding(
                       padding: const EdgeInsets.symmetric(vertical: 16),
-                      child: Text(tr(context, 'noSavedPlaces'), style: const TextStyle(color: AppColors.muted)),
+                      child: Text(tr(context, 'noSavedPlaces'), style: TextStyle(color: AppColors.muted)),
                     );
                   }
                   return ListView(
@@ -84,7 +84,7 @@ class _SavedPlacesSheetState extends State<_SavedPlacesSheet> {
                           title: Text(p.name, style: const TextStyle(fontWeight: FontWeight.w700)),
                           subtitle: Text('${placeLabelText(context, p.label)} • ${p.address}'),
                           onTap: () => Navigator.of(context).pop(p),
-                          trailing: IconButton(
+                          trailing: IconButton(tooltip: tr(context, 'a11yDelete'), 
                             icon: const Icon(Icons.delete_outline_rounded),
                             onPressed: () => SavedPlaceService.delete(p.id),
                           ),

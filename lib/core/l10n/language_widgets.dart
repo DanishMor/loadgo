@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 
 import 'l10n.dart';
+import '../widgets/common.dart';
 
 void showLanguageSelector(BuildContext context) {
   showModalBottomSheet<void>(
     context: context,
     showDragHandle: true,
-    backgroundColor: Colors.white,
+    backgroundColor: AppColors.card,
     isScrollControlled: true,
     builder: (sheetContext) {
       return SafeArea(
@@ -41,21 +42,21 @@ void showLanguageSelector(BuildContext context) {
                             borderRadius: BorderRadius.circular(14),
                           ),
                           tileColor:
-                              isSelected ? const Color(0xFFE8F1FF) : Colors.transparent,
+                              isSelected ? AppColors.primaryLight : Colors.transparent,
                           leading: CircleAvatar(
                             backgroundColor: isSelected
                                 ? const Color(0xFF1565C0)
-                                : const Color(0xFFF2F4F7),
+                                : AppColors.chip,
                             child: Icon(
                               Icons.language_rounded,
-                              color: isSelected ? Colors.white : const Color(0xFF667085),
+                              color: isSelected ? Colors.white : AppColors.muted,
                             ),
                           ),
                           title: Text(
                             languageInfo[lang]!.nativeName,
                             style: TextStyle(
                               fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                              color: const Color(0xFF111827),
+                              color: AppColors.title,
                             ),
                           ),
                           subtitle: Text(languageInfo[lang]!.englishName),

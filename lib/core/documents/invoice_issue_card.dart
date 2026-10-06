@@ -98,7 +98,7 @@ class _InvoiceIssueCardState extends State<InvoiceIssueCard> {
       compact: true,
       builder: (context, found) {
         final inv = found.isEmpty ? null : found.first;
-        final title = Text(tr(context, 'invoiceIssueTitle'), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.title));
+        final title = Text(tr(context, 'invoiceIssueTitle'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.title));
         if (inv != null) {
           return AppCard(
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -117,7 +117,7 @@ class _InvoiceIssueCardState extends State<InvoiceIssueCard> {
                 const SizedBox(height: 8),
                 _field('ewayNo', _eway, tr(context, 'ewayBill'), max: 12, digits: true),
                 _field('ewayKm', _distance, tr(context, 'ewayDistance'), max: 4, digits: true),
-                Text(tr(context, 'ewayRecordNote'), style: const TextStyle(fontSize: 12, color: AppColors.faint)),
+                Text(tr(context, 'ewayRecordNote'), style: TextStyle(fontSize: 12, color: AppColors.faint)),
                 TextButton(key: const ValueKey('ewayUpdate'), onPressed: () => _saveEway(inv), child: Text(tr(context, 'save'))),
               ],
             ]),
@@ -135,7 +135,7 @@ class _InvoiceIssueCardState extends State<InvoiceIssueCard> {
             _field('buyerGstin', _buyerGstin, tr(context, 'buyerGstinLabel'), max: 15, caps: true),
             _field('ewayNo', _eway, tr(context, 'ewayBill'), max: 12, digits: true),
             _field('ewayKm', _distance, tr(context, 'ewayDistance'), max: 4, digits: true),
-            Text(tr(context, 'ewayRecordNote'), style: const TextStyle(fontSize: 12, color: AppColors.faint)),
+            Text(tr(context, 'ewayRecordNote'), style: TextStyle(fontSize: 12, color: AppColors.faint)),
             const SizedBox(height: 8),
             PrimaryButton(label: tr(context, 'invoiceIssue'), loading: _busy, onPressed: _issue),
           ]),

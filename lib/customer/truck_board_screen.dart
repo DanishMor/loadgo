@@ -153,6 +153,7 @@ class _TruckBoardScreenState extends State<TruckBoardScreen> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: DropdownButtonFormField<String?>(
+              isExpanded: true,
               key: const ValueKey('boardType'),
               initialValue: _type,
               items: [
@@ -219,9 +220,9 @@ class _TruckBoardScreenState extends State<TruckBoardScreen> {
                         RouteText(pickup: p.fromCity, drop: p.toCity),
                         const SizedBox(height: 6),
                         Text('${vehicleTypeLabel(context, p.vehicleType)} • ${formatNum(p.capacity)} T • ${p.vehicleNumber} • ${formatDate(p.availableDate)}',
-                            style: const TextStyle(color: AppColors.muted)),
+                            style: TextStyle(color: AppColors.muted)),
                         if (p.driverName.isNotEmpty) Text(p.driverName, style: const TextStyle(fontWeight: FontWeight.w700)),
-                        if (p.note.isNotEmpty) Text(p.note, style: const TextStyle(color: AppColors.muted, fontSize: 13)),
+                        if (p.note.isNotEmpty) Text(p.note, style: TextStyle(color: AppColors.muted, fontSize: 13)),
                         const SizedBox(height: 8),
                         FilledButton(key: ValueKey('request_${p.id}'), onPressed: () => _request(p), child: Text(tr(context, 'requestTruck'))),
                       ]),
@@ -268,7 +269,7 @@ class MyTruckRequestsScreen extends StatelessWidget {
                       Expanded(child: RouteText(pickup: r.pickup, drop: r.drop)),
                       StatusChip(label: tr(context, 'request_${r.status}'), color: _color(r.status)),
                     ]),
-                    Text('${formatNum(r.weight)} T${r.note.isEmpty ? '' : ' • ${r.note}'}', style: const TextStyle(color: AppColors.muted)),
+                    Text('${formatNum(r.weight)} T${r.note.isEmpty ? '' : ' • ${r.note}'}', style: TextStyle(color: AppColors.muted)),
                     if (r.status == TruckRequest.accepted)
                       Padding(
                         padding: const EdgeInsets.only(top: 8),

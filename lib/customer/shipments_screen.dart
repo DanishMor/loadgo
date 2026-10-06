@@ -191,6 +191,7 @@ class _NewShipmentScreenState extends State<NewShipmentScreen> {
                 return (n == null || n <= 0 || n > 100) ? tr(context, 'invalidNumber') : null;
               }, inputFormatters: [LengthLimitingTextInputFormatter(10)]),
             DropdownButtonFormField<String>(
+              isExpanded: true,
               initialValue: _vehicleType,
               decoration: InputDecoration(labelText: tr(context, 'vehicleTypeNeeded')),
               items: vehicleTypeItems(context, keep: _vehicleType),
@@ -267,7 +268,7 @@ class ShipmentDetailScreen extends StatelessWidget {
                     padding: const EdgeInsets.only(top: 8, bottom: 4),
                     child: Text(
                       '${trf(context, 'legLabel', {'n': step.leg})}: ${step.leg == 1 ? '${s.origin} → ${s.hub}' : '${s.hub} → ${s.destination}'}',
-                      style: const TextStyle(color: AppColors.muted),
+                      style: TextStyle(color: AppColors.muted),
                     ),
                   ),
                 ListTile(
