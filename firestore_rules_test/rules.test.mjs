@@ -3337,3 +3337,180 @@ describe('UPI id, advance, e-way validity, container handover, double confirms',
     await assertFails(updateDoc(doc(as('customer1'), 'bookings', 'L1'), { paymentStatus: 'customer_marked_paid', paidAmountPaise: 1, paymentMarkedAt: serverTimestamp(), updatedAt: serverTimestamp() }));
   });
 });
+
+describe('business roles, approvals, contracts, pool, expenses, support', () => {
+  const asPhone = (uid, phone) => env.authenticatedContext(uid, { phone_number: phone }).firestore();
+  const PHONE = '+919876543210';
+  const mem = (uid, role) => ({ ownerId: 'owner1', ownerName: 'Acme', memberId: uid, memberName: uid, memberPhone: '+919800000000', role, active: true, createdAt: Timestamp.now() });
+
+  beforeEach(async () => {
+    await seed(async (db) => {
+      await setDoc(doc(db, 'users', 'owner1'), { role: 'customer', selectedRole: 'customer' });
+      for (const [uid, role] of [['mgr', 'manager'], ['dsp', 'dispatch'], ['acc', 'accounts'], ['vwr', 'viewer'], ['bkr', 'booker']]) {
+        await setDoc(doc(db, 'users', uid), { role: 'customer', selectedRole: 'customer' });
+        await setDoc(doc(db, 'business_members', `owner1_${uid}`), mem(uid, role));
+      }
+      await setDoc(doc(db, 'vehicles', 'v1'), VEHICLE);
+    });
+  });
+
+  test('invites carry a role; the member document must copy it; the owner changes it later', async () => {
+    const invite = (role) => ({ ownerId: 'owner1', ownerName: 'Acme', phone: PHONE, status: 'pending', role, createdAt: serverTimestamp() });
+    await assertFails(setDoc(doc(as('owner1'), 'business_invites', 'owner1_919876543210'), invite('ceo')));
+    await assertFails(setDoc(doc(as('owner1'), 'business_invites', 'owner1_919876543210'), invite('owner')));
+    await assertSucceeds(setDoc(doc(as('owner1'), 'business_invites', 'owner1_919876543210'), invite('viewer')));
+    await seed((db) => updateDoc(doc(db, 'business_invites', 'owner1_919876543210'), { status: 'accepted' }));
+    await seed((db) => setDoc(doc(db, 'users', 'newbie'), { role: 'customer', selectedRole: 'customer' }));
+    const join = (role) => setDoc(doc(asPhone('newbie', PHONE), 'business_members', 'owner1_newbie'), { ownerId: 'owner1', ownerName: 'Acme', memberId: 'newbie', memberName: 'N', memberPhone: PHONE, role, active: true, createdAt: serverTimestamp() });
+    await assertFails(join('manager')); // the invite said viewer
+    await assertSucceeds(join('viewer'));
+    await assertSucceeds(updateDoc(doc(as('owner1'), 'business_members', 'owner1_newbie'), { role: 'accounts' }));
+    await assertFails(updateDoc(doc(as('owner1'), 'business_members', 'owner1_newbie'), { role: 'owner' }));
+    await assertFails(updateDoc(doc(as('newbie'), 'business_members', 'owner1_newbie'), { role: 'manager' })); // members cannot promote themselves
+    await assertFails(updateDoc(doc(as('mgr'), 'business_members', 'owner1_newbie'), { role: 'manager' }));
+  });
+
+  test('settings: owner writes the approval limit, members read it, others nothing', async () => {
+    const s = (over = {}) => ({ ownerId: 'owner1', approvalLimitPaise: 2000000, updatedAt: serverTimestamp(), ...over });
+    await assertSucceeds(setDoc(doc(as('owner1'), 'business_settings', 'owner1'), s()));
+    await assertFails(setDoc(doc(as('mgr'), 'business_settings', 'owner1'), s()));
+    await assertFails(setDoc(doc(as('owner1'), 'business_settings', 'owner1'), s({ approvalLimitPaise: -1 })));
+    await assertFails(setDoc(doc(as('owner1'), 'business_settings', 'owner1'), s({ approvalLimitPaise: 1.5 })));
+    await assertSucceeds(getDoc(doc(as('vwr'), 'business_settings', 'owner1')));
+    await assertFails(getDoc(doc(as('customer9'), 'business_settings', 'owner1')));
+  });
+
+  describe('loads', () => {
+    const post = (uid, over) => addDoc(collection(as(uid), 'loads'), { ...LOAD, shipperId: uid, createdAt: serverTimestamp(), businessId: 'owner1', ...over });
+
+    test('only booker, manager, dispatch and the owner post for the company', async () => {
+      for (const u of ['bkr', 'mgr', 'dsp', 'owner1']) await assertSucceeds(post(u));
+      for (const u of ['acc', 'vwr', 'customer9']) await assertFails(post(u));
+    });
+
+    test('over the limit a member load must wait; owner and manager post freely; the status cannot be faked', async () => {
+      await seed((db) => setDoc(doc(db, 'business_settings', 'owner1'), { ownerId: 'owner1', approvalLimitPaise: 2000000, updatedAt: Timestamp.now() }));
+      await assertFails(post('bkr', { budget: 50000 })); // open over the limit
+      await assertSucceeds(post('bkr', { budget: 50000, status: 'awaiting_approval' }));
+      await assertFails(post('bkr', { budget: 10000, status: 'awaiting_approval' })); // under the limit: not waiting
+      await assertSucceeds(post('bkr', { budget: 10000 }));
+      await assertSucceeds(post('mgr', { budget: 50000 }));
+      await assertSucceeds(post('owner1', { budget: 50000 }));
+      await assertFails(post('owner1', { budget: 50000, status: 'awaiting_approval' }));
+      await assertSucceeds(post('dsp', { budget: null, estimate: { total: 500000, tripFare: 500000, distanceKm: 100 } })); // under by estimate
+      await assertFails(post('dsp', { budget: null, estimate: { total: 5000000, tripFare: 5000000, distanceKm: 100 } }));
+    });
+
+    test('owner and manager approve or reject; the poster, dispatch and others cannot; the poster can cancel', async () => {
+      await seed(async (db) => {
+        await setDoc(doc(db, 'business_settings', 'owner1'), { ownerId: 'owner1', approvalLimitPaise: 2000000, updatedAt: Timestamp.now() });
+        for (const id of ['W1', 'W2', 'W3', 'W4']) await setDoc(doc(db, 'loads', id), { ...LOAD, shipperId: 'bkr', businessId: 'owner1', budget: 50000, status: 'awaiting_approval' });
+      });
+      const decide = (uid, id, over) => updateDoc(doc(as(uid), 'loads', id), { status: 'open', approval: { by: uid, at: serverTimestamp(), decision: 'approved' }, updatedAt: serverTimestamp(), ...over });
+      await assertFails(decide('bkr', 'W1')); // the poster cannot approve their own load
+      await assertFails(updateDoc(doc(as('bkr'), 'loads', 'W1'), { status: 'open' }));
+      await assertFails(decide('dsp', 'W1'));
+      await assertFails(decide('customer9', 'W1'));
+      await assertFails(decide('mgr', 'W1', { approval: { by: 'owner1', at: serverTimestamp(), decision: 'approved' } })); // not as someone else
+      await assertSucceeds(decide('mgr', 'W1'));
+      await assertSucceeds(decide('owner1', 'W2'));
+      await assertFails(decide('mgr', 'W1')); // already open
+      await assertFails(decide('mgr', 'W3', { status: 'closed' })); // reject needs decision rejected and cancelled
+      await assertSucceeds(decide('mgr', 'W3', { status: 'closed', cancelled: true, approval: { by: 'mgr', at: serverTimestamp(), decision: 'rejected' } }));
+      await assertSucceeds(updateDoc(doc(as('bkr'), 'loads', 'W4'), { status: 'closed', cancelled: true, updatedAt: serverTimestamp() }));
+    });
+
+    test('every active member reads the company loads and bookings; strangers do not; lists work', async () => {
+      await seed(async (db) => {
+        await setDoc(doc(db, 'loads', 'C1'), { ...LOAD, shipperId: 'bkr', businessId: 'owner1', status: 'awaiting_approval' });
+        await setDoc(doc(db, 'bookings', 'C1'), { ...bookingFor('C1'), businessId: 'owner1', timeline: {} });
+      });
+      for (const u of ['vwr', 'acc', 'dsp', 'mgr', 'owner1']) {
+        await assertSucceeds(getDoc(doc(as(u), 'loads', 'C1')));
+        await assertSucceeds(getDoc(doc(as(u), 'bookings', 'C1')));
+      }
+      await assertFails(getDoc(doc(as('customer9'), 'loads', 'C1')));
+      await assertFails(getDoc(doc(as('customer9'), 'bookings', 'C1')));
+      await assertSucceeds(getDocs(query(collection(as('vwr'), 'bookings'), where('businessId', '==', 'owner1'))));
+      await assertSucceeds(getDocs(query(collection(as('mgr'), 'loads'), where('businessId', '==', 'owner1'), where('status', '==', 'awaiting_approval'))));
+      await assertFails(getDocs(query(collection(as('customer9'), 'bookings'), where('businessId', '==', 'owner1'))));
+    });
+  });
+
+  test('contract vehicles: manager and owner write, every member reads, nobody edits', async () => {
+    const c = (uid, over = {}) => ({ ownerId: 'owner1', vehicleNumber: 'MH12AB1234', vehicleType: '20ft', vendorName: 'Ram Transport', ratePerTripPaise: 1800000, validUntil: Timestamp.fromMillis(Date.now() + 86400000), note: '', addedBy: uid, createdAt: serverTimestamp(), ...over });
+    await assertSucceeds(setDoc(doc(as('mgr'), 'business_contracts', 'c1'), c('mgr')));
+    await assertSucceeds(setDoc(doc(as('owner1'), 'business_contracts', 'c2'), c('owner1')));
+    await assertFails(setDoc(doc(as('dsp'), 'business_contracts', 'c3'), c('dsp')));
+    await assertFails(setDoc(doc(as('acc'), 'business_contracts', 'c4'), c('acc')));
+    await assertFails(setDoc(doc(as('customer9'), 'business_contracts', 'c5'), c('customer9')));
+    await assertFails(setDoc(doc(as('mgr'), 'business_contracts', 'c6'), c('mgr', { ratePerTripPaise: -1 })));
+    await assertFails(setDoc(doc(as('mgr'), 'business_contracts', 'c7'), c('mgr', { vendorName: 'R' })));
+    await assertFails(setDoc(doc(as('mgr'), 'business_contracts', 'c8'), c('owner1'))); // addedBy must be me
+    await assertSucceeds(getDoc(doc(as('vwr'), 'business_contracts', 'c1')));
+    await assertFails(getDoc(doc(as('customer9'), 'business_contracts', 'c1')));
+    await assertFails(updateDoc(doc(as('mgr'), 'business_contracts', 'c1'), { vendorName: 'Other' }));
+    await assertFails(deleteDoc(doc(as('dsp'), 'business_contracts', 'c1')));
+    await assertSucceeds(deleteDoc(doc(as('mgr'), 'business_contracts', 'c1')));
+  });
+
+  test('approved driver pool: manager and dispatch manage it, id is owner_driver', async () => {
+    const p = (uid, over = {}) => ({ ownerId: 'owner1', driverId: 'd1', driverName: 'Ramesh', vehicleNumber: 'MH12AB1234', addedBy: uid, createdAt: serverTimestamp(), ...over });
+    await assertSucceeds(setDoc(doc(as('dsp'), 'business_pool', 'owner1_d1'), p('dsp')));
+    await assertSucceeds(setDoc(doc(as('mgr'), 'business_pool', 'owner1_d2'), p('mgr', { driverId: 'd2' })));
+    await assertFails(setDoc(doc(as('acc'), 'business_pool', 'owner1_d3'), p('acc', { driverId: 'd3' })));
+    await assertFails(setDoc(doc(as('bkr'), 'business_pool', 'owner1_d4'), p('bkr', { driverId: 'd4' })));
+    await assertFails(setDoc(doc(as('dsp'), 'business_pool', 'owner1_zz'), p('dsp', { driverId: 'd5' }))); // id mismatch
+    await assertSucceeds(getDoc(doc(as('bkr'), 'business_pool', 'owner1_d1'))); // bookers read it to post to the pool
+    await assertSucceeds(getDocs(query(collection(as('bkr'), 'business_pool'), where('ownerId', '==', 'owner1'))));
+    await assertFails(getDoc(doc(as('customer9'), 'business_pool', 'owner1_d1')));
+    await assertFails(deleteDoc(doc(as('vwr'), 'business_pool', 'owner1_d1')));
+    await assertSucceeds(deleteDoc(doc(as('dsp'), 'business_pool', 'owner1_d1')));
+  });
+
+  test('expenses: manager and accounts write, viewer reads, dispatch and bookers see nothing', async () => {
+    const e = (uid, over = {}) => ({ ownerId: 'owner1', kind: 'fuel', amountPaise: 450000, date: Timestamp.now(), costCenter: 'Plant 2', note: 'Kherki', addedBy: uid, createdAt: serverTimestamp(), ...over });
+    await assertSucceeds(setDoc(doc(as('acc'), 'business_expenses', 'e1'), e('acc')));
+    await assertSucceeds(setDoc(doc(as('mgr'), 'business_expenses', 'e2'), e('mgr')));
+    await assertSucceeds(setDoc(doc(as('owner1'), 'business_expenses', 'e3'), e('owner1')));
+    await assertFails(setDoc(doc(as('dsp'), 'business_expenses', 'e4'), e('dsp')));
+    await assertFails(setDoc(doc(as('vwr'), 'business_expenses', 'e5'), e('vwr')));
+    await assertFails(setDoc(doc(as('acc'), 'business_expenses', 'e6'), e('acc', { kind: 'beer' })));
+    await assertFails(setDoc(doc(as('acc'), 'business_expenses', 'e7'), e('acc', { amountPaise: 0 })));
+    await assertFails(setDoc(doc(as('acc'), 'business_expenses', 'e8'), e('acc', { amountPaise: 10.5 })));
+    await assertFails(setDoc(doc(as('acc'), 'business_expenses', 'e9'), e('acc', { extra: 1 })));
+    await assertSucceeds(getDoc(doc(as('vwr'), 'business_expenses', 'e1')));
+    await assertSucceeds(getDocs(query(collection(as('vwr'), 'business_expenses'), where('ownerId', '==', 'owner1'))));
+    await assertFails(getDoc(doc(as('dsp'), 'business_expenses', 'e1')));
+    await assertFails(getDoc(doc(as('bkr'), 'business_expenses', 'e1')));
+    await assertFails(updateDoc(doc(as('acc'), 'business_expenses', 'e1'), { amountPaise: 1 }));
+    await assertFails(deleteDoc(doc(as('vwr'), 'business_expenses', 'e1')));
+    await assertSucceeds(deleteDoc(doc(as('acc'), 'business_expenses', 'e1')));
+  });
+
+  test('statements: owner, manager and accounts save; viewer reads; dispatch does not', async () => {
+    const st = (over = {}) => ({ ownerId: 'owner1', month: '2026-09', trips: 4, totalPaise: 425050, byCostCenter: { 'Plant 2': 350050 }, createdAt: serverTimestamp(), ...over });
+    await assertSucceeds(setDoc(doc(as('owner1'), 'business_statements', 'owner1_2026-09'), st()));
+    await assertSucceeds(setDoc(doc(as('acc'), 'business_statements', 'owner1_2026-09'), st()));
+    await assertSucceeds(setDoc(doc(as('mgr'), 'business_statements', 'owner1_2026-08'), st({ month: '2026-08' })));
+    await assertFails(setDoc(doc(as('vwr'), 'business_statements', 'owner1_2026-07'), st({ month: '2026-07' })));
+    await assertFails(setDoc(doc(as('dsp'), 'business_statements', 'owner1_2026-07'), st({ month: '2026-07' })));
+    await assertFails(setDoc(doc(as('customer9'), 'business_statements', 'owner1_2026-07'), st({ month: '2026-07' })));
+    await assertSucceeds(getDoc(doc(as('vwr'), 'business_statements', 'owner1_2026-09')));
+    await assertFails(getDoc(doc(as('dsp'), 'business_statements', 'owner1_2026-09')));
+  });
+
+  test('company tickets: members raise them, the owner, managers and accounts read them, others do not', async () => {
+    const t = (uid, over = {}) => ({ userId: uid, category: 'other', priority: 'high', status: 'open', subject: 'Invoice question', description: '', businessId: 'owner1', escalationLevel: 0, createdAt: serverTimestamp(), updatedAt: serverTimestamp(), ...over });
+    await assertSucceeds(setDoc(doc(as('bkr'), 'tickets', 't1'), t('bkr')));
+    await assertSucceeds(setDoc(doc(as('owner1'), 'tickets', 't2'), t('owner1')));
+    await assertFails(setDoc(doc(as('customer9'), 'tickets', 't3'), t('customer9'))); // not a member
+    await assertSucceeds(getDoc(doc(as('owner1'), 'tickets', 't1')));
+    await assertSucceeds(getDoc(doc(as('mgr'), 'tickets', 't1')));
+    await assertSucceeds(getDoc(doc(as('acc'), 'tickets', 't1')));
+    await assertFails(getDoc(doc(as('dsp'), 'tickets', 't1')));
+    await assertFails(getDoc(doc(as('vwr'), 'tickets', 't1')));
+    await assertSucceeds(getDocs(query(collection(as('mgr'), 'tickets'), where('businessId', '==', 'owner1'))));
+    await assertSucceeds(getDoc(doc(asAdmin(), 'tickets', 't1')));
+  });
+});

@@ -10,8 +10,9 @@ class BusinessInvite {
   final String ownerName;
   final String phone;
   final String status;
+  final String role;
 
-  const BusinessInvite({required this.id, required this.ownerId, this.ownerName = '', required this.phone, required this.status});
+  const BusinessInvite({required this.id, required this.ownerId, this.ownerName = '', required this.phone, required this.status, this.role = BusinessMember.booker});
 
   static const pending = 'pending';
   static const accepted = 'accepted';
@@ -24,6 +25,7 @@ class BusinessInvite {
         ownerName: d['ownerName'] as String? ?? '',
         phone: d['phone'] as String? ?? '',
         status: d['status'] as String? ?? pending,
+        role: d['role'] as String? ?? BusinessMember.booker,
       );
 }
 

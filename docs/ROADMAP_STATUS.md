@@ -9,7 +9,7 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | Module | Items | Done | Partial | Todo-free | Paid-or-Later | Unsure |
 |---|---|---|---|---|---|---|
 | P0 Principles | 6 | 3 | 2 | 0 | 1 | 0 |
-| A Authentication | 10 | 7 | 0 | 2 | 1 | 0 |
+| A Authentication | 10 | 8 | 0 | 1 | 1 | 0 |
 | K Identity, KYC | 14 | 5 | 1 | 0 | 8 | 0 |
 | R Re-KYC | 12 | 8 | 0 | 0 | 4 | 0 |
 | C Customer app | 14 | 10 | 2 | 0 | 2 | 0 |
@@ -24,16 +24,16 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | T Trip lifecycle | 14 | 12 | 1 | 0 | 1 | 0 |
 | S Pickup, cargo, POD | 15 | 11 | 1 | 0 | 3 | 0 |
 | PAY Payments | 14 | 8 | 1 | 0 | 5 | 0 |
-| DOC Documents | 14 | 9 | 4 | 0 | 1 | 0 |
+| DOC Documents | 14 | 10 | 3 | 0 | 1 | 0 |
 | IE Import/export | 14 | 13 | 1 | 0 | 0 | 0 |
-| BIZ Business | 15 | 5 | 4 | 3 | 3 | 0 |
+| BIZ Business | 15 | 12 | 0 | 0 | 3 | 0 |
 | F Anti-fraud | 18 | 6 | 7 | 0 | 5 | 0 |
 | SAFE Safety | 12 | 10 | 0 | 0 | 2 | 0 |
 | N Notifications | 15 | 13 | 0 | 0 | 2 | 0 |
 | AI AI | 14 | 0 | 0 | 0 | 14 | 0 |
 | BE Backend | 18 | 5 | 5 | 1 | 7 | 0 |
 | TEST Testing | 14 | 4 | 2 | 0 | 8 | 0 |
-| **Total** | **347** | **217** | **38** | **6** | **86** | **0** |
+| **Total** | **347** | **226** | **33** | **2** | **86** | **0** |
 
 ## P0 Principles
 
@@ -53,7 +53,7 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | A1 | Customer mobile OTP Indian mobile validation + Firebase OTP; register/login same account | Done | lib/auth/customer_login_screen.dart + otp_verification_screen.dart, Firebase phone OTP, digits-only |
 | A2 | Google login Optional secondary auth; Firebase identity linking ke saath. | Todo-free | Google button only shows "coming soon" (customer_login_screen.dart); google_sign_in is free |
 | A3 | Driver mobile OTP Driver signup/login with dedicated role. | Done | lib/auth/driver_login_screen.dart |
-| A4 | Business accounts Company owner, manager, dispatch, accounts, viewer roles. | Todo-free | No manager/dispatch/accounts/viewer roles |
+| A4 | Business accounts Company owner, manager, dispatch, accounts, viewer roles. | Done | Task 38: roles manager, dispatch, accounts, viewer, booker besides the owner (business_members.role, invite carries the role, owner changes it) |
 | A5 | Role-based access Customer, driver, transporter, fleet, shipper, importer, exporter, trader, | Done | Customer, driver and fleet roles are locked once set; users.businessType (shipper, importer, exporter, trader, transporter) in Edit profile, rules-validated; transporters also have the fleet role |
 | A6 | New-device verification Naye device par extra verification / risk challenge. | Done | Device id kept per installation; a new device on an account with other devices raises a risk signal and shows as New in Settings > My devices |
 | A7 | Session management Trusted devices, logout all, session revoke. | Done | My devices: trust, sign out a device, log out everywhere (checked when the app starts; token revoke is TODO(functions)) |
@@ -341,7 +341,7 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | DOC7 | Cargo documents Shipment specific docs. | Done | Cargo document records per booking (type, number, note), either party can add |
 | DOC8 | POD packet Delivery evidence bundle. | Partial | POD packet is text + timeline |
 | DOC9 | Versioning Changed document history. | Done | Cargo documents are append-only: every change is a new version and the history stays |
-| DOC10 | Access control Customer/driver/admin/enterprise role based. | Partial | Rules: owner/party/admin; no enterprise roles |
+| DOC10 | Access control Customer/driver/admin/enterprise role based. | Done | Task 38: rules by role: owner, manager, dispatch, accounts, viewer, booker on loads, bookings, statements, expenses, contracts, pool, tickets |
 | DOC11 | Masking Sensitive identifiers partially masked on UI. | Done | Phone, PAN, licence, RC, GST masked on the profile; admins can reveal in the verification queue |
 | DOC12 | Verification source Document source and verification status. | Partial | "Unverified" label only |
 | DOC13 | Expiry reminders Upcoming expiry notifications. | Done | Expiry reminders for vehicle papers and the licence in-app (no push) |
@@ -373,18 +373,18 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | BIZ1 | Business KYC GST/PAN/company/entity verification. | Paid-or-Later | GST/PAN/MCA verification needs API |
 | BIZ2 | Company profile Legal + trade name, addresses, contacts. | Done | business_screen.dart |
 | BIZ3 | Branches Multiple warehouses/factories/cities. | Done | users/{uid}/branches (max 20) |
-| BIZ4 | Users Owner, admin, manager, dispatch, accounts, viewer. | Partial | Owner plus booker team members by phone invite; no manager/dispatch/accounts/viewer roles |
-| BIZ5 | Permissions Role-based access. | Partial | Bookers can post for the company; owner reads the company bookings; no finer permissions |
-| BIZ6 | Approval workflow Large bookings ke liye manager approval. | Todo-free | No approval workflow |
+| BIZ4 | Users Owner, admin, manager, dispatch, accounts, viewer. | Done | Task 38: team screen with role pick and change; hub shows tools by role |
+| BIZ5 | Permissions Role-based access. | Done | Task 38: permission table (bizCan) mirrored in rules bizRoleIn lists; test compares both |
+| BIZ6 | Approval workflow Large bookings ke liye manager approval. | Done | Task 38: approval limit (business_settings); member loads over it are awaiting_approval, owner or manager approves/rejects; rules enforce the status |
 | BIZ7 | Bulk booking Multiple shipments ek saath. | Done | bulk_post_screen.dart (max 10) |
-| BIZ8 | Fleet management Company-owned/contracted vehicles. | Partial | Fleet owners manage owned vehicles; no company contract-vehicle records |
-| BIZ9 | Driver pool Assigned/approved drivers. | Todo-free | No driver pool |
-| BIZ10 | Expense dashboard Transport spend, fuel, toll etc. | Todo-free | No expense dashboard |
+| BIZ8 | Fleet management Company-owned/contracted vehicles. | Done | Task 38: contract vehicle records (number, vendor, rate, valid until) for the company; fleet owners keep their owned vehicles |
+| BIZ9 | Driver pool Assigned/approved drivers. | Done | Task 38: approved driver pool; posting can be limited to it (visibility invite) |
+| BIZ10 | Expense dashboard Transport spend, fuel, toll etc. | Done | Task 38: spend dashboard: freight by month from delivered bookings plus recorded fuel, toll, loading, detention, other (paise) |
 | BIZ11 | Reports Routes, trips, payments, POD. | Done | route_report_screen.dart with CSV copy |
 | BIZ12 | Transporter dashboard Multiple vehicles/drivers/customers. | Done | Task 34: dashboard shows customers served, vehicles, drivers |
 | BIZ13 | API integration ERP/TMS/WMS integration layer. | Paid-or-Later | Needs server/Functions |
 | BIZ14 | Webhooks Trip/status/POD events where integration supports. | Paid-or-Later | Needs Functions |
-| BIZ15 | Business support Dedicated ticket/operations workflow. | Partial | Same tickets; no business queue |
+| BIZ15 | Business support Dedicated ticket/operations workflow. | Done | Task 38: company tickets carry businessId, start at high priority, company ticket screen for owner/manager/accounts; admin sees the Business tag |
 
 ## F Anti-fraud
 

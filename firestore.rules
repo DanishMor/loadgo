@@ -862,6 +862,53 @@ service cloud.firestore {
           && get(docPath('business_members', ownerId + '_' + memberId)).data.active == true;
     }
 
+    // Business roles (DOC10). Keep the lists in sync with lib/core/enterprise/
+    // business_roles.dart: postLoads = booker/manager/dispatch, approveLoads and
+    // manageContracts = manager, viewStatements = manager/accounts/viewer,
+    // manageExpenses and businessSupport = manager/accounts, managePool =
+    // manager/dispatch; every active member reads the company's loads and
+    // bookings. The owner may do everything.
+    function bizRoleIn(ownerId, memberId, roles) {
+      let p = docPath('business_members', ownerId + '_' + memberId);
+      return exists(p) && get(p).data.active == true && get(p).data.get('role', 'booker') in roles;
+    }
+
+    function bizActs(ownerId, roles) {
+      return ownerId is string && ownerId != ''
+          && (ownerId == request.auth.uid || bizRoleIn(ownerId, request.auth.uid, roles));
+    }
+
+    function bizReads(ownerId) {
+      return ownerId is string && ownerId != ''
+          && (ownerId == request.auth.uid || activeBooker(ownerId, request.auth.uid));
+    }
+
+    // An approval limit (business_settings) the poster's load goes over: the
+    // load waits for the owner or a manager. Owners and managers post freely.
+    function loadAmountPaise(d) {
+      return d.get('budget', null) != null ? d.budget * 100 : d.get('estimate', {}).get('total', 0);
+    }
+
+    function approvalNeeded(d) {
+      return d.get('businessId', '') != '' && d.businessId != d.shipperId
+          && exists(docPath('business_settings', d.businessId))
+          && get(docPath('business_settings', d.businessId)).data.get('approvalLimitPaise', 0) > 0
+          && loadAmountPaise(d) > get(docPath('business_settings', d.businessId)).data.approvalLimitPaise
+          && !bizRoleIn(d.businessId, d.shipperId, ['manager']);
+    }
+
+    // The owner or a manager approves or rejects a load that is waiting.
+    function businessApproval() {
+      let a = request.resource.data;
+      return resource.data.status == 'awaiting_approval'
+          && bizActs(resource.data.get('businessId', ''), ['manager'])
+          && changedKeys().hasOnly(['status', 'approval', 'cancelled', 'updatedAt'])
+          && a.approval is map && a.approval.keys().hasOnly(['by', 'at', 'decision'])
+          && a.approval.by == request.auth.uid && a.approval.at == request.time
+          && ((a.status == 'open' && a.approval.decision == 'approved' && !('cancelled' in a))
+              || (a.status == 'closed' && a.approval.decision == 'rejected' && a.get('cancelled', false) == true));
+    }
+
     // public (default) | favourites | invite: the last two list the drivers who may accept.
     function validVisibility(d) {
       return !('visibility' in d)
@@ -891,7 +938,7 @@ service cloud.firestore {
           && validVisibility(d)
           && (!('instant' in d) || d.instant is bool)
           && (!('costCenter' in d) || (d.costCenter is string && d.costCenter.size() >= 1 && d.costCenter.size() <= 30))
-          && (!('businessId' in d) || (d.businessId is string && (d.businessId == d.shipperId || activeBooker(d.businessId, d.shipperId))))
+          && (!('businessId' in d) || (d.businessId is string && (d.businessId == d.shipperId || bizRoleIn(d.businessId, d.shipperId, ['booker', 'manager', 'dispatch']))))
           && (!('scheduledAt' in d) || d.scheduledAt is timestamp)
           && (!('fragile' in d) || d.fragile is bool)
           && (!('highValue' in d) || d.highValue is bool)
@@ -967,6 +1014,15 @@ service cloud.firestore {
           && (request.resource.data.status == 'open' || cancelCounted())
           && !changedKeys().hasAny(['shipperId', 'driverId', 'bookingId', 'createdAt', 'promo', 'creditsUsedPaise'])
           && validLoad(request.resource.data);
+    }
+
+    // The poster withdraws a load that is still waiting for approval.
+    function posterCancelsWaiting() {
+      return resource.data.shipperId == request.auth.uid
+          && resource.data.status == 'awaiting_approval'
+          && changedKeys().hasOnly(['status', 'cancelled', 'updatedAt'])
+          && request.resource.data.status == 'closed'
+          && request.resource.data.get('cancelled', false) == true;
     }
 
     // Driver accepts: open -> matched, in the same batch that creates the
@@ -1079,12 +1135,12 @@ service cloud.firestore {
       allow read: if signedIn()
           && (resource.data.status == 'open'
               || resource.data.shipperId == request.auth.uid
-              || resource.data.get('businessId', '') == request.auth.uid
+              || bizReads(resource.data.get('businessId', ''))
               || resource.data.get('driverId', null) == request.auth.uid
               || isAdmin());
       allow create: if signedIn()
           && request.resource.data.shipperId == request.auth.uid
-          && request.resource.data.status == 'open'
+          && request.resource.data.status == (approvalNeeded(request.resource.data) ? 'awaiting_approval' : 'open')
           && canTransact(request.auth.uid)
           && rateBumped('load', loadId)
           && !request.resource.data.keys().hasAny(['driverId', 'bookingId'])
@@ -1094,7 +1150,7 @@ service cloud.firestore {
                   && request.resource.data.scheduledAt <= request.time + duration.value(90, 'd')))
           && offersCreateOk(loadId, request.resource.data);
       allow update: if signedIn()
-          && (shipperEdit() || driverMatch(loadId) || driverClose() || driverReopen() || adminReassignLoad() || adminGeohashBackfill() || shipperCancelsMatchedScheduled());
+          && (shipperEdit() || posterCancelsWaiting() || businessApproval() || driverMatch(loadId) || driverClose() || driverReopen() || adminReassignLoad() || adminGeohashBackfill() || shipperCancelsMatchedScheduled());
       allow delete: if signedIn()
           && resource.data.shipperId == request.auth.uid
           && resource.data.status == 'open';
@@ -1398,7 +1454,7 @@ service cloud.firestore {
           && (resource.data.driverId == request.auth.uid
               || resource.data.customerId == request.auth.uid
               || resource.data.get('fleetOwnerId', '') == request.auth.uid
-              || resource.data.get('businessId', '') == request.auth.uid
+              || bizReads(resource.data.get('businessId', ''))
               || isAdmin());
       allow create: if signedIn() && validBookingCreate(bookingId);
       allow update: if signedIn()
@@ -1607,8 +1663,9 @@ service cloud.firestore {
 
     function validTicketCreate() {
       let t = request.resource.data;
-      return t.keys().hasOnly(['userId', 'category', 'priority', 'status', 'bookingId', 'subject', 'description',
+      return t.keys().hasOnly(['userId', 'category', 'priority', 'status', 'bookingId', 'businessId', 'subject', 'description',
                                'escalationLevel', 'createdAt', 'updatedAt'])
+          && (!('businessId' in t) || (t.businessId is string && (t.businessId == request.auth.uid || activeBooker(t.businessId, request.auth.uid))))
           && t.userId == request.auth.uid
           && t.category in ['booking_issue', 'payment', 'dispute', 'safety', 'account', 'other']
           && t.priority in ['low', 'normal', 'high', 'urgent']
@@ -1631,7 +1688,8 @@ service cloud.firestore {
     }
 
     match /tickets/{ticketId} {
-      allow read: if signedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow read: if signedIn() && (resource.data.userId == request.auth.uid || isAdmin()
+          || bizActs(resource.data.get('businessId', ''), ['manager', 'accounts']));
       allow create: if signedIn() && validTicketCreate();
       allow update: if signedIn() && (ownerTicketUpdate()
           || (isAdmin()
@@ -1642,7 +1700,8 @@ service cloud.firestore {
 
       match /replies/{replyId} {
         allow read: if signedIn()
-            && (get(docPath('tickets', ticketId)).data.userId == request.auth.uid || isAdmin());
+            && (get(docPath('tickets', ticketId)).data.userId == request.auth.uid || isAdmin()
+                || bizActs(get(docPath('tickets', ticketId)).data.get('businessId', ''), ['manager', 'accounts']));
         allow create: if signedIn()
             && request.resource.data.keys().hasOnly(['authorId', 'text', 'fromAdmin', 'createdAt'])
             && request.resource.data.authorId == request.auth.uid
@@ -2070,7 +2129,8 @@ service cloud.firestore {
           || resource.data.phone == request.auth.token.get('phone_number', ''));
       allow create: if signedIn()
           && get(docPath('users', request.auth.uid)).data.get('role', '') == 'customer'
-          && request.resource.data.keys().hasOnly(['ownerId', 'ownerName', 'phone', 'status', 'createdAt'])
+          && request.resource.data.keys().hasOnly(['ownerId', 'ownerName', 'phone', 'status', 'role', 'createdAt'])
+          && request.resource.data.get('role', 'booker') in ['manager', 'dispatch', 'accounts', 'viewer', 'booker']
           && request.resource.data.ownerId == request.auth.uid
           && request.resource.data.phone is string && request.resource.data.phone.matches('^[+]91[0-9]{10}$')
           && inviteId == request.auth.uid + '_' + phoneDigits(request.resource.data.phone)
@@ -2092,26 +2152,95 @@ service cloud.firestore {
           && request.resource.data.memberId == request.auth.uid
           && request.resource.data.ownerId != request.auth.uid
           && memberId == request.resource.data.ownerId + '_' + request.auth.uid
-          && request.resource.data.role == 'booker'
+          && request.resource.data.role == getAfter(docPath('business_invites', request.resource.data.ownerId + '_' + phoneDigits(request.auth.token.get('phone_number', '')))).data.get('role', 'booker')
           && request.resource.data.active == true
           && request.resource.data.createdAt == request.time
           && get(docPath('users', request.auth.uid)).data.get('role', '') == 'customer'
           && getAfter(docPath('business_invites', request.resource.data.ownerId + '_' + phoneDigits(request.auth.token.get('phone_number', '')))).data.status == 'accepted'
           && request.resource.data.memberPhone == request.auth.token.get('phone_number', '');
       allow update: if signedIn()
-          && (resource.data.ownerId == request.auth.uid || resource.data.memberId == request.auth.uid)
-          && changedKeys().hasOnly(['active', 'endedAt'])
-          && resource.data.active == true && request.resource.data.active == false;
+          && (((resource.data.ownerId == request.auth.uid || resource.data.memberId == request.auth.uid)
+                  && changedKeys().hasOnly(['active', 'endedAt'])
+                  && resource.data.active == true && request.resource.data.active == false)
+              || (resource.data.ownerId == request.auth.uid
+                  && resource.data.active == true
+                  && changedKeys().hasOnly(['role'])
+                  && request.resource.data.role in ['manager', 'dispatch', 'accounts', 'viewer', 'booker']));
       allow delete: if false;
     }
 
+    // business_settings/{ownerId}: the owner's rules for the team. approvalLimitPaise
+    // = loads above it, posted by members other than managers, wait for approval.
+    match /business_settings/{ownerId} {
+      allow read: if bizReads(ownerId);
+      allow create, update: if isUser(ownerId)
+          && request.resource.data.keys().hasOnly(['ownerId', 'approvalLimitPaise', 'updatedAt'])
+          && request.resource.data.ownerId == ownerId
+          && request.resource.data.approvalLimitPaise is int
+          && request.resource.data.approvalLimitPaise >= 0 && request.resource.data.approvalLimitPaise <= 100000000000
+          && request.resource.data.updatedAt == request.time;
+      allow delete: if false;
+    }
+
+    // business_contracts: vehicles the company hires on contract (a record).
+    match /business_contracts/{contractId} {
+      allow read: if bizReads(resource.data.ownerId);
+      allow create: if signedIn()
+          && bizActs(request.resource.data.ownerId, ['manager'])
+          && request.resource.data.keys().hasOnly(['ownerId', 'vehicleNumber', 'vehicleType', 'vendorName', 'ratePerTripPaise', 'validUntil', 'note', 'addedBy', 'createdAt'])
+          && request.resource.data.vehicleNumber is string && request.resource.data.vehicleNumber.size() >= 4 && request.resource.data.vehicleNumber.size() <= 15
+          && request.resource.data.vehicleType is string && request.resource.data.vehicleType.size() <= 40
+          && request.resource.data.vendorName is string && request.resource.data.vendorName.size() >= 2 && request.resource.data.vendorName.size() <= 80
+          && (!('ratePerTripPaise' in request.resource.data) || (request.resource.data.ratePerTripPaise is int && request.resource.data.ratePerTripPaise >= 0 && request.resource.data.ratePerTripPaise <= 1000000000))
+          && (!('validUntil' in request.resource.data) || request.resource.data.validUntil is timestamp)
+          && request.resource.data.get('note', '') is string && request.resource.data.get('note', '').size() <= 200
+          && request.resource.data.addedBy == request.auth.uid
+          && request.resource.data.createdAt == request.time;
+      allow update: if false;
+      allow delete: if bizActs(resource.data.ownerId, ['manager']);
+    }
+
+    // business_pool/{ownerId}_{driverId}: drivers the company approved; loads
+    // can be limited to them (visibility invite).
+    match /business_pool/{poolId} {
+      allow read: if bizReads(resource.data.ownerId);
+      allow create: if signedIn()
+          && bizActs(request.resource.data.ownerId, ['manager', 'dispatch'])
+          && request.resource.data.keys().hasOnly(['ownerId', 'driverId', 'driverName', 'vehicleNumber', 'addedBy', 'createdAt'])
+          && poolId == request.resource.data.ownerId + '_' + request.resource.data.driverId
+          && request.resource.data.driverName is string && request.resource.data.driverName.size() <= 80
+          && request.resource.data.get('vehicleNumber', '') is string && request.resource.data.get('vehicleNumber', '').size() <= 15
+          && request.resource.data.addedBy == request.auth.uid
+          && request.resource.data.createdAt == request.time;
+      allow update: if false;
+      allow delete: if bizActs(resource.data.ownerId, ['manager', 'dispatch']);
+    }
+
+    // business_expenses: costs outside the freight bills (fuel on own vehicles,
+    // toll, loading, detention). A record for the spend dashboard (paise).
+    match /business_expenses/{expenseId} {
+      allow read: if bizActs(resource.data.ownerId, ['manager', 'accounts', 'viewer']);
+      allow create: if signedIn()
+          && bizActs(request.resource.data.ownerId, ['manager', 'accounts'])
+          && request.resource.data.keys().hasOnly(['ownerId', 'kind', 'amountPaise', 'date', 'costCenter', 'note', 'addedBy', 'createdAt'])
+          && request.resource.data.kind in ['fuel', 'toll', 'loading', 'detention', 'other']
+          && request.resource.data.amountPaise is int && request.resource.data.amountPaise >= 1 && request.resource.data.amountPaise <= 10000000000
+          && request.resource.data.date is timestamp
+          && request.resource.data.get('costCenter', '') is string && request.resource.data.get('costCenter', '').size() <= 30
+          && request.resource.data.get('note', '') is string && request.resource.data.get('note', '').size() <= 100
+          && request.resource.data.addedBy == request.auth.uid
+          && request.resource.data.createdAt == request.time;
+      allow update: if false;
+      allow delete: if bizActs(resource.data.ownerId, ['manager', 'accounts']);
+    }
+
     match /business_statements/{statementId} {
-      allow read: if signedIn() && resource.data.ownerId == request.auth.uid;
+      allow read: if bizActs(resource.data.ownerId, ['manager', 'accounts', 'viewer']);
       allow create, update: if signedIn()
+          && bizActs(request.resource.data.ownerId, ['manager', 'accounts'])
           && request.resource.data.keys().hasOnly(['ownerId', 'month', 'trips', 'totalPaise', 'byCostCenter', 'createdAt'])
-          && request.resource.data.ownerId == request.auth.uid
           && request.resource.data.month is string && request.resource.data.month.matches('^20[0-9]{2}-(0[1-9]|1[0-2])$')
-          && statementId == request.auth.uid + '_' + request.resource.data.month
+          && statementId == request.resource.data.ownerId + '_' + request.resource.data.month
           && request.resource.data.trips is int && request.resource.data.trips >= 0
           && request.resource.data.totalPaise is int && request.resource.data.totalPaise >= 0
           && request.resource.data.byCostCenter is map && request.resource.data.byCostCenter.size() <= 50

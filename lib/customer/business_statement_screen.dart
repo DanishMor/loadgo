@@ -14,21 +14,24 @@ class BusinessStatementScreen extends StatefulWidget {
   final Stream<List<Booking>>? bookings;
   final DateTime Function() now;
 
-  const BusinessStatementScreen({super.key, this.bookings, this.now = DateTime.now});
+  /// The company whose statement this is (the owner's uid); null = my own.
+  final String? ownerId;
+
+  const BusinessStatementScreen({super.key, this.bookings, this.now = DateTime.now, this.ownerId});
 
   @override
   State<BusinessStatementScreen> createState() => _BusinessStatementScreenState();
 }
 
 class _BusinessStatementScreenState extends State<BusinessStatementScreen> {
-  late final Stream<List<Booking>> _bookings = (widget.bookings ?? BusinessService.watchCompanyBookings()).asBroadcastStream();
+  late final Stream<List<Booking>> _bookings = (widget.bookings ?? BusinessService.watchCompanyBookings(ownerId: widget.ownerId)).asBroadcastStream();
   late DateTime _month = DateTime(widget.now().year, widget.now().month);
 
   void _shift(int by) => setState(() => _month = DateTime(_month.year, _month.month + by));
 
   Future<void> _save(MonthlyStatement s) async {
     try {
-      await BusinessService.saveStatement(s);
+      await BusinessService.saveStatement(s, ownerId: widget.ownerId);
       if (mounted) showSnack(context, tr(context, 'statementSaved'));
     } catch (_) {
       if (mounted) showSnack(context, tr(context, 'somethingWrong'));

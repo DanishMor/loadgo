@@ -12,6 +12,7 @@ import '../network/share_load_sheet.dart';
 String loadStatusLabel(BuildContext context, String status, {bool cancelled = false}) => switch (status) {
       LoadStatus.closed when cancelled => tr(context, 'statusCancelled'),
       LoadStatus.open => tr(context, 'statusOpen'),
+      LoadStatus.awaitingApproval => tr(context, 'bizAwaiting'),
       LoadStatus.matched => tr(context, 'statusMatched'),
       LoadStatus.closed => tr(context, 'statusClosed'),
       _ => status,
@@ -20,6 +21,7 @@ String loadStatusLabel(BuildContext context, String status, {bool cancelled = fa
 Color loadStatusColor(String status, {bool cancelled = false}) => switch (status) {
       LoadStatus.closed when cancelled => AppColors.faint,
       LoadStatus.open => AppColors.primary,
+      LoadStatus.awaitingApproval => AppColors.warning,
       LoadStatus.matched => AppColors.warning,
       _ => AppColors.success,
     };

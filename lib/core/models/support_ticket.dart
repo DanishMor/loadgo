@@ -44,6 +44,9 @@ class SupportTicket {
   final String subject;
   final String description;
   final String? bookingId;
+
+  /// Set on a company ticket (BIZ15): the owner's uid.
+  final String? businessId;
   final int escalationLevel;
   final DateTime? createdAt;
   final DateTime? updatedAt;
@@ -57,6 +60,7 @@ class SupportTicket {
     required this.subject,
     this.description = '',
     this.bookingId,
+    this.businessId,
     this.escalationLevel = 0,
     this.createdAt,
     this.updatedAt,
@@ -77,6 +81,7 @@ class SupportTicket {
       subject: d['subject'] as String? ?? '',
       description: d['description'] as String? ?? '',
       bookingId: d['bookingId'] as String?,
+      businessId: d['businessId'] as String?,
       escalationLevel: (d['escalationLevel'] as num?)?.toInt() ?? 0,
       createdAt: (d['createdAt'] as Timestamp?)?.toDate(),
       updatedAt: (d['updatedAt'] as Timestamp?)?.toDate(),

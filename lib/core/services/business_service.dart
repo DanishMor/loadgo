@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import '../enterprise/business_roles.dart';
 import '../models/booking.dart';
 import '../models/business.dart';
 import '../models/fleet.dart';
@@ -24,7 +25,8 @@ class BusinessService {
 
   // ---- owner ----
 
-  static Future<String> invite(String rawPhone) async {
+  static Future<String> invite(String rawPhone, {String role = BizRole.booker}) async {
+    if (!BizRole.assignable.contains(role)) throw ArgumentError.value(role, 'role');
     final uid = Backend.requireUid();
     final phone = FleetInvite.normalisePhone(rawPhone);
     if (phone == null) throw const BusinessTeamException('phone');
@@ -42,6 +44,7 @@ class BusinessService {
       'ownerName': company.trim(),
       'phone': phone,
       'status': BusinessInvite.pending,
+      'role': role,
       'createdAt': FieldValue.serverTimestamp(),
     });
     return id;
@@ -65,6 +68,12 @@ class BusinessService {
           for (final d in s.docs) BusinessMember.fromDoc(d.id, d.data()),
         ].where((m) => m.active).toList()
           ..sort((a, b) => a.memberName.compareTo(b.memberName)));
+  }
+
+  /// The owner changes a member's role (A4, BIZ4).
+  static Future<void> setRole(BusinessMember m, String role) {
+    if (!BizRole.assignable.contains(role)) throw ArgumentError.value(role, 'role');
+    return _db.collection('business_members').doc(m.id).update({'role': role});
   }
 
   static Future<void> removeMember(BusinessMember m) =>
@@ -96,7 +105,7 @@ class BusinessService {
         'memberId': uid,
         'memberName': me['name'] ?? '',
         'memberPhone': Backend.currentUser?.phoneNumber ?? '',
-        'role': BusinessMember.booker,
+        'role': invite.role,
         'active': true,
         'createdAt': FieldValue.serverTimestamp(),
       });
@@ -114,32 +123,40 @@ class BusinessService {
 
   static Future<void> leave(BusinessMember m) => removeMember(m);
 
-  /// The company a new load should be booked under: the one the signed-in
-  /// user is a booker for, else their own company profile, else null.
-  static Future<String?> postingBusinessId() async {
+  /// The company the signed-in user acts for and their role there: a team
+  /// membership first, else their own company profile (owner), else null.
+  static Future<BizContext?> myContext() async {
     final uid = Backend.uid;
     if (uid == null) return null;
     final mine = await _db.collection('business_members').where('memberId', isEqualTo: uid).get();
     for (final d in mine.docs) {
-      if (d.data()['active'] == true) return d.data()['ownerId'] as String?;
+      if (d.data()['active'] == true) return BizContext(d.data()['ownerId'] as String, d.data()['role'] as String? ?? BizRole.booker);
     }
     final me = (await _db.collection('users').doc(uid).get()).data() ?? const {};
     final name = ((me['business'] as Map?)?['legalName'] as String?) ?? '';
-    return name.trim().isEmpty ? null : uid;
+    return name.trim().isEmpty ? null : BizContext(uid, BizRole.owner);
+  }
+
+  /// The company a new load should be booked under: the one the signed-in
+  /// user may post for (a booker, manager or dispatch role, or the owner),
+  /// else null.
+  static Future<String?> postingBusinessId() async {
+    final c = await myContext();
+    return c != null && c.can(BizPerm.postLoads) ? c.ownerId : null;
   }
 
   // ---- statement ----
 
   /// Delivered bookings carrying this owner's company id.
-  static Stream<List<Booking>> watchCompanyBookings() {
-    final uid = Backend.uid;
+  static Stream<List<Booking>> watchCompanyBookings({String? ownerId}) {
+    final uid = ownerId ?? Backend.uid;
     if (uid == null) return Stream.value(const []);
     return _db.collection('bookings').where('businessId', isEqualTo: uid).snapshots().map((s) => s.docs.map(Booking.fromDoc).toList());
   }
 
   /// Saves (or replaces) the owner's record of [statement].
-  static Future<void> saveStatement(MonthlyStatement s) {
-    final uid = Backend.requireUid();
+  static Future<void> saveStatement(MonthlyStatement s, {String? ownerId}) {
+    final uid = ownerId ?? Backend.requireUid();
     return _db.collection('business_statements').doc('${uid}_${s.month}').set({
       'ownerId': uid,
       'month': s.month,
@@ -150,8 +167,8 @@ class BusinessService {
     });
   }
 
-  static Stream<List<Map<String, dynamic>>> watchSavedStatements() {
-    final uid = Backend.uid;
+  static Stream<List<Map<String, dynamic>>> watchSavedStatements({String? ownerId}) {
+    final uid = ownerId ?? Backend.uid;
     if (uid == null) return Stream.value(const []);
     return _db.collection('business_statements').where('ownerId', isEqualTo: uid).snapshots().map((s) => [
           for (final d in s.docs) d.data(),

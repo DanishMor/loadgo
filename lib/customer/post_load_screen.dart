@@ -25,6 +25,7 @@ import '../core/scheduling/schedule.dart';
 import '../core/offers/promo.dart';
 import '../core/services/rewards_service.dart';
 import '../core/services/business_service.dart';
+import '../core/services/business_ops_service.dart';
 import '../core/models/recurring.dart';
 import '../core/models/repeat.dart';
 import '../core/services/recurring_service.dart';
@@ -62,6 +63,10 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
   final _notesCtrl = TextEditingController();
   final _costCenterCtrl = TextEditingController();
   String? _businessId;
+
+  /// Approved drivers of the company (BIZ9); "only them" limits who can accept.
+  List<String> _pool = const [];
+  bool _poolOnly = false;
   final _distanceCtrl = TextEditingController();
   final _containerCtrl = TextEditingController();
   final _sealCtrl = TextEditingController();
@@ -207,6 +212,11 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
     }
     BusinessService.postingBusinessId().then((id) {
       if (mounted && id != null) setState(() => _businessId = id);
+      if (id != null) {
+        BusinessOpsService.poolIds(id).then((ids) {
+          if (mounted) setState(() => _pool = ids.take(LoadVisibility.maxAllowed).toList());
+        }, onError: (_) {});
+      }
     }, onError: (_) {});
     // Re-quote as the route or distance changes.
     for (final c in [_pickupCtrl, _dropCtrl, _distanceCtrl, _weightCtrl, _itemsCtrl, _floorCtrl]) {
@@ -455,8 +465,15 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
       } else if (_visibility == LoadVisibility.invite && widget.invitedDriverId != null) {
         allowed = [widget.invitedDriverId!];
       }
+      var visibility = _visibility;
+      if (_poolOnly && _businessId != null && _pool.isNotEmpty && _visibility == LoadVisibility.public) {
+        visibility = LoadVisibility.invite;
+        allowed = _pool;
+      }
+      final budgetPaise = budgetText.isEmpty ? (quote?.total ?? 0) : (num.parse(budgetText) * 100).round();
+      final waits = _businessId != null && await BusinessOpsService.approvalNeeded(_businessId!, budgetPaise);
       await LoadService.post(
-        visibility: _visibility,
+        visibility: visibility,
         allowedDriverIds: allowed,
         instant: _instant,
         promo: promo,
@@ -492,7 +509,7 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
       if (!mounted) return;
       await _afterPosted();
       if (!mounted) return;
-      showSnack(context, tr(context, 'loadPosted'));
+      showSnack(context, tr(context, waits ? 'bizSentForApproval' : 'loadPosted'));
       Navigator.of(context).pop(true);
     } on PromoException catch (e) {
       if (!mounted) return;
@@ -782,6 +799,14 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
                     maxLength: 30,
                     decoration: InputDecoration(hintText: tr(context, 'costCenterHint')),
                   ),
+                  if (_pool.isNotEmpty)
+                    SwitchListTile(
+                      key: const ValueKey('poolOnly'),
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(trf(context, 'bizPoolOnly', {'n': _pool.length})),
+                      value: _poolOnly,
+                      onChanged: (v) => setState(() => _poolOnly = v),
+                    ),
                 ],
                 const SizedBox(height: 20),
                 PrimaryButton(label: tr(context, 'postLoad'), icon: Icons.send_rounded, loading: _saving, onPressed: _submit),

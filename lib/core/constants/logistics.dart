@@ -105,6 +105,9 @@ class LoadStatus {
   static const open = 'open';
   static const matched = 'matched';
   static const closed = 'closed';
+
+  /// Posted by a team member over the company's approval limit; drivers do not see it.
+  static const awaitingApproval = 'awaiting_approval';
 }
 
 class BookingStatus {

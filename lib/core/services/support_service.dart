@@ -16,6 +16,7 @@ class SupportService {
     String description = '',
     String priority = TicketPriority.normal,
     String? bookingId,
+    String? businessId,
   }) async {
     final uid = Backend.requireUid();
     if (category == TicketCategory.dispute && bookingId == null) {
@@ -24,11 +25,13 @@ class SupportService {
     final ref = await _col.add({
       'userId': uid,
       'category': category,
-      'priority': category == TicketCategory.safety ? TicketPriority.urgent : priority,
+      // A company ticket goes to the front of the queue (BIZ15).
+      'priority': category == TicketCategory.safety ? TicketPriority.urgent : (businessId != null && priority == TicketPriority.normal ? TicketPriority.high : priority),
       'status': TicketStatus.open,
       'subject': subject.trim(),
       'description': description.trim(),
       'bookingId': ?bookingId,
+      'businessId': ?businessId,
       'escalationLevel': 0,
       'createdAt': FieldValue.serverTimestamp(),
       'updatedAt': FieldValue.serverTimestamp(),
@@ -45,6 +48,13 @@ class SupportService {
       return list;
     });
   }
+
+  /// Tickets raised for a company (the owner's uid), newest activity first.
+  static Stream<List<SupportTicket>> watchForBusiness(String ownerId) => _col.where('businessId', isEqualTo: ownerId).snapshots().map((s) {
+        final list = s.docs.map(SupportTicket.fromDoc).toList();
+        list.sort((a, b) => (b.updatedAt ?? DateTime(3000)).compareTo(a.updatedAt ?? DateTime(3000)));
+        return list;
+      });
 
   static Stream<SupportTicket?> watch(String id) =>
       _col.doc(id).snapshots().map((s) => s.exists ? SupportTicket.fromDoc(s) : null);

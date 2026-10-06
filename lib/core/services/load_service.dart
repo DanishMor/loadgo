@@ -19,6 +19,7 @@ import 'rewards_service.dart';
 import 'risk_service.dart';
 import '../pricing/fare_calculator.dart';
 import 'backend.dart';
+import 'business_ops_service.dart';
 import 'repeat_service.dart';
 import 'rate_limit_service.dart';
 
@@ -113,6 +114,8 @@ class LoadService {
         [for (final s in l) if (s.trim().isNotEmpty) s.trim()].take(maxStopsPerSide - 1).toList();
     final geohash = pickupGeohashFor(pickup);
     final blocked = await RepeatService.blockedIds(uid);
+    // BIZ6: a team member's load over the company's approval limit waits for the owner or a manager.
+    final awaiting = businessId != null && businessId != uid && await BusinessOpsService.approvalNeeded(businessId, budget == null ? (estimate?.total ?? 0) : (budget * 100).round());
     final ref = _col.doc();
     final rate = await RateLimit.prepare(RateLimit.loadKind, docId: ref.id);
     final data = <String, Object?>{
@@ -150,7 +153,7 @@ class LoadService {
       'budget': budget,
       'pickupDate': Timestamp.fromDate(DateTime((scheduledAt ?? pickupDate).year, (scheduledAt ?? pickupDate).month, (scheduledAt ?? pickupDate).day)),
       'notes': notes.trim(),
-      'status': LoadStatus.open,
+      'status': awaiting ? LoadStatus.awaitingApproval : LoadStatus.open,
       'createdAt': FieldValue.serverTimestamp(),
       if (promo != null) 'promo': promo.toLoadMap(),
       if (creditsUsedPaise > 0) 'creditsUsedPaise': creditsUsedPaise,

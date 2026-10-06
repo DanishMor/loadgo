@@ -1,13 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../core/enterprise/business_roles.dart';
 import '../core/l10n/l10n.dart';
 import '../core/models/business.dart';
 import '../core/services/business_service.dart';
 import '../core/widgets/common.dart';
 import '../core/widgets/live_stream.dart';
 
-/// Company owner: invite bookers by phone, see the team, remove a member.
+String bizRoleLabel(BuildContext context, String role) => tr(context, switch (role) {
+      BizRole.owner => 'roleOwner',
+      BizRole.manager => 'roleManager',
+      BizRole.dispatch => 'roleDispatch',
+      BizRole.accounts => 'roleAccounts',
+      BizRole.viewer => 'roleViewer',
+      _ => 'teamRoleBooker',
+    });
+
+/// Company owner: invite team members by phone, see the team, remove a member.
 class BusinessTeamScreen extends StatefulWidget {
   const BusinessTeamScreen({super.key});
 
@@ -20,6 +30,7 @@ class _BusinessTeamScreenState extends State<BusinessTeamScreen> {
   late final Stream<List<BusinessInvite>> _invites = BusinessService.watchInvitesSent().asBroadcastStream();
   late final Stream<List<BusinessMember>> _members = BusinessService.watchMembers().asBroadcastStream();
   bool _busy = false;
+  String _role = BizRole.booker;
 
   @override
   void dispose() {
@@ -30,7 +41,7 @@ class _BusinessTeamScreenState extends State<BusinessTeamScreen> {
   Future<void> _invite() async {
     setState(() => _busy = true);
     try {
-      await BusinessService.invite(_phone.text);
+      await BusinessService.invite(_phone.text, role: _role);
       _phone.clear();
       if (mounted) showSnack(context, tr(context, 'fleetInviteSent'));
     } on BusinessTeamException catch (e) {
@@ -71,7 +82,14 @@ class _BusinessTeamScreenState extends State<BusinessTeamScreen> {
               const SizedBox(width: 8),
               FilledButton(key: const ValueKey('teamInvite'), onPressed: _busy ? null : _invite, child: Text(tr(context, 'fleetInvite'))),
             ]),
-            Text(tr(context, 'teamBookerNote'), style: TextStyle(color: AppColors.faint, fontSize: 12)),
+            DropdownButtonFormField<String>(
+              key: const ValueKey('teamRole'),
+              initialValue: _role,
+              decoration: InputDecoration(labelText: tr(context, 'teamRolePick')),
+              items: [for (final r in BizRole.assignable) DropdownMenuItem(value: r, child: Text(bizRoleLabel(context, r)))],
+              onChanged: (v) => setState(() => _role = v ?? _role),
+            ),
+            Text(tr(context, 'teamRoleNote'), style: TextStyle(color: AppColors.faint, fontSize: 12)),
           ]),
         ),
         const SizedBox(height: 14),
@@ -87,8 +105,17 @@ class _BusinessTeamScreenState extends State<BusinessTeamScreen> {
                 contentPadding: EdgeInsets.zero,
                 leading: const Icon(Icons.badge_outlined),
                 title: Text(m.memberName.isEmpty ? m.memberPhone : m.memberName),
-                subtitle: Text(tr(context, 'teamRoleBooker')),
-                trailing: TextButton(key: ValueKey('teamRemove_${m.memberId}'), onPressed: () => BusinessService.removeMember(m), child: Text(tr(context, 'remove'))),
+                subtitle: Text(bizRoleLabel(context, m.role)),
+                trailing: Row(mainAxisSize: MainAxisSize.min, children: [
+                  PopupMenuButton<String>(
+                    key: ValueKey('teamRoleMenu_${m.memberId}'),
+                    tooltip: tr(context, 'teamRolePick'),
+                    icon: const Icon(Icons.manage_accounts_outlined),
+                    onSelected: (r) => BusinessService.setRole(m, r),
+                    itemBuilder: (c) => [for (final r in BizRole.assignable) PopupMenuItem(value: r, child: Text(bizRoleLabel(c, r)))],
+                  ),
+                  TextButton(key: ValueKey('teamRemove_${m.memberId}'), onPressed: () => BusinessService.removeMember(m), child: Text(tr(context, 'remove'))),
+                ]),
               ),
           ]),
         ),
@@ -104,7 +131,7 @@ class _BusinessTeamScreenState extends State<BusinessTeamScreen> {
                 key: ValueKey('teamInvite_${i.id}'),
                 contentPadding: EdgeInsets.zero,
                 title: Text(i.phone),
-                subtitle: Text(tr(context, 'invite_${i.status}')),
+                subtitle: Text('${bizRoleLabel(context, i.role)} · ${tr(context, 'invite_${i.status}')}'),
                 trailing: i.status == BusinessInvite.pending
                     ? TextButton(key: ValueKey('teamCancel_${i.id}'), onPressed: () => BusinessService.cancelInvite(i.id), child: Text(tr(context, 'cancel')))
                     : null,

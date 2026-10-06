@@ -71,6 +71,7 @@ class TicketTile extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             [
+              if (t.businessId != null) tr(context, 'bizSupport'),
               ticketCategoryLabel(context, t.category),
               ticketPriorityLabel(context, t.priority),
               if (t.escalationLevel > 0) trf(context, 'escalationLevel', {'n': t.escalationLevel}),
@@ -156,7 +157,10 @@ class SupportHomeScreen extends StatelessWidget {
 class NewTicketScreen extends StatefulWidget {
   final String? bookingId;
   final String? category;
-  const NewTicketScreen({super.key, this.bookingId, this.category});
+
+  /// A company ticket (BIZ15): the owner's uid.
+  final String? businessId;
+  const NewTicketScreen({super.key, this.bookingId, this.category, this.businessId});
 
   @override
   State<NewTicketScreen> createState() => _NewTicketScreenState();
@@ -204,6 +208,7 @@ class _NewTicketScreenState extends State<NewTicketScreen> {
         description: _desc.text,
         priority: _priority,
         bookingId: _bookingId,
+        businessId: widget.businessId,
       );
       if (!mounted) return;
       showSnack(context, tr(context, 'ticketCreated'));
