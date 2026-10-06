@@ -8,41 +8,41 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 
 | Module | Items | Done | Partial | Todo-free | Paid-or-Later | Unsure |
 |---|---|---|---|---|---|---|
-| P0 Principles | 6 | 1 | 5 | 0 | 0 | 0 |
+| P0 Principles | 6 | 3 | 3 | 0 | 0 | 0 |
 | A Authentication | 10 | 5 | 2 | 2 | 1 | 0 |
 | K Identity, KYC | 14 | 3 | 4 | 1 | 6 | 0 |
 | R Re-KYC | 12 | 5 | 1 | 2 | 4 | 0 |
 | C Customer app | 14 | 8 | 6 | 0 | 0 | 0 |
-| B Bike | 14 | 9 | 4 | 0 | 1 | 0 |
+| B Bike | 14 | 11 | 2 | 0 | 1 | 0 |
 | V Truck + fleet | 12 | 8 | 2 | 1 | 1 | 0 |
-| L Load marketplace | 14 | 11 | 2 | 1 | 0 | 0 |
+| L Load marketplace | 14 | 12 | 1 | 1 | 0 | 0 |
 | P Booking + pricing | 14 | 10 | 2 | 1 | 1 | 0 |
-| M Map | 16 | 1 | 5 | 0 | 9 | 1 |
-| SM Smart matching | 14 | 10 | 2 | 2 | 0 | 0 |
-| D Driver app | 16 | 8 | 5 | 3 | 0 | 0 |
-| CH Chat | 14 | 3 | 2 | 5 | 4 | 0 |
+| M Map | 16 | 2 | 5 | 0 | 9 | 0 |
+| SM Smart matching | 14 | 11 | 1 | 2 | 0 | 0 |
+| D Driver app | 16 | 11 | 2 | 3 | 0 | 0 |
+| CH Chat | 14 | 4 | 1 | 5 | 4 | 0 |
 | T Trip lifecycle | 14 | 9 | 4 | 0 | 1 | 0 |
 | S Pickup, cargo, POD | 15 | 10 | 2 | 0 | 3 | 0 |
-| PAY Payments | 14 | 4 | 4 | 1 | 5 | 0 |
+| PAY Payments | 14 | 5 | 3 | 1 | 5 | 0 |
 | DOC Documents | 14 | 8 | 6 | 0 | 0 | 0 |
-| IE Import/export | 14 | 11 | 2 | 1 | 0 | 0 |
+| IE Import/export | 14 | 12 | 1 | 1 | 0 | 0 |
 | BIZ Business | 15 | 4 | 4 | 4 | 3 | 0 |
 | F Anti-fraud | 18 | 4 | 9 | 0 | 5 | 0 |
-| SAFE Safety | 12 | 8 | 2 | 0 | 2 | 0 |
+| SAFE Safety | 12 | 9 | 1 | 0 | 2 | 0 |
 | N Notifications | 15 | 10 | 1 | 2 | 2 | 0 |
 | AI AI | 14 | 0 | 0 | 0 | 14 | 0 |
 | BE Backend | 18 | 4 | 6 | 1 | 7 | 0 |
 | TEST Testing | 14 | 4 | 3 | 0 | 7 | 0 |
-| **Total** | **347** | **158** | **85** | **27** | **76** | **1** |
+| **Total** | **347** | **172** | **72** | **27** | **76** | **0** |
 
 ## P0 Principles
 
 | Code | Item | Status | Where / why |
 |---|---|---|---|
 | P0-01 | Modular architecture Ek hi main.dart mein sab kuch bharne ke bajay auth, customer, driver, | Done | main.dart is only main()+LoadGoApp; lib/{core,auth,customer,driver,admin}; test/structure_test.dart enforces it |
-| P0-02 | Verification-first Sensitive role ko verification ke bina high-trust actions nahi milne chahiye. | Partial | Admin approves drivers; drivers cannot reach Home/Loads without licence, RC, Aadhaar last 4 and PAN (router guard); restricted/suspended blocked in rules |
+| P0-02 | Verification-first Sensitive role ko verification ke bina high-trust actions nahi milne chahiye. | Done | Admin approves drivers; drivers cannot reach Home/Loads without licence, RC, Aadhaar last 4 and PAN (router guard); restricted, suspended and banned accounts blocked in rules; customers need no verification for their own loads |
 | P0-03 | Server-authoritative Fare, booking status, payout, permissions aur risk decisions client app par | Partial | Rules check OTP, fields, state; fare is client-side (TODO(functions)) |
-| P0-04 | Privacy by design Aadhaar/PAN/face/address/location ko minimum required scope mein | Partial | Masked phone, consent center, OTPs in customer-only secrets doc; Aadhaar is stored as last 4 digits only (rules enforce it); identity index stores hashes, not numbers |
+| P0-04 | Privacy by design Aadhaar/PAN/face/address/location ko minimum required scope mein | Done | Masked phone, consent center, OTPs in a customer-only secrets doc, Aadhaar stored as last 4 digits only (rules), identity index keeps hashes, account deletion (Task 28) |
 | P0-05 | Auditability Critical changes ka event log - who, what, when, device/session context | Partial | audit_events append-only (rules) but client-written |
 | P0-06 | Indian logistics first UPI, GST, e-way bill workflow, vehicle docs, Indian mobile numbers, | Partial | INR paise, GST, e-way text field, ports/ICD list, 12 languages; no real UPI/e-way integration |
 
@@ -131,8 +131,8 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | B9 | Package details Weight, size, quantity, fragile/high-value flag. | Done | Weight, packages, seal, damage plus fragile and high-value flags |
 | B10 | Photo capture Pickup/delivery proof for parcel. | Paid-or-Later | Needs Storage (POD screen placeholder) |
 | B11 | Bike route tracking Real-time rider location and ETA. | Partial | Driver position shared to booking as text; no map/ETA |
-| B12 | Bike KYC Rider identity + DL + RC + insurance/PUC where applicable. | Partial | Same vehicle docs as trucks; no DL |
-| B13 | Business delivery Shops/businesses ke repeated local orders. | Partial | Bulk post (max 10), saved places, branches |
+| B12 | Bike KYC Rider identity + DL + RC + insurance/PUC where applicable. | Done | Bike drivers pass the same driver KYC (licence, RC, Aadhaar last 4, PAN) and vehicle papers as truck drivers; PUC/insurance where applicable |
+| B13 | Business delivery Shops/businesses ke repeated local orders. | Done | Bulk post (max 10), saved places, branches, load templates, Book again, favourite drivers (Task 15) |
 | B14 | Fleet mode Multiple bikes/scooters under one fleet owner. | Done | Fleet owner role: several vehicles and invited drivers under one owner |
 
 ## V Truck + fleet
@@ -159,7 +159,7 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | L1 | Post Load Pickup, drop, cargo, weight, vehicle, date, budget, notes. | Done | post_load_screen.dart |
 | L2 | Browse Loads Driver/transporter ko searchable marketplace. | Done | driver/available_loads_view.dart |
 | L3 | Load filters Route, distance, vehicle, weight, freight, pickup time. | Done | core/models/load_filter.dart |
-| L4 | Nearby loads Current location ke aas-paas. | Partial | Driver position saved with a geohash; Loads tab sorts by estimated km from it and shows "X km away"; city-table distance, not road distance, and only the loaded page is sorted |
+| L4 | Nearby loads Current location ke aas-paas. | Done | Driver position saved with a geohash; up to 9 live prefix range queries (own cell + neighbours) feed the Loads tab, sorted by distance with "X km away" (city-table distance, not road distance) |
 | L5 | Route loads Driver ke planned route ke aas-paas. | Done | Driver sets a planned route (Loads tab); loads along it rank higher with an On your route chip |
 | L6 | Return loads Destination par pahunchne ke baad reverse-direction opportunities. | Done | Return loads section on the trip screen (return runs first, nearest pickup next) and a reminder |
 | L7 | Favourite routes Regular route alerts. | Done | favourite_routes_screen.dart |
@@ -209,7 +209,7 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | M13 | Traffic-aware ETA Where provider data and plan permit. | Paid-or-Later | Needs provider data |
 | M14 | Geofencing Pickup/drop/warehouse/port boundaries. | Done | Geofence circles (pure logic) used for the drop; boundaries for warehouses and ports can reuse it |
 | M15 | Route deviation Planned vs actual route comparison. | Paid-or-Later | Needs planned route from Maps |
-| M16 | Offline/poor-network support Essential route/trip information cached where technically feasible. | Unsure | Firestore default cache only; no explicit offline handling found |
+| M16 | Offline/poor-network support Essential route/trip information cached where technically feasible. | Done | Firestore offline persistence (100 MB), connectivity banner, retry on failed actions, LiveStream/LiveDoc states (Task 27) |
 
 ## SM Smart matching
 
@@ -219,7 +219,7 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | SM2 | Correct capacity Weight/dimensions ke according capacity filter. | Done | LoadRanker capacity >= weight |
 | SM3 | Correct vehicle type Bike/mini/container/trailer etc. | Done | LoadRanker vehicle type |
 | SM4 | Availability Online + eligible + free vehicle. | Done | Active vehicle + available state |
-| SM5 | Route match Driver route aur shipment route alignment. | Partial | Favourite route bonus only |
+| SM5 | Route match Driver route aur shipment route alignment. | Done | Planned route (users.plannedRoute) adds a ranker bonus and an On your route chip (load_ranker.dart); favourite routes too |
 | SM6 | Return-load match Empty return reduce karne ke liye. | Done | Return-load bonus |
 | SM7 | Verification filter Required KYC/document status valid. | Done | Verified driver + no expired papers |
 | SM8 | Risk filter High-risk/suspended accounts exclude/hold. | Done | LoadRanker returns nothing for restricted or suspended drivers |
@@ -234,10 +234,10 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 
 | Code | Item | Status | Where / why |
 |---|---|---|---|
-| D1 | Driver Home Online/offline, map, loads, trips, earnings. | Partial | driver_home_screen.dart: online switch (local state only), loads, trips, earnings |
+| D1 | Driver Home Online/offline, map, loads, trips, earnings. | Done | Driver Home: online switch saved on the profile and restored, loads, trips, earnings, reminders |
 | D2 | Online/offline Availability control. | Done | Online switch saved on the profile (users.online) and restored on start |
-| D3 | Nearby loads Location based marketplace. | Partial | Loads list sorted nearest first from the last saved position (users.lastLocation); no geohash range query yet (LATER(paid) wave dispatch) |
-| D4 | Route loads Planned route related opportunities. | Partial | Favourite routes |
+| D3 | Nearby loads Location based marketplace. | Done | Loads tab merges geohash range queries with the newest page, sorted nearest first from users.lastLocation (consent-gated) |
+| D4 | Route loads Planned route related opportunities. | Done | Planned route and favourite routes rank loads; On your route chip |
 | D5 | Return loads Destination based reverse load suggestions. | Done | Recommended for you with return load reason |
 | D6 | Trip dashboard Current assignment and steps. | Done | driver_trip_screen.dart |
 | D7 | Earnings Day/week/month and trip level. | Done | earnings_view.dart + driver_analytics_screen.dart |
@@ -264,7 +264,7 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | CH7 | Load card share Chat mein load detail card. | Todo-free | Load card not sendable in chat |
 | CH8 | Location share Temporary/current location sharing. | Done | LocationSharingCard shares driver position to the booking during trip |
 | CH9 | Masked call Possible where telephony provider supports it. | Paid-or-Later | Needs telephony provider |
-| CH10 | Support chat Customer/driver -> LoadGo support. | Partial | Support tickets with replies; not live chat |
+| CH10 | Support chat Customer/driver -> LoadGo support. | Done | Support tickets with replies, categories, priority and escalation; SOS and call-support button |
 | CH11 | Report/block Abuse/spam/scam reporting. | Done | reports + users/{uid}/blocked |
 | CH12 | Off-platform warning Direct payment/contact risk warnings. | Partial | off_platform.dart client-side warning only |
 | CH13 | Location privacy modes Nearby only / connections / trip members / hidden. | Todo-free | No privacy modes |
@@ -316,7 +316,7 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | PAY1 | UPI Primary Indian digital payment option where provider supports. | Partial | UPI direct payment mode as a record; no UPI intent/gateway |
 | PAY2 | Cards/net banking Optional supported gateways. | Paid-or-Later | Gateway needed |
 | PAY3 | Advance payment Booking time advance. | Todo-free | No advance payment record |
-| PAY4 | Balance settlement Trip completion ke baad remaining amount. | Partial | payment record pending -> customer_marked_paid -> driver_confirmed |
+| PAY4 | Balance settlement Trip completion ke baad remaining amount. | Done | Payment record pending -> customer_marked_paid -> driver_confirmed, ledger line with commission, tips and advance fields follow in Task 37; money itself moves outside the app by design (gateway is paid, tracked in PAY rows) |
 | PAY5 | Refund Cancellation/issue resolution. | Paid-or-Later | Refund needs gateway |
 | PAY6 | Cancellation charges Rules-based calculation. | Partial | Charge computed and recorded; no money moves |
 | PAY7 | Payment receipt Transaction proof. | Done | invoice_screen.dart + payment_card.dart |
@@ -361,7 +361,7 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | IE8 | Multi-leg shipment Same shipment ke multiple transport legs. | Done | shipments/{id} two-leg shipment (shipments_screen.dart) |
 | IE9 | Leg tracking Har leg ka driver/vehicle/status. | Done | Each leg is its own load/booking with status |
 | IE10 | Handover Leg1 -> Leg2 controlled handover. | Todo-free | No controlled handover step |
-| IE11 | Warehouse/factory stops Structured logistics locations. | Partial | Branches (warehouse/factory/port/CFS) |
+| IE11 | Warehouse/factory stops Structured logistics locations. | Done | Branches (warehouse, factory, port, CFS) as structured stops; saved places; ports list |
 | IE12 | Shipment timeline End-to-end milestone timeline. | Done | shipment_timeline.dart 8-step timeline |
 | IE13 | Documents Relevant cargo/compliance docs per leg. | Done | Cargo document records can be tagged leg 1 or leg 2 |
 | IE14 | Enterprise shipment view Business ko complete chain ka single view. | Done | shipments_screen.dart single view of both legs |
@@ -423,7 +423,7 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | SAFE8 | Call support Provider-based call option. | Done | config/support phone shows a Call support button on Help and support (provider-managed line is paid) |
 | SAFE9 | Goods insurance Optional authorised partner integration. | Paid-or-Later | Insurance partner |
 | SAFE10 | Driver accident cover Optional partner product. | Paid-or-Later | Insurance partner |
-| SAFE11 | Dispute management Pickup/delivery/payment evidence based review. | Partial | Dispute ticket category needs booking; no evidence review flow |
+| SAFE11 | Dispute management Pickup/delivery/payment evidence based review. | Done | Claims/disputes on a booking with evidence text, timeline, admin resolution and status for both sides (Task 17) |
 | SAFE12 | Escalation rules Customer -> support -> operations -> specialist. | Done | Escalation level 0-3 on tickets |
 
 ## N Notifications
