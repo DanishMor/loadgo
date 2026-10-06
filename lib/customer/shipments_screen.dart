@@ -5,6 +5,8 @@ import '../core/enterprise/shipment_timeline.dart';
 import '../core/enterprise/validators.dart';
 import '../core/l10n/l10n.dart';
 import '../core/models/enterprise.dart';
+import '../core/models/handover.dart';
+import '../core/services/handover_service.dart';
 import '../core/models/risk.dart';
 import '../core/services/enterprise_service.dart';
 import '../core/widgets/common.dart';
@@ -260,6 +262,18 @@ class ShipmentDetailScreen extends StatelessWidget {
                 padding: const EdgeInsets.only(top: 8),
                 child: StatusChip(label: tr(context, 'shipComplete'), color: AppColors.success),
               ),
+            StreamBuilder<Handover?>(
+              stream: HandoverService.watch(s.id),
+              builder: (context, h) {
+                final v = h.data;
+                if (v == null) return const SizedBox.shrink();
+                final key = v.complete ? (v.sealMatches ? 'hoDone' : 'hoSealDiffers') : 'hoLeg1Done';
+                return Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Text('${tr(context, 'hoTitle')}: ${tr(context, key)}', key: const ValueKey('shipmentHandover'), style: TextStyle(color: v.complete && !v.sealMatches ? AppColors.warning : AppColors.muted)),
+                );
+              },
+            ),
             const SizedBox(height: 12),
             for (final (i, step) in legs.timeline.indexed)
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [

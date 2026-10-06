@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'eway_status_line.dart';
 import 'package:flutter/services.dart';
 
 import '../l10n/l10n.dart';
@@ -86,7 +87,19 @@ class _EwayBillField extends StatefulWidget {
 
 class _EwayBillFieldState extends State<_EwayBillField> {
   late final _ctrl = TextEditingController(text: widget.booking.ewayBillNo);
+  late DateTime? _validUntil = widget.booking.ewayValidUntil;
   bool _saving = false;
+
+  Future<void> _pickDate() async {
+    final now = DateTime.now();
+    final d = await showDatePicker(
+      context: context,
+      initialDate: _validUntil ?? now.add(const Duration(days: 1)),
+      firstDate: now.subtract(const Duration(days: 30)),
+      lastDate: now.add(const Duration(days: 365)),
+    );
+    if (d != null && mounted) setState(() => _validUntil = DateTime(d.year, d.month, d.day, 23, 59));
+  }
 
   @override
   void dispose() {
@@ -102,7 +115,7 @@ class _EwayBillFieldState extends State<_EwayBillField> {
     }
     setState(() => _saving = true);
     try {
-      await BookingService.setEwayBill(widget.booking.id, text);
+      await BookingService.setEwayBill(widget.booking.id, text, validUntil: _validUntil);
       if (mounted) showSnack(context, tr(context, 'ewaySaved'));
     } catch (_) {
       if (mounted) showSnack(context, tr(context, 'somethingWrong'));
@@ -114,7 +127,8 @@ class _EwayBillFieldState extends State<_EwayBillField> {
   @override
   Widget build(BuildContext context) {
     return AppCard(
-      child: Row(
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(
         children: [
           Expanded(
             child: TextField(
@@ -134,6 +148,14 @@ class _EwayBillFieldState extends State<_EwayBillField> {
           ),
         ],
       ),
+        TextButton.icon(
+          key: const ValueKey('ewayPickDate'),
+          onPressed: _pickDate,
+          icon: const Icon(Icons.event_rounded, size: 18),
+          label: Text(_validUntil == null ? tr(context, 'ewayPickDate') : '${tr(context, 'ewayValidUntil')}: ${formatDate(_validUntil)}'),
+        ),
+        EwayStatusLine(booking: widget.booking),
+      ]),
     );
   }
 }

@@ -19,6 +19,8 @@ import '../core/documents/trip_document_buttons.dart';
 import 'trip_safety_card.dart';
 import 'trip_geofence_banner.dart';
 import 'pickup_alerts.dart';
+import '../core/enterprise/handover_card.dart';
+import '../core/documents/eway_status_line.dart';
 import 'return_loads_section.dart';
 import '../core/documents/payment_card.dart';
 
@@ -65,6 +67,9 @@ class DriverTripScreen extends StatelessWidget {
           DetentionCard(booking: booking, isDriver: true),
           const SizedBox(height: 14),
           DriverEvidenceCard(booking: booking),
+          const SizedBox(height: 14),
+          HandoverCard(booking: booking),
+          EwayStatusLine(booking: booking),
           const SizedBox(height: 14),
           CargoDocsCard(booking: booking),
           const SizedBox(height: 14),

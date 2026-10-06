@@ -8,7 +8,7 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 
 | Module | Items | Done | Partial | Todo-free | Paid-or-Later | Unsure |
 |---|---|---|---|---|---|---|
-| P0 Principles | 6 | 3 | 3 | 0 | 0 | 0 |
+| P0 Principles | 6 | 3 | 2 | 0 | 1 | 0 |
 | A Authentication | 10 | 7 | 0 | 2 | 1 | 0 |
 | K Identity, KYC | 14 | 5 | 1 | 0 | 8 | 0 |
 | R Re-KYC | 12 | 8 | 0 | 0 | 4 | 0 |
@@ -23,17 +23,17 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | CH Chat | 14 | 9 | 1 | 0 | 4 | 0 |
 | T Trip lifecycle | 14 | 12 | 1 | 0 | 1 | 0 |
 | S Pickup, cargo, POD | 15 | 11 | 1 | 0 | 3 | 0 |
-| PAY Payments | 14 | 5 | 3 | 1 | 5 | 0 |
-| DOC Documents | 14 | 9 | 5 | 0 | 0 | 0 |
-| IE Import/export | 14 | 12 | 1 | 1 | 0 | 0 |
+| PAY Payments | 14 | 8 | 1 | 0 | 5 | 0 |
+| DOC Documents | 14 | 9 | 4 | 0 | 1 | 0 |
+| IE Import/export | 14 | 13 | 1 | 0 | 0 | 0 |
 | BIZ Business | 15 | 5 | 4 | 3 | 3 | 0 |
 | F Anti-fraud | 18 | 6 | 7 | 0 | 5 | 0 |
 | SAFE Safety | 12 | 10 | 0 | 0 | 2 | 0 |
 | N Notifications | 15 | 13 | 0 | 0 | 2 | 0 |
 | AI AI | 14 | 0 | 0 | 0 | 14 | 0 |
 | BE Backend | 18 | 5 | 5 | 1 | 7 | 0 |
-| TEST Testing | 14 | 4 | 3 | 0 | 7 | 0 |
-| **Total** | **347** | **213** | **43** | **8** | **83** | **0** |
+| TEST Testing | 14 | 4 | 2 | 0 | 8 | 0 |
+| **Total** | **347** | **217** | **38** | **6** | **86** | **0** |
 
 ## P0 Principles
 
@@ -44,7 +44,7 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | P0-03 | Server-authoritative Fare, booking status, payout, permissions aur risk decisions client app par | Partial | Rules check OTP, fields, state; fare is client-side (TODO(functions)) |
 | P0-04 | Privacy by design Aadhaar/PAN/face/address/location ko minimum required scope mein | Done | Masked phone, consent center, OTPs in a customer-only secrets doc, Aadhaar stored as last 4 digits only (rules), identity index keeps hashes, account deletion (Task 28) |
 | P0-05 | Auditability Critical changes ka event log - who, what, when, device/session context | Partial | audit_events append-only (rules) but client-written |
-| P0-06 | Indian logistics first UPI, GST, e-way bill workflow, vehicle docs, Indian mobile numbers, | Partial | INR paise, GST, e-way text field, ports/ICD list, 12 languages; no real UPI/e-way integration |
+| P0-06 | Indian logistics first UPI, GST, e-way bill workflow, vehicle docs, Indian mobile numbers, | Paid-or-Later | Free part done: UPI pay link, GST, e-way number + validity warning, ports list, 12 languages. Real e-way/GST portal check needs a provider |
 
 ## A Authentication
 
@@ -313,12 +313,12 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 
 | Code | Item | Status | Where / why |
 |---|---|---|---|
-| PAY1 | UPI Primary Indian digital payment option where provider supports. | Partial | UPI direct payment mode as a record; no UPI intent/gateway |
+| PAY1 | UPI Primary Indian digital payment option where provider supports. | Done | Task 37: driver shares payout UPI id on the booking, customer opens a upi://pay link for the amount due; customer still marks paid, driver confirms (gateway confirmation is paid) |
 | PAY2 | Cards/net banking Optional supported gateways. | Paid-or-Later | Gateway needed |
-| PAY3 | Advance payment Booking time advance. | Todo-free | No advance payment record |
+| PAY3 | Advance payment Booking time advance. | Done | Task 37: advance recorded by customer, confirmed by driver, balance shown; records only |
 | PAY4 | Balance settlement Trip completion ke baad remaining amount. | Done | Payment record pending -> customer_marked_paid -> driver_confirmed, ledger line with commission, tips and advance fields follow in Task 37; money itself moves outside the app by design (gateway is paid, tracked in PAY rows) |
 | PAY5 | Refund Cancellation/issue resolution. | Paid-or-Later | Refund needs gateway |
-| PAY6 | Cancellation charges Rules-based calculation. | Partial | Charge computed and recorded; no money moves |
+| PAY6 | Cancellation charges Rules-based calculation. | Done | Task 37: charge shown in the cancel dialog before cancelling (driver and scheduled customer cancel); recorded only, money moves with a gateway |
 | PAY7 | Payment receipt Transaction proof. | Done | invoice_screen.dart + payment_card.dart |
 | PAY8 | Driver payout Completed trip settlement. | Paid-or-Later | Payouts need provider |
 | PAY9 | Wallet Pending/available balances. | Done | Driver wallet pending/available/paid-out with payout requests; customer credits ledger exists (offers) |
@@ -335,7 +335,7 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | DOC1 | Document center All shipment/vehicle/business documents. | Done | documents_center_screen.dart |
 | DOC2 | LR/Bilty Digital transport document record. | Done | lr_screen.dart |
 | DOC3 | Invoice Booking/business invoice. | Done | invoice_screen.dart |
-| DOC4 | E-way bill reference Official workflow/reference integration where permitted. | Partial | 12-digit e-way bill text field; not validated against portal |
+| DOC4 | E-way bill reference Official workflow/reference integration where permitted. | Paid-or-Later | Free part done: validity date, expiring/expired warning on both trip screens. Checking the bill against the GST portal needs a provider |
 | DOC5 | Driver documents KYC docs and expiry. | Partial | Vehicle papers only; no driver KYC docs |
 | DOC6 | Vehicle documents RC/insurance/PUC/fitness/permit. | Done | vehicle_documents_screen.dart |
 | DOC7 | Cargo documents Shipment specific docs. | Done | Cargo document records per booking (type, number, note), either party can add |
@@ -360,7 +360,7 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | IE7 | Port/CFS POIs Map and booking references. | Partial | ports.dart list in pickers; no map |
 | IE8 | Multi-leg shipment Same shipment ke multiple transport legs. | Done | shipments/{id} two-leg shipment (shipments_screen.dart) |
 | IE9 | Leg tracking Har leg ka driver/vehicle/status. | Done | Each leg is its own load/booking with status |
-| IE10 | Handover Leg1 -> Leg2 controlled handover. | Todo-free | No controlled handover step |
+| IE10 | Handover Leg1 -> Leg2 controlled handover. | Done | Task 37: handovers/{shipment}: leg-1 driver hands over (container, seal), leg-2 driver confirms, seal match computed in rules; customer sees status |
 | IE11 | Warehouse/factory stops Structured logistics locations. | Done | Branches (warehouse, factory, port, CFS) as structured stops; saved places; ports list |
 | IE12 | Shipment timeline End-to-end milestone timeline. | Done | shipment_timeline.dart 8-step timeline |
 | IE13 | Documents Relevant cargo/compliance docs per leg. | Done | Cargo document records can be tagged leg 1 or leg 2 |
@@ -497,7 +497,7 @@ Legend: **Done** built and tested on the free stack (Flutter + Auth + Firestore)
 | TEST3 | Integration tests Firebase/KYC/payment/map/provider flows. | Done | test/e2e_flow_test.dart runs the whole customer to driver flow on fake Firestore + firebase_auth_mocks (rules are covered by firestore_rules_test); provider and map flows stay paid |
 | TEST4 | Security tests Rules, role escalation, document access, auth takeover scenarios. | Done | firestore_rules_test (105 cases) |
 | TEST5 | Location tests Background location, GPS loss, route deviation, low network. | Partial | live_location_test.dart; no background/GPS-loss tests |
-| TEST6 | Payment tests Success/failure/refund/payout/duplicate transaction. | Partial | payments_test.dart for records; no gateway |
+| TEST6 | Payment tests Success/failure/refund/payout/duplicate transaction. | Paid-or-Later | Free part done: duplicate mark/confirm/advance/handover tests in app and rules. Gateway success/failure/refund/payout tests need a gateway |
 | TEST7 | Load tests Many drivers, loads, tracking events. | Paid-or-Later | Needs load tooling and environment |
 | TEST8 | Device coverage Android ranges + different screen sizes. | Paid-or-Later | Manual device lab |
 | TEST9 | Language QA All 12 languages across customer/driver flows. | Partial | translations_test.dart checks keys; no human QA |

@@ -52,6 +52,7 @@ import 'fleet_extra_strings.dart';
 import 'booking_extra_strings.dart';
 import 'profile_extra_strings.dart';
 import 'network_strings.dart';
+import 'pay_extra_strings.dart';
 import 'trip_alert_strings.dart';
 
 const List<Map<String, List<String>>> stringTables = [
@@ -104,6 +105,7 @@ const List<Map<String, List<String>>> stringTables = [
   profileExtraStrings,
   networkStrings,
   tripAlertStrings,
+  payExtraStrings,
 ];
 
 final Map<String, List<String>> extraStrings = {

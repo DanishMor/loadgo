@@ -407,11 +407,17 @@ class BookingService {
     return PricingService.config.cancellation.chargeFor(elapsed: now.difference(accepted), farePaise: booking.agreedFarePaise ?? booking.fareEstimate);
   }
 
-  /// Either party records the e-way bill number (12 digits, or empty to clear).
-  static Future<void> setEwayBill(String bookingId, String number) {
+  /// Either party records the e-way bill number (12 digits, or empty to clear)
+  /// and, optionally, the date it is valid until (at most a year ahead).
+  static Future<void> setEwayBill(String bookingId, String number, {DateTime? validUntil, DateTime? now}) {
     final n = number.replaceAll(RegExp(r'\s'), '');
     if (n.isNotEmpty && !RegExp(r'^\d{12}$').hasMatch(n)) throw ArgumentError.value(number, 'number');
-    return _col.doc(bookingId).update({'ewayBillNo': n, 'updatedAt': FieldValue.serverTimestamp()});
+    if (validUntil != null && validUntil.isAfter((now ?? DateTime.now()).add(const Duration(days: 366)))) throw ArgumentError.value(validUntil, 'validUntil');
+    return _col.doc(bookingId).update({
+      'ewayBillNo': n,
+      'ewayValidUntil': n.isEmpty || validUntil == null ? FieldValue.delete() : Timestamp.fromDate(validUntil),
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
   }
 
   /// Reads the booking's vehicle inside [tx] (reads must precede writes) and

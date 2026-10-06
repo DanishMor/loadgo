@@ -18,6 +18,7 @@ import '../core/documents/trip_document_buttons.dart';
 import '../core/documents/payment_card.dart';
 import '../core/claims/claim_screens.dart';
 import '../core/safety/share_trip.dart';
+import '../core/documents/eway_status_line.dart';
 
 void openBookingTracking(BuildContext context, String bookingId) {
   Navigator.of(context).push(MaterialPageRoute(builder: (_) => BookingTrackingScreen(bookingId: bookingId)));
@@ -60,6 +61,7 @@ class BookingTrackingScreen extends StatelessWidget {
           const SizedBox(height: 8),
           DetentionCard(booking: booking, isDriver: false),
           const SizedBox(height: 8),
+          EwayStatusLine(booking: booking),
           CargoDocsCard(booking: booking),
           const SizedBox(height: 8),
           PaymentCard(booking: booking),

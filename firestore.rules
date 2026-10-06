@@ -423,6 +423,51 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
+    // handovers/{shipmentId}: controlled handover between the drivers of the
+    // two legs (IE10). The leg-1 driver hands the container over, the leg-2
+    // driver confirms it; the rules compare the seal numbers. Neither side can
+    // be changed afterwards.
+    function handoverLegOk(bookingId, leg, shipmentId) {
+      let b = get(docPath('bookings', bookingId)).data;
+      let l = get(docPath('loads', b.loadId)).data;
+      return b.driverId == request.auth.uid
+          && l.get('shipmentId', '') == shipmentId
+          && l.get('shipmentLeg', 0) == leg;
+    }
+
+    match /handovers/{shipmentId} {
+      allow read: if signedIn()
+          && (request.auth.uid == resource.data.leg1.driverId
+              || request.auth.uid == resource.data.get('leg2', {}).get('driverId', '')
+              || get(docPath('shipments', shipmentId)).data.ownerId == request.auth.uid
+              || isAdmin());
+      allow create: if signedIn()
+          && request.resource.data.keys().hasOnly(['shipmentId', 'leg1', 'createdAt'])
+          && request.resource.data.shipmentId == shipmentId
+          && request.resource.data.createdAt == request.time
+          && request.resource.data.leg1.keys().hasOnly(['driverId', 'bookingId', 'sealNumber', 'containerNumber', 'note', 'at'])
+          && request.resource.data.leg1.driverId == request.auth.uid
+          && request.resource.data.leg1.bookingId is string
+          && handoverLegOk(request.resource.data.leg1.bookingId, 1, shipmentId)
+          && get(docPath('bookings', request.resource.data.leg1.bookingId)).data.status in ['unloading', 'delivered']
+          && request.resource.data.leg1.sealNumber.matches('^$|^[A-Za-z0-9-]{1,20}$')
+          && request.resource.data.leg1.containerNumber.matches('^$|^[A-Z]{4}[0-9]{7}$')
+          && request.resource.data.leg1.note is string && request.resource.data.leg1.note.size() <= 200
+          && request.resource.data.leg1.at == request.time;
+      allow update: if signedIn()
+          && !('leg2' in resource.data)
+          && changedKeys().hasOnly(['leg2'])
+          && request.resource.data.leg2.keys().hasOnly(['driverId', 'bookingId', 'sealNumber', 'sealMatches', 'note', 'at'])
+          && request.resource.data.leg2.driverId == request.auth.uid
+          && request.resource.data.leg2.bookingId is string
+          && handoverLegOk(request.resource.data.leg2.bookingId, 2, shipmentId)
+          && request.resource.data.leg2.sealNumber.matches('^$|^[A-Za-z0-9-]{1,20}$')
+          && request.resource.data.leg2.sealMatches == (request.resource.data.leg2.sealNumber == resource.data.leg1.sealNumber)
+          && request.resource.data.leg2.note is string && request.resource.data.leg2.note.size() <= 200
+          && request.resource.data.leg2.at == request.time;
+      allow delete: if false;
+    }
+
     // users/{uid}/favourite_routes: routes a driver wants recommendations for.
     match /users/{userId}/favourite_routes/{routeId} {
       allow read, delete: if isUser(userId);
@@ -1160,9 +1205,41 @@ service cloud.firestore {
 
     // Either party records the e-way bill number (12 digits) or clears it.
     function ewayBillUpdate() {
-      return changedKeys().hasOnly(['ewayBillNo', 'updatedAt'])
+      return changedKeys().hasOnly(['ewayBillNo', 'ewayValidUntil', 'updatedAt'])
           && request.resource.data.ewayBillNo is string
-          && request.resource.data.ewayBillNo.matches('^$|^[0-9]{12}$');
+          && request.resource.data.ewayBillNo.matches('^$|^[0-9]{12}$')
+          && (!('ewayValidUntil' in request.resource.data)
+              || (request.resource.data.ewayBillNo != ''
+                  && request.resource.data.ewayValidUntil is timestamp
+                  && request.resource.data.ewayValidUntil < request.time + duration.value(366, 'd')));
+    }
+
+    // Advance payment record (no money moves): the customer records one
+    // advance while the booking is open and unpaid, the driver confirms it.
+    function customerRecordsAdvance() {
+      let a = request.resource.data;
+      return resource.data.status in ['accepted', 'driver_arriving', 'loading', 'picked_up', 'in_transit', 'unloading']
+          && resource.data.get('paymentStatus', 'pending') == 'pending'
+          && !('advancePaise' in resource.data)
+          && changedKeys().hasOnly(['advancePaise', 'advanceMarkedAt', 'updatedAt'])
+          && a.advancePaise is int && a.advancePaise >= 100 && a.advancePaise <= 100000000
+          && a.advancePaise < resource.data.get('agreedFarePaise', resource.data.get('fareEstimate', 100000000))
+          && a.advanceMarkedAt == request.time;
+    }
+
+    function driverConfirmsAdvance() {
+      return 'advancePaise' in resource.data
+          && !('advanceConfirmedAt' in resource.data)
+          && changedKeys().hasOnly(['advanceConfirmedAt', 'updatedAt'])
+          && request.resource.data.advanceConfirmedAt == request.time;
+    }
+
+    // The driver's UPI id for a UPI payment link on this booking.
+    function driverSharesUpi() {
+      return resource.data.status != 'cancelled'
+          && changedKeys().hasOnly(['payUpiId', 'updatedAt'])
+          && request.resource.data.payUpiId is string
+          && request.resource.data.payUpiId.matches('^[a-zA-Z0-9._-]{2,40}@[a-zA-Z]{2,20}$');
     }
 
     // Waiting at the loading / unloading point (record only). Minutes can
@@ -1325,13 +1402,15 @@ service cloud.firestore {
               || isAdmin());
       allow create: if signedIn() && validBookingCreate(bookingId);
       allow update: if signedIn()
-          && (adminReassignBooking() || (resource.data.customerId == request.auth.uid && (ewayBillUpdate() || customerMarksPaid() || customerCancelsScheduled()))
+          && (adminReassignBooking() || (resource.data.customerId == request.auth.uid && (ewayBillUpdate() || customerMarksPaid() || customerRecordsAdvance() || customerCancelsScheduled()))
           || (resource.data.driverId == request.auth.uid
           && (driverLocationUpdate()
               || ewayBillUpdate()
               || detentionUpdate()
               || evidenceUpdate()
               || driverConfirmsPayment(bookingId)
+              || driverConfirmsAdvance()
+              || driverSharesUpi()
               || breakdownReport()
               || driverReplacesVehicle()
               || driverStep(bookingId)

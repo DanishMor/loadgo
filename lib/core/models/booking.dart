@@ -89,6 +89,16 @@ class Booking {
   final String paymentStatus;
   final int? paidAmountPaise;
 
+  /// Advance the customer says they paid (paise) and when the driver confirmed it.
+  final int? advancePaise;
+  final DateTime? advanceConfirmedAt;
+
+  /// UPI id the driver shared for this booking (payment link).
+  final String payUpiId;
+
+  /// Date the e-way bill is valid until (recorded by the user).
+  final DateTime? ewayValidUntil;
+
   /// Amount to bill: paid > agreed > estimate > budget (paise).
   int? get billAmountPaise =>
       paidAmountPaise ?? agreedFarePaise ?? fareEstimate ?? (budget == null ? null : (budget! * 100).round());
@@ -144,6 +154,10 @@ class Booking {
     this.paymentMode = 'cash',
     this.paymentStatus = 'pending',
     this.paidAmountPaise,
+    this.advancePaise,
+    this.advanceConfirmedAt,
+    this.payUpiId = '',
+    this.ewayValidUntil,
     this.extraPickups = const [],
     this.extraDrops = const [],
     this.pickupSlot = PickupSlot.any,
@@ -222,6 +236,10 @@ class Booking {
       paymentMode: d['paymentMode'] as String? ?? 'cash',
       paymentStatus: d['paymentStatus'] as String? ?? 'pending',
       paidAmountPaise: (d['paidAmountPaise'] as num?)?.round(),
+      advancePaise: (d['advancePaise'] as num?)?.round(),
+      advanceConfirmedAt: (d['advanceConfirmedAt'] as Timestamp?)?.toDate(),
+      payUpiId: d['payUpiId'] as String? ?? '',
+      ewayValidUntil: (d['ewayValidUntil'] as Timestamp?)?.toDate(),
       replacedVehicleIds: [for (final x in (d['replacedVehicleIds'] as List?) ?? const []) x.toString()],
       breakdown: d['breakdown'] is Map ? BookingBreakdown.fromMap(Map<String, dynamic>.from(d['breakdown'] as Map)) : null,
       extraPickups: [for (final s in (d['extraPickups'] as List?) ?? const []) s.toString()],

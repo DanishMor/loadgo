@@ -3224,3 +3224,116 @@ describe('trip alerts, evidence audit and document views', () => {
     await assertFails(getDoc(doc(as('driver1'), 'risk_signals', 'x')));
   });
 });
+
+describe('UPI id, advance, e-way validity, container handover, double confirms', () => {
+  const bk = (db, data) => updateDoc(doc(db, 'bookings', 'L1'), { updatedAt: serverTimestamp(), ...data });
+
+  test('driver shares a valid UPI id on the booking; nobody else, nothing malformed', async () => {
+    await seedBooking('accepted');
+    await assertSucceeds(bk(as('driver1'), { payUpiId: 'ravi.k@okaxis' }));
+    await assertFails(bk(as('driver1'), { payUpiId: 'not a upi' }));
+    await assertFails(bk(as('driver1'), { payUpiId: 'x@y' }));
+    await assertFails(bk(as('customer1'), { payUpiId: 'ravi.k@okaxis' }));
+    await assertFails(bk(as('driver2'), { payUpiId: 'ravi.k@okaxis' }));
+  });
+
+  test('advance: customer records once (Re 1 up to the fare), driver confirms once', async () => {
+    await seedBooking('accepted');
+    await seed((db) => updateDoc(doc(db, 'bookings', 'L1'), { agreedFarePaise: 1800000 }));
+    const rec = (db, paise = 500000, extra = {}) => bk(db, { advancePaise: paise, advanceMarkedAt: serverTimestamp(), ...extra });
+    await assertFails(rec(as('driver1')));
+    await assertFails(rec(as('customer1'), 99));
+    await assertFails(rec(as('customer1'), 1800000)); // not below the fare
+    await assertFails(rec(as('customer1'), 1000.5));
+    await assertFails(bk(as('customer1'), { advancePaise: 500000 })); // needs the server time
+    await assertFails(bk(as('driver1'), { advanceConfirmedAt: serverTimestamp() })); // nothing to confirm yet
+    await assertSucceeds(rec(as('customer1')));
+    await assertFails(rec(as('customer1'), 600000)); // once
+    await assertFails(bk(as('customer1'), { advanceConfirmedAt: serverTimestamp() })); // only the driver
+    await assertSucceeds(bk(as('driver1'), { advanceConfirmedAt: serverTimestamp() }));
+    await assertFails(bk(as('driver1'), { advanceConfirmedAt: serverTimestamp() })); // once
+  });
+
+  test('advance is closed after delivery or once the payment is marked', async () => {
+    await seedBooking('delivered');
+    await assertFails(bk(as('customer1'), { advancePaise: 500000, advanceMarkedAt: serverTimestamp() }));
+  });
+
+  test('e-way bill validity date: timestamp, with a number, at most a year ahead', async () => {
+    await seedBooking('in_transit');
+    const week = Timestamp.fromMillis(Date.now() + 7 * 86400000);
+    await assertSucceeds(bk(as('customer1'), { ewayBillNo: '123456789012', ewayValidUntil: week }));
+    await assertSucceeds(bk(as('driver1'), { ewayBillNo: '123456789012', ewayValidUntil: week }));
+    await assertFails(bk(as('driver1'), { ewayBillNo: '123456789012', ewayValidUntil: 'tomorrow' }));
+    await assertFails(bk(as('driver1'), { ewayBillNo: '123456789012', ewayValidUntil: Timestamp.fromMillis(Date.now() + 400 * 86400000) }));
+    await assertFails(bk(as('driver1'), { ewayBillNo: '', ewayValidUntil: week }));
+    await assertFails(bk(as('driver2'), { ewayBillNo: '123456789012' }));
+  });
+
+  describe('handover', () => {
+    const side = (uid, bookingId, over = {}) => ({ driverId: uid, bookingId, sealNumber: 'SL-9', note: '', at: serverTimestamp(), ...over });
+    const leg1 = (over = {}, sideOver = {}) => ({ shipmentId: 's1', leg1: { ...side('driver1', 'L1'), containerNumber: 'CSQU3054383', ...sideOver }, createdAt: serverTimestamp(), ...over });
+
+    async function seedLegs(status = 'unloading') {
+      await seedBooking(status);
+      await seed(async (db) => {
+        await setDoc(doc(db, 'shipments', 's1'), { ownerId: 'customer1', kind: 'export', origin: 'A', hub: 'B', destination: 'C', containerNumber: '', sealNumber: '', leg1LoadId: 'L1', leg2LoadId: 'L2', createdAt: Timestamp.now() });
+        await updateDoc(doc(db, 'loads', 'L1'), { shipmentId: 's1', shipmentLeg: 1 });
+        await setDoc(doc(db, 'loads', 'L2'), { ...LOAD, status: 'matched', driverId: 'driver2', bookingId: 'L2', shipmentId: 's1', shipmentLeg: 2 });
+        await setDoc(doc(db, 'bookings', 'L2'), { ...bookingFor('L2', { driverId: 'driver2', vehicleId: 'v2' }), status: 'accepted', timeline: {} });
+      });
+    }
+
+    test('leg 1 driver hands over from unloading; shape and identity are checked', async () => {
+      await seedLegs('loading');
+      await assertFails(setDoc(doc(as('driver1'), 'handovers', 's1'), leg1())); // still loading
+      await seed((db) => updateDoc(doc(db, 'bookings', 'L1'), { status: 'unloading' }));
+      await assertFails(setDoc(doc(as('driver2'), 'handovers', 's1'), leg1())); // not their trip
+      await assertFails(setDoc(doc(as('driver1'), 'handovers', 's1'), leg1({}, { driverId: 'driver2' })));
+      await assertFails(setDoc(doc(as('driver1'), 'handovers', 's1'), leg1({}, { containerNumber: 'BAD' })));
+      await assertFails(setDoc(doc(as('driver1'), 'handovers', 's1'), leg1({}, { sealNumber: 'no spaces!' })));
+      await assertFails(setDoc(doc(as('driver1'), 'handovers', 's1'), leg1({}, { bookingId: 'L2' })));
+      await assertFails(setDoc(doc(as('driver1'), 'handovers', 's2'), leg1())); // id must match the shipment
+      await assertSucceeds(setDoc(doc(as('driver1'), 'handovers', 's1'), leg1()));
+    });
+
+    test('leg 2 driver confirms once, the rules compute whether the seal matches; read by the two drivers, the shipment owner and admins', async () => {
+      await seedLegs();
+      await assertSucceeds(setDoc(doc(as('driver1'), 'handovers', 's1'), leg1()));
+      const confirm = (uid, over = {}) => updateDoc(doc(as(uid), 'handovers', 's1'), { leg2: { ...side(uid, 'L2'), sealMatches: true, ...over } });
+      await assertFails(confirm('driver1')); // leg 1 driver is not on leg 2
+      await assertFails(confirm('driver3'));
+      await assertFails(confirm('driver2', { sealMatches: false })); // seals match, so the flag must say so
+      await assertFails(confirm('driver2', { sealNumber: 'OTHER' })); // different seal but flag says match
+      await assertSucceeds(confirm('driver2'));
+      await assertFails(confirm('driver2')); // once
+      await assertFails(updateDoc(doc(as('driver1'), 'handovers', 's1'), { leg1: side('driver1', 'L1') })); // leg 1 is frozen
+      for (const u of ['driver1', 'driver2', 'customer1']) await assertSucceeds(getDoc(doc(as(u), 'handovers', 's1')));
+      await assertSucceeds(getDoc(doc(asAdmin(), 'handovers', 's1')));
+      await assertFails(getDoc(doc(as('driver3'), 'handovers', 's1')));
+      await assertFails(deleteDoc(doc(as('driver1'), 'handovers', 's1')));
+    });
+
+    test('a different seal at leg 2 is accepted only with sealMatches false', async () => {
+      await seedLegs();
+      await assertSucceeds(setDoc(doc(as('driver1'), 'handovers', 's1'), leg1()));
+      await assertSucceeds(updateDoc(doc(as('driver2'), 'handovers', 's1'), { leg2: { ...side('driver2', 'L2', { sealNumber: 'SL-1' }), sealMatches: false } }));
+    });
+  });
+
+  test('double confirm of a payment and of the ledger lines is refused', async () => {
+    await seedBooking('delivered');
+    await updateDoc(doc(as('customer1'), 'bookings', 'L1'), { paymentStatus: 'customer_marked_paid', paidAmountPaise: 2500000, paymentMarkedAt: serverTimestamp(), updatedAt: serverTimestamp() });
+    const dr = as('driver1');
+    const confirm = () => {
+      const b = writeBatch(dr);
+      b.update(doc(dr, 'bookings', 'L1'), { paymentStatus: 'driver_confirmed', paymentConfirmedAt: serverTimestamp(), updatedAt: serverTimestamp() });
+      b.set(doc(dr, 'ledger', 'L1_trip_earning'), { driverId: 'driver1', bookingId: 'L1', type: 'trip_earning', amountPaise: 2500000, createdAt: serverTimestamp() });
+      b.set(doc(dr, 'ledger', 'L1_platform_commission'), { driverId: 'driver1', bookingId: 'L1', type: 'platform_commission', amountPaise: -125000, createdAt: serverTimestamp() });
+      return b.commit();
+    };
+    await assertSucceeds(confirm());
+    await assertFails(confirm());
+    await assertFails(updateDoc(doc(as('customer1'), 'bookings', 'L1'), { paymentStatus: 'customer_marked_paid', paidAmountPaise: 1, paymentMarkedAt: serverTimestamp(), updatedAt: serverTimestamp() }));
+  });
+});
