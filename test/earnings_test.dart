@@ -51,6 +51,9 @@ void main() {
   });
 
   testWidgets('earnings tab shows totals and completed trips', (tester) async {
+    tester.view.physicalSize = const Size(800, 2400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
     final db = FakeFirebaseFirestore();
     late List<Booking> list;
     await tester.runAsync(() async {
@@ -66,17 +69,20 @@ void main() {
     await settle(tester);
     expect(find.text('₹ 17000'), findsOneWidget);
     expect(find.text('₹ 10000'), findsNWidgets(2), reason: 'this week + trip row');
-    expect(find.text('2'), findsOneWidget);
+    expect(find.text('2'), findsNWidgets(2), reason: 'trips completed + the bar label of the 2nd');
     await tester.tap(find.text('Pa → Da'));
     expect(opened, 'a');
   });
 
   testWidgets('empty state when nothing delivered', (tester) async {
+    tester.view.physicalSize = const Size(800, 2400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
     await tester.pumpWidget(MaterialApp(
       home: Scaffold(body: EarningsView(bookings: () => Stream.value(const <Booking>[]), onOpenTrip: (_) {}, now: () => now)),
     ));
     await tester.pumpAndSettle();
     expect(find.text('No completed trips yet'), findsOneWidget);
-    expect(find.text('₹ 0'), findsNWidgets(2));
+    expect(find.text('₹ 0'), findsNWidgets(4), reason: 'total + week + today + last 7 days');
   });
 }

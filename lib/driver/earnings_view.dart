@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 
+import '../core/analytics/earnings_breakdown.dart';
 import '../core/models/booking.dart';
 import '../core/models/earnings.dart';
 import '../core/widgets/common.dart';
 import '../core/l10n/l10n.dart';
+import '../core/trip/trip_history_screen.dart';
 import '../core/widgets/live_stream.dart';
+import '../core/widgets/mini_bars.dart';
 import 'driver_rewards_screen.dart';
 
 /// Driver "Earnings" tab: totals from delivered trips plus recent payouts.
@@ -37,8 +40,9 @@ class EarningsView extends StatelessWidget {
     return SafeArea(
       child: LiveStream<List<Booking>>(
         stream: bookings,
-        builder: (context, bookings) {
-          final e = EarningsSummary.from(bookings, now());
+        builder: (context, list) {
+          final e = EarningsSummary.from(list, now());
+          final days = EarningsBreakdown.from(list, now());
           return ListView(
             padding: const EdgeInsets.fromLTRB(20, 18, 20, 30),
             children: [
@@ -77,6 +81,34 @@ class EarningsView extends StatelessWidget {
                   const SizedBox(width: 12),
                   _stat(tr(context, 'tripsCompleted'), '${e.completedTrips}'),
                 ],
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  _stat(tr(context, 'ehToday'), formatPaise(days.todayPaise)),
+                  const SizedBox(width: 12),
+                  _stat(tr(context, 'ehLast7'), formatPaise(days.last7Paise)),
+                ],
+              ),
+              const SizedBox(height: 4),
+              AppCard(
+                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Text(tr(context, 'ehEarnByDay'), style: TextStyle(color: AppColors.muted, fontSize: 13)),
+                  const SizedBox(height: 10),
+                  MiniBars(
+                    keyPrefix: 'earnBar',
+                    highlight: days.last7Days.length - 1,
+                    bars: [for (final d in days.last7Days) MiniBar('${d.day.day}', d.paise, '${formatDate(d.day)}: ${formatPaise(d.paise)}')],
+                  ),
+                ]),
+              ),
+              ListTile(
+                key: const ValueKey('openHistory'),
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(Icons.history_rounded, color: AppColors.primary),
+                title: Text(tr(context, 'ehHistoryTitle'), style: const TextStyle(fontWeight: FontWeight.w700)),
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => TripHistoryScreen(bookings: bookings, onOpen: onOpenTrip))),
               ),
               const SizedBox(height: 8),
               Text(tr(context, 'earningsNote'), style: TextStyle(fontSize: 12, color: AppColors.faint)),

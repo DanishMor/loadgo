@@ -6,7 +6,9 @@ import 'package:flutter/services.dart';
 import '../core/profile/profile_nav_tile.dart';
 import 'business_hub_screen.dart';
 import '../core/wallet/txn_history_screen.dart';
+import '../core/trip/trip_history_screen.dart';
 import 'my_drivers_screen.dart';
+import 'spending_screen.dart';
 import 'templates_screen.dart';
 import 'business_invites_card.dart';
 import '../core/widgets/offers_gate.dart';
@@ -115,6 +117,18 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
         icon: Icons.account_balance_wallet_outlined,
         titleKey: 'txnTitle',
         screen: (_) => const TxnHistoryScreen(isDriver: false),
+      ),
+      ProfileNavTile(
+        key: const ValueKey('profileSpending'),
+        icon: Icons.savings_outlined,
+        titleKey: 'ehSpendTitle',
+        screen: (_) => const SpendingScreen(),
+      ),
+      ProfileNavTile(
+        key: const ValueKey('profileHistory'),
+        icon: Icons.history_rounded,
+        titleKey: 'ehHistoryTitle',
+        screen: (c) => TripHistoryScreen(bookings: BookingService.watchForCustomer, onOpen: (id) => openBookingTracking(c, id)),
       ),
       ProfileNavTile(
         key: const ValueKey('profileTemplates'),
