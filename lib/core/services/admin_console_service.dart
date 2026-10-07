@@ -1,5 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import '../matching/supply_demand.dart';
+import '../models/load.dart';
+import '../models/vehicle.dart';
+import 'user_service.dart';
 import '../network/with_retry.dart';
 import '../constants/logistics.dart';
 import '../admin/admin_export.dart';
@@ -286,6 +290,20 @@ class AdminConsoleService {
   static Future<int> _count(Query<Map<String, dynamic>> q) async => (await q.count().get()).count ?? 0;
 
   /// Document counts for the health screen.
+  /// Open loads against free trucks (newest [limit] of each; drivers with a
+  /// saved position place their truck, an assigned fleet driver wins over the owner).
+  static Future<SupplyDemand> supplyDemand({int limit = 500}) => withRetry(() async {
+        final loads = await _db.collection('loads').where('status', isEqualTo: LoadStatus.open).limit(limit).get();
+        final vehicles = await _db.collection('vehicles').where('availability', isEqualTo: VehicleAvailability.available).limit(limit).get();
+        final users = await _db.collection('users').where('role', isEqualTo: 'driver').limit(limit).get();
+        final spots = {for (final u in users.docs) u.id: UserService.lastLocationOf(u.data())};
+        return SupplyDemand.compute(
+          [for (final d in loads.docs) Load.fromDoc(d)],
+          [for (final d in vehicles.docs) Vehicle.fromDoc(d)],
+          (v) => spots[v.assignedDriverId] ?? spots[v.ownerId],
+        );
+      });
+
   static Future<HealthCounts> health() => withRetry(_health);
 
   static Future<HealthCounts> _health() async {

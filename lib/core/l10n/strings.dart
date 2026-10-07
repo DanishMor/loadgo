@@ -64,6 +64,7 @@ import 'permission_strings.dart';
 import 'friendly_error_strings.dart';
 import 'abuse_strings.dart';
 import 'feature_strings.dart';
+import 'supply_demand_strings.dart';
 import 'assistant_strings.dart';
 import 'earn_history_strings.dart';
 import 'feedback_cancel_strings.dart';
@@ -143,6 +144,7 @@ const List<Map<String, List<String>>> stringTables = [
   friendlyErrorStrings,
   abuseStrings,
   featureStrings,
+  supplyDemandStrings,
 ];
 
 final Map<String, List<String>> extraStrings = {
