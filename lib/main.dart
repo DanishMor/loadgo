@@ -21,11 +21,13 @@ import 'core/theme/app_theme.dart';
 import 'core/widgets/app_control_gate.dart';
 import 'core/widgets/live_stream.dart' show OfflineBanner;
 import 'firebase_options.dart';
+import 'route_hooks.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   AppRoutes.roleSelection = (_) => const RoleSelectionScreen();
   AppRoutes.adminEntry = (_) => const AdminEntryTile();
+  registerRouteHooks();
   // Log uncaught async errors (e.g. a dropped network call) instead of
   // letting them take the app down; screens show their own retry UI.
   PlatformDispatcher.instance.onError = (error, stack) {

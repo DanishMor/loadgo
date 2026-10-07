@@ -1,4 +1,5 @@
 import '../core/assistant/sahayak_screen.dart';
+import '../core/search/global_search_screen.dart';
 import '../core/services/backend.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -27,7 +28,6 @@ import 'customer_bookings_view.dart';
 import '../core/documents/invoice_screen.dart';
 import 'my_loads_view.dart';
 import '../core/notifications/notifications_screen.dart';
-import 'home_search_screen.dart';
 import 'post_load_screen.dart';
 import 'recurring_due_card.dart';
 import '../core/profile/profile_view.dart';
@@ -284,7 +284,7 @@ class _CustomerHomeContent extends StatelessWidget {
               child: TextField(
                 key: const ValueKey('homeSearch'),
                 readOnly: true,
-                onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const HomeSearchScreen())),
+                onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const GlobalSearchScreen(isDriver: false))),
                 decoration: InputDecoration(
                   border: InputBorder.none,
                   prefixIcon: Icon(Icons.search_rounded, color: AppColors.muted),

@@ -20,7 +20,7 @@ import 'package:transport_app/core/services/vehicle_service.dart';
 import 'package:transport_app/core/trip/arrival_eta.dart';
 import 'package:transport_app/core/widgets/lifecycle_bar.dart';
 import 'package:transport_app/core/widgets/trip_eta_card.dart';
-import 'package:transport_app/customer/home_search_screen.dart';
+import 'package:transport_app/core/search/global_search_screen.dart';
 import 'package:transport_app/customer/place_field.dart';
 import 'package:transport_app/customer/recurring_due_card.dart';
 
@@ -94,20 +94,24 @@ void main() {
       await db.collection('loads').doc('L1').set({'shipperId': 'c1', 'pickup': 'Delhi', 'drop': 'Mumbai', 'cargoType': 'FMCG', 'weight': 5, 'vehicleType': '20ft', 'status': 'open', 'notes': '', 'pickupDate': Timestamp.now()});
       final b = await booking(bookingMap(pickup: 'Pune'));
       await tester.pumpWidget(MaterialApp(
-        home: HomeSearchScreen(
+        home: GlobalSearchScreen(
+          isDriver: false,
+          debounce: Duration.zero,
           loads: Stream.value([Load.fromDoc(await db.collection('loads').doc('L1').get())]),
           bookings: Stream.value([b]),
+          tickets: Stream.value(const []),
+          places: Stream.value(const []),
         ),
       ));
       await settle(tester);
-      await tester.enterText(find.byKey(const ValueKey('homeSearchField')), 'del mum');
+      await tester.enterText(find.byKey(const ValueKey('globalSearchField')), 'del mum');
       await settle(tester);
-      expect(find.byKey(const ValueKey('hitLoad_L1')), findsOneWidget);
-      expect(find.byKey(ValueKey('hitBooking_${b.id}')), findsNothing);
-      await tester.enterText(find.byKey(const ValueKey('homeSearchField')), 'ravi');
+      expect(find.byKey(const ValueKey('hit_load_L1')), findsOneWidget);
+      expect(find.byKey(ValueKey('hit_booking_${b.id}')), findsNothing);
+      await tester.enterText(find.byKey(const ValueKey('globalSearchField')), 'ravi');
       await settle(tester);
-      expect(find.byKey(ValueKey('hitBooking_${b.id}')), findsOneWidget);
-      await tester.enterText(find.byKey(const ValueKey('homeSearchField')), 'zzz');
+      expect(find.byKey(ValueKey('hit_booking_${b.id}')), findsOneWidget);
+      await tester.enterText(find.byKey(const ValueKey('globalSearchField')), 'zzz');
       await settle(tester);
       expect(find.text('Nothing found for "zzz"'), findsOneWidget);
     });

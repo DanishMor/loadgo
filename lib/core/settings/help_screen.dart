@@ -9,7 +9,10 @@ import 'onboarding_screen.dart';
 class HelpScreen extends StatelessWidget {
   static const faqCount = 8;
 
-  const HelpScreen({super.key});
+  /// Expands this question (1..[faqCount]) when the screen opens, e.g. from search.
+  final int? openFaq;
+
+  const HelpScreen({super.key, this.openFaq});
 
   @override
   Widget build(BuildContext context) {
@@ -19,6 +22,7 @@ class HelpScreen extends StatelessWidget {
         for (var i = 1; i <= faqCount; i++)
           ExpansionTile(
             key: ValueKey('faq$i'),
+            initiallyExpanded: openFaq == i,
             title: Text(tr(context, 'faqQ$i'), style: const TextStyle(fontWeight: FontWeight.w700)),
             childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
             expandedAlignment: Alignment.centerLeft,

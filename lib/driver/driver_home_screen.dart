@@ -1,4 +1,5 @@
 import '../core/assistant/sahayak_screen.dart';
+import '../core/search/global_search_screen.dart';
 import '../core/network/network_screen.dart';
 import 'package:flutter/material.dart';
 
@@ -272,6 +273,13 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                       Text(tr(context, 'driver'), style: TextStyle(color: AppColors.muted)),
                     ],
                   ),
+                ),
+                IconButton(
+                  key: const ValueKey('driverSearch'),
+                  tooltip: tr(context, 'search'),
+                  onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const GlobalSearchScreen(isDriver: true))),
+                  icon: const Icon(Icons.search_rounded),
+                  color: const Color(0xFF1565C0),
                 ),
                 SahayakButton(
                   role: 'driver',

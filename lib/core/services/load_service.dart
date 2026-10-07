@@ -213,6 +213,12 @@ class LoadService {
     }
   }
 
+  /// One load by id; null when it does not exist or may not be read (a load
+  /// someone else's driver already took), so a shared link can say "not available".
+  static Stream<Load?> watchById(String id) => _col.doc(id).snapshots().map<Load?>((s) => s.exists ? Load.fromDoc(s) : null).transform(
+        StreamTransformer<Load?, Load?>.fromHandlers(handleError: (e, s, sink) => sink.add(null)),
+      );
+
   /// No live listener reads more than this many documents.
   static const watchLimit = 200;
 
