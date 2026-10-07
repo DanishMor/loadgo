@@ -21,6 +21,11 @@ Status key: [x] done in the repo, [ ] needs you (account, keys, decisions).
 - [x] The same links show in the app (Settings > Terms / Privacy, "Public web page"). Change the host with `config/app.policyBaseUrl`.
 - [ ] Lawyer review of the three texts; fill in `[add support email and phone]` everywhere.
 
+## Shared load links (App Links)
+- [x] The manifest opens `https://loadgo-defc2.web.app/load/{id}` in the app; the web page `hosting/load.html` shows when the app is not installed.
+- [ ] For verified links (no chooser dialog): copy `docs/assetlinks.template.json` to `hosting/.well-known/assetlinks.json`, put the FINAL application id and the SHA-256 of the release signing key (Play Console > App signing shows it), then `firebase deploy --only hosting`. Test with `adb shell pm get-app-links <application id>`. Without it the link still works but Android may ask which app to use.
+- [ ] If the host changes, change `ShareLinks.host`, `PolicyLinks`, the manifest host and `config/app.policyBaseUrl` together.
+
 ## Permissions (declared in the manifest)
 | Permission | Why | In-app explanation |
 |---|---|---|

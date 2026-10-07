@@ -19,6 +19,7 @@ import '../core/services/vehicle_service.dart';
 import '../core/widgets/common.dart';
 import '../core/widgets/kyc_check_widgets.dart';
 import '../core/l10n/l10n.dart';
+import '../core/navigation/deep_links.dart';
 import '../core/l10n/language_widgets.dart';
 import '../core/widgets/booking_list_view.dart';
 import 'driver_location_sync.dart';
@@ -411,9 +412,12 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
   }
 
   @override
-  Widget build(BuildContext context) => ValueListenableBuilder<bool>(
-        valueListenable: SimpleMode.notifier,
-        builder: (context, simple, _) => simple ? const SimpleDriverHome() : _fullHome(context),
+  Widget build(BuildContext context) => DeepLinkListener(
+        isDriver: true,
+        child: ValueListenableBuilder<bool>(
+          valueListenable: SimpleMode.notifier,
+          builder: (context, simple, _) => simple ? const SimpleDriverHome() : _fullHome(context),
+        ),
       );
 
   Widget _fullHome(BuildContext context) {

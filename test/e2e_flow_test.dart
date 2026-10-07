@@ -114,7 +114,9 @@ void main() {
 
     // ---- driver bids; customer selects; driver confirms -> booking at the agreed price
     final openLoad = Load.fromDoc(await db.collection('loads').doc(loadId).get());
-    final offerId = await OfferService.send(load: openLoad, vehicle: vehicle, pricePaise: 3200000);
+    // A price 20% above the estimate (the app refuses bids outside 30%..300% of it).
+    final bid = (quote.total * 12 ~/ 10) ~/ 100 * 100;
+    final offerId = await OfferService.send(load: openLoad, vehicle: vehicle, pricePaise: bid);
     signInAs('customer1', '+919800000001');
     var offer = Offer.fromDoc(await db.collection('offers').doc(offerId).get());
     expect(offer.status, 'pending');
@@ -124,7 +126,7 @@ void main() {
     expect(offer.status, 'selected');
     final bookingId = await OfferService.confirm(offer);
     var booking = Booking.fromDoc(await db.collection('bookings').doc(bookingId).get());
-    expect(booking.agreedFarePaise, 3200000);
+    expect(booking.agreedFarePaise, bid);
     expect(booking.helpers, 2);
     expect(booking.status, BookingStatus.accepted);
     expect(Load.fromDoc(await db.collection('loads').doc(loadId).get()).status, LoadStatus.matched);
@@ -172,7 +174,7 @@ void main() {
     signInAs('customer1', '+919800000001');
     await RatingService.rate(booking: booking, stars: 4, comment: 'Careful driver');
     await DriverExtrasService.addTip(booking, 5000);
-    await PaymentService.markPaid(booking, 3200000);
+    await PaymentService.markPaid(booking, bid);
     signInAs('driver1', '+919800000002');
     booking = Booking.fromDoc(await db.collection('bookings').doc(bookingId).get());
     expect(booking.paymentStatus, PaymentStatus.customerMarkedPaid);
@@ -182,14 +184,14 @@ void main() {
     expect((summary.count, summary.average), (1, 4.0));
     expect(Tip.total(await DriverExtrasService.watchMyTips().first), 5000);
     final ledger = await PaymentService.watchLedger().first;
-    expect(ledger.firstWhere((e) => e.type == 'trip_earning').amountPaise, 3200000);
-    expect(ledger.firstWhere((e) => e.type == 'platform_commission').amountPaise, -160000, reason: '5% for a Free driver');
+    expect(ledger.firstWhere((e) => e.type == 'trip_earning').amountPaise, bid);
+    expect(ledger.firstWhere((e) => e.type == 'platform_commission').amountPaise, -(bid * 5 ~/ 100), reason: '5% for a Free driver');
 
     // wallet: available now, a payout can be requested
     final bal = await PayoutService.balances();
-    expect(bal.net, 3040000);
+    expect(bal.net, bid - bid * 5 ~/ 100);
     expect(bal.pending, 0);
-    final payoutId = await PayoutService.request(3000000);
+    final payoutId = await PayoutService.request(bal.net ~/ 100000 * 100000);
     expect(Payout.fromDoc(payoutId, (await db.collection('payouts').doc(payoutId).get()).data()!).status, 'requested');
 
     // notifications reached the right people along the way

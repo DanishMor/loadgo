@@ -60,6 +60,10 @@
       {
         "source": "/delete-account",
         "destination": "/delete-account.html"
+      },
+      {
+        "source": "/load/**",
+        "destination": "/load.html"
       }
     ]
   }

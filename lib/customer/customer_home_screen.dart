@@ -22,6 +22,7 @@ import 'customer_analytics_screen.dart';
 import '../core/services/auth_helpers.dart';
 import '../core/services/booking_service.dart';
 import '../core/l10n/l10n.dart';
+import '../core/navigation/deep_links.dart';
 import '../core/l10n/language_widgets.dart';
 import 'booking_tracking_screen.dart';
 import 'customer_bookings_view.dart';
@@ -147,7 +148,9 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return DeepLinkListener(
+      isDriver: false,
+      child: Scaffold(
       backgroundColor: AppColors.background,
       body: IndexedStack(index: _currentIndex, children: _pages),
       bottomNavigationBar: NavigationBar(
@@ -174,6 +177,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
               label: tr(context, 'profile')),
         ],
       ),
+    ),
     );
   }
 }

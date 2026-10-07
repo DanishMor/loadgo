@@ -96,8 +96,22 @@ Reviewed and fine: every collection in `firestore.rules` ends in the default-den
 | G8.3 | Performance on old phones: large `ListView(children:)` lists build all rows | FREE | 57 |
 | G8.4 | Dark mode contrast of new widgets | FREE | 57 |
 
+## Round 2 (Phase 4 re-audit after Task 57)
+| ID | Gap | Type | Task |
+|---|---|---|---|
+| G9.1 | Sahayak had no entry on the fleet home and the Simple Mode home; the engine offered fleet owners a post-load action | FREE | 58 |
+| G9.2 | A tapped shared load link did not open the app (no intent filter), and there was no web page for people without the app | FREE | 59 |
+| G9.3 | PAID_UPGRADE_PLAN had no rough cost per row | FREE (doc) | 59 |
+| G9.4 | Verified App Links need `assetlinks.json` with the final application id and the signing key hash | manual (owner) | docs/PLAY_STORE_CHECKLIST.md |
+| G9.5 | The older "Total earnings / This week" figures on the driver Earnings tab still use the rupee `EarningsSummary`, not `EarningsBreakdown` | FREE (cosmetic, same numbers for delivered trips with a fare) | left as is, noted |
+
+## Round 3 (second re-audit)
+Looked again at the eight angles after Tasks 58 and 59: no new FREE gap that is not either built, already listed in docs/NEXT_TASKS.md as paid or manual, or listed above as manual. G9.5 is the only open FREE item and changes no behaviour (both figures read the same delivered bookings), so it is not worth a task.
+
 ## Counts
 
-- Round 1 (this file's first version): FREE gaps = see "Free gaps" line below; PAID gaps = G3.7, G3.8, G4.12, G5.7, G7.7.
+- Round 1: 60 gaps found, of which 55 FREE (closed by Tasks 41-57) and 5 PAID (G3.7, G3.8, G4.12, G5.7, G7.7; in docs/PAID_UPGRADE_PLAN.md).
+- Round 2: 5 more gaps: 3 FREE closed by Tasks 58 and 59 (G9.1-G9.3), 1 manual for the owner (G9.4), 1 cosmetic left (G9.5).
+- Total: 65 gaps, 58 FREE closed, 5 PAID, 1 manual, 1 cosmetic left open.
 
-Free gaps: pending (tasks 41-57 close them)
+Free gaps: 0 (every FREE gap is closed; G9.5 is cosmetic and recorded above)

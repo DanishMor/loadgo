@@ -9,6 +9,7 @@ import 'auth/role_selection_screen.dart';
 import 'auth/splash_screen.dart';
 import 'core/l10n/l10n.dart';
 import 'core/navigation/app_routes.dart';
+import 'core/navigation/deep_links.dart';
 import 'core/permissions/permission_rationale.dart';
 import 'core/services/app_config.dart';
 import 'core/services/app_control_service.dart';
@@ -57,6 +58,7 @@ Future<void> main() async {
       configUid = user.uid;
     }
   });
+  DeepLinks.start();
   runApp(const LoadGoApp());
 }
 
@@ -98,6 +100,8 @@ class LoadGoApp extends StatelessWidget {
         theme: AppTheme.build(Brightness.light),
         darkTheme: AppTheme.build(Brightness.dark),
         themeMode: mode,
+        // The launch link is read by DeepLinks, not by the navigator.
+        initialRoute: '/',
         home: const SplashScreen(),
         ),
       ),
