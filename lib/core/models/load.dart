@@ -96,6 +96,12 @@ class Load {
   final bool fragile;
   final bool highValue;
 
+  /// Value of the goods the customer declared (paise), for claims. Optional.
+  final int? declaredValuePaise;
+
+  /// Why the customer cancelled this load (code from CancelReasons), if said.
+  final String? cancelReason;
+
   /// Promo applied at posting (record only) and credits spent, in paise.
   final String? promoCode;
   final int promoDiscountPaise;
@@ -142,6 +148,8 @@ class Load {
     this.instant = false,
     this.fragile = false,
     this.highValue = false,
+    this.declaredValuePaise,
+    this.cancelReason,
     this.promoCode,
     this.promoDiscountPaise = 0,
     this.creditsUsedPaise = 0,
@@ -203,6 +211,8 @@ class Load {
       instant: d['instant'] == true,
       fragile: d['fragile'] == true,
       highValue: d['highValue'] == true,
+      declaredValuePaise: (d['declaredValuePaise'] as num?)?.toInt(),
+      cancelReason: d['cancelReason'] as String?,
       promoCode: (d['promo'] as Map?)?['code'] as String?,
       promoDiscountPaise: ((d['promo'] as Map?)?['discountPaise'] as num?)?.toInt() ?? 0,
       creditsUsedPaise: (d['creditsUsedPaise'] as num?)?.toInt() ?? 0,

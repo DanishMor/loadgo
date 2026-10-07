@@ -329,10 +329,13 @@ class BookingCancellation {
   final String by;
   final int chargePaise;
 
-  const BookingCancellation({required this.by, required this.chargePaise});
+  /// Code from `CancelReasons`, when the canceller gave one.
+  final String? reason;
+
+  const BookingCancellation({required this.by, required this.chargePaise, this.reason});
 
   factory BookingCancellation.fromMap(Map<String, dynamic> m) =>
-      BookingCancellation(by: m['by'] as String? ?? '', chargePaise: (m['chargePaise'] as num?)?.round() ?? 0);
+      BookingCancellation(by: m['by'] as String? ?? '', chargePaise: (m['chargePaise'] as num?)?.round() ?? 0, reason: m['reason'] as String?);
 }
 
 /// Waiting at the loading and unloading points: whole minutes done and, while

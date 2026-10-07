@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../location/geohash.dart';
 
+import '../constants/cancel_reasons.dart';
 import '../constants/logistics.dart';
 import '../models/load.dart';
 import '../constants/prohibited_cargo.dart';
@@ -80,6 +81,7 @@ class LoadService {
     int creditsUsedPaise = 0,
     bool fragile = false,
     bool highValue = false,
+    int? declaredValuePaise,
     DateTime? scheduledAt,
     String? invitedDriverId,
     String? businessId,
@@ -93,6 +95,9 @@ class LoadService {
       if (problem != null) throw ScheduleException(problem);
     }
     if (creditsUsedPaise < 0) throw ArgumentError.value(creditsUsedPaise, 'creditsUsedPaise');
+    if (declaredValuePaise != null && (declaredValuePaise < 0 || declaredValuePaise > CancelReasons.maxDeclaredValuePaise)) {
+      throw ArgumentError.value(declaredValuePaise, 'declaredValuePaise');
+    }
     if (!BookingType.all.contains(bookingType)) throw ArgumentError.value(bookingType, 'bookingType');
     if (helpers < 0 || helpers > maxHelpers) throw ArgumentError.value(helpers, 'helpers');
     if (bookingType == BookingType.rental && !rentalHourOptions.contains(rentalHours)) {
@@ -131,6 +136,7 @@ class LoadService {
       if (scheduledAt != null) 'scheduledAt': Timestamp.fromDate(scheduledAt),
       if (fragile) 'fragile': true,
       if (highValue) 'highValue': true,
+      if (declaredValuePaise != null && declaredValuePaise > 0) 'declaredValuePaise': declaredValuePaise,
       'helpers': helpers,
       if (bookingType == BookingType.rental) 'rentalHours': rentalHours,
       if (bookingType == BookingType.movers) 'movers': movers!.toMap(),
@@ -183,7 +189,8 @@ class LoadService {
   ///
   /// Throws [LoadNotCancellableException] when a driver has already accepted
   /// it (the rules reject the write once the load is no longer open).
-  static Future<void> cancel(String loadId) async {
+  static Future<void> cancel(String loadId, {String? reason}) async {
+    if (!CancelReasons.valid('customer', reason)) throw ArgumentError.value(reason, 'reason');
     final ref = _col.doc(loadId);
     try {
       await Backend.db.runTransaction((tx) async {
@@ -195,9 +202,10 @@ class LoadService {
           'status': LoadStatus.closed,
           'cancelled': true,
           'cancelledAt': FieldValue.serverTimestamp(),
+          'cancelReason': ?reason,
         });
         RiskService.countCancel(tx);
-        AuditService.inTransaction(tx, AuditType.cancel, loadId: loadId, data: {'by': 'customer'});
+        AuditService.inTransaction(tx, AuditType.cancel, loadId: loadId, data: {'by': 'customer', 'reason': ?reason});
       });
     } on FirebaseException catch (e) {
       if (e.code == 'permission-denied') throw LoadNotCancellableException();

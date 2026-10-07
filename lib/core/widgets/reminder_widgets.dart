@@ -20,6 +20,7 @@ String reminderText(BuildContext context, Reminder r) => switch (r.kind) {
       ReminderKind.offersWaiting => trf(context, 'remOffersWaiting', r.args),
       ReminderKind.counterWaiting => trf(context, 'remCounterWaiting', r.args),
       ReminderKind.confirmWaiting => trf(context, 'remConfirmWaiting', r.args),
+      ReminderKind.rateTrip => trf(context, r.args['n'] == 1 ? 'remRateTrip' : 'remRateTrips', r.args),
     };
 
 IconData reminderIcon(ReminderKind k) => switch (k) {
@@ -29,6 +30,7 @@ IconData reminderIcon(ReminderKind k) => switch (k) {
       ReminderKind.vehicleDocs || ReminderKind.licenceExpiring => Icons.assignment_late_rounded,
       ReminderKind.serviceDue || ReminderKind.tyreDue => Icons.build_circle_outlined,
       ReminderKind.offersWaiting || ReminderKind.counterWaiting || ReminderKind.confirmWaiting => Icons.local_offer_outlined,
+      ReminderKind.rateTrip => Icons.star_outline_rounded,
     };
 
 /// One reminder as a card row.

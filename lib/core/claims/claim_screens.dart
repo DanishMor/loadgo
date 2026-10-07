@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../l10n/l10n.dart';
+import 'declared_value_line.dart';
 import '../models/booking.dart';
 import '../models/claim.dart';
 import '../services/backend.dart';
@@ -115,6 +116,7 @@ class _NewClaimScreenState extends State<NewClaimScreen> {
           onChanged: (v) => setState(() => _type = v ?? _type),
         ),
         const SizedBox(height: 14),
+        DeclaredValueLine(loadId: widget.booking.loadId),
         TextField(
           key: const ValueKey('claimText'),
           controller: _text,
@@ -220,6 +222,7 @@ class _ClaimScreenState extends State<ClaimScreen> {
                 Text(claimStatusLabel(context, c), key: const ValueKey('claimStatus'), style: const TextStyle(fontWeight: FontWeight.w700, color: AppColors.primary)),
                 const SizedBox(height: 8),
                 Text(c.description),
+                DeclaredValueLine(bookingId: c.bookingId),
                 if (c.amountPaise != null) Text(trf(context, 'dspClaimed', {'amount': formatPaise(c.amountPaise!)})),
                 if (c.awardedPaise != null) Text(trf(context, 'dspAwardedLine', {'amount': formatPaise(c.awardedPaise!)})),
                 if (c.resolutionNote.isNotEmpty) Text(c.resolutionNote, style: TextStyle(color: AppColors.muted)),

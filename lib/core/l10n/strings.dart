@@ -60,6 +60,7 @@ import 'trip_alert_strings.dart';
 import 'app_control_strings.dart';
 import 'assistant_strings.dart';
 import 'earn_history_strings.dart';
+import 'feedback_cancel_strings.dart';
 import 'offers_switch_strings.dart';
 import 'share_nav_strings.dart';
 import 'simple_mode_strings.dart';
@@ -127,6 +128,7 @@ const List<Map<String, List<String>>> stringTables = [
   simpleModeStrings,
   assistantStrings,
   earnHistoryStrings,
+  feedbackCancelStrings,
 ];
 
 final Map<String, List<String>> extraStrings = {

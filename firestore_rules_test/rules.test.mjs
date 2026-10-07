@@ -3729,3 +3729,147 @@ describe('assistant unknown questions', () => {
     await assertFails(deleteDoc(doc(as('customer1'), 'assistant_unknown', 'a1')));
   });
 });
+
+describe('cancel reasons, declared value and feedback', () => {
+  const CUSTOMER_REASONS = ['found_other', 'plan_changed', 'price_high', 'driver_delay', 'wrong_details', 'other'];
+  const DRIVER_REASONS = ['vehicle_problem', 'load_mismatch', 'customer_unreachable', 'personal', 'price_low', 'other'];
+
+  function shipperCancel(uid, extra = {}) {
+    const db = as(uid);
+    const b = writeBatch(db);
+    b.update(doc(db, 'loads', 'L1'), { status: 'closed', cancelled: true, cancelledAt: serverTimestamp(), ...extra });
+    b.set(doc(db, 'users', uid), { cancelCount: increment(1) }, { merge: true });
+    return b.commit();
+  }
+
+  function driverCancel(cancellation) {
+    const db = as('driver1');
+    const b = writeBatch(db);
+    b.update(doc(db, 'bookings', 'L1'), { status: 'cancelled', 'timeline.cancelled': serverTimestamp(), cancellation, updatedAt: serverTimestamp() });
+    b.update(doc(db, 'loads', 'L1'), { status: 'open', driverId: deleteField(), bookingId: deleteField(), matchedAt: deleteField(), reopenedAt: serverTimestamp() });
+    b.set(doc(db, 'users', 'driver1'), { cancelCount: increment(1) }, { merge: true });
+    return b.commit();
+  }
+
+  test('a customer cancelling an open load may name one of the customer reasons', async () => {
+    for (const r of CUSTOMER_REASONS) {
+      await env.clearFirestore();
+      await seed((db) => setDoc(doc(db, 'admins', 'admin1'), { createdBy: 'console' }));
+      await seedOpenLoad();
+      await assertSucceeds(shipperCancel('customer1', { cancelReason: r }));
+    }
+  });
+
+  test('refused: a driver reason, a made-up code, a non-string, or a reason on a load that stays open', async () => {
+    await seedOpenLoad();
+    await assertFails(shipperCancel('customer1', { cancelReason: 'vehicle_problem' }));
+    await assertFails(shipperCancel('customer1', { cancelReason: 'because' }));
+    await assertFails(shipperCancel('customer1', { cancelReason: 5 }));
+    await assertFails(updateDoc(doc(as('customer1'), 'loads', 'L1'), { notes: 'x', cancelReason: 'other' }));
+    await assertSucceeds(shipperCancel('customer1'));
+  });
+
+  test('a new load cannot carry a cancel reason', async () => {
+    await assertFails(setDoc(doc(as('customer1'), 'loads', 'N1'), { ...LOAD, cancelReason: 'other' }));
+    await assertSucceeds(setDoc(doc(as('customer1'), 'loads', 'N2'), { ...LOAD }));
+  });
+
+  test('a driver cancelling a booking may name a driver reason, never a customer one', async () => {
+    for (const r of DRIVER_REASONS) {
+      await env.clearFirestore();
+      await seed((db) => setDoc(doc(db, 'admins', 'admin1'), { createdBy: 'console' }));
+      await seedBooking();
+      await assertSucceeds(driverCancel({ by: 'driver', chargePaise: 0, reason: r }));
+    }
+    await env.clearFirestore();
+    await seed((db) => setDoc(doc(db, 'admins', 'admin1'), { createdBy: 'console' }));
+    await seedBooking();
+    await assertFails(driverCancel({ by: 'driver', chargePaise: 0, reason: 'price_high' }));
+    await assertFails(driverCancel({ by: 'driver', chargePaise: 0, reason: 'nope' }));
+    await assertFails(driverCancel({ by: 'driver', chargePaise: 0, reason: 7 }));
+    await assertFails(driverCancel({ by: 'driver', chargePaise: 0, reason: 'other', why: 'x' }));
+  });
+
+  test('a customer cancelling an advance booking: customer reasons only', async () => {
+    const at = Timestamp.fromMillis(Date.now() + 2 * 86400000);
+    const cancel = (reason) => {
+      const db = as('customer1');
+      const b = writeBatch(db);
+      b.update(doc(db, 'bookings', 'S1'), { status: 'cancelled', 'timeline.cancelled': serverTimestamp(), cancellation: { by: 'customer', chargePaise: 0, ...(reason ? { reason } : {}) }, updatedAt: serverTimestamp() });
+      b.update(doc(db, 'loads', 'S1'), { status: 'closed', cancelled: true, cancelledAt: serverTimestamp() });
+      b.set(doc(db, 'users', 'customer1'), { cancelCount: increment(1) }, { merge: true });
+      return b.commit();
+    };
+    const seedS = () => seed(async (db) => {
+      await setDoc(doc(db, 'loads', 'S1'), { ...LOAD, status: 'matched', driverId: 'driver1', bookingId: 'S1', scheduledAt: at });
+      await setDoc(doc(db, 'bookings', 'S1'), { ...bookingFor('S1'), scheduledAt: at, status: 'accepted', timeline: {} });
+      await setDoc(doc(db, 'users', 'customer1'), { role: 'customer', selectedRole: 'customer', cancelCount: 0 });
+    });
+    await seedS();
+    await assertFails(cancel('vehicle_problem'));
+    await assertFails(cancel('nonsense'));
+    await assertSucceeds(cancel('driver_delay'));
+    await env.clearFirestore();
+    await seed((db) => setDoc(doc(db, 'admins', 'admin1'), { createdBy: 'console' }));
+    await seedS();
+    await assertSucceeds(cancel(null));
+  });
+
+  test('declared goods value: optional integer paise from 0 to 10 crore rupees; fixed after posting', async () => {
+    const post = (id, extra) => setDoc(doc(as('customer1'), 'loads', id), { ...LOAD, ...extra });
+    await assertSucceeds(post('V1', { declaredValuePaise: 5000000 }));
+    await assertSucceeds(post('V2', { declaredValuePaise: 0 }));
+    await assertSucceeds(post('V3', { declaredValuePaise: 10000000000 }));
+    await assertFails(post('V4', { declaredValuePaise: 10000000001 }));
+    await assertFails(post('V5', { declaredValuePaise: -1 }));
+    await assertFails(post('V6', { declaredValuePaise: 12.5 }));
+    await assertFails(post('V7', { declaredValuePaise: '500' }));
+    await assertSucceeds(post('V8', {}));
+    await assertFails(updateDoc(doc(as('customer1'), 'loads', 'V1'), { declaredValuePaise: 1 }));
+    await assertFails(updateDoc(doc(as('customer1'), 'loads', 'V8'), { declaredValuePaise: 100 }));
+  });
+
+  describe('feedback', () => {
+    const fb = (uid, over = {}) => ({ userId: uid, role: 'customer', rating: 4, category: 'app', text: 'Nice app', appVersion: '1.0.0', createdAt: serverTimestamp(), ...over });
+    const staff = (uid) => env.authenticatedContext(uid).firestore();
+
+    beforeEach(async () => {
+      await seed(async (db) => {
+        await setDoc(doc(db, 'admins', 'sup1'), { role: 'support' });
+        await setDoc(doc(db, 'admins', 'ops1'), { role: 'ops' });
+      });
+    });
+
+    test('a signed-in user sends their own feedback', async () => {
+      await assertSucceeds(addDoc(collection(as('customer1'), 'feedback'), fb('customer1')));
+      await assertSucceeds(addDoc(collection(as('driver1'), 'feedback'), fb('driver1', { role: 'driver', category: 'idea', text: '' })));
+      await assertFails(addDoc(collection(anon(), 'feedback'), fb('customer1')));
+    });
+
+    test('refused: someone else, bad rating, bad category or role, long text, extra fields, wrong time', async () => {
+      const add = (over) => addDoc(collection(as('customer1'), 'feedback'), fb('customer1', over));
+      await assertFails(addDoc(collection(as('customer1'), 'feedback'), fb('driver1')));
+      for (const rating of [0, 6, 3.5, '4']) await assertFails(add({ rating }));
+      await assertFails(add({ category: 'rant' }));
+      await assertFails(add({ role: 'admin' }));
+      await assertSucceeds(add({ text: 'a'.repeat(500) }));
+      await assertFails(add({ text: 'a'.repeat(501) }));
+      await assertFails(add({ text: 9 }));
+      await assertFails(add({ appVersion: 'v'.repeat(21) }));
+      await assertFails(add({ extra: 1 }));
+      await assertFails(add({ createdAt: Timestamp.fromMillis(1000) }));
+    });
+
+    test('only super and support admins read; nobody edits or deletes', async () => {
+      await seed((db) => setDoc(doc(db, 'feedback', 'f1'), { userId: 'customer1', role: 'customer', rating: 5, category: 'app', text: 'x', appVersion: '1', createdAt: Timestamp.now() }));
+      await assertSucceeds(getDoc(doc(asAdmin(), 'feedback', 'f1')));
+      await assertSucceeds(getDocs(collection(staff('sup1'), 'feedback')));
+      await assertFails(getDoc(doc(staff('ops1'), 'feedback', 'f1')));
+      await assertFails(getDoc(doc(as('customer1'), 'feedback', 'f1')));
+      await assertFails(updateDoc(doc(as('customer1'), 'feedback', 'f1'), { text: 'y' }));
+      await assertFails(updateDoc(doc(asAdmin(), 'feedback', 'f1'), { text: 'y' }));
+      await assertFails(deleteDoc(doc(asAdmin(), 'feedback', 'f1')));
+      await assertFails(deleteDoc(doc(as('customer1'), 'feedback', 'f1')));
+    });
+  });
+});

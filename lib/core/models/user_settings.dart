@@ -24,6 +24,7 @@ class NotifCategory {
   static String ofReminder(ReminderKind k) => switch (k) {
         ReminderKind.tripDelayed || ReminderKind.pickupSoon || ReminderKind.noDriverYet => bookings,
         ReminderKind.offersWaiting || ReminderKind.counterWaiting || ReminderKind.confirmWaiting => offers,
+        ReminderKind.rateTrip => ratings,
         ReminderKind.returnLoads || ReminderKind.vehicleDocs || ReminderKind.serviceDue || ReminderKind.tyreDue || ReminderKind.licenceExpiring => reminders,
       };
 }

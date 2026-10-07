@@ -84,6 +84,13 @@ class RatingService {
     return _col.doc(ratingId(bookingId, uid)).snapshots().map((s) => s.exists ? Rating.fromDoc(s) : null);
   }
 
+  /// Booking ids the signed-in user has rated (newest 100 ratings given).
+  static Stream<Set<String>> watchGivenBookingIds() {
+    final uid = Backend.uid;
+    if (uid == null) return Stream.value(const <String>{});
+    return _col.where('raterId', isEqualTo: uid).limit(100).snapshots().map((s) => {for (final d in s.docs) (d.data()['bookingId'] ?? '') as String});
+  }
+
   static Stream<RatingSummary> watchSummary(String userId) {
     return _col
         .where('ratedId', isEqualTo: userId)

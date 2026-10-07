@@ -199,7 +199,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
   /// Pickup reminders open the trip, offer reminders My Offers, papers My Truck.
   void _openReminder(Reminder r) {
     switch (r.kind) {
-      case ReminderKind.pickupSoon || ReminderKind.tripDelayed:
+      case ReminderKind.pickupSoon || ReminderKind.tripDelayed || ReminderKind.rateTrip:
         if (r.relatedId != null) openDriverTrip(context, r.relatedId!);
       case ReminderKind.counterWaiting || ReminderKind.confirmWaiting:
         Navigator.of(context).push(MaterialPageRoute(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../core/constants/cancel_reasons.dart';
 import '../core/constants/logistics.dart';
 import '../core/services/load_service.dart';
 import 'matching_vehicles_line.dart';
@@ -67,6 +68,7 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
   final _dropCtrl = TextEditingController();
   final _weightCtrl = TextEditingController();
   final _budgetCtrl = TextEditingController();
+  final _valueCtrl = TextEditingController();
   final _notesCtrl = TextEditingController();
   final _costCenterCtrl = TextEditingController();
   String? _businessId;
@@ -107,6 +109,7 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
     _dropCtrl.dispose();
     _weightCtrl.dispose();
     _budgetCtrl.dispose();
+    _valueCtrl.dispose();
     _notesCtrl.dispose();
     _costCenterCtrl.dispose();
     _distanceCtrl.dispose();
@@ -136,6 +139,7 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
     _bookingType = l.bookingType;
     _fragile = l.fragile;
     _highValue = l.highValue;
+    if ((l.declaredValuePaise ?? 0) > 0) _valueCtrl.text = '${l.declaredValuePaise! ~/ 100}';
     _helpers = l.helpers;
     _rentalHours = l.rentalHours ?? _rentalHours;
     final m = l.movers;
@@ -369,6 +373,13 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
     if (t != null && mounted) setState(() => _pickupTime = t);
   }
 
+  /// Declared goods value in paise, or null when the field is empty.
+  int? get _declaredValuePaise {
+    final t = _valueCtrl.text.trim();
+    final rupees = int.tryParse(t);
+    return rupees == null ? null : rupees * 100;
+  }
+
   /// Pickup date + chosen time, or null when no exact time is set.
   DateTime? get _scheduledAt {
     final d = _pickupDate, t = _pickupTime;
@@ -497,6 +508,7 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
         creditsUsedPaise: credits,
         fragile: _fragile,
         highValue: _highValue,
+        declaredValuePaise: _declaredValuePaise,
         scheduledAt: _scheduledAt,
         invitedDriverId: widget.invitedDriverId,
         businessId: _businessId,
@@ -646,6 +658,21 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
                   title: Text(tr(context, 'highValueGoods')),
                   value: _highValue,
                   onChanged: (v) => setState(() => _highValue = v),
+                ),
+                const SizedBox(height: 10),
+                FieldLabel(tr(context, 'declaredValueLabel')),
+                TextFormField(
+                  key: const ValueKey('declaredValue'),
+                  controller: _valueCtrl,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(prefixIcon: const Icon(Icons.currency_rupee_rounded), helperText: tr(context, 'declaredValueHelp'), helperMaxLines: 2),
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(9)],
+                  validator: (v) {
+                    final t = v?.trim() ?? '';
+                    if (t.isEmpty) return null;
+                    final n = int.tryParse(t);
+                    return (n == null || n * 100 > CancelReasons.maxDeclaredValuePaise) ? tr(context, 'invalidNumber') : null;
+                  },
                 ),
                 const SizedBox(height: 18),
                 if (_bookingType == BookingType.rental) ...[

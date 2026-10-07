@@ -951,6 +951,7 @@ service cloud.firestore {
           && (!('scheduledAt' in d) || d.scheduledAt is timestamp)
           && (!('fragile' in d) || d.fragile is bool)
           && (!('highValue' in d) || d.highValue is bool)
+          && (!('declaredValuePaise' in d) || (d.declaredValuePaise is int && d.declaredValuePaise >= 0 && d.declaredValuePaise <= 10000000000))
           && validPromoShape(d)
           && d.get('creditsUsedPaise', 0) is int
           && (!('pickupGeohash' in d) || (d.pickupGeohash is string && d.pickupGeohash.matches('^[0-9b-hjkmnp-z]{4,12}$')))
@@ -1024,7 +1025,9 @@ service cloud.firestore {
           // Closing by the shipper is a cancellation and must be flagged.
           && request.resource.data.get('cancelled', false) == (request.resource.data.status == 'closed')
           && (request.resource.data.status == 'open' || cancelCounted())
-          && !changedKeys().hasAny(['shipperId', 'driverId', 'bookingId', 'createdAt', 'promo', 'creditsUsedPaise'])
+          && (!('cancelReason' in request.resource.data)
+              || (request.resource.data.status == 'closed' && request.resource.data.cancelReason in customerCancelReasons()))
+          && !changedKeys().hasAny(['shipperId', 'driverId', 'bookingId', 'createdAt', 'promo', 'creditsUsedPaise', 'declaredValuePaise'])
           && validLoad(request.resource.data);
     }
 
@@ -1155,7 +1158,7 @@ service cloud.firestore {
           && request.resource.data.status == (approvalNeeded(request.resource.data) ? 'awaiting_approval' : 'open')
           && canTransact(request.auth.uid)
           && rateBumped('load', loadId)
-          && !request.resource.data.keys().hasAny(['driverId', 'bookingId'])
+          && !request.resource.data.keys().hasAny(['driverId', 'bookingId', 'cancelReason'])
           && validLoad(request.resource.data)
           && (!('scheduledAt' in request.resource.data)
               || (request.resource.data.scheduledAt >= request.time + duration.value(30, 'm')
@@ -1427,10 +1430,20 @@ service cloud.firestore {
           && request.resource.data.lastKnownLocation is latlng;
     }
 
+    // Same lists as lib/core/constants/cancel_reasons.dart.
+    function customerCancelReasons() {
+      return ['found_other', 'plan_changed', 'price_high', 'driver_delay', 'wrong_details', 'other'];
+    }
+
+    function driverCancelReasons() {
+      return ['vehicle_problem', 'load_mismatch', 'customer_unreachable', 'personal', 'price_low', 'other'];
+    }
+
     // Recorded policy charge for a driver cancellation. No money moves.
     function validCancellation(c) {
-      return c == null || (c is map && c.keys().hasOnly(['by', 'chargePaise'])
-          && c.by in ['driver', 'customer'] && c.chargePaise is int && c.chargePaise >= 0 && c.chargePaise <= 10000000);
+      return c == null || (c is map && c.keys().hasOnly(['by', 'chargePaise', 'reason'])
+          && c.by in ['driver', 'customer'] && c.chargePaise is int && c.chargePaise >= 0 && c.chargePaise <= 10000000
+          && (!('reason' in c) || (c.by == 'driver' ? c.reason in driverCancelReasons() : c.reason in customerCancelReasons())));
     }
 
     // Customer cancels an advance booking the driver has not started: the
@@ -1776,6 +1789,22 @@ service cloud.firestore {
           && request.resource.data.resolvedBy == request.auth.uid
           && request.resource.data.resolvedAt == request.time;
       allow delete: if false;
+    }
+
+    // In-app feedback (Task 50): one document per submission, written by the
+    // sender, read by super and support admins only. Nobody edits or deletes.
+    match /feedback/{id} {
+      allow read: if adminIn(['super', 'support']);
+      allow create: if signedIn()
+          && request.resource.data.keys().hasOnly(['userId', 'role', 'rating', 'category', 'text', 'appVersion', 'createdAt'])
+          && request.resource.data.userId == request.auth.uid
+          && request.resource.data.role in ['customer', 'driver', 'fleet']
+          && request.resource.data.rating is int && request.resource.data.rating >= 1 && request.resource.data.rating <= 5
+          && request.resource.data.category in ['app', 'booking', 'payment', 'pricing', 'support', 'idea', 'other']
+          && request.resource.data.text is string && request.resource.data.text.size() <= 500
+          && request.resource.data.appVersion is string && request.resource.data.appVersion.size() <= 20
+          && request.resource.data.createdAt == request.time;
+      allow update, delete: if false;
     }
 
     match /reports/{reportId} {

@@ -5,6 +5,7 @@ import '../core/constants/logistics.dart';
 import '../core/models/booking.dart';
 import '../core/services/booking_service.dart';
 import '../core/share/share_widgets.dart';
+import '../core/widgets/cancel_reason_picker.dart';
 import '../core/widgets/common.dart';
 import '../core/widgets/trip_eta_card.dart';
 import '../core/l10n/l10n.dart';
@@ -219,6 +220,7 @@ class _CancelBookingButtonState extends State<_CancelBookingButton> {
   bool _busy = false;
 
   Future<void> _cancel() async {
+    String? reason;
     final charge = BookingService.cancellationCharge(widget.booking, DateTime.now());
     final policy = PricingService.config.cancellation;
     final ok = await showDialog<bool>(
@@ -238,6 +240,8 @@ class _CancelBookingButtonState extends State<_CancelBookingButton> {
               key: const ValueKey('cancelPolicyNote'),
               style: TextStyle(fontSize: 13, color: AppColors.muted),
             ),
+            const SizedBox(height: 12),
+            CancelReasonPicker(by: 'driver', onChanged: (r) => reason = r),
           ],
         ),
         actions: [
@@ -256,7 +260,7 @@ class _CancelBookingButtonState extends State<_CancelBookingButton> {
     final failed = tr(context, 'somethingWrong');
     setState(() => _busy = true);
     try {
-      await BookingService.cancelByDriver(widget.booking.id);
+      await BookingService.cancelByDriver(widget.booking.id, reason: reason);
       messenger.showSnackBar(SnackBar(content: Text(done), behavior: SnackBarBehavior.floating));
     } catch (_) {
       messenger.showSnackBar(SnackBar(content: Text(failed), behavior: SnackBarBehavior.floating));

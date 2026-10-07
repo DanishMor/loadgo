@@ -193,7 +193,7 @@ class _CustomerHomeContent extends StatelessWidget {
 
   /// Pickup reminders open the booking; offers and "no driver yet" go to My Loads.
   void _openReminder(BuildContext context, Reminder r) {
-    if ((r.kind == ReminderKind.pickupSoon || r.kind == ReminderKind.tripDelayed) && r.relatedId != null) {
+    if ((r.kind == ReminderKind.pickupSoon || r.kind == ReminderKind.tripDelayed || r.kind == ReminderKind.rateTrip) && r.relatedId != null) {
       openBookingTracking(context, r.relatedId!);
     } else {
       onOpenTab(_loadsTabIndex);

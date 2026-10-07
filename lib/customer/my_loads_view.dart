@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../core/constants/logistics.dart';
 import '../core/models/load.dart';
 import '../core/services/load_service.dart';
+import '../core/widgets/cancel_reason_picker.dart';
 import '../core/widgets/common.dart';
 import '../core/l10n/l10n.dart';
 import '../core/widgets/paged_live_stream.dart';
@@ -171,11 +172,16 @@ class _CancelLoadButtonState extends State<_CancelLoadButton> {
   bool _busy = false;
 
   Future<void> _cancel() async {
+    String? reason;
     final ok = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: Text(tr(dialogContext, 'cancelLoad')),
-        content: Text(tr(dialogContext, 'cancelLoadConfirm')),
+        content: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(tr(dialogContext, 'cancelLoadConfirm')),
+          const SizedBox(height: 12),
+          CancelReasonPicker(by: 'customer', onChanged: (r) => reason = r),
+        ]),
         actions: [
           TextButton(onPressed: () => Navigator.of(dialogContext).pop(false), child: Text(tr(dialogContext, 'keepLoad'))),
           FilledButton(
@@ -195,7 +201,7 @@ class _CancelLoadButtonState extends State<_CancelLoadButton> {
     final cancelled = tr(context, 'loadCancelled');
     setState(() => _busy = true);
     try {
-      await LoadService.cancel(widget.load.id);
+      await LoadService.cancel(widget.load.id, reason: reason);
       messenger.showSnackBar(SnackBar(content: Text(cancelled), behavior: SnackBarBehavior.floating));
     } on LoadNotCancellableException {
       if (mounted) snack('cannotCancelMatched');

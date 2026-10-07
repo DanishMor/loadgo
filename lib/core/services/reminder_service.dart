@@ -11,6 +11,7 @@ import 'backend.dart';
 import 'booking_service.dart';
 import 'load_service.dart';
 import 'offer_service.dart';
+import 'rating_service.dart';
 import 'vehicle_service.dart';
 import 'settings_service.dart';
 import 'pricing_service.dart';
@@ -36,6 +37,7 @@ class ReminderService {
     var offers = const <Offer>[];
     var vehicles = const <Vehicle>[];
     DateTime? licence;
+    Set<String>? rated;
 
     String? lastKey;
     void emit() {
@@ -49,6 +51,7 @@ class ReminderService {
         offers: offers,
         vehicles: vehicles,
         licenceExpiry: licence,
+        ratedBookingIds: rated,
         etaOf: (b) => TripEta.eta(b, PricingService.estimateRouteKm([b.pickup, ...b.extraPickups, ...b.extraDrops, b.drop])),
       ))) if (prefs.allowsReminder(r.kind)) r];
       // Same reminders as last time: do not wake the UI.
@@ -85,6 +88,7 @@ class ReminderService {
           listen(LoadService.watchMine(), (v) => loads = v);
           listen(OfferService.watchForCustomer(), (v) => offers = v);
         }
+        listen(RatingService.watchGivenBookingIds(), (v) => rated = v);
         SettingsService.prefs.addListener(onPrefs);
         emit();
         timer = Timer.periodic(tick, (_) => emit());

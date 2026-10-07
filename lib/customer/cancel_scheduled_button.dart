@@ -4,6 +4,7 @@ import '../core/l10n/l10n.dart';
 import '../core/models/booking.dart';
 import '../core/services/booking_service.dart';
 import '../core/services/pricing_service.dart';
+import '../core/widgets/cancel_reason_picker.dart';
 import '../core/widgets/common.dart';
 
 /// Cancel an advance booking before the driver starts it. The dialog says
@@ -30,16 +31,21 @@ class _CancelScheduledButtonState extends State<CancelScheduledButton> {
       );
 
   Future<void> _cancel() async {
+    String? reason;
     final hours = PricingService.config.cancellation.scheduledFreeHours;
     final charge = _charge;
     final ok = await showDialog<bool>(
       context: context,
       builder: (c) => AlertDialog(
         title: Text(tr(c, 'cancelBooking')),
-        content: Text(
-          charge == 0 ? trf(c, 'cancelScheduledFree', {'h': hours}) : trf(c, 'cancelScheduledCharge', {'amount': formatPaise(charge), 'h': hours}),
-          key: const ValueKey('cancelScheduledNote'),
-        ),
+        content: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(
+            charge == 0 ? trf(c, 'cancelScheduledFree', {'h': hours}) : trf(c, 'cancelScheduledCharge', {'amount': formatPaise(charge), 'h': hours}),
+            key: const ValueKey('cancelScheduledNote'),
+          ),
+          const SizedBox(height: 12),
+          CancelReasonPicker(by: 'customer', onChanged: (r) => reason = r),
+        ]),
         actions: [
           TextButton(onPressed: () => Navigator.pop(c, false), child: Text(tr(c, 'keepBooking'))),
           FilledButton(
@@ -57,7 +63,7 @@ class _CancelScheduledButtonState extends State<CancelScheduledButton> {
     final done = tr(context, 'bookingCancelledByYou');
     final failed = tr(context, 'somethingWrong');
     try {
-      await BookingService.cancelScheduledByCustomer(widget.booking.id, now: widget.now());
+      await BookingService.cancelScheduledByCustomer(widget.booking.id, now: widget.now(), reason: reason);
       messenger.showSnackBar(SnackBar(content: Text(done), behavior: SnackBarBehavior.floating));
     } catch (_) {
       messenger.showSnackBar(SnackBar(content: Text(failed), behavior: SnackBarBehavior.floating));

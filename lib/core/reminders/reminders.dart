@@ -1,12 +1,13 @@
 import '../constants/logistics.dart';
 import '../models/booking.dart';
+import '../models/earnings.dart';
 import '../models/load.dart';
 import '../models/offer.dart';
 import '../matching/return_loads.dart';
 import '../models/vehicle.dart';
 import '../trip/trip_eta.dart';
 
-enum ReminderKind { tripDelayed, returnLoads, pickupSoon, noDriverYet, vehicleDocs, serviceDue, tyreDue, licenceExpiring, offersWaiting, counterWaiting, confirmWaiting }
+enum ReminderKind { tripDelayed, returnLoads, pickupSoon, noDriverYet, vehicleDocs, serviceDue, tyreDue, licenceExpiring, offersWaiting, counterWaiting, confirmWaiting, rateTrip }
 
 /// An in-app reminder worked out from what the app already knows (no push,
 /// nothing stored). LATER(paid): the same rules in a scheduled Cloud
@@ -48,6 +49,10 @@ class ReminderInput {
   /// Estimated arrival of a booking (null = unknown); feeds the delay alert.
   final DateTime? Function(Booking)? etaOf;
 
+  /// Bookings this user has already rated; null while unknown (no rating
+  /// reminder is made until it is known).
+  final Set<String>? ratedBookingIds;
+
   const ReminderInput({
     required this.now,
     required this.isDriver,
@@ -57,6 +62,7 @@ class ReminderInput {
     this.vehicles = const [],
     this.licenceExpiry,
     this.etaOf,
+    this.ratedBookingIds,
   });
 }
 
@@ -71,6 +77,12 @@ class ReminderEngine {
   static const lateTime = Duration(hours: 2);
 
   static const expiryDays = 30;
+
+  /// A delivered trip is "not rated yet" once this long has passed ...
+  static const rateAfter = Duration(hours: 24);
+
+  /// ... and the reminder stops after this many days.
+  static const rateWindowDays = 14;
 
   static List<Reminder> compute(ReminderInput i) {
     final out = <Reminder>[];
@@ -105,6 +117,25 @@ class ReminderEngine {
             priority: 0,
           ));
         }
+      }
+    }
+
+    // Both sides: delivered a day ago or more and still not rated.
+    final rated = i.ratedBookingIds;
+    if (rated != null) {
+      final waiting = [
+        for (final b in i.bookings)
+          if (b.status == BookingStatus.delivered && !rated.contains(b.id) && _rateDue(i.now, EarningsSummary.deliveredAt(b))) b,
+      ]..sort((a, b) => EarningsSummary.deliveredAt(b).compareTo(EarningsSummary.deliveredAt(a)));
+      if (waiting.isNotEmpty) {
+        final latest = waiting.first;
+        out.add(Reminder(
+          kind: ReminderKind.rateTrip,
+          id: 'rate_${latest.id}',
+          args: {'n': waiting.length, 'route': '${latest.pickup} → ${latest.drop}'},
+          relatedId: latest.id,
+          priority: 3,
+        ));
       }
     }
 
@@ -173,6 +204,12 @@ class ReminderEngine {
 
     out.sort((a, b) => a.priority.compareTo(b.priority));
     return out;
+  }
+
+  static bool _rateDue(DateTime now, DateTime deliveredAt) {
+    if (deliveredAt.millisecondsSinceEpoch == 0) return false;
+    final age = now.difference(deliveredAt);
+    return age >= rateAfter && age <= const Duration(days: rateWindowDays);
   }
 
   static bool _inWindow(DateTime now, DateTime at) => !now.isBefore(at.subtract(leadTime)) && !now.isAfter(at.add(lateTime));

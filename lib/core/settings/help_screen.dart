@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../l10n/l10n.dart';
+import 'feedback_screen.dart';
 import 'legal_screens.dart';
 import 'onboarding_screen.dart';
 
@@ -24,6 +25,13 @@ class HelpScreen extends StatelessWidget {
             children: [Text(tr(context, 'faqA$i'), style: const TextStyle(height: 1.4))],
           ),
         const Divider(),
+        ListTile(
+          key: const ValueKey('helpFeedback'),
+          leading: const Icon(Icons.rate_review_outlined),
+          title: Text(tr(context, 'fbTitle')),
+          trailing: const Icon(Icons.chevron_right_rounded),
+          onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const FeedbackScreen())),
+        ),
         ListTile(
           key: const ValueKey('helpTour'),
           leading: const Icon(Icons.slideshow_rounded),

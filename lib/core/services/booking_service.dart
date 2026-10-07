@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import '../constants/cancel_reasons.dart';
 import '../constants/logistics.dart';
 import '../models/booking.dart';
 import '../models/load.dart';
@@ -317,7 +318,8 @@ class BookingService {
   /// Driver backs out of an accepted (not yet picked up) booking: the booking
   /// becomes cancelled, the load reopens for other drivers and the customer
   /// is notified.
-  static Future<void> cancelByDriver(String bookingId) async {
+  static Future<void> cancelByDriver(String bookingId, {String? reason}) async {
+    if (!CancelReasons.valid('driver', reason)) throw ArgumentError.value(reason, 'reason');
     final uid = Backend.requireUid();
     final ref = _col.doc(bookingId);
     await Backend.db.runTransaction((tx) async {
@@ -331,7 +333,7 @@ class BookingService {
       tx.update(ref, {
         'status': BookingStatus.cancelled,
         'timeline.${BookingStatus.cancelled}': FieldValue.serverTimestamp(),
-        'cancellation': {'by': 'driver', 'chargePaise': cancellationCharge(booking, DateTime.now())},
+        'cancellation': {'by': 'driver', 'chargePaise': cancellationCharge(booking, DateTime.now()), 'reason': ?reason},
         'updatedAt': FieldValue.serverTimestamp(),
       });
       tx.update(Backend.db.collection('loads').doc(booking.loadId), {
@@ -344,7 +346,7 @@ class BookingService {
       freeVehicle();
       RiskService.countCancel(tx);
       AuditService.inTransaction(tx, AuditType.cancel,
-          targetId: booking.customerId, bookingId: booking.id, loadId: booking.loadId, data: {'by': 'driver', 'from': booking.status});
+          targetId: booking.customerId, bookingId: booking.id, loadId: booking.loadId, data: {'by': 'driver', 'from': booking.status, 'reason': ?reason});
       NotificationService.addInTransaction(
         tx,
         userId: booking.customerId,
@@ -358,7 +360,8 @@ class BookingService {
   /// Customer cancels an advance booking the driver has not started. The
   /// load is closed as cancelled (not reopened). Returns the recorded charge
   /// (paise): free until the configured hours before pickup. Record only.
-  static Future<int> cancelScheduledByCustomer(String bookingId, {DateTime? now}) async {
+  static Future<int> cancelScheduledByCustomer(String bookingId, {DateTime? now, String? reason}) async {
+    if (!CancelReasons.valid('customer', reason)) throw ArgumentError.value(reason, 'reason');
     final uid = Backend.requireUid();
     final ref = _col.doc(bookingId);
     final at = now ?? DateTime.now();
@@ -377,7 +380,7 @@ class BookingService {
       tx.update(ref, {
         'status': BookingStatus.cancelled,
         'timeline.${BookingStatus.cancelled}': FieldValue.serverTimestamp(),
-        'cancellation': {'by': 'customer', 'chargePaise': charge},
+        'cancellation': {'by': 'customer', 'chargePaise': charge, 'reason': ?reason},
         'updatedAt': FieldValue.serverTimestamp(),
       });
       tx.update(Backend.db.collection('loads').doc(booking.loadId), {
@@ -388,7 +391,7 @@ class BookingService {
       freeVehicle();
       RiskService.countCancel(tx);
       AuditService.inTransaction(tx, AuditType.cancel,
-          targetId: booking.driverId, bookingId: booking.id, loadId: booking.loadId, data: {'by': 'customer', 'from': booking.status});
+          targetId: booking.driverId, bookingId: booking.id, loadId: booking.loadId, data: {'by': 'customer', 'from': booking.status, 'reason': ?reason});
       NotificationService.addInTransaction(
         tx,
         userId: booking.driverId,
