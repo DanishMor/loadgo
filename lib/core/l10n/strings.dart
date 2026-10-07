@@ -58,6 +58,7 @@ import 'pay_extra_strings.dart';
 import 'trip_alert_strings.dart';
 
 import 'app_control_strings.dart';
+import 'assistant_strings.dart';
 import 'offers_switch_strings.dart';
 import 'share_nav_strings.dart';
 import 'simple_mode_strings.dart';
@@ -123,6 +124,7 @@ const List<Map<String, List<String>>> stringTables = [
   surgeStrings,
   tripCostStrings,
   simpleModeStrings,
+  assistantStrings,
 ];
 
 final Map<String, List<String>> extraStrings = {
