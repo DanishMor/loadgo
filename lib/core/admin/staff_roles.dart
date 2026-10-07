@@ -33,6 +33,7 @@ const Map<String, List<String>> staffAreas = {
   'adminHealth': [StaffRole.superAdmin, StaffRole.ops],
   'adminTemplates': [StaffRole.superAdmin],
   'adminDemo': [StaffRole.superAdmin],
+  'adminFeatures': [StaffRole.superAdmin],
   'adminFeedback': [StaffRole.superAdmin, StaffRole.support],
   'flaggedUsers': [StaffRole.superAdmin, StaffRole.ops],
   'adminDeletionRequests': [StaffRole.superAdmin, StaffRole.support],

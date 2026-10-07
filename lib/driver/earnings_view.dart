@@ -5,6 +5,8 @@ import '../core/models/booking.dart';
 import '../core/models/earnings.dart';
 import '../core/widgets/common.dart';
 import '../core/l10n/l10n.dart';
+import '../core/widgets/feature_gate.dart';
+import '../core/features/features.dart';
 import '../core/trip/trip_history_screen.dart';
 import '../core/widgets/live_stream.dart';
 import '../core/widgets/mini_bars.dart';
@@ -49,13 +51,16 @@ class EarningsView extends StatelessWidget {
               Text(tr(context, 'earnings'),
                   style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: AppColors.title)),
               const SizedBox(height: 16),
-              ListTile(
-                key: const ValueKey('openRewards'),
-                contentPadding: EdgeInsets.zero,
-                leading: const Icon(Icons.card_giftcard_rounded, color: AppColors.primary),
-                title: Text(tr(context, 'tipsBonusesPlan'), style: const TextStyle(fontWeight: FontWeight.w700)),
-                trailing: const Icon(Icons.chevron_right_rounded),
-                onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const DriverRewardsScreen())),
+              FeatureGate(
+                featureKey: FeatureKey.driverRewards,
+                child: ListTile(
+                  key: const ValueKey('openRewards'),
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.card_giftcard_rounded, color: AppColors.primary),
+                  title: Text(tr(context, 'tipsBonusesPlan'), style: const TextStyle(fontWeight: FontWeight.w700)),
+                  trailing: const Icon(Icons.chevron_right_rounded),
+                  onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const DriverRewardsScreen())),
+                ),
               ),
               const SizedBox(height: 4),
               Container(

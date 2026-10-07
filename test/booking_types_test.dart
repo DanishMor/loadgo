@@ -10,6 +10,8 @@ import 'package:transport_app/core/services/backend.dart';
 import 'package:transport_app/core/services/load_service.dart';
 import 'package:transport_app/core/services/pricing_service.dart';
 import 'package:transport_app/core/widgets/common.dart';
+import 'package:transport_app/core/features/features.dart';
+import 'package:transport_app/core/services/features_service.dart';
 import 'package:transport_app/customer/post_load_screen.dart';
 
 import 'test_utils.dart';
@@ -21,6 +23,7 @@ const rule = PricingRule(
 );
 
 void main() {
+  tearDownAll(FeaturesService.reset);
   group('helpers', () {
     test('each helper adds the configured charge; platform fee and GST follow', () {
       final none = FareCalculator.calculate(rule: rule, distanceKm: 20, platformFeePercent: 5, gstPercent: 5);
@@ -139,6 +142,7 @@ void main() {
       db = FakeFirebaseFirestore();
       Backend.useFakes(db: db, uid: () => 'c1');
       PricingService.reset();
+      FeaturesService.notifier.value = const Features(pilotMode: false);
     });
 
     Future<String> post({String type = BookingType.freight, int helpers = 0, int? hours, MoversDetails? movers}) => LoadService.post(
@@ -184,6 +188,7 @@ void main() {
       db = FakeFirebaseFirestore();
       Backend.useFakes(db: db, uid: () => 'c1');
       PricingService.reset();
+      FeaturesService.notifier.value = const Features(pilotMode: false);
       languageNotifier.value = AppLanguage.english;
     });
 

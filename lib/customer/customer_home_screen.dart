@@ -22,6 +22,9 @@ import 'customer_analytics_screen.dart';
 import '../core/services/auth_helpers.dart';
 import '../core/services/booking_service.dart';
 import '../core/l10n/l10n.dart';
+import '../core/widgets/feature_gate.dart';
+import '../core/services/features_service.dart';
+import '../core/features/features.dart';
 import '../core/navigation/deep_links.dart';
 import '../core/l10n/language_widgets.dart';
 import 'booking_tracking_screen.dart';
@@ -107,11 +110,14 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
           screen: (_) => const OffersScreen(),
         ),
       ),
-      ProfileNavTile(
-        key: const ValueKey('profileBusiness'),
-        icon: Icons.business_center_outlined,
-        titleKey: 'businessTools',
-        screen: (_) => const BusinessHubScreen(),
+      FeatureGate(
+        featureKey: FeatureKey.businessTools,
+        child: ProfileNavTile(
+          key: const ValueKey('profileBusiness'),
+          icon: Icons.business_center_outlined,
+          titleKey: 'businessTools',
+          screen: (_) => const BusinessHubScreen(),
+        ),
       ),
       ProfileNavTile(
         key: const ValueKey('profileTransactions'),
@@ -389,26 +395,32 @@ class _CustomerHomeContent extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: _QuickActionCard(
-                    icon: Icons.local_shipping_outlined,
-                    title: tr(context, 'emptyTrucks'),
-                    subtitle: tr(context, 'emptyTrucksSub'),
-                    onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const TruckBoardScreen())),
+            ValueListenableBuilder<Features>(
+              valueListenable: FeaturesService.notifier,
+              builder: (context, f, _) => Row(
+                children: [
+                  if (f.isOn(FeatureKey.emptyTrucks)) ...[
+                    Expanded(
+                      child: _QuickActionCard(
+                        icon: Icons.local_shipping_outlined,
+                        title: tr(context, 'emptyTrucks'),
+                        subtitle: tr(context, 'emptyTrucksSub'),
+                        onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const TruckBoardScreen())),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                  ],
+                  Expanded(
+                    child: _QuickActionCard(
+                      icon: Icons.two_wheeler_rounded,
+                      title: tr(context, 'bookBike'),
+                      subtitle: tr(context, 'bookBikeSub'),
+                      onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const PostLoadScreen(initialVehicleType: 'Bike'))),
+                    ),
                   ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _QuickActionCard(
-                    icon: Icons.two_wheeler_rounded,
-                    title: tr(context, 'bookBike'),
-                    subtitle: tr(context, 'bookBikeSub'),
-                    onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const PostLoadScreen(initialVehicleType: 'Bike'))),
-                  ),
-                ),
-              ],
+                  if (!f.isOn(FeatureKey.emptyTrucks)) ...[const SizedBox(width: 12), const Expanded(child: SizedBox.shrink())],
+                ],
+              ),
             ),
             const SizedBox(height: 28),
             Text(tr(context, 'services'), style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.title)),

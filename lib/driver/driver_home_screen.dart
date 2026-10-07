@@ -19,6 +19,9 @@ import '../core/services/vehicle_service.dart';
 import '../core/widgets/common.dart';
 import '../core/widgets/kyc_check_widgets.dart';
 import '../core/l10n/l10n.dart';
+import '../core/widgets/feature_gate.dart';
+import '../core/services/features_service.dart';
+import '../core/features/features.dart';
 import '../core/navigation/deep_links.dart';
 import '../core/l10n/language_widgets.dart';
 import '../core/widgets/booking_list_view.dart';
@@ -351,20 +354,26 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
               ],
             ),
             const SizedBox(height: 12),
-            Row(
-              children: [
-                _tile(
-                  Icons.insights_rounded,
-                  tr(context, 'cityDemand'),
-                  onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const CityDemandScreen())),
-                ),
-                const SizedBox(width: 12),
-                _tile(
-                  Icons.local_shipping_outlined,
-                  tr(context, 'emptyTrucks'),
-                  onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const EmptyTrucksScreen())),
-                ),
-              ],
+            ValueListenableBuilder<Features>(
+              valueListenable: FeaturesService.notifier,
+              builder: (context, f, _) => Row(
+                children: [
+                  _tile(
+                    Icons.insights_rounded,
+                    tr(context, 'cityDemand'),
+                    onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const CityDemandScreen())),
+                  ),
+                  const SizedBox(width: 12),
+                  if (f.isOn(FeatureKey.emptyTrucks))
+                    _tile(
+                      Icons.local_shipping_outlined,
+                      tr(context, 'emptyTrucks'),
+                      onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const EmptyTrucksScreen())),
+                    )
+                  else
+                    const Expanded(child: SizedBox.shrink()),
+                ],
+              ),
             ),
             const SizedBox(height: 12),
             Row(
@@ -438,11 +447,14 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
           titleKey: 'myAnalytics',
           screen: (_) => const DriverAnalyticsScreen(),
         ),
-        ProfileNavTile(
-          key: const ValueKey('profileNetwork'),
-          icon: Icons.groups_2_outlined,
-          titleKey: 'netTitle',
-          screen: (_) => const NetworkScreen(),
+        FeatureGate(
+          featureKey: FeatureKey.driverNetwork,
+          child: ProfileNavTile(
+            key: const ValueKey('profileNetwork'),
+            icon: Icons.groups_2_outlined,
+            titleKey: 'netTitle',
+            screen: (_) => const NetworkScreen(),
+          ),
         ),
         ProfileNavTile(
           key: const ValueKey('profileEditDocuments'),

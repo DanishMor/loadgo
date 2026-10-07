@@ -9,6 +9,8 @@ import '../core/widgets/common.dart';
 import 'place_field.dart';
 import '../core/models/risk.dart';
 import '../core/l10n/l10n.dart';
+import '../core/widgets/feature_gate.dart';
+import '../core/features/features.dart';
 import '../core/services/vehicle_type_service.dart';
 import '../core/widgets/logistics_labels.dart';
 import '../core/services/pricing_service.dart';
@@ -584,9 +586,14 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                FieldLabel(tr(context, 'bookingTypeLabel')),
-                BookingTypePicker(value: _bookingType, onChanged: (t) => setState(() => _bookingType = t)),
-                const SizedBox(height: 18),
+                FeatureGate(
+                  featureKey: FeatureKey.rentalMovers,
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    FieldLabel(tr(context, 'bookingTypeLabel')),
+                    BookingTypePicker(value: _bookingType, onChanged: (t) => setState(() => _bookingType = t)),
+                    const SizedBox(height: 18),
+                  ]),
+                ),
                 FieldLabel(tr(context, 'pickupLocation')),
                 PlaceField(
                   controller: _pickupCtrl,
