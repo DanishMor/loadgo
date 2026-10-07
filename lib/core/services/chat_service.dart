@@ -57,9 +57,11 @@ class ChatService {
     final t = text.trim();
     if (t.isEmpty) throw ChatSendException('empty');
     if (t.length > ChatMessage.maxLength) throw ChatSendException('tooLong');
+    final last = await _lastMessage(booking.id);
+    if (last != null && last['senderId'] == uid && isRepeat(last['text'] as String? ?? '', t)) throw ChatSendException('repeat');
     final msgRef = _messages(booking.id).doc();
     final rate = await RateLimit.prepare(RateLimit.messageKind, docId: msgRef.id);
-    final notify = await _shouldNotify(booking.id, uid);
+    final notify = _shouldNotify(last, uid);
     try {
       final batch = Backend.db.batch();
       batch.set(msgRef, {
@@ -93,16 +95,29 @@ class ChatService {
 
   /// False when the last message of the chat is mine and recent: the other
   /// person was already notified for this burst. LATER(paid): push (FCM sender).
-  static Future<bool> _shouldNotify(String bookingId, String uid) async {
+  static bool _shouldNotify(Map<String, dynamic>? last, String uid) {
+    if (last == null) return true;
+    final at = (last['createdAt'] as Timestamp?)?.toDate();
+    return last['senderId'] != uid || at == null || DateTime.now().difference(at) > notifyBurst;
+  }
+
+  /// The newest message of the chat, or null (also when it cannot be read).
+  static Future<Map<String, dynamic>?> _lastMessage(String bookingId) async {
     try {
-      final last = await _messages(bookingId).orderBy('createdAt', descending: true).limit(1).get();
-      if (last.docs.isEmpty) return true;
-      final d = last.docs.first.data();
-      final at = (d['createdAt'] as Timestamp?)?.toDate();
-      return d['senderId'] != uid || at == null || DateTime.now().difference(at) > notifyBurst;
+      final snap = await _messages(bookingId).orderBy('createdAt', descending: true).limit(1).get();
+      return snap.docs.isEmpty ? null : snap.docs.first.data();
     } on FirebaseException {
-      return true;
+      return null;
     }
+  }
+
+  /// The same text as the sender's previous message (case, spaces and
+  /// punctuation at the ends ignored) is a repeat: refused, so a chat cannot
+  /// be flooded with one line.
+  static bool isRepeat(String previous, String next) {
+    String norm(String s) => s.toLowerCase().replaceAll(RegExp(r'\s+'), ' ').replaceAll(RegExp(r'^[\s\p{P}]+|[\s\p{P}]+$', unicode: true), '');
+    final a = norm(previous), b = norm(next);
+    return a.isNotEmpty && a == b;
   }
 
   static Future<void> markRead(String bookingId) async {

@@ -16,6 +16,7 @@ import 'admin_templates_screen.dart';
 import 'admin_config_screen.dart';
 import 'admin_driver_rewards_screen.dart';
 import 'admin_fraud_cases_screen.dart';
+import 'admin_rating_burst_screen.dart';
 import 'admin_rating_flags_screen.dart';
 import 'admin_trends_section.dart';
 import 'admin_lists.dart';
@@ -60,6 +61,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       ('adminFraudCases', 'adminFraudCases', Icons.gavel_rounded, const AdminFraudCasesScreen()),
       ('adminDisputes', 'adminDisputes', Icons.report_problem_outlined, const AdminClaimsScreen()),
       ('adminRatingFlags', 'adminRatingFlags', Icons.star_half_rounded, const AdminRatingFlagsScreen()),
+      ('adminRatingBurst', 'adminRatingBurst', Icons.star_border_purple500_rounded, const AdminRatingBurstScreen()),
       ('adminAssistant', 'adminAssistant', Icons.chat_bubble_outline_rounded, const AdminAssistantScreen()),
       ('adminFeedback', 'adminFeedback', Icons.rate_review_outlined, const AdminFeedbackScreen()),
       ('adminHealth', 'adminHealth', Icons.monitor_heart_outlined, const AdminHealthScreen()),

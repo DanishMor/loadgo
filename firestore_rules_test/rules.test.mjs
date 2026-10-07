@@ -4032,3 +4032,45 @@ describe('demo data', () => {
     }
   });
 });
+
+describe('abuse guards (Task 56)', () => {
+  const OFFER = {
+    loadId: 'L1', driverId: 'driver1', customerId: 'customer1', vehicleId: 'v1', vehicleNumber: VEHICLE.number,
+    vehicleType: '20ft', driverName: 'Ramesh', pricePaise: 2400000, originalPaise: 2400000, status: 'pending',
+  };
+  const offerAt = (db, paise) => setDoc(doc(db, 'offers', 'L1_driver1'), { ...OFFER, pricePaise: paise, originalPaise: paise });
+  const withEstimate = (total) => seed((db) => updateDoc(doc(db, 'loads', 'L1'), { estimate: { total } }));
+
+  test('offer price must be 30%..300% of the estimate (inclusive), in whole paise', async () => {
+    await seedOpenLoad();
+    await withEstimate(1000000);
+    await assertFails(offerAt(as('driver1'), 299999));
+    await assertSucceeds(offerAt(as('driver1'), 300000));
+    await seed((db) => deleteDoc(doc(db, 'offers', 'L1_driver1')));
+    await assertSucceeds(offerAt(as('driver1'), 3000000));
+    await seed((db) => deleteDoc(doc(db, 'offers', 'L1_driver1')));
+    await assertFails(offerAt(as('driver1'), 3000001));
+    await assertFails(offerAt(as('driver1'), 99999999));
+  });
+
+  test('without an estimate (or a zero one) there are no limits except the hard cap', async () => {
+    await seedOpenLoad();
+    await assertSucceeds(offerAt(as('driver1'), 100));
+    await seed((db) => deleteDoc(doc(db, 'offers', 'L1_driver1')));
+    await withEstimate(0);
+    await assertSucceeds(offerAt(as('driver1'), 99999999));
+    await seed((db) => deleteDoc(doc(db, 'offers', 'L1_driver1')));
+    await assertFails(offerAt(as('driver1'), 100000001));
+  });
+
+  test('chat: a message of only spaces is refused', async () => {
+    await seedBooking();
+    const msgs = collection(as('customer1'), 'bookings', 'L1', 'messages');
+    const msg = (text) => ({ senderId: 'customer1', text, flagged: false, createdAt: serverTimestamp() });
+    await assertFails(addDoc(msgs, msg('   ')));
+    await assertFails(addDoc(msgs, msg('\n\t ')));
+    await assertSucceeds(addDoc(msgs, msg(' hi ')));
+    await assertSucceeds(addDoc(msgs, msg('x'.repeat(500))));
+    await assertFails(addDoc(msgs, msg('x'.repeat(501))));
+  });
+});

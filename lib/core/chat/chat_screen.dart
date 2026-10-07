@@ -93,7 +93,7 @@ class _ChatScreenState extends State<ChatScreen> {
     } on RateLimitException catch (e) {
       if (mounted) showSnack(context, trf(context, 'rateLimited', {'m': e.minutesLeft}));
     } on ChatSendException catch (e) {
-      if (mounted) showSnack(context, tr(context, e.reason == 'blocked' ? 'cannotSendBlocked' : 'somethingWrong'));
+      if (mounted) showSnack(context, tr(context, switch (e.reason) { 'blocked' => 'cannotSendBlocked', 'repeat' => 'chatRepeat', _ => 'somethingWrong' }));
     } catch (_) {
       if (mounted) showRetrySnack(context, tr(context, 'somethingWrong'), _send);
     } finally {

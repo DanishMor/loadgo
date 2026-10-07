@@ -107,6 +107,17 @@ class RatingService {
 
   // ---- admin: low-rating flags ----
 
+  /// Ratings created since [since] (newest 500), for the admin burst check.
+  static Future<List<Rating>> recentRatings({required DateTime since, int limit = 500}) async {
+    final snap = await Backend.db
+        .collection('ratings')
+        .where('createdAt', isGreaterThanOrEqualTo: Timestamp.fromDate(since))
+        .orderBy('createdAt', descending: true)
+        .limit(limit)
+        .get();
+    return [for (final d in snap.docs) Rating.fromDoc(d)];
+  }
+
   static CollectionReference<Map<String, dynamic>> get _flags => Backend.db.collection('rating_flags');
 
   static Stream<List<RatingFlag>> watchFlags() => _flags.snapshots().map((s) {

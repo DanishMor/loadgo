@@ -3,6 +3,14 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 /// This driver already has an offer on the load.
 class OfferExistsException implements Exception {}
 
+/// The price is outside 30%..300% of the load's fare estimate.
+class OfferOutOfRangeException implements Exception {
+  final int minPaise;
+  final int maxPaise;
+  final bool tooLow;
+  OfferOutOfRangeException({required this.minPaise, required this.maxPaise, required this.tooLow});
+}
+
 /// The offer is no longer in a state that allows this action.
 class OfferStateException implements Exception {}
 

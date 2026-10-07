@@ -81,6 +81,8 @@ class _MakeOfferButtonState extends State<MakeOfferButton> {
       if (mounted) showSnack(context, tr(context, 'accountRestricted'));
     } on RateLimitException catch (e) {
       if (mounted) showSnack(context, trf(context, 'rateLimited', {'m': e.minutesLeft}));
+    } on OfferOutOfRangeException catch (e) {
+      if (mounted) showSnack(context, trf(context, 'offerOutOfRange', {'min': e.minPaise ~/ 100, 'max': e.maxPaise ~/ 100}));
     } on OfferExistsException {
       if (mounted) showSnack(context, tr(context, 'offerExists'));
     } on OfferStateException {

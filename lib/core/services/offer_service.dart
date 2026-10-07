@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../models/load.dart';
+import '../pricing/offer_bounds.dart';
 import '../models/offer.dart';
 import '../models/vehicle.dart';
 import 'backend.dart';
@@ -25,6 +26,9 @@ class OfferService {
     final uid = Backend.requireUid();
     if (!validPrice(pricePaise)) throw ArgumentError.value(pricePaise, 'pricePaise');
     if (!load.isOpen || load.shipperId == uid) throw OfferStateException();
+    final est = load.estimate?.total;
+    final range = OfferBounds.check(pricePaise, est);
+    if (range != null) throw OfferOutOfRangeException(minPaise: OfferBounds.minPaise(est!), maxPaise: OfferBounds.maxPaise(est), tooLow: range == 'low');
     await RiskService.ensureCanTransact();
     final ref = _col.doc(Offer.idFor(load.id, uid));
     final profile = (await Backend.db.collection('users').doc(uid).get()).data() ?? const {};

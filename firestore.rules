@@ -1548,7 +1548,7 @@ service cloud.firestore {
             && request.resource.data.keys().hasOnly(['senderId', 'text', 'flagged', 'createdAt'])
             && request.resource.data.senderId == request.auth.uid
             && request.resource.data.text is string
-            && request.resource.data.text.size() >= 1 && request.resource.data.text.size() <= 500
+            && request.resource.data.text.trim().size() >= 1 && request.resource.data.text.size() <= 500
             && request.resource.data.flagged is bool
             && request.resource.data.createdAt == request.time
             && rateBumped('message', messageId)
@@ -1624,6 +1624,15 @@ service cloud.firestore {
       return changedKeys().hasOnly(fields.concat(['status', 'updatedAt']));
     }
 
+    // A driver's price must be 30% to 300% of the load's fare estimate (same
+    // integer maths as lib/core/pricing/offer_bounds.dart). Loads without an
+    // estimate have no limits.
+    function offerWithinEstimate(price, load) {
+      let est = load.get('estimate', null);
+      return est == null || !('total' in est) || !(est.total is int) || est.total <= 0
+          || (price * 100 >= est.total * 30 && price * 100 <= est.total * 300);
+    }
+
     function validOfferCreate(offerId) {
       let o = request.resource.data;
       let load = get(docPath('loads', o.loadId)).data;
@@ -1636,6 +1645,7 @@ service cloud.firestore {
           && rateBumped('offer', offerId)
           && o.status == 'pending'
           && o.pricePaise is int && o.pricePaise > 0 && o.pricePaise <= 100000000
+          && offerWithinEstimate(o.pricePaise, load)
           && o.originalPaise == o.pricePaise
           && load.status == 'open'
           && load.shipperId != request.auth.uid
