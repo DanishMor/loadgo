@@ -3979,3 +3979,56 @@ describe('admin tools: app errors, reply templates and bulk user changes', () =>
     });
   });
 });
+
+describe('demo data', () => {
+  const demo = (over = {}) => ({ demo: true, name: 'Demo', ...over });
+  const cols = ['users', 'vehicles', 'loads', 'bookings'];
+  const staff = (uid) => env.authenticatedContext(uid).firestore();
+
+  beforeEach(async () => {
+    await seed(async (db) => {
+      await rawSetDoc(doc(db, 'admins', 'sup1'), { role: 'support' });
+      await rawSetDoc(doc(db, 'admins', 'ops1'), { role: 'ops' });
+      for (const c of cols) {
+        await rawSetDoc(doc(db, c, 'demo_old'), demo());
+        await rawSetDoc(doc(db, c, 'real_old'), { name: 'Real' });
+      }
+    });
+  });
+
+  test('a super admin creates demo documents in all four collections', async () => {
+    for (const c of cols) await assertSucceeds(rawSetDoc(doc(asAdmin(), c, 'demo_new_1'), demo()));
+  });
+
+  test('refused: other staff roles, ordinary users, signed-out', async () => {
+    for (const c of cols) {
+      await assertFails(rawSetDoc(doc(staff('sup1'), c, 'demo_x'), demo()));
+      await assertFails(rawSetDoc(doc(staff('ops1'), c, 'demo_x'), demo()));
+      await assertFails(rawSetDoc(doc(as('driver1'), c, 'demo_x'), demo()));
+      await assertFails(rawSetDoc(doc(anon(), c, 'demo_x'), demo()));
+    }
+  });
+
+  test('refused: id without the demo_ prefix, demo false or missing', async () => {
+    for (const c of cols) {
+      await assertFails(rawSetDoc(doc(asAdmin(), c, 'plain_id'), demo()));
+      await assertFails(rawSetDoc(doc(asAdmin(), c, 'demo_x'), demo({ demo: false })));
+      await assertFails(rawSetDoc(doc(asAdmin(), c, 'demo_x'), { name: 'No flag' }));
+      await assertFails(rawSetDoc(doc(asAdmin(), c, 'demo_x'), demo({ demo: 'true' })));
+    }
+  });
+
+  test('a real document flagged demo is not deletable (id prefix is checked too)', async () => {
+    await seed((db) => rawSetDoc(doc(db, 'users', 'driver9'), { name: 'X', demo: true }));
+    await assertFails(deleteDoc(doc(asAdmin(), 'users', 'driver9')));
+  });
+
+  test('a super admin deletes demo documents only', async () => {
+    for (const c of cols) {
+      await assertSucceeds(deleteDoc(doc(asAdmin(), c, 'demo_old')));
+      await assertFails(deleteDoc(doc(asAdmin(), c, 'real_old')));
+      await assertFails(deleteDoc(doc(staff('sup1'), c, 'demo_old')));
+      await assertFails(deleteDoc(doc(as('driver1'), c, 'demo_old')));
+    }
+  });
+});

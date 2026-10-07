@@ -59,6 +59,7 @@ import 'trip_alert_strings.dart';
 
 import 'app_control_strings.dart';
 import 'admin_tools_strings.dart';
+import 'demo_strings.dart';
 import 'assistant_strings.dart';
 import 'earn_history_strings.dart';
 import 'feedback_cancel_strings.dart';
@@ -133,6 +134,7 @@ const List<Map<String, List<String>>> stringTables = [
   feedbackCancelStrings,
   globalSearchStrings,
   adminToolsStrings,
+  demoStrings,
 ];
 
 final Map<String, List<String>> extraStrings = {

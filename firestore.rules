@@ -47,6 +47,23 @@ service cloud.firestore {
           && get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.get('role', 'super') in roles;
     }
 
+    // Demo data (Task 53; the cheap id check comes first because the load
+    // rules sit at the 1000-expression limit): only a super admin creates documents with
+    // `demo: true`, and only under an id that starts with demo_. They are the
+    // only documents of these four collections an admin may delete (the id
+    // prefix is checked again, so a user's own doc flagged demo stays safe).
+    function demoCreate(id) {
+      return id.matches('demo_[A-Za-z0-9_]+')
+          && request.resource.data.get('demo', false) == true
+          && adminIn(['super']);
+    }
+
+    function demoDelete(id) {
+      return id.matches('demo_[A-Za-z0-9_]+')
+          && resource.data.get('demo', false) == true
+          && adminIn(['super']);
+    }
+
     function adminVerificationUpdate() {
       return adminIn(['super', 'verifier'])
           && changedKeys().hasOnly(['verified', 'verificationStatus', 'verificationMeta', 'updatedAt'])
@@ -273,6 +290,9 @@ service cloud.firestore {
               || request.resource.data.get('selectedRole', request.resource.data.role) == request.resource.data.role)
           && validEmergencyContacts(request.resource.data) && validProfileExtras(request.resource.data) && riskFieldsAbsent(request.resource.data)
           && validPrefs(request.resource.data) && validBusiness(request.resource.data);
+      // Demo data (Task 53), after the normal create so it costs nothing there.
+      allow create: if demoCreate(userId);
+      allow delete: if demoDelete(userId);
       allow update: if adminVerificationUpdate() || adminReviewFlagUpdate() || adminRiskUpdate() || adminPlanUpdate() || adminDocOverride() || (isUser(userId)
           && roleLockOk() && validKyc(request.resource.data) && validProfileText(request.resource.data) && !changedKeys().hasAny(['plan', 'planUntil', 'verificationMeta', 'docOverrideUntil']) && referralCodeOk(request.resource.data) && referralCodeKept() && validIdentityHashes(request.resource.data) && validLastLocation(request.resource.data)
           && validEmergencyContacts(request.resource.data) && validProfileExtras(request.resource.data)
@@ -590,6 +610,9 @@ service cloud.firestore {
           && availabilityOf(request.resource.data) == 'available'
           && !('docOverrideUntil' in request.resource.data)
           && numberReservedFor(vehicleId, request.resource.data.number);
+      // Demo data (Task 53), after the normal create so it costs nothing there.
+      allow create: if demoCreate(vehicleId);
+      allow delete: if demoDelete(vehicleId);
       allow update: if signedIn()
           && ((resource.data.ownerId == request.auth.uid
               && request.resource.data.ownerId == request.auth.uid
@@ -1141,9 +1164,10 @@ service cloud.firestore {
     // cannot cover several creates in one batch.
     function rateBumped(kind, docId) {
       let ref = docPath('rate_limits', request.auth.uid + '_' + kind);
-      return getAfter(ref).data.last == docId
-          && (getAfter(ref).data.windowStart == request.time
-              || getAfter(ref).data.count == get(ref).data.count + 1);
+      let after = getAfter(ref).data;
+      return after.last == docId
+          && (after.windowStart == request.time
+              || after.count == get(ref).data.count + 1);
     }
 
     match /loads/{loadId} {
@@ -1164,6 +1188,9 @@ service cloud.firestore {
               || (request.resource.data.scheduledAt >= request.time + duration.value(30, 'm')
                   && request.resource.data.scheduledAt <= request.time + duration.value(90, 'd')))
           && offersCreateOk(loadId, request.resource.data);
+      // Demo data (Task 53), after the normal create so it costs nothing there.
+      allow create: if demoCreate(loadId);
+      allow delete: if demoDelete(loadId);
       allow update: if signedIn()
           && (shipperEdit() || posterCancelsWaiting() || businessApproval() || driverMatch(loadId) || driverClose() || driverReopen() || adminReassignLoad() || adminGeohashBackfill() || shipperCancelsMatchedScheduled());
       allow delete: if signedIn()
@@ -1482,6 +1509,9 @@ service cloud.firestore {
               || bizReads(resource.data.get('businessId', ''))
               || isAdmin());
       allow create: if signedIn() && validBookingCreate(bookingId);
+      // Demo data (Task 53), after the normal create so it costs nothing there.
+      allow create: if demoCreate(bookingId);
+      allow delete: if demoDelete(bookingId);
       allow update: if signedIn()
           && (adminReassignBooking() || (resource.data.customerId == request.auth.uid && (ewayBillUpdate() || customerMarksPaid() || customerRecordsAdvance() || customerCancelsScheduled()))
           || (resource.data.driverId == request.auth.uid
@@ -2602,14 +2632,15 @@ service cloud.firestore {
     function validPromoOnCreate(loadId, d) {
       let pr = d.get('promo', null);
       let p = get(docPath('promos', pr.code)).data;
+      let total = d.estimate.total;
       return offersOn('promoEnabled')
           && pr.keys().hasOnly(['code', 'discountPaise', 'slot', 'use'])
           && pr.slot is int && pr.use is int
           && 'estimate' in d
           && promoUsable(p)
-          && d.estimate.total >= p.minOrderPaise
+          && total >= p.minOrderPaise
           && pr.discountPaise is int && pr.discountPaise > 0
-          && pr.discountPaise == promoDiscount(p, d.estimate.total)
+          && pr.discountPaise == promoDiscount(p, total)
           && getAfter(slotPath(pr.code, string(pr.slot))).data.loadId == loadId
           && getAfter(usePath(pr.code, d.shipperId + '_' + string(pr.use))).data.loadId == loadId;
     }

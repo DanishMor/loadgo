@@ -9,6 +9,7 @@ import '../core/widgets/logistics_labels.dart';
 import 'admin_assistant_screen.dart';
 import 'admin_claims_screen.dart';
 import 'admin_feedback_screen.dart';
+import 'admin_demo_screen.dart';
 import 'admin_health_screen.dart';
 import 'admin_templates_screen.dart';
 import 'admin_config_screen.dart';
@@ -62,6 +63,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       ('adminFeedback', 'adminFeedback', Icons.rate_review_outlined, const AdminFeedbackScreen()),
       ('adminHealth', 'adminHealth', Icons.monitor_heart_outlined, const AdminHealthScreen()),
       ('adminTemplates', 'adminTemplates', Icons.quickreply_outlined, const AdminTemplatesScreen()),
+      ('adminDemo', 'adminDemo', Icons.science_outlined, const AdminDemoScreen()),
       ('flaggedUsers', 'flaggedUsers', Icons.warning_amber_rounded, const FlaggedUsersScreen()),
       ('adminDeletionRequests', 'adminDeletionRequests', Icons.person_remove_outlined, const AdminDeletionRequestsScreen()),
       ('adminAudit', 'adminAudit', Icons.history_rounded, const AdminAuditScreen()),
