@@ -2,11 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../features/features.dart';
 import '../l10n/l10n.dart';
 import '../models/booking.dart';
+import '../services/features_service.dart';
 import '../services/safety_service.dart';
 import '../services/user_service.dart';
 import '../trip/trip_alerts.dart';
+import 'trip_share_service.dart';
 import '../widgets/common.dart';
 
 /// "Share trip with my emergency contacts" (SAFE2): opens the phone's SMS app
@@ -25,7 +28,15 @@ class ShareTripButton extends StatelessWidget {
       return;
     }
     final who = (user?['driverName'] ?? user?['name'] ?? '').toString();
-    final text = tripSummaryText(booking, who: who);
+    String? link;
+    if (FeaturesService.isOn(FeatureKey.tripShare)) {
+      try {
+        link = TripShareService.linkFor(await TripShareService.createOrReuse(booking));
+      } catch (_) {
+        link = null; // The text is still sent without a link.
+      }
+    }
+    final text = tripSummaryText(booking, who: who, link: link);
     final phones = [for (final c in contacts) c.phone.replaceAll(RegExp(r'[^0-9+]'), '')].where((p) => p.isNotEmpty).join(',');
     var ok = false;
     try {

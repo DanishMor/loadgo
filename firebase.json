@@ -50,6 +50,10 @@
     ],
     "rewrites": [
       {
+        "source": "/trip/**",
+        "destination": "/trip.html"
+      },
+      {
         "source": "/privacy",
         "destination": "/privacy.html"
       },

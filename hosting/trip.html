@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>Follow a trip - LoadGo</title><style>body{font-family:system-ui,sans-serif;max-width:720px;margin:0 auto;padding:20px 16px;line-height:1.5;color:#111827;background:#fff}
+h1{font-size:1.6rem}h2{font-size:1.15rem;margin-top:1.6em}a{color:#1d4ed8}.note{background:#fff7ed;border:1px solid #fdba74;padding:10px 12px;border-radius:8px}
+nav a{margin-right:14px}@media(prefers-color-scheme:dark){body{background:#0f172a;color:#e5e7eb}a{color:#93c5fd}.note{background:#422006;border-color:#9a3412}}
+.card{border:1px solid #d0d5dd;border-radius:12px;padding:14px 16px;margin:12px 0}.big{font-size:1.25rem;font-weight:700}.muted{opacity:.7;font-size:.9rem}</style></head><body>
+<h1>Follow a LoadGo trip</h1>
+<div id="out" class="card"><p>Loading...</p></div>
+<p class="muted">Only the route, status, vehicle number and the driver's first name are shown. The link stops working by itself after 24 hours or when the sender ends it. Live position is not shown.</p>
+<nav><a href="/">LoadGo</a><a href="/privacy">Privacy policy</a></nav>
+<script>
+(function () {
+  var out = document.getElementById('out');
+  var m = location.pathname.match(/^\/trip\/([a-z2-9]{24})\/?$/);
+  function show(html) { out.innerHTML = html; }
+  function esc(s) { var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+  if (!m) { show('<p>This link is not valid.</p>'); return; }
+  var labels = {accepted: 'Driver assigned', driver_arriving: 'Driver is on the way to pickup', loading: 'Loading', picked_up: 'Goods picked up', in_transit: 'On the road', unloading: 'Unloading', delivered: 'Delivered', cancelled: 'Cancelled'};
+  var url = 'https://firestore.googleapis.com/v1/projects/loadgo-defc2/databases/(default)/documents/trip_shares/' + m[1];
+  fetch(url).then(function (r) {
+    if (!r.ok) throw new Error('gone');
+    return r.json();
+  }).then(function (doc) {
+    var f = doc.fields || {};
+    function s(k) { return f[k] && f[k].stringValue ? f[k].stringValue : ''; }
+    function t(k) { return f[k] && f[k].timestampValue ? new Date(f[k].timestampValue) : null; }
+    var st = s('status');
+    var at = t('statusAt'), ends = t('expiresAt');
+    var h = '<p class="big">' + esc(s('pickup')) + ' &rarr; ' + esc(s('drop')) + '</p>' +
+      '<p class="big">' + esc(labels[st] || st.replace(/_/g, ' ')) + '</p>';
+    if (s('vehicleNumber')) h += '<p>Vehicle: ' + esc(s('vehicleNumber')) + '</p>';
+    if (s('driverName')) h += '<p>Driver: ' + esc(s('driverName')) + '</p>';
+    if (at) h += '<p class="muted">Status updated ' + esc(at.toLocaleString()) + '</p>';
+    if (ends) h += '<p class="muted">Link valid until ' + esc(ends.toLocaleString()) + '</p>';
+    show(h);
+  }).catch(function () {
+    show('<p>This link has ended or is not valid. Ask the sender for a new one.</p>');
+  });
+})();
+</script>
+</body></html>

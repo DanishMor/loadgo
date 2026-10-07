@@ -1851,6 +1851,39 @@ service cloud.firestore {
     // user id and no free-form personal data: the app strips e-mail, links and
     // long numbers from the message. Any signed-in user writes, super and ops
     // admins read, nobody edits or deletes.
+    // trip_shares/{token}: a public "follow my trip" link (Task 64). The
+    // 24-letter token is the secret, so anyone with it may get ONE document
+    // (never list) until it ends. Only the route, status, vehicle number and
+    // the driver's first name are stored. A party of the booking creates it
+    // and keeps its status current; the owner can end it.
+    match /trip_shares/{token} {
+      allow get: if resource.data.expiresAt > request.time;
+      allow list: if signedIn() && isBookingParty(resource.data.bookingId);
+      allow create: if signedIn()
+          && token.matches('[a-km-z2-9]{24}')
+          && request.resource.data.keys().hasOnly(['bookingId', 'ownerId', 'pickup', 'drop', 'status', 'vehicleNumber', 'driverName', 'statusAt', 'expiresAt', 'createdAt'])
+          && request.resource.data.ownerId == request.auth.uid
+          && request.resource.data.bookingId is string
+          && isBookingParty(request.resource.data.bookingId)
+          && request.resource.data.pickup is string && request.resource.data.pickup.size() <= 200
+          && request.resource.data.drop is string && request.resource.data.drop.size() <= 200
+          && request.resource.data.status is string && request.resource.data.status.size() <= 30
+          && request.resource.data.vehicleNumber is string && request.resource.data.vehicleNumber.size() <= 20
+          && request.resource.data.driverName is string && request.resource.data.driverName.size() <= 40
+          && request.resource.data.statusAt == request.time
+          && request.resource.data.createdAt == request.time
+          && request.resource.data.expiresAt is timestamp
+          && request.resource.data.expiresAt > request.time
+          && request.resource.data.expiresAt <= request.time + duration.value(49, 'h');
+      allow update: if signedIn()
+          && isBookingParty(resource.data.bookingId)
+          && resource.data.expiresAt > request.time
+          && changedKeys().hasOnly(['status', 'statusAt'])
+          && request.resource.data.status is string && request.resource.data.status.size() <= 30
+          && request.resource.data.statusAt == request.time;
+      allow delete: if signedIn() && resource.data.ownerId == request.auth.uid;
+    }
+
     match /app_errors/{id} {
       allow read: if adminIn(['super', 'ops']);
       allow create: if signedIn()

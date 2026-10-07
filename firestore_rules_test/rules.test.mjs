@@ -4074,3 +4074,73 @@ describe('abuse guards (Task 56)', () => {
     await assertFails(addDoc(msgs, msg('x'.repeat(501))));
   });
 });
+
+describe('trip share link (Task 64)', () => {
+  const TOKEN = 'abcdefghijkmnpqrstuvwxy2';
+  const hours = (h) => Timestamp.fromMillis(Date.now() + h * 3600 * 1000);
+  const share = (over = {}) => ({
+    bookingId: 'L1', ownerId: 'customer1', pickup: 'Delhi', drop: 'Mumbai', status: 'accepted', vehicleNumber: 'MH12AB1234', driverName: 'Ramesh',
+    statusAt: serverTimestamp(), expiresAt: hours(24), createdAt: serverTimestamp(), ...over,
+  });
+  const ref = (db, t = TOKEN) => doc(db, 'trip_shares', t);
+  const seedShare = (over = {}) => seed((db) => rawSetDoc(ref(db), { ...share(), statusAt: Timestamp.now(), createdAt: Timestamp.now(), ...over }));
+
+  beforeEach(async () => {
+    await seedBooking();
+  });
+
+  test('a booking party creates a share with the exact fields; outsiders and others cannot', async () => {
+    await assertSucceeds(rawSetDoc(ref(as('customer1')), share()));
+    await assertSucceeds(rawSetDoc(ref(as('driver1'), 'bcdefghijkmnpqrstuvwxy23'), share({ ownerId: 'driver1' })));
+    await assertFails(rawSetDoc(ref(as('driver2'), 'cdefghijkmnpqrstuvwxy234'), share({ ownerId: 'driver2' })), 'not a party');
+    await assertFails(rawSetDoc(ref(anon(), 'defghijkmnpqrstuvwxy2345'), share()), 'signed out');
+    await assertFails(rawSetDoc(ref(as('customer1'), 'efghijkmnpqrstuvwxy23456'), share({ ownerId: 'driver1' })), 'owner must be me');
+  });
+
+  test('refused: bad token, extra field, long text, wrong times', async () => {
+    const c = as('customer1');
+    await assertFails(rawSetDoc(ref(c, 'short'), share()));
+    await assertFails(rawSetDoc(ref(c, 'ABCDEFGHIJKMNPQRSTUVWXY2'), share()), 'upper case');
+    await assertFails(rawSetDoc(ref(c, 'fghijkmnpqrstuvwxy234567'), share({ phone: '+919800000000' })));
+    await assertFails(rawSetDoc(ref(c, 'ghijkmnpqrstuvwxy2345678'), share({ pickup: 'x'.repeat(201) })));
+    await assertFails(rawSetDoc(ref(c, 'hijkmnpqrstuvwxy23456789'), share({ driverName: 'x'.repeat(41) })));
+    await assertFails(rawSetDoc(ref(c, 'ijkmnpqrstuvwxy2345678ab'), share({ expiresAt: hours(72) })), 'too long');
+    await assertFails(rawSetDoc(ref(c, 'jkmnpqrstuvwxy2345678abc'), share({ expiresAt: hours(-1) })), 'already ended');
+    await assertFails(rawSetDoc(ref(c, 'kmnpqrstuvwxy2345678abcd'), share({ createdAt: Timestamp.fromMillis(1000) })));
+    await assertFails(rawSetDoc(ref(c, 'mnpqrstuvwxy2345678abcde'), share({ bookingId: 'NOPE' })), 'booking must exist');
+  });
+
+  test('anyone with the token reads one document while it lasts; nobody can list', async () => {
+    await seedShare();
+    await assertSucceeds(getDoc(ref(anon())));
+    await assertSucceeds(getDoc(ref(as('driver2'))));
+    await assertFails(getDocs(collection(anon(), 'trip_shares')));
+    await assertFails(getDocs(collection(as('driver2'), 'trip_shares')));
+    await assertSucceeds(getDocs(query(collection(as('customer1'), 'trip_shares'), where('bookingId', '==', 'L1'))));
+    await assertFails(getDocs(query(collection(as('driver2'), 'trip_shares'), where('bookingId', '==', 'L1'))));
+  });
+
+  test('an ended link cannot be read or updated', async () => {
+    await seedShare({ expiresAt: Timestamp.fromMillis(Date.now() - 1000) });
+    await assertFails(getDoc(ref(anon())));
+    await assertFails(updateDoc(ref(as('driver1')), { status: 'loading', statusAt: serverTimestamp() }));
+  });
+
+  test('either party moves the status; nothing else may change', async () => {
+    await seedShare();
+    await assertSucceeds(updateDoc(ref(as('driver1')), { status: 'loading', statusAt: serverTimestamp() }));
+    await assertSucceeds(updateDoc(ref(as('customer1')), { status: 'cancelled', statusAt: serverTimestamp() }));
+    await assertFails(updateDoc(ref(as('driver1')), { status: 'loading', statusAt: serverTimestamp(), pickup: 'Elsewhere' }));
+    await assertFails(updateDoc(ref(as('driver1')), { expiresAt: hours(40) }));
+    await assertFails(updateDoc(ref(as('driver1')), { status: 'x'.repeat(31), statusAt: serverTimestamp() }));
+    await assertFails(updateDoc(ref(as('driver2')), { status: 'loading', statusAt: serverTimestamp() }));
+    await assertFails(updateDoc(ref(anon()), { status: 'loading', statusAt: serverTimestamp() }));
+  });
+
+  test('only the owner ends a link', async () => {
+    await seedShare();
+    await assertFails(deleteDoc(ref(as('driver1'))));
+    await assertFails(deleteDoc(ref(anon())));
+    await assertSucceeds(deleteDoc(ref(as('customer1'))));
+  });
+});

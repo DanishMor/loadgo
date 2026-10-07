@@ -10,6 +10,7 @@ import '../models/offer.dart';
 import '../models/vehicle.dart';
 import 'pricing_service.dart';
 import 'audit_service.dart';
+import '../safety/trip_share_service.dart';
 import 'backend.dart';
 import '../documents/doc_expiry.dart';
 import 'notification_service.dart';
@@ -210,7 +211,9 @@ class BookingService {
     final uid = Backend.requireUid();
     final ref = _col.doc(bookingId);
     try {
-      return await _advance(ref, uid, otp: otp, pickup: pickup, delivery: delivery);
+      final next = await _advance(ref, uid, otp: otp, pickup: pickup, delivery: delivery);
+      TripShareService.syncStatus(bookingId, next);
+      return next;
     } on FirebaseException catch (e) {
       if (e.code == 'permission-denied' && otp != null) throw WrongOtpException();
       rethrow;
@@ -355,6 +358,7 @@ class BookingService {
         relatedId: booking.id,
       );
     });
+    TripShareService.syncStatus(bookingId, BookingStatus.cancelled);
   }
 
   /// Customer cancels an advance booking the driver has not started. The

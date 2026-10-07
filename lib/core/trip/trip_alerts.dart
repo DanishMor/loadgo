@@ -73,12 +73,13 @@ const arrivingAlertKm = 25.0;
 /// Plain text of a trip for the emergency contacts of the user (SAFE2). Kept
 /// in English on purpose, like the other share texts: the contact may not use
 /// the same language, and there is no deep link yet.
-String tripSummaryText(Booking b, {String? who}) => [
+String tripSummaryText(Booking b, {String? who, String? link}) => [
       'LoadGo trip${who == null || who.isEmpty ? '' : ' of $who'}: ${b.route.join(' -> ')}',
       'Status: ${b.status.replaceAll('_', ' ')}',
       '${b.cargoType}, ${b.weight} T',
       if (b.vehicleNumber.isNotEmpty) 'Vehicle: ${b.vehicleNumber} (${b.vehicleType})',
       if (b.driverName.isNotEmpty) 'Driver: ${b.driverName}${b.driverPhone.isEmpty ? '' : ', ${b.driverPhone}'}',
       if (b.lastKnownLocation != null) 'Last seen: https://maps.google.com/?q=${b.lastKnownLocation!.latitude.toStringAsFixed(4)},${b.lastKnownLocation!.longitude.toStringAsFixed(4)}',
+      if (link != null) 'Follow this trip (valid 24 hours): $link',
       'Booking ID: ${b.id}',
     ].join('\n');
