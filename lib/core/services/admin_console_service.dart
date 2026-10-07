@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../constants/logistics.dart';
+import '../admin/admin_export.dart';
 import '../models/booking.dart';
 import 'audit_service.dart';
 import '../admin/staff_roles.dart';
@@ -24,6 +25,16 @@ class AdminCounters {
     required this.bookingsByStatus,
     required this.deliveredFarePaise,
   });
+}
+
+/// Totals shown on Admin > System health.
+class HealthCounts {
+  final int users;
+  final int loads;
+  final int bookings;
+  final int openTickets;
+  final int pendingDeletions;
+  const HealthCounts({required this.users, required this.loads, required this.bookings, required this.openTickets, required this.pendingDeletions});
 }
 
 class ReassignException implements Exception {
@@ -70,6 +81,18 @@ class AdminConsoleService {
 
   static Future<List<QueryDocumentSnapshot<Map<String, dynamic>>>> users({int limit = 300}) async =>
       (await _db.collection('users').limit(limit).get()).docs;
+
+  /// CSV of up to [limit] users with phone and e-mail masked (Admin > Users > Export).
+  static Future<String> usersCsv({int limit = 1000}) async {
+    final docs = (await _db.collection('users').limit(limit).get()).docs;
+    return AdminExport.usersCsv([for (final d in docs) (d.id, d.data())]);
+  }
+
+  /// CSV of the newest bookings, optionally of one [status].
+  static Future<String> bookingsCsv({String? status, int limit = 1000}) async {
+    final all = await recentBookings(limit: limit);
+    return AdminExport.bookingsCsv(status == null ? all : all.where((b) => b.status == status));
+  }
 
   /// Case-insensitive match on name, driver name, phone or uid.
   static bool userMatches(Map<String, dynamic> data, String uid, String query) {
@@ -260,6 +283,18 @@ class AdminConsoleService {
   }
 
   static Future<int> _count(Query<Map<String, dynamic>> q) async => (await q.count().get()).count ?? 0;
+
+  /// Document counts for the health screen.
+  static Future<HealthCounts> health() async {
+    final r = await Future.wait([
+      _count(_db.collection('users')),
+      _count(_db.collection('loads')),
+      _count(_db.collection('bookings')),
+      _count(_db.collection('tickets').where('status', whereIn: ['open', 'in_progress'])),
+      _count(_db.collection('deletion_requests').where('status', isEqualTo: 'pending')),
+    ]);
+    return HealthCounts(users: r[0], loads: r[1], bookings: r[2], openTickets: r[3], pendingDeletions: r[4]);
+  }
 
   static Future<AdminCounters> counters() async {
     final loadStatuses = [LoadStatus.open, LoadStatus.matched, LoadStatus.closed];

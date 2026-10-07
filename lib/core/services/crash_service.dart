@@ -1,6 +1,8 @@
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 
+import 'error_log_service.dart';
+
 /// Crash reporting (Crashlytics). Every call is a safe no-op when Firebase is
 /// not available (tests, debug builds, a missing google-services file).
 class CrashService {
@@ -30,6 +32,8 @@ class CrashService {
   }
 
   static void record(Object error, StackTrace? stack, {bool fatal = false}) {
+    // A sample also goes to the admin health screen (no personal data).
+    ErrorLogService.logSampled(error, stack, fatal: fatal);
     if (!_active) return;
     try {
       FirebaseCrashlytics.instance.recordError(error, stack, fatal: fatal);

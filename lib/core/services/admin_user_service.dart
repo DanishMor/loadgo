@@ -21,6 +21,16 @@ class UserAction {
   static const note = 'note';
   static const flag = 'flag';
   static const unflag = 'unflag';
+  static const bulkHold = 'bulk_hold';
+  static const bulkUnhold = 'bulk_unhold';
+  static const bulkStatus = 'bulk_status';
+}
+
+/// What a bulk change did.
+class BulkResult {
+  final int changed;
+  final int skipped;
+  const BulkResult(this.changed, this.skipped);
 }
 
 class ReviewKind {
@@ -78,6 +88,38 @@ class AdminUserService {
     });
     AuditService.inBatch(batch, AuditType.userAction, targetId: uid, data: {'action': action, 'reason': r, 'from': current, 'to': tier});
     await batch.commit();
+  }
+
+  /// Tiers a bulk change may set (a ban is always one person, with a reason).
+  static const bulkTiers = [RiskTier.normal, RiskTier.review, RiskTier.restricted, RiskTier.suspended];
+
+  /// Sets [tier] on many users at once (hold = restricted, unhold = back to
+  /// normal, or any of [bulkTiers] for "set status"). [current] maps each uid
+  /// to the tier it has now. Skipped: yourself, banned users, users already on
+  /// [tier], and for [UserAction.bulkUnhold] users that are not restricted.
+  /// A hold or status change needs a reason of 3+ characters. One audit row
+  /// (type `user_action`, `bulk: true`) per user in the same batch, 100 users
+  /// per batch.
+  static Future<BulkResult> bulkSetTier(Map<String, String> current, String tier, {required String action, String reason = ''}) async {
+    if (!bulkTiers.contains(tier)) throw ArgumentError.value(tier, 'tier');
+    if (action != UserAction.bulkHold && action != UserAction.bulkUnhold && action != UserAction.bulkStatus) throw ArgumentError.value(action, 'action');
+    final me = Backend.requireUid();
+    final r = reason.trim();
+    if (action != UserAction.bulkUnhold && r.length < 3) throw UserActionException('reason');
+    final targets = <String, String>{
+      for (final e in current.entries)
+        if (e.key != me && e.value != RiskTier.banned && e.value != tier && (action != UserAction.bulkUnhold || e.value == RiskTier.restricted)) e.key: e.value,
+    };
+    final uids = targets.keys.toList();
+    for (var i = 0; i < uids.length; i += 100) {
+      final batch = Backend.db.batch();
+      for (final uid in uids.skip(i).take(100)) {
+        batch.update(_user(uid), {'riskTier': tier, 'riskReason': r, 'riskUpdatedAt': FieldValue.serverTimestamp()});
+        AuditService.inBatch(batch, AuditType.userAction, targetId: uid, data: {'action': action, 'reason': r, 'from': targets[uid], 'to': tier, 'bulk': true});
+      }
+      await batch.commit();
+    }
+    return BulkResult(uids.length, current.length - uids.length);
   }
 
   /// Sends a driver back to "pending": they cannot take loads until an admin

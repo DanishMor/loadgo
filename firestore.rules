@@ -1807,6 +1807,23 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
+    // A sample of client errors for the admin health screen (Task 52). No
+    // user id and no free-form personal data: the app strips e-mail, links and
+    // long numbers from the message. Any signed-in user writes, super and ops
+    // admins read, nobody edits or deletes.
+    match /app_errors/{id} {
+      allow read: if adminIn(['super', 'ops']);
+      allow create: if signedIn()
+          && request.resource.data.keys().hasOnly(['message', 'screen', 'kind', 'appVersion', 'createdAt'])
+          && request.resource.data.message is string
+          && request.resource.data.message.size() >= 1 && request.resource.data.message.size() <= 300
+          && request.resource.data.screen is string && request.resource.data.screen.size() <= 60
+          && request.resource.data.kind in ['flutter', 'async']
+          && request.resource.data.appVersion is string && request.resource.data.appVersion.size() <= 20
+          && request.resource.data.createdAt == request.time;
+      allow update, delete: if false;
+    }
+
     match /reports/{reportId} {
       allow read: if signedIn() && (resource.data.reporterId == request.auth.uid || isAdmin());
       allow create: if signedIn()
@@ -2024,7 +2041,10 @@ service cloud.firestore {
       return (docId == 'vehicle_types'
               && d.keys().hasOnly(['types', 'updatedAt'])
               && d.types is list && d.types.size() > 0 && d.types.size() <= 50)
-          || (docId != 'vehicle_types' && d.size() <= 100);
+          || (docId == 'reply_templates'
+              && d.keys().hasOnly(['items', 'updatedAt'])
+              && d.items is list && d.items.size() <= 20)
+          || (docId != 'vehicle_types' && docId != 'reply_templates' && d.size() <= 100);
     }
 
     // admins/{uid}: the admin allowlist. A user may read only their own

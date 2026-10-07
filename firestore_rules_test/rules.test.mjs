@@ -11,11 +11,27 @@ let env;
 // in a small codespace. `npm test` runs it in RULES_PARTS slices, one
 // emulator session each (RULES_PART=1..N). Without RULES_PART everything runs.
 const PARTS = Number(process.env.RULES_PARTS || 4);
+// Only top-level suites are dealt out to slices; a nested describe always goes
+// with its parent. (Counting nested ones as well made the numbering depend on
+// which slice ran, so some suites ran in several slices and some in none.)
 let describeIndex = 0;
+let depth = 0;
 const describe = (...args) => {
+  if (depth > 0) return realDescribe(...args);
   const part = Number(process.env.RULES_PART || 0);
   const mine = !part || describeIndex++ % PARTS === part - 1;
-  return mine ? realDescribe(...args) : undefined;
+  if (!mine) return undefined;
+  const at = args.findIndex((a) => typeof a === 'function');
+  const body = args[at];
+  args[at] = (...a) => {
+    depth++;
+    try {
+      return body(...a);
+    } finally {
+      depth--;
+    }
+  };
+  return realDescribe(...args);
 };
 
 before(async () => {
@@ -3870,6 +3886,96 @@ describe('cancel reasons, declared value and feedback', () => {
       await assertFails(updateDoc(doc(asAdmin(), 'feedback', 'f1'), { text: 'y' }));
       await assertFails(deleteDoc(doc(asAdmin(), 'feedback', 'f1')));
       await assertFails(deleteDoc(doc(as('customer1'), 'feedback', 'f1')));
+    });
+  });
+});
+
+describe('admin tools: app errors, reply templates and bulk user changes', () => {
+  const staff = (uid) => env.authenticatedContext(uid).firestore();
+  const err = (over = {}) => ({ message: 'Null check operator used on a null value', screen: 'driver/driver_trip_screen.dart', kind: 'flutter', appVersion: '1.0.0+1', createdAt: serverTimestamp(), ...over });
+
+  beforeEach(async () => {
+    await seed(async (db) => {
+      await setDoc(doc(db, 'admins', 'sup1'), { role: 'support' });
+      await setDoc(doc(db, 'admins', 'ops1'), { role: 'ops' });
+      for (const u of ['u1', 'u2', 'u3']) await setDoc(doc(db, 'users', u), { name: u, riskTier: 'normal' });
+    });
+  });
+
+  describe('app_errors', () => {
+    test('a signed-in user logs a valid error', async () => {
+      await assertSucceeds(addDoc(collection(as('driver1'), 'app_errors'), err()));
+      await assertSucceeds(addDoc(collection(as('customer1'), 'app_errors'), err({ kind: 'async', screen: '' })));
+      await assertFails(addDoc(collection(anon(), 'app_errors'), err()));
+    });
+
+    test('refused: extra fields (a user id), empty or long text, bad kind, long screen or version, wrong time', async () => {
+      const add = (over) => addDoc(collection(as('driver1'), 'app_errors'), err(over));
+      await assertFails(add({ userId: 'driver1' }));
+      await assertFails(add({ message: '' }));
+      await assertSucceeds(add({ message: 'a'.repeat(300) }));
+      await assertFails(add({ message: 'a'.repeat(301) }));
+      await assertFails(add({ message: 5 }));
+      await assertFails(add({ kind: 'crash' }));
+      await assertFails(add({ screen: 's'.repeat(61) }));
+      await assertFails(add({ appVersion: 'v'.repeat(21) }));
+      await assertFails(add({ createdAt: Timestamp.fromMillis(1000) }));
+    });
+
+    test('only super and ops admins read; nobody changes or deletes', async () => {
+      await seed((db) => setDoc(doc(db, 'app_errors', 'e1'), { message: 'x', screen: 's', kind: 'flutter', appVersion: '1', createdAt: Timestamp.now() }));
+      await assertSucceeds(getDoc(doc(asAdmin(), 'app_errors', 'e1')));
+      await assertSucceeds(getDocs(collection(staff('ops1'), 'app_errors')));
+      await assertFails(getDoc(doc(staff('sup1'), 'app_errors', 'e1')));
+      await assertFails(getDoc(doc(as('driver1'), 'app_errors', 'e1')));
+      await assertFails(updateDoc(doc(asAdmin(), 'app_errors', 'e1'), { message: 'y' }));
+      await assertFails(deleteDoc(doc(asAdmin(), 'app_errors', 'e1')));
+      await assertFails(deleteDoc(doc(as('driver1'), 'app_errors', 'e1')));
+    });
+  });
+
+  describe('config/reply_templates', () => {
+    const items = (n) => Array.from({ length: n }, (_, i) => ({ id: `t${i}`, title: `T${i}`, text: 'Hello' }));
+
+    test('super admins save up to 20 templates; nobody else; everyone signed in reads', async () => {
+      await assertSucceeds(setDoc(doc(asAdmin(), 'config', 'reply_templates'), { items: items(20), updatedAt: serverTimestamp() }));
+      await assertFails(setDoc(doc(asAdmin(), 'config', 'reply_templates'), { items: items(21), updatedAt: serverTimestamp() }));
+      await assertFails(setDoc(doc(asAdmin(), 'config', 'reply_templates'), { items: items(2), other: 1, updatedAt: serverTimestamp() }));
+      await assertFails(setDoc(doc(asAdmin(), 'config', 'reply_templates'), { items: 'nope', updatedAt: serverTimestamp() }));
+      await assertFails(setDoc(doc(staff('sup1'), 'config', 'reply_templates'), { items: items(1), updatedAt: serverTimestamp() }));
+      await assertFails(setDoc(doc(as('driver1'), 'config', 'reply_templates'), { items: items(1), updatedAt: serverTimestamp() }));
+      await assertSucceeds(getDoc(doc(staff('sup1'), 'config', 'reply_templates')));
+      await assertSucceeds(getDoc(doc(as('driver1'), 'config', 'reply_templates')));
+    });
+
+    test('other config documents keep their old rule', async () => {
+      await assertSucceeds(setDoc(doc(asAdmin(), 'config', 'pricing'), { platformFeePercent: 5 }));
+    });
+  });
+
+  describe('bulk tier change with one audit row per user', () => {
+    const bulk = (db, actor, uids, tier = 'restricted') => {
+      const b = writeBatch(db);
+      for (const u of uids) {
+        b.update(doc(db, 'users', u), { riskTier: tier, riskReason: 'bulk', riskUpdatedAt: serverTimestamp() });
+        b.set(doc(collection(db, 'audit_events')), {
+          type: 'user_action', actorId: actor, targetId: u, createdAt: serverTimestamp(),
+          data: { action: 'bulk_hold', reason: 'bulk', from: 'normal', to: tier, bulk: true },
+        });
+      }
+      return b.commit();
+    };
+
+    test('ops and super admins hold several users in one batch', async () => {
+      await assertSucceeds(bulk(staff('ops1'), 'ops1', ['u1', 'u2', 'u3']));
+      await assertSucceeds(bulk(asAdmin(), 'admin1', ['u1', 'u2', 'u3'], 'normal'));
+    });
+
+    test('refused: support, an ordinary user, a made-up tier, an audit row as someone else', async () => {
+      await assertFails(bulk(staff('sup1'), 'sup1', ['u1']));
+      await assertFails(bulk(as('u2'), 'u2', ['u1']));
+      await assertFails(bulk(staff('ops1'), 'ops1', ['u1'], 'evil'));
+      await assertFails(bulk(staff('ops1'), 'someone-else', ['u1']));
     });
   });
 });

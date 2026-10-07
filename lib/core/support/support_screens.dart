@@ -2,10 +2,12 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../admin/reply_templates.dart';
 import '../l10n/l10n.dart';
 import '../models/booking.dart';
 import '../models/support_ticket.dart';
 import '../services/backend.dart';
+import '../services/reply_template_service.dart';
 import '../services/booking_service.dart';
 import '../services/support_config.dart';
 import '../services/support_service.dart';
@@ -331,6 +333,36 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
     super.dispose();
   }
 
+  /// Support side: choose a canned answer; it is put into the reply box to be
+  /// edited before sending.
+  Future<void> _pickTemplate() async {
+    final templates = await ReplyTemplateService.load();
+    if (!mounted) return;
+    final picked = await showModalBottomSheet<ReplyTemplate>(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      builder: (c) => SafeArea(
+        child: templates.isEmpty
+            ? Padding(padding: const EdgeInsets.all(24), child: Text(tr(c, 'tplNone')))
+            : ListView(shrinkWrap: true, children: [
+                for (final t in templates)
+                  ListTile(
+                    key: ValueKey('pickTpl_${t.id}'),
+                    title: Text(t.title, style: const TextStyle(fontWeight: FontWeight.w700)),
+                    subtitle: Text(t.text, maxLines: 2, overflow: TextOverflow.ellipsis),
+                    onTap: () => Navigator.pop(c, t),
+                  ),
+              ]),
+      ),
+    );
+    if (picked == null) return;
+    final current = _reply.text.trim();
+    final text = current.isEmpty ? picked.text : '$current\n${picked.text}';
+    _reply.text = text.length > 1000 ? text.substring(0, 1000) : text;
+    _reply.selection = TextSelection.collapsed(offset: _reply.text.length);
+  }
+
   Future<void> _run(Future<void> Function() action, {String? done}) async {
     setState(() => _busy = true);
     try {
@@ -428,6 +460,13 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                     padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
                     child: Row(
                       children: [
+                        if (widget.asAdmin)
+                          IconButton(
+                            key: const ValueKey('replyTemplates'),
+                            tooltip: tr(context, 'tplPick'),
+                            onPressed: _busy ? null : _pickTemplate,
+                            icon: const Icon(Icons.quickreply_outlined),
+                          ),
                         Expanded(
                           child: TextField(
                             key: const ValueKey('replyInput'),

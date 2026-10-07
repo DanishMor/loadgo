@@ -9,7 +9,10 @@ import '../core/l10n/l10n.dart';
 import '../core/models/booking.dart';
 import '../core/models/risk.dart';
 import '../core/models/support_ticket.dart';
+import '../core/admin/staff_roles.dart';
 import '../core/services/admin_console_service.dart';
+import '../core/services/admin_user_service.dart';
+import '../core/share/share_csv.dart';
 import '../core/support/support_screens.dart';
 import '../core/widgets/common.dart';
 import '../core/widgets/live_stream.dart';
@@ -73,7 +76,10 @@ class _LiveList extends StatelessWidget {
 // ---- users ----
 
 class AdminUsersScreen extends StatefulWidget {
-  const AdminUsersScreen({super.key});
+  /// Shares exported CSV text; defaults to the system share sheet. A test hook.
+  final Future<bool> Function(String csv, String subject)? share;
+
+  const AdminUsersScreen({super.key, this.share});
 
   @override
   State<AdminUsersScreen> createState() => _AdminUsersScreenState();
@@ -81,12 +87,108 @@ class AdminUsersScreen extends StatefulWidget {
 
 class _AdminUsersScreenState extends State<AdminUsersScreen> {
   late Future<List<Doc>> _users = AdminConsoleService.users();
+  late final Future<String> _role = AdminConsoleService.staffRole();
   String _query = '';
+  final _selected = <String>{};
+  List<Doc> _loaded = const [];
+
+  bool get _selecting => _selected.isNotEmpty;
+
+  void _toggle(String uid) => setState(() => _selected.contains(uid) ? _selected.remove(uid) : _selected.add(uid));
+
+  Future<void> _export() async {
+    final subject = tr(context, 'adminUsers');
+    final failed = tr(context, 'cannotOpenLink');
+    final ok = await (widget.share ?? shareCsv)(await AdminConsoleService.usersCsv(), subject);
+    if (!ok && mounted) showSnack(context, failed);
+  }
+
+  /// Asks for a reason (and a status for "set status"); null when cancelled.
+  Future<({String reason, String? tier})?> _ask({required String titleKey, bool pickTier = false, bool needReason = true}) async {
+    final reason = TextEditingController();
+    String tier = RiskTier.review;
+    return showDialog<({String reason, String? tier})>(
+      context: context,
+      builder: (c) => StatefulBuilder(
+        builder: (c, set) => AlertDialog(
+          title: Text(trf(c, titleKey, {'n': _selected.length})),
+          content: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+            if (pickTier)
+              Wrap(spacing: 6, children: [
+                for (final t in AdminUserService.bulkTiers)
+                  ChoiceChip(key: ValueKey('bulkTier_$t'), label: Text(riskTierLabel(c, t)), selected: tier == t, onSelected: (_) => set(() => tier = t)),
+              ]),
+            TextField(
+              key: const ValueKey('bulkReason'),
+              controller: reason,
+              inputFormatters: [LengthLimitingTextInputFormatter(200)],
+              decoration: InputDecoration(labelText: tr(c, needReason ? 'bulkReason' : 'bulkReasonOptional')),
+            ),
+          ]),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(c), child: Text(tr(c, 'cancel'))),
+            FilledButton(key: const ValueKey('bulkConfirm'), onPressed: () => Navigator.pop(c, (reason: reason.text, tier: pickTier ? tier : null)), child: Text(tr(c, 'save'))),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _bulk(String action) async {
+    final ask = await _ask(
+      titleKey: switch (action) { UserAction.bulkHold => 'bulkHoldTitle', UserAction.bulkUnhold => 'bulkUnholdTitle', _ => 'bulkStatusTitle' },
+      pickTier: action == UserAction.bulkStatus,
+      needReason: action != UserAction.bulkUnhold,
+    );
+    if (ask == null || !mounted) return;
+    final tier = switch (action) { UserAction.bulkHold => RiskTier.restricted, UserAction.bulkUnhold => RiskTier.normal, _ => ask.tier! };
+    final current = {
+      for (final d in _loaded)
+        if (_selected.contains(d.id)) d.id: d.data()['riskTier'] as String? ?? RiskTier.normal,
+    };
+    try {
+      final r = await AdminUserService.bulkSetTier(current, tier, action: action, reason: ask.reason);
+      if (!mounted) return;
+      showSnack(context, trf(context, 'bulkDone', {'n': r.changed, 'm': r.skipped}));
+      setState(() {
+        _selected.clear();
+        _users = AdminConsoleService.users();
+      });
+    } on UserActionException {
+      if (mounted) showSnack(context, tr(context, 'auReasonNeeded'));
+    } catch (_) {
+      if (mounted) showSnack(context, tr(context, 'somethingWrong'));
+    }
+  }
+
+  Widget _bulkBar() => FutureBuilder<String>(
+        future: _role,
+        builder: (context, snap) {
+          if (!staffCan(snap.data, 'flaggedUsers')) return const SizedBox.shrink();
+          return SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(12, 6, 12, 10),
+              child: Wrap(spacing: 8, runSpacing: 4, alignment: WrapAlignment.center, children: [
+                FilledButton(key: const ValueKey('bulkHold'), onPressed: () => _bulk(UserAction.bulkHold), child: Text(tr(context, 'bulkHold'))),
+                OutlinedButton(key: const ValueKey('bulkUnhold'), onPressed: () => _bulk(UserAction.bulkUnhold), child: Text(tr(context, 'bulkUnhold'))),
+                OutlinedButton(key: const ValueKey('bulkStatus'), onPressed: () => _bulk(UserAction.bulkStatus), child: Text(tr(context, 'bulkStatus'))),
+              ]),
+            ),
+          );
+        },
+      );
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(tr(context, 'adminUsers'))),
+      appBar: AppBar(
+        title: Text(_selecting ? trf(context, 'bulkSelected', {'n': _selected.length}) : tr(context, 'adminUsers')),
+        leading: _selecting ? IconButton(key: const ValueKey('bulkClear'), tooltip: tr(context, 'clear'), onPressed: () => setState(_selected.clear), icon: const Icon(Icons.close_rounded)) : null,
+        actions: [
+          if (!_selecting) IconButton(key: const ValueKey('exportUsers'), tooltip: tr(context, 'exportCsv'), onPressed: _export, icon: const Icon(Icons.ios_share_rounded)),
+        ],
+      ),
+      bottomNavigationBar: _selecting ? _bulkBar() : null,
       body: Column(children: [
         Padding(
           padding: const EdgeInsets.all(12),
@@ -101,12 +203,15 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
             builder: (context, snap) {
               if (snap.hasError) return Center(child: Text(tr(context, 'somethingWrong')));
               if (!snap.hasData) return const Center(child: CircularProgressIndicator());
+              _loaded = snap.data!;
               final list = [for (final d in snap.data!) if (AdminConsoleService.userMatches(d.data(), d.id, _query)) d];
               if (list.isEmpty) return _empty(context);
               return ListView(children: [
                 for (final d in list)
                   ListTile(
                     key: ValueKey('user_${d.id}'),
+                    selected: _selected.contains(d.id),
+                    leading: _selecting ? Checkbox(key: ValueKey('pick_${d.id}'), value: _selected.contains(d.id), onChanged: (_) => _toggle(d.id)) : null,
                     title: Text((d.data()['name'] ?? d.data()['driverName'] ?? d.id).toString()),
                     subtitle: Text([
                       d.data()['phone'] ?? '',
@@ -114,21 +219,32 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                       if ((d.data()['roles'] as List?)?.isNotEmpty ?? false) (d.data()['roles'] as List).join('/'),
                       if (DocExpiry.licenceBlocked(d.data(), DateTime.now())) tr(context, 'adminLicenceExpiredTag'),
                     ].where((e) => e.toString().isNotEmpty).join(' · ')),
-                    trailing: DocExpiry.licenceBlocked(d.data(), DateTime.now())
-                        ? TextButton(
-                            key: ValueKey('licenceOverride_${d.id}'),
-                            onPressed: () async {
-                              await AdminConsoleService.overrideLicence(d.id);
-                              if (context.mounted) showSnack(context, tr(context, 'docOverrideDone'));
-                              setState(() => _users = AdminConsoleService.users());
-                            },
-                            child: Text(tr(context, 'adminDocOverride')),
-                          )
-                        : const Icon(Icons.edit_outlined),
-                    onTap: () async {
-                      await Navigator.of(context).push(MaterialPageRoute(builder: (_) => AdminUserScreen(uid: d.id)));
-                      if (mounted) setState(() => _users = AdminConsoleService.users());
-                    },
+                    trailing: _selecting
+                        ? null
+                        : DocExpiry.licenceBlocked(d.data(), DateTime.now())
+                            ? TextButton(
+                                key: ValueKey('licenceOverride_${d.id}'),
+                                onPressed: () async {
+                                  await AdminConsoleService.overrideLicence(d.id);
+                                  if (context.mounted) showSnack(context, tr(context, 'docOverrideDone'));
+                                  setState(() {
+                                    _users = AdminConsoleService.users();
+                                  });
+                                },
+                                child: Text(tr(context, 'adminDocOverride')),
+                              )
+                            : const Icon(Icons.edit_outlined),
+                    onLongPress: () => _toggle(d.id),
+                    onTap: _selecting
+                        ? () => _toggle(d.id)
+                        : () async {
+                            await Navigator.of(context).push(MaterialPageRoute(builder: (_) => AdminUserScreen(uid: d.id)));
+                            if (mounted) {
+                              setState(() {
+                                _users = AdminConsoleService.users();
+                              });
+                            }
+                          },
                   ),
               ]);
             },
@@ -258,7 +374,10 @@ class _Filter extends StatelessWidget {
 // ---- bookings (with manual reassign) ----
 
 class AdminBookingsScreen extends StatefulWidget {
-  const AdminBookingsScreen({super.key});
+  /// Shares exported CSV text; defaults to the system share sheet. A test hook.
+  final Future<bool> Function(String csv, String subject)? share;
+
+  const AdminBookingsScreen({super.key, this.share});
 
   @override
   State<AdminBookingsScreen> createState() => _AdminBookingsScreenState();
@@ -293,10 +412,20 @@ class _AdminBookingsScreenState extends State<AdminBookingsScreen> {
     }
   }
 
+  Future<void> _export() async {
+    final subject = tr(context, 'adminBookings');
+    final failed = tr(context, 'cannotOpenLink');
+    final ok = await (widget.share ?? shareCsv)(await AdminConsoleService.bookingsCsv(status: _status), subject);
+    if (!ok && mounted) showSnack(context, failed);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(tr(context, 'adminBookings'))),
+      appBar: AppBar(
+        title: Text(tr(context, 'adminBookings')),
+        actions: [IconButton(key: const ValueKey('exportBookings'), tooltip: tr(context, 'exportCsv'), onPressed: _export, icon: const Icon(Icons.ios_share_rounded))],
+      ),
       body: Column(children: [
         _Filter(
           selected: _status,

@@ -52,7 +52,9 @@ class _TripOtpCardState extends State<TripOtpCard> {
         if (snap.hasError) {
           return AppCard(
             child: TextButton.icon(
-              onPressed: () => setState(() => _otps = TripOtpService.ensure(widget.booking.id)),
+              onPressed: () => setState(() {
+                _otps = TripOtpService.ensure(widget.booking.id);
+              }),
               icon: const Icon(Icons.refresh_rounded),
               label: Text(tr(context, 'retry')),
             ),
