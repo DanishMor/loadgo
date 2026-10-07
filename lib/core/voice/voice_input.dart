@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 
 import '../l10n/l10n.dart';
+import '../permissions/permission_rationale.dart';
 import '../widgets/common.dart';
 
 /// Why [VoiceInput.listenOnce] gave no text.
@@ -125,6 +126,7 @@ class _VoiceMicButtonState extends State<VoiceMicButton> {
   bool _listening = false;
 
   Future<void> _start() async {
+    if (!await PermissionRationale.ask(context, RationaleKind.microphone) || !mounted) return;
     setState(() => _listening = true);
     showSnack(context, tr(context, 'voiceListening'));
     final r = await VoiceInput.listenOnce();

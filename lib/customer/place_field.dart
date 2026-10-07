@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../core/l10n/l10n.dart';
+import '../core/permissions/permission_rationale.dart';
 import '../core/pricing/cities.dart';
 import '../core/services/location_service.dart';
 import '../core/widgets/common.dart';
@@ -35,6 +36,7 @@ class _PlaceFieldState extends State<PlaceField> {
   }
 
   Future<void> _useLocation() async {
+    if (!await PermissionRationale.ask(context, RationaleKind.location) || !mounted) return;
     setState(() => _locating = true);
     final c = await LocationService.current();
     if (!mounted) return;

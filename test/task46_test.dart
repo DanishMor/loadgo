@@ -38,7 +38,7 @@ class FakeEngine implements SpeechEngine {
 void main() {
   setUp(() {
     languageNotifier.value = AppLanguage.english;
-    SharedPreferences.setMockInitialValues({});
+    SharedPreferences.setMockInitialValues({'rationale_seen_microphone': true});
     SimpleMode.reset();
   });
   tearDown(() => VoiceInput.engine = SpeechToTextEngine());

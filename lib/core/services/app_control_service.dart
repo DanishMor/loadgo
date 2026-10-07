@@ -4,6 +4,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 
 import '../app_control/app_control.dart';
 import '../app_info.dart';
+import '../settings/policy_links.dart';
 import 'backend.dart';
 
 /// Loads [AppControl] from Remote Config with `config/app` as fallback and
@@ -30,6 +31,7 @@ class AppControlService {
     try {
       final snap = await Backend.db.collection('config').doc('app').get();
       control = AppControl.fromMap(snap.data());
+      PolicyLinks.setBase(snap.data()?['policyBaseUrl']);
     } catch (_) {}
     try {
       final rc = FirebaseRemoteConfig.instance;

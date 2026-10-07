@@ -9,6 +9,7 @@ import 'auth/role_selection_screen.dart';
 import 'auth/splash_screen.dart';
 import 'core/l10n/l10n.dart';
 import 'core/navigation/app_routes.dart';
+import 'core/permissions/permission_rationale.dart';
 import 'core/services/app_config.dart';
 import 'core/services/app_control_service.dart';
 import 'core/services/crash_service.dart';
@@ -46,7 +47,10 @@ Future<void> main() async {
   String? configUid;
   FirebaseAuth.instance.authStateChanges().listen((user) {
     if (user != null) {
-      PushService.register();
+      // The system prompt only follows the explanation (Settings > Phone alerts).
+      PermissionRationale.seen(RationaleKind.notifications).then((seen) {
+        if (seen) PushService.register();
+      });
       AppControlService.refresh();
       // Another account needs its own settings; the same one reuses the cache.
       refreshAppConfig(force: user.uid != configUid);

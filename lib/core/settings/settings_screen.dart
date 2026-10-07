@@ -10,6 +10,8 @@ import '../app_info.dart';
 import '../l10n/l10n.dart';
 import '../l10n/language_widgets.dart';
 import '../models/user_settings.dart';
+import '../permissions/permission_rationale.dart';
+import '../services/push_service.dart';
 import '../services/settings_service.dart';
 import '../widgets/common.dart';
 import 'simple_mode.dart';
@@ -156,6 +158,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 title: Text(tr(context, 'myDevices')),
                 trailing: const Icon(Icons.chevron_right_rounded),
                 onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const DevicesScreen())),
+              ),
+              ListTile(
+                key: const ValueKey('settingsPhoneAlerts'),
+                leading: const Icon(Icons.notifications_active_outlined),
+                title: Text(tr(context, 'rationaleNotifTitle')),
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () async {
+                  if (!await PermissionRationale.ask(context, RationaleKind.notifications)) return;
+                  await PushService.register();
+                },
               ),
               const Divider(),
               ListTile(
