@@ -5,6 +5,7 @@ import '../core/constants/logistics.dart';
 import '../core/l10n/l10n.dart';
 import '../core/services/admin_console_service.dart';
 import '../core/widgets/common.dart';
+import '../core/widgets/live_stream.dart';
 import '../core/widgets/logistics_labels.dart';
 import 'admin_assistant_screen.dart';
 import 'admin_claims_screen.dart';
@@ -157,7 +158,7 @@ class _AdminAnalyticsScreenState extends State<AdminAnalyticsScreen> {
       body: FutureBuilder<AdminCounters>(
         future: _future,
         builder: (context, snap) {
-          if (snap.hasError) return Center(child: Text(tr(context, 'somethingWrong')));
+          if (snap.hasError) return ErrorState(error: snap.error);
           if (!snap.hasData) return const Center(child: CircularProgressIndicator());
           final c = snap.data!;
           return ListView(padding: const EdgeInsets.all(16), children: [

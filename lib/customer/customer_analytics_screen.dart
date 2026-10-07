@@ -4,6 +4,7 @@ import '../core/analytics/trip_stats.dart';
 import '../core/l10n/l10n.dart';
 import '../core/services/analytics_service.dart';
 import '../core/widgets/common.dart';
+import '../core/widgets/live_stream.dart';
 import '../core/widgets/stat_tile.dart';
 
 /// Shipments, spend, top routes and success rate for a customer.
@@ -17,7 +18,7 @@ class CustomerAnalyticsScreen extends StatelessWidget {
       body: FutureBuilder<CustomerStats>(
         future: AnalyticsService.customer(),
         builder: (context, snap) {
-          if (snap.hasError) return Center(child: Text(tr(context, 'somethingWrong')));
+          if (snap.hasError) return ErrorState(error: snap.error);
           if (!snap.hasData) return const Center(child: CircularProgressIndicator());
           final s = snap.data!;
           final noData = tr(context, 'statNoData');

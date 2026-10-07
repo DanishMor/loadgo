@@ -1,8 +1,8 @@
 import 'dart:async';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
+import '../errors/friendly_error.dart';
 import '../services/connectivity_service.dart';
 import 'common.dart';
 import '../l10n/l10n.dart';
@@ -10,19 +10,7 @@ import '../l10n/l10n.dart';
 typedef StreamFactory<D> = Stream<D> Function();
 
 /// Translation key for a user-facing explanation of a load failure.
-String loadErrorKey(Object? error) {
-  if (error is FirebaseException) {
-    return switch (error.code) {
-      'permission-denied' || 'unauthenticated' => 'errorNoAccess',
-      'unavailable' ||
-      'deadline-exceeded' ||
-      'network-request-failed' => 'errorNetwork',
-      _ => 'errorGeneric',
-    };
-  }
-  if (error is TimeoutException) return 'errorNetwork';
-  return 'errorGeneric';
-}
+String loadErrorKey(Object? error) => FriendlyError.of(error);
 
 /// StreamBuilder with the app's standard states: a spinner while loading, a
 /// "taking longer than usual" hint with Retry if nothing arrives within
@@ -45,7 +33,7 @@ class LiveStream<D> extends StatefulWidget {
     required this.stream,
     required this.builder,
     this.compact = false,
-    this.slowAfter = const Duration(seconds: 15),
+    this.slowAfter = const Duration(seconds: 8),
     this.resubscribeKey,
   });
 
@@ -216,6 +204,30 @@ class ErrorRetry extends StatelessWidget {
       title: tr(context, messageKey),
       action: retry,
     );
+  }
+}
+
+/// A failure in plain words (and Retry when [onRetry] is given), for screens
+/// that build from a snapshot with `hasError`. Offline is told as offline.
+class ErrorState extends StatelessWidget {
+  final Object? error;
+  final VoidCallback? onRetry;
+  final bool compact;
+
+  const ErrorState({super.key, this.error, this.onRetry, this.compact = false});
+
+  @override
+  Widget build(BuildContext context) {
+    final key = !ConnectivityService.online.value ? 'errorOffline' : FriendlyError.of(error);
+    if (onRetry != null) return ErrorRetry(messageKey: key, onRetry: onRetry!, compact: compact);
+    if (compact) {
+      return AppCard(child: Row(children: [
+        Icon(Icons.cloud_off_rounded, color: AppColors.faint),
+        const SizedBox(width: 12),
+        Expanded(child: Text(tr(context, key), style: TextStyle(color: AppColors.muted))),
+      ]));
+    }
+    return EmptyState(icon: Icons.cloud_off_rounded, title: tr(context, key));
   }
 }
 

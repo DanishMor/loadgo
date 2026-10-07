@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import '../network/with_retry.dart';
 import '../constants/logistics.dart';
 import '../admin/admin_export.dart';
 import '../models/booking.dart';
@@ -285,7 +286,9 @@ class AdminConsoleService {
   static Future<int> _count(Query<Map<String, dynamic>> q) async => (await q.count().get()).count ?? 0;
 
   /// Document counts for the health screen.
-  static Future<HealthCounts> health() async {
+  static Future<HealthCounts> health() => withRetry(_health);
+
+  static Future<HealthCounts> _health() async {
     final r = await Future.wait([
       _count(_db.collection('users')),
       _count(_db.collection('loads')),

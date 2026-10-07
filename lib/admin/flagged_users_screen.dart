@@ -5,6 +5,7 @@ import '../core/models/risk.dart';
 import '../core/risk/risk_rules.dart';
 import '../core/services/risk_service.dart';
 import '../core/widgets/common.dart';
+import '../core/widgets/live_stream.dart';
 
 /// Users an admin should look at: non-normal tier, many cancellations or
 /// open reports. Tap one to change the risk tier. Rules gate every write.
@@ -110,10 +111,10 @@ class _FlaggedUsersScreenState extends State<FlaggedUsersScreen> {
       body: FutureBuilder<List<FlaggedUser>>(
         future: _future,
         builder: (context, snap) {
-          if (snap.hasError) return Center(child: Text(tr(context, 'somethingWrong')));
+          if (snap.hasError) return ErrorState(error: snap.error);
           if (!snap.hasData) return const Center(child: CircularProgressIndicator());
           final list = _list = snap.data!;
-          if (list.isEmpty) return Center(child: Text(tr(context, 'noFlaggedUsers')));
+          if (list.isEmpty) return EmptyState(icon: Icons.verified_user_outlined, title: tr(context, 'noFlaggedUsers'));
           return ListView(children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),

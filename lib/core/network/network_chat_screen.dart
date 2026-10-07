@@ -116,7 +116,7 @@ class _NetworkChatBodyState extends State<NetworkChatBody> {
               child: LiveStream<List<NetworkMessage>>(
                 stream: () => _messages,
                 builder: (context, list) {
-                  if (list.isEmpty) return Center(child: Text(tr(context, 'netSayHello'), style: TextStyle(color: AppColors.muted)));
+                  if (list.isEmpty) return EmptyState(icon: Icons.waving_hand_outlined, title: tr(context, 'netSayHello'));
                   return ListView(reverse: true, padding: const EdgeInsets.all(16), children: [for (final m in list.reversed) _bubble(m)]);
                 },
               ),

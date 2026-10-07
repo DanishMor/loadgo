@@ -201,7 +201,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
           child: FutureBuilder<List<Doc>>(
             future: _users,
             builder: (context, snap) {
-              if (snap.hasError) return Center(child: Text(tr(context, 'somethingWrong')));
+              if (snap.hasError) return ErrorState(error: snap.error);
               if (!snap.hasData) return const Center(child: CircularProgressIndicator());
               _loaded = snap.data!;
               final list = [for (final d in snap.data!) if (AdminConsoleService.userMatches(d.data(), d.id, _query)) d];

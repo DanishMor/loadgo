@@ -190,7 +190,7 @@ class _ConnectionsTab extends StatelessWidget {
     return LiveStream<List<DriverLink>>(
       stream: NetworkService.watchLinks,
       builder: (context, links) {
-        if (links.isEmpty) return Center(child: Padding(padding: const EdgeInsets.all(24), child: Text(tr(context, 'netNoConnections'), textAlign: TextAlign.center, style: TextStyle(color: AppColors.muted))));
+        if (links.isEmpty) return EmptyState(icon: Icons.group_outlined, title: tr(context, 'netNoConnections'));
         final incoming = [for (final l in links) if (l.incomingFor(me)) l];
         final rest = [for (final l in links) if (!l.incomingFor(me)) l];
         return ListView(padding: const EdgeInsets.all(16), children: [
@@ -277,7 +277,7 @@ class _GroupsTab extends StatelessWidget {
       body: LiveStream<List<DriverGroup>>(
         stream: NetworkService.watchGroups,
         builder: (context, groups) {
-          if (groups.isEmpty) return Center(child: Text(tr(context, 'netNoGroups'), style: TextStyle(color: AppColors.muted)));
+          if (groups.isEmpty) return EmptyState(icon: Icons.groups_outlined, title: tr(context, 'netNoGroups'));
           return ListView(padding: const EdgeInsets.fromLTRB(16, 16, 16, 88), children: [
             for (final g in groups)
               ListTile(

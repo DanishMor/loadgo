@@ -251,7 +251,7 @@ class ShipmentDetailScreen extends StatelessWidget {
       body: FutureBuilder<ShipmentLegs>(
         future: EnterpriseService.legsOf(s),
         builder: (context, snap) {
-          if (snap.hasError) return Center(child: Text(tr(context, 'somethingWrong')));
+          if (snap.hasError) return ErrorState(error: snap.error);
           if (!snap.hasData) return const Center(child: CircularProgressIndicator());
           final legs = snap.data!;
           return ListView(padding: const EdgeInsets.all(16), children: [

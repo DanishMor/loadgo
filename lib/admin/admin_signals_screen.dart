@@ -67,7 +67,7 @@ class _SharedDevicesTab extends StatelessWidget {
     return FutureBuilder<List<SharedDevice>>(
       future: DeviceService.sharedDevices(),
       builder: (context, snap) {
-        if (snap.hasError) return Center(child: Text(tr(context, 'somethingWrong')));
+        if (snap.hasError) return ErrorState(error: snap.error);
         if (!snap.hasData) return const Center(child: CircularProgressIndicator());
         final list = snap.data!;
         if (list.isEmpty) return EmptyState(icon: Icons.devices_rounded, title: tr(context, 'noSharedDevices'));

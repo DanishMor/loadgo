@@ -5,6 +5,7 @@ import '../core/enterprise/route_report.dart';
 import '../core/l10n/l10n.dart';
 import '../core/services/enterprise_service.dart';
 import '../core/widgets/common.dart';
+import '../core/widgets/live_stream.dart';
 
 /// Loads, deliveries and spend per route and per branch, with CSV copy.
 class RouteReportScreen extends StatelessWidget {
@@ -17,7 +18,7 @@ class RouteReportScreen extends StatelessWidget {
       body: FutureBuilder<RouteReport>(
         future: EnterpriseService.routeReport(),
         builder: (context, snap) {
-          if (snap.hasError) return Center(child: Text(tr(context, 'somethingWrong')));
+          if (snap.hasError) return ErrorState(error: snap.error);
           if (!snap.hasData) return const Center(child: CircularProgressIndicator());
           final r = snap.data!;
           String line(int loads, int delivered, int spend) =>

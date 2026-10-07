@@ -1,6 +1,7 @@
 
 import '../admin/reply_templates.dart';
 import 'admin_console_service.dart';
+import '../network/with_retry.dart';
 import 'backend.dart';
 
 class TemplateException implements Exception {
@@ -22,7 +23,7 @@ class ReplyTemplateService {
   /// The saved templates, or the built-in ones while none were ever saved.
   static Future<List<ReplyTemplate>> load() async {
     try {
-      final snap = await Backend.db.collection('config').doc(docId).get();
+      final snap = await withRetry(() => Backend.db.collection('config').doc(docId).get());
       if (!snap.exists) return ReplyTemplate.defaults;
       return ReplyTemplate.parse(snap.data());
     } catch (_) {

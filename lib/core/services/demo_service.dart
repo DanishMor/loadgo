@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 import '../demo/demo_seed.dart';
+import '../network/with_retry.dart';
 import 'backend.dart';
 
 class DemoBlockedException implements Exception {
@@ -44,7 +45,9 @@ class DemoService {
   }
 
   /// How many demo documents exist.
-  static Future<int> count() async {
+  static Future<int> count() => withRetry(_count);
+
+  static Future<int> _count() async {
     var n = 0;
     for (final c in DemoSeed.collections) {
       final snap = await Backend.db.collection(c).where('demo', isEqualTo: true).get();

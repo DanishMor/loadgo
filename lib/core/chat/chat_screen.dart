@@ -200,7 +200,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 stream: () => _messages,
                 builder: (context, list) {
                   if (list.isEmpty) {
-                    return Center(child: Text(tr(context, 'noMessages'), style: TextStyle(color: AppColors.muted)));
+                    return EmptyState(icon: Icons.chat_bubble_outline_rounded, title: tr(context, 'noMessages'));
                   }
                   return ListView(
                     reverse: true,
