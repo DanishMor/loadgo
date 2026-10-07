@@ -25,6 +25,7 @@ import '../core/enterprise/handover_card.dart';
 import '../core/documents/eway_status_line.dart';
 import 'return_loads_section.dart';
 import '../core/documents/payment_card.dart';
+import '../core/payments/payment_timeline_card.dart';
 
 void openDriverTrip(BuildContext context, String bookingId) {
   Navigator.of(context).push(MaterialPageRoute(builder: (_) => DriverTripScreen(bookingId: bookingId)));
@@ -86,6 +87,7 @@ class DriverTripScreen extends StatelessWidget {
           CargoDocsCard(booking: booking),
           const SizedBox(height: 14),
           PaymentCard(booking: booking),
+          if (booking.status == BookingStatus.delivered) ...[const SizedBox(height: 14), PaymentTimelineCard(booking: booking)],
           const SizedBox(height: 14),
           TripEtaCard(booking: booking),
           const SizedBox(height: 8),
