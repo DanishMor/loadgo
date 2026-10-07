@@ -7,6 +7,8 @@ import '../models/vehicle_type.dart';
 import '../services/vehicle_type_service.dart';
 import 'common.dart';
 import '../l10n/l10n.dart';
+import '../voice/voice_input.dart';
+import '../voice/voice_parser.dart';
 
 /// Translated display name of a vehicle type id.
 String vehicleTypeLabel(BuildContext context, String id) {
@@ -85,10 +87,10 @@ Color offerStatusColor(String status) => switch (status) {
 /// Asks for a whole-rupee price; returns paise, or null when cancelled.
 /// [footer] is rebuilt as the driver types (e.g. a toll, fuel and margin panel).
 Future<int?> askPricePaise(BuildContext context,
-        {required String title, required String label, int? initialPaise, String? note, Widget Function(BuildContext, int? paise)? footer}) =>
+        {required String title, required String label, int? initialPaise, String? note, Widget Function(BuildContext, int? paise)? footer, bool voice = false}) =>
     showDialog<int>(
       context: context,
-      builder: (_) => _PriceDialog(title: title, label: label, initialPaise: initialPaise, note: note, footer: footer),
+      builder: (_) => _PriceDialog(title: title, label: label, initialPaise: initialPaise, note: note, footer: footer, voice: voice),
     );
 
 class _PriceDialog extends StatefulWidget {
@@ -98,7 +100,10 @@ class _PriceDialog extends StatefulWidget {
   final String? note;
   final Widget Function(BuildContext, int? paise)? footer;
 
-  const _PriceDialog({required this.title, required this.label, this.initialPaise, this.note, this.footer});
+  /// Adds a mic button that reads a spoken amount (Hindi, Hinglish, English).
+  final bool voice;
+
+  const _PriceDialog({required this.title, required this.label, this.initialPaise, this.note, this.footer, this.voice = false});
 
   @override
   State<_PriceDialog> createState() => _PriceDialogState();
@@ -112,6 +117,15 @@ class _PriceDialogState extends State<_PriceDialog> {
   void dispose() {
     _ctrl.dispose();
     super.dispose();
+  }
+
+  void _heard(String text) {
+    final n = VoiceParser.parseAmountRupees(text);
+    if (n == null || n <= 0 || n > 1000000) {
+      showSnack(context, tr(context, 'voiceNoAmount'));
+      return;
+    }
+    _ctrl.text = '$n';
   }
 
   @override
@@ -130,7 +144,11 @@ class _PriceDialogState extends State<_PriceDialog> {
               autofocus: true,
               keyboardType: TextInputType.number,
               inputFormatters: [LengthLimitingTextInputFormatter(10), FilteringTextInputFormatter.digitsOnly],
-              decoration: InputDecoration(labelText: widget.label, prefixIcon: const Icon(Icons.currency_rupee_rounded)),
+              decoration: InputDecoration(
+                labelText: widget.label,
+                prefixIcon: const Icon(Icons.currency_rupee_rounded),
+                suffixIcon: widget.voice ? VoiceMicButton(onText: _heard) : null,
+              ),
               validator: (v) {
                 final n = int.tryParse(v?.trim() ?? '');
                 return (n == null || n <= 0 || n > 1000000) ? tr(context, 'invalidNumber') : null;

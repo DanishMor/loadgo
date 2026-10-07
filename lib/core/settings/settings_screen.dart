@@ -12,6 +12,7 @@ import '../l10n/language_widgets.dart';
 import '../models/user_settings.dart';
 import '../services/settings_service.dart';
 import '../widgets/common.dart';
+import 'simple_mode.dart';
 
 /// Settings for both roles: language, notification preferences, consent
 /// center, help and policies, account deletion, app version
@@ -20,7 +21,10 @@ import '../widgets/common.dart';
 class SettingsScreen extends StatefulWidget {
   final Future<void> Function() onLogout;
 
-  const SettingsScreen({super.key, required this.onLogout});
+  /// Drivers get the Simple Mode switch.
+  final bool showSimpleMode;
+
+  const SettingsScreen({super.key, required this.onLogout, this.showSimpleMode = false});
 
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();
@@ -118,6 +122,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       body: p == null || c == null
           ? const Center(child: CircularProgressIndicator())
           : ListView(children: [
+              if (widget.showSimpleMode) const SimpleModeSwitch(),
               ListTile(
                 key: const ValueKey('settingsLanguage'),
                 leading: const Icon(Icons.language_rounded),

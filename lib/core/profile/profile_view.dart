@@ -186,7 +186,7 @@ class _ProfileViewState extends State<ProfileView> {
                       leading: Icon(Icons.settings_outlined, color: AppColors.muted),
                       title: Text(tr(context, 'settings')),
                       trailing: const Icon(Icons.chevron_right_rounded),
-                      onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => SettingsScreen(onLogout: _logout))),
+                      onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => SettingsScreen(onLogout: _logout, showSimpleMode: widget.isDriver))),
                     ),
                     ?AppRoutes.adminEntry?.call(context),
                     ListTile(

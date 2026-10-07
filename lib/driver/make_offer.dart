@@ -8,6 +8,8 @@ import '../core/models/offer.dart';
 import '../core/models/vehicle.dart';
 import '../core/services/offer_service.dart';
 import '../core/services/pricing_service.dart';
+import '../core/settings/simple_mode.dart';
+import 'simple_bid.dart';
 import '../core/services/vehicle_service.dart';
 import '../core/widgets/common.dart';
 import '../core/widgets/logistics_labels.dart';
@@ -62,13 +64,16 @@ class _MakeOfferButtonState extends State<MakeOfferButton> {
       }
       final vehicle = await _pickVehicle(vehicles);
       if (vehicle == null || !mounted) return;
-      final price = await askPricePaise(
-        context,
-        title: tr(context, 'makeOffer'),
-        label: tr(context, 'yourPrice'),
-        initialPaise: widget.load.estimate?.total,
-        footer: _costFooter(vehicle),
-      );
+      final price = SimpleMode.isOn
+          ? await askSimpleBidPaise(context, initialPaise: widget.load.estimate?.total, footer: _costFooter(vehicle))
+          : await askPricePaise(
+              context,
+              title: tr(context, 'makeOffer'),
+              label: tr(context, 'yourPrice'),
+              initialPaise: widget.load.estimate?.total,
+              footer: _costFooter(vehicle),
+              voice: true,
+            );
       if (price == null || !mounted) return;
       await OfferService.send(load: widget.load, vehicle: vehicle, pricePaise: price);
       if (mounted) showSnack(context, tr(context, 'offerSent'));

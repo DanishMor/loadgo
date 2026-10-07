@@ -52,6 +52,7 @@ dependencies:
   firebase_remote_config: ^6.7.0
   package_info_plus: ^10.2.2
   share_plus: ^13.3.1
+  speech_to_text: ^7.5.0
 
 dev_dependencies:
   flutter_test:

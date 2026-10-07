@@ -21,6 +21,8 @@ import '../core/l10n/language_widgets.dart';
 import '../core/widgets/booking_list_view.dart';
 import 'driver_location_sync.dart';
 import 'driver_trip_screen.dart';
+import '../core/settings/simple_mode.dart';
+import 'simple_home_screen.dart';
 import '../core/reminders/reminders.dart';
 import '../core/widgets/reminder_widgets.dart';
 import 'city_demand_screen.dart';
@@ -288,6 +290,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                 ],
               ),
             ),
+            const SimpleModePrompt(),
             _noVehiclePrompt(),
             const ReviewFlagBanner(),
             RemindersBanner(isDriver: true, onOpen: _openReminder),
@@ -391,7 +394,12 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => ValueListenableBuilder<bool>(
+        valueListenable: SimpleMode.notifier,
+        builder: (context, simple, _) => simple ? const SimpleDriverHome() : _fullHome(context),
+      );
+
+  Widget _fullHome(BuildContext context) {
     final pages = [
       _homeTab(),
       AvailableLoadsView(loads: LoadService.watchOpenPage, nearby: LoadService.watchNearby, onAccepted: _onAccepted),

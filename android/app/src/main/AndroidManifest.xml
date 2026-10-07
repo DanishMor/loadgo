@@ -2,6 +2,7 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
     <application
         android:label="transport_app"
         android:name="${applicationName}"
@@ -56,6 +57,10 @@
         <intent>
             <action android:name="android.intent.action.VIEW"/>
             <data android:scheme="geo"/>
+        </intent>
+        <!-- speech_to_text: find the device speech recognition service. -->
+        <intent>
+            <action android:name="android.speech.RecognitionService"/>
         </intent>
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT"/>

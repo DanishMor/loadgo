@@ -18,6 +18,8 @@ import '../core/services/vehicle_type_service.dart';
 import '../core/widgets/logistics_labels.dart';
 import 'favourite_routes_screen.dart';
 import 'make_offer.dart';
+import '../core/voice/voice_input.dart';
+import '../core/voice/voice_parser.dart';
 import 'recommended_loads.dart';
 import '../core/services/match_service.dart';
 import '../core/matching/load_ranker.dart' show PlannedRoute;
@@ -178,6 +180,15 @@ class _AvailableLoadsViewState extends State<AvailableLoadsView> {
     );
   }
 
+  /// A spoken "Delhi se Jaipur" or a city name fills the pickup search with
+  /// the pickup city (or the spoken words when no city is recognised).
+  void _heardPlace(String text) {
+    final route = VoiceParser.parseRoute(text);
+    final place = route.from ?? text.trim();
+    _searchCtrl.text = place;
+    setState(() => _filter = _filter.copyWith(pickupQuery: place));
+  }
+
   @override
   void dispose() {
     _nearSub?.cancel();
@@ -292,6 +303,7 @@ class _AvailableLoadsViewState extends State<AvailableLoadsView> {
                     onChanged: (v) => setState(() => _filter = _filter.copyWith(pickupQuery: v)),
                     decoration: InputDecoration(
                       prefixIcon: const Icon(Icons.search_rounded),
+                      suffixIcon: VoiceMicButton(onText: _heardPlace),
                       hintText: tr(context, 'searchPickup'),
                       contentPadding: const EdgeInsets.symmetric(vertical: 12),
                     ), inputFormatters: [LengthLimitingTextInputFormatter(100)]),

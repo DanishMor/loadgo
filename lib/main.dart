@@ -16,6 +16,7 @@ import 'core/services/connectivity_service.dart';
 import 'core/services/language_store.dart';
 import 'core/services/backend.dart';
 import 'core/services/push_service.dart';
+import 'core/settings/simple_mode.dart';
 import 'core/theme/app_theme.dart';
 import 'core/widgets/app_control_gate.dart';
 import 'core/widgets/live_stream.dart' show OfflineBanner;
@@ -38,6 +39,7 @@ Future<void> main() async {
   applyLanguageName(await LanguageStore.loadLocal());
   AppControlService.refresh();
   await ThemeStore.load();
+  await SimpleMode.load();
   // Register for push whenever a user is signed in (also after app restarts).
   String? configUid;
   FirebaseAuth.instance.authStateChanges().listen((user) {
