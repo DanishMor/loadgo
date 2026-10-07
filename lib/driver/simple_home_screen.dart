@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../core/assistant/sahayak_screen.dart';
 import '../core/l10n/l10n.dart';
 import '../core/l10n/language_widgets.dart';
 import '../core/models/booking.dart';
@@ -63,7 +64,16 @@ class SimpleDriverHome extends StatelessWidget {
             children: [
               Align(
                 alignment: AlignmentDirectional.centerEnd,
-                child: IconButton(tooltip: tr(context, 'language'), onPressed: () => showLanguageSelector(context), icon: const Icon(Icons.language_rounded, size: 30)),
+                child: Row(mainAxisSize: MainAxisSize.min, children: [
+                  SahayakButton(
+                    role: 'driver',
+                    actions: SahayakActions(
+                      openBookings: () => _push(context, const SimpleTripsScreen()),
+                      openNearbyLoads: () => _push(context, const SimpleLoadsScreen()),
+                    ),
+                  ),
+                  IconButton(tooltip: tr(context, 'language'), onPressed: () => showLanguageSelector(context), icon: const Icon(Icons.language_rounded, size: 30)),
+                ]),
               ),
               // Tall enough for large text: at least 190, growing with the labels.
               ConstrainedBox(

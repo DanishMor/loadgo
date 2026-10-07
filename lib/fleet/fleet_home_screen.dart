@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../core/assistant/sahayak_screen.dart';
 import '../core/l10n/l10n.dart';
 import '../core/notifications/notifications_screen.dart';
 import '../core/profile/profile_view.dart';
@@ -38,7 +39,7 @@ class _FleetHomeScreenState extends State<FleetHomeScreen> {
               scrolledUnderElevation: 0,
               automaticallyImplyLeading: false,
               title: Text(tr(context, 'fleetOwner'), style: const TextStyle(fontWeight: FontWeight.w800)),
-              actions: [NotificationBell(onOpenBooking: (_) {})],
+              actions: [const SahayakButton(role: 'fleet', actions: SahayakActions()), NotificationBell(onOpenBooking: (_) {})],
             ),
       body: IndexedStack(index: _index, children: pages),
       bottomNavigationBar: NavigationBar(

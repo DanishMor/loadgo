@@ -30,7 +30,7 @@ class _Msg {
 
 /// LoadGo Sahayak: a small chat with action buttons, used by both apps.
 class SahayakScreen extends StatefulWidget {
-  /// `customer` or `driver`.
+  /// `customer`, `driver` or `fleet`.
   final String role;
   final SahayakActions actions;
   final AssistantEngine engine;
@@ -59,7 +59,13 @@ class _SahayakScreenState extends State<SahayakScreen> {
   ];
 
   // (label key, text the engine reads)
-  List<(String, String)> get _chips => widget.role == 'driver'
+  List<(String, String)> get _chips => widget.role == 'fleet'
+      ? const [
+          ('asChipBid', 'bid'),
+          ('asChipPay', 'payment'),
+          ('asChipOtp', 'otp'),
+        ]
+      : widget.role == 'driver'
       ? const [
           ('asChipNearby', 'nearby loads'),
           ('asChipBid', 'bid'),
