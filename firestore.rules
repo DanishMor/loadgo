@@ -1757,6 +1757,27 @@ service cloud.firestore {
           || (b.customerId == request.auth.uid && b.driverId == r.reportedId);
     }
 
+    // What the Sahayak assistant could not answer (Task 48). The app strips
+    // numbers and links first; the rules only cap the size and shape.
+    match /assistant_unknown/{id} {
+      allow read: if adminIn(['super', 'support']);
+      allow create: if signedIn()
+          && request.resource.data.keys().hasOnly(['text', 'userId', 'role', 'language', 'resolved', 'createdAt'])
+          && request.resource.data.userId == request.auth.uid
+          && request.resource.data.text is string
+          && request.resource.data.text.size() >= 1 && request.resource.data.text.size() <= 300
+          && request.resource.data.role in ['customer', 'driver', 'fleet']
+          && request.resource.data.language is string && request.resource.data.language.size() <= 20
+          && request.resource.data.resolved == false
+          && request.resource.data.createdAt == request.time;
+      allow update: if adminIn(['super', 'support'])
+          && changedKeys().hasOnly(['resolved', 'resolvedAt', 'resolvedBy'])
+          && request.resource.data.resolved == true
+          && request.resource.data.resolvedBy == request.auth.uid
+          && request.resource.data.resolvedAt == request.time;
+      allow delete: if false;
+    }
+
     match /reports/{reportId} {
       allow read: if signedIn() && (resource.data.reporterId == request.auth.uid || isAdmin());
       allow create: if signedIn()

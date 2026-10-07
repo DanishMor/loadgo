@@ -3674,3 +3674,58 @@ describe('staff roles and risk signals', () => {
     await assertFails(addDoc(collection(as('driver1'), 'risk_signals'), sig('driver1', { type: 'made_up' })));
   });
 });
+
+describe('assistant unknown questions', () => {
+  const q = (uid, over = {}) => ({ text: 'weather today', userId: uid, role: 'customer', language: 'hindi', resolved: false, createdAt: serverTimestamp(), ...over });
+  const staff = (uid) => env.authenticatedContext(uid).firestore();
+
+  beforeEach(async () => {
+    await seed(async (db) => {
+      await setDoc(doc(db, 'admins', 'sup1'), { role: 'support' });
+      await setDoc(doc(db, 'admins', 'ops1'), { role: 'ops' });
+    });
+  });
+
+  test('a signed-in user creates their own, valid question', async () => {
+    await assertSucceeds(addDoc(collection(as('customer1'), 'assistant_unknown'), q('customer1')));
+    await assertSucceeds(addDoc(collection(as('driver1'), 'assistant_unknown'), q('driver1', { role: 'driver' })));
+    await assertFails(addDoc(collection(anon(), 'assistant_unknown'), q('customer1')));
+  });
+
+  test('refused: someone else, long or empty text, bad role, extra fields, resolved, wrong time', async () => {
+    const add = (uid, over) => addDoc(collection(as(uid), 'assistant_unknown'), q(uid, over));
+    await assertFails(addDoc(collection(as('customer1'), 'assistant_unknown'), q('driver1')));
+    await assertFails(add('customer1', { text: 'a'.repeat(301) }));
+    await assertSucceeds(add('customer1', { text: 'a'.repeat(300) }));
+    await assertFails(add('customer1', { text: '' }));
+    await assertFails(add('customer1', { text: 42 }));
+    await assertFails(add('customer1', { role: 'admin' }));
+    await assertFails(add('customer1', { language: 'x'.repeat(21) }));
+    await assertFails(add('customer1', { extra: 1 }));
+    await assertFails(add('customer1', { resolved: true }));
+    await assertFails(add('customer1', { createdAt: Timestamp.fromMillis(1000) }));
+  });
+
+  test('only super and support admins read; the author cannot', async () => {
+    await seed((db) => setDoc(doc(db, 'assistant_unknown', 'a1'), { text: 'x', userId: 'customer1', role: 'customer', language: 'english', resolved: false, createdAt: Timestamp.now() }));
+    await assertSucceeds(getDoc(doc(asAdmin(), 'assistant_unknown', 'a1')));
+    await assertSucceeds(getDoc(doc(staff('sup1'), 'assistant_unknown', 'a1')));
+    await assertSucceeds(getDocs(collection(staff('sup1'), 'assistant_unknown')));
+    await assertFails(getDoc(doc(staff('ops1'), 'assistant_unknown', 'a1')));
+    await assertFails(getDoc(doc(as('customer1'), 'assistant_unknown', 'a1')));
+    await assertFails(getDocs(collection(as('customer1'), 'assistant_unknown')));
+  });
+
+  test('admins mark resolved only; nobody edits the text or deletes', async () => {
+    await seed((db) => setDoc(doc(db, 'assistant_unknown', 'a1'), { text: 'x', userId: 'customer1', role: 'customer', language: 'english', resolved: false, createdAt: Timestamp.now() }));
+    const done = (by) => ({ resolved: true, resolvedAt: serverTimestamp(), resolvedBy: by });
+    await assertFails(updateDoc(doc(as('customer1'), 'assistant_unknown', 'a1'), done('customer1')));
+    await assertFails(updateDoc(doc(staff('ops1'), 'assistant_unknown', 'a1'), done('ops1')));
+    await assertFails(updateDoc(doc(staff('sup1'), 'assistant_unknown', 'a1'), { ...done('sup1'), text: 'changed' }));
+    await assertFails(updateDoc(doc(staff('sup1'), 'assistant_unknown', 'a1'), done('someone-else')));
+    await assertFails(updateDoc(doc(staff('sup1'), 'assistant_unknown', 'a1'), { resolved: false, resolvedAt: serverTimestamp(), resolvedBy: 'sup1' }));
+    await assertSucceeds(updateDoc(doc(staff('sup1'), 'assistant_unknown', 'a1'), done('sup1')));
+    await assertFails(deleteDoc(doc(asAdmin(), 'assistant_unknown', 'a1')));
+    await assertFails(deleteDoc(doc(as('customer1'), 'assistant_unknown', 'a1')));
+  });
+});

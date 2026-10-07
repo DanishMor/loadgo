@@ -1,3 +1,4 @@
+import '../core/assistant/sahayak_screen.dart';
 import '../core/services/backend.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -58,10 +59,29 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
 
   void _openTab(int index) => setState(() => _currentIndex = index);
 
+  Future<void> _postLoadFrom(Map<String, String> prefill) async {
+    final posted = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (_) => PostLoadScreen(
+          initialPickup: prefill['pickup'],
+          initialDrop: prefill['drop'],
+          initialVehicleType: prefill['vehicleType'],
+          initialWeight: prefill['weightTons'],
+        ),
+      ),
+    );
+    if (posted == true && mounted) setState(() => _currentIndex = _loadsTab);
+  }
+
+  late final SahayakActions _sahayak = SahayakActions(
+    openBookings: () => _openTab(_bookingsTab),
+    openPostLoad: _postLoadFrom,
+  );
+
   void _openBooking(String bookingId) => openBookingTracking(context, bookingId);
 
   late final List<Widget> _pages = [
-    _CustomerHomeContent(onPostLoad: _postLoad, onOpenTab: _openTab),
+    _CustomerHomeContent(onPostLoad: _postLoad, onOpenTab: _openTab, onSahayak: _sahayak),
     CustomerBookingsView(
       bookings: BookingService.watchForCustomerPage,
       onOpenTracking: _openBooking,
@@ -151,8 +171,9 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
 class _CustomerHomeContent extends StatelessWidget {
   final VoidCallback onPostLoad;
   final ValueChanged<int> onOpenTab;
+  final SahayakActions onSahayak;
 
-  const _CustomerHomeContent({required this.onPostLoad, required this.onOpenTab});
+  const _CustomerHomeContent({required this.onPostLoad, required this.onOpenTab, required this.onSahayak});
 
   static const _loadsTabIndex = 2;
 
@@ -213,6 +234,17 @@ class _CustomerHomeContent extends StatelessWidget {
                     icon: const Icon(Icons.language_rounded),
                     color: const Color(0xFF1565C0),
                   ),
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  width: 46,
+                  height: 46,
+                  decoration: BoxDecoration(
+                    color: AppColors.card,
+                    borderRadius: BorderRadius.circular(15),
+                    border: Border.all(color: AppColors.border),
+                  ),
+                  child: SahayakButton(role: 'customer', actions: onSahayak),
                 ),
                 const SizedBox(width: 8),
                 Container(

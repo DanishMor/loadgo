@@ -1,3 +1,4 @@
+import '../core/assistant/sahayak_screen.dart';
 import '../core/network/network_screen.dart';
 import 'package:flutter/material.dart';
 
@@ -52,6 +53,7 @@ class DriverHomeScreen extends StatefulWidget {
 
 class _DriverHomeScreenState extends State<DriverHomeScreen> {
   static const _loadsTab = 1;
+  static const _tripsTab = 2;
 
   int _index = 0;
   bool _isOnline = false;
@@ -269,6 +271,13 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                       const SizedBox(height: 2),
                       Text(tr(context, 'driver'), style: TextStyle(color: AppColors.muted)),
                     ],
+                  ),
+                ),
+                SahayakButton(
+                  role: 'driver',
+                  actions: SahayakActions(
+                    openBookings: () => _selectTab(_tripsTab),
+                    openNearbyLoads: () => _selectTab(_loadsTab),
                   ),
                 ),
                 IconButton(tooltip: tr(context, 'language'), onPressed: () => showLanguageSelector(context), icon: const Icon(Icons.language_rounded), color: const Color(0xFF1565C0)),

@@ -45,12 +45,17 @@ class PostLoadScreen extends StatefulWidget {
   /// Starts on this vehicle type (Book Bike).
   final String? initialVehicleType;
 
+  /// Pre-filled from the assistant (all optional).
+  final String? initialPickup;
+  final String? initialDrop;
+  final String? initialWeight;
+
   /// A repeating load that came due: its pickup date starts at [dueDate] and
   /// it moves to the next date once posted.
   final RecurringLoad? recurring;
   final DateTime? dueDate;
 
-  const PostLoadScreen({super.key, this.repostFrom, this.invitedDriverId, this.initialVehicleType, this.recurring, this.dueDate});
+  const PostLoadScreen({super.key, this.repostFrom, this.invitedDriverId, this.initialVehicleType, this.initialPickup, this.initialDrop, this.initialWeight, this.recurring, this.dueDate});
 
   @override
   State<PostLoadScreen> createState() => _PostLoadScreenState();
@@ -207,6 +212,9 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
     super.initState();
     if (widget.repostFrom != null) _prefill(widget.repostFrom!);
     if (widget.initialVehicleType != null) _vehicleType = widget.initialVehicleType!;
+    if (widget.initialPickup != null) _pickupCtrl.text = widget.initialPickup!;
+    if (widget.initialDrop != null) _dropCtrl.text = widget.initialDrop!;
+    if (widget.initialWeight != null) _weightCtrl.text = widget.initialWeight!;
     if (widget.dueDate != null) {
       final today = DateUtils.dateOnly(DateTime.now());
       final due = DateUtils.dateOnly(widget.dueDate!);

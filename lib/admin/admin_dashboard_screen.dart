@@ -6,6 +6,7 @@ import '../core/l10n/l10n.dart';
 import '../core/services/admin_console_service.dart';
 import '../core/widgets/common.dart';
 import '../core/widgets/logistics_labels.dart';
+import 'admin_assistant_screen.dart';
 import 'admin_claims_screen.dart';
 import 'admin_config_screen.dart';
 import 'admin_driver_rewards_screen.dart';
@@ -54,6 +55,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       ('adminFraudCases', 'adminFraudCases', Icons.gavel_rounded, const AdminFraudCasesScreen()),
       ('adminDisputes', 'adminDisputes', Icons.report_problem_outlined, const AdminClaimsScreen()),
       ('adminRatingFlags', 'adminRatingFlags', Icons.star_half_rounded, const AdminRatingFlagsScreen()),
+      ('adminAssistant', 'adminAssistant', Icons.chat_bubble_outline_rounded, const AdminAssistantScreen()),
       ('flaggedUsers', 'flaggedUsers', Icons.warning_amber_rounded, const FlaggedUsersScreen()),
       ('adminDeletionRequests', 'adminDeletionRequests', Icons.person_remove_outlined, const AdminDeletionRequestsScreen()),
       ('adminAudit', 'adminAudit', Icons.history_rounded, const AdminAuditScreen()),
