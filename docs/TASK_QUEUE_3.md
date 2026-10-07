@@ -194,3 +194,6 @@ Source: `docs/GAP_AUDIT.md` (FREE gaps only). Same RULES as MASTER_PLAN_2. After
 4. Convert large `ListView(children:)` of unbounded data to builders where found.
 5. Structure test still passes.
 6. Docs final counts.
+
+## Pilot add-on (Tasks 60-66, from docs/ADDON_PILOT.md)
+**TASK 60 - config/features, pilot mode:** `Features` model (pilot defaults), `FeaturesService` (15 min cache), `FeatureGate`, gates on driver network, empty trucks, business tools, rental and movers, driver rewards, trip share, problem report; Admin > Features. **TASK 61 - supply and demand screen** (admin, super and ops). **TASK 62 - unit economics screen** (admin, super; costs in `config/economics`). **TASK 63 - driver payment timeline** on the trip screen. **TASK 64 - trip share link** (`trip_shares`, public page `/trip/{token}`). **TASK 65 - problem report** (becomes a support ticket). **TASK 66 - docs:** ADDON_PILOT, LAUNCH_RISKS, COST_WATCH.

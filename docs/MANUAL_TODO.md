@@ -34,3 +34,8 @@ Everything the app could do on the free stack (Flutter + Firebase Auth + Firesto
 - [ ] Play Store / App Store listing, signing keys, privacy labels.
 - [ ] Decide when to split the app into Customer and Driver apps: see `docs/SPLIT_PLAN.md`.
 - [ ] Commission % and cancellation charges are config values; set the real numbers in Admin > Pricing.
+
+## Pilot add-on
+- [ ] `firebase deploy --only firestore:rules` once more for the `trip_shares` rules, and `--only hosting` for `/trip/**` and `/load/**` (the earlier rules and indexes are already live).
+- [ ] Read docs/ADDON_PILOT.md, docs/LAUNCH_RISKS.md and docs/COST_WATCH.md; set a billing budget alert; check the current Firebase Auth SMS quota.
+- [ ] Admin > Features: confirm pilot mode is what you want; Admin > Unit economics: type your real fixed and per-trip costs.

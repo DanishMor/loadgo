@@ -198,7 +198,7 @@ void main() {
     });
 
     testWidgets('driver trip screen', (t) async {
-      t.view.physicalSize = const Size(800, 1800);
+      t.view.physicalSize = const Size(800, 2800);
       t.view.devicePixelRatio = 1;
       addTearDown(t.view.reset);
       late String id;
