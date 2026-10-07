@@ -65,9 +65,11 @@ class SimpleDriverHome extends StatelessWidget {
                 alignment: AlignmentDirectional.centerEnd,
                 child: IconButton(tooltip: tr(context, 'language'), onPressed: () => showLanguageSelector(context), icon: const Icon(Icons.language_rounded, size: 30)),
               ),
-              SizedBox(
-                height: 190,
-                child: Row(children: [
+              // Tall enough for large text: at least 190, growing with the labels.
+              ConstrainedBox(
+                constraints: const BoxConstraints(minHeight: 190),
+                child: IntrinsicHeight(
+                  child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
                   _big(context,
                       key: const ValueKey('simpleFindLoads'),
                       icon: Icons.search_rounded,
@@ -80,11 +82,14 @@ class SimpleDriverHome extends StatelessWidget {
                       label: tr(context, 'simpleMyTrips'),
                       color: const Color(0xFF2E7D32),
                       onTap: () => _push(context, const SimpleTripsScreen())),
-                ]),
+                  ]),
+                ),
               ),
-              SizedBox(
-                height: 190,
-                child: Row(children: [
+              // Tall enough for large text: at least 190, growing with the labels.
+              ConstrainedBox(
+                constraints: const BoxConstraints(minHeight: 190),
+                child: IntrinsicHeight(
+                  child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
                   _big(context,
                       key: const ValueKey('simpleMoney'),
                       icon: Icons.currency_rupee_rounded,
@@ -97,7 +102,8 @@ class SimpleDriverHome extends StatelessWidget {
                       label: tr(context, 'simpleHelp'),
                       color: const Color(0xFF6A1B9A),
                       onTap: () => _push(context, const HelpScreen())),
-                ]),
+                  ]),
+                ),
               ),
               const SizedBox(height: 16),
               const SimpleModeSwitch(),

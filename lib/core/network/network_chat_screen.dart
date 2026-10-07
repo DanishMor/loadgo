@@ -117,7 +117,8 @@ class _NetworkChatBodyState extends State<NetworkChatBody> {
                 stream: () => _messages,
                 builder: (context, list) {
                   if (list.isEmpty) return EmptyState(icon: Icons.waving_hand_outlined, title: tr(context, 'netSayHello'));
-                  return ListView(reverse: true, padding: const EdgeInsets.all(16), children: [for (final m in list.reversed) _bubble(m)]);
+                  final newestFirst = list.reversed.toList();
+                  return ListView.builder(reverse: true, padding: const EdgeInsets.all(16), itemCount: newestFirst.length, itemBuilder: (context, i) => _bubble(newestFirst[i]));
                 },
               ),
             ),

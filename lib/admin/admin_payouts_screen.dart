@@ -28,9 +28,9 @@ class AdminPayoutsScreen extends StatelessWidget {
         stream: PayoutService.watchAll,
         builder: (context, list) {
           if (list.isEmpty) return EmptyState(icon: Icons.account_balance_outlined, title: tr(context, 'adminNothingHere'));
-          return ListView(padding: const EdgeInsets.all(16), children: [
-            for (final p in list)
-              ListTile(
+          return ListView.builder(padding: const EdgeInsets.all(16), itemCount: list.length, itemBuilder: (context, i) {
+            final p = list[i];
+            return ListTile(
                 key: ValueKey('adminPayout_${p.id}'),
                 title: Text('${formatPaise(p.amountPaise)} · ${p.driverId}', style: const TextStyle(fontWeight: FontWeight.w800)),
                 subtitle: Text('${tr(context, 'payout_${p.status}')}${p.createdAt == null ? '' : ' · ${formatDateTime(p.createdAt!)}'}'),
@@ -40,8 +40,8 @@ class AdminPayoutsScreen extends StatelessWidget {
                         FilledButton(key: ValueKey('paidPayout_${p.id}'), onPressed: () => _set(context, p, Payout.paid), child: Text(tr(context, 'markClaimPaid'))),
                       ])
                     : null,
-              ),
-          ]);
+            );
+          });
         },
       ),
     );

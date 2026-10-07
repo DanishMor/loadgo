@@ -79,9 +79,9 @@ class _AdminFraudCasesScreenState extends State<AdminFraudCasesScreen> {
             builder: (context, all) {
               final list = [for (final c in all) if (_filter == null || c.status == _filter) c];
               if (list.isEmpty) return EmptyState(icon: Icons.gavel_rounded, title: tr(context, 'noCases'));
-              return ListView(padding: const EdgeInsets.fromLTRB(16, 0, 16, 90), children: [
-                for (final c in list)
-                  Padding(
+              return ListView.builder(padding: const EdgeInsets.fromLTRB(16, 0, 16, 90), itemCount: list.length, itemBuilder: (context, i) {
+                final c = list[i];
+                return Padding(
                     padding: const EdgeInsets.only(bottom: 8),
                     child: AppCard(
                       key: ValueKey('case_${c.id}'),
@@ -96,8 +96,8 @@ class _AdminFraudCasesScreenState extends State<AdminFraudCasesScreen> {
                         StatusChip(label: caseStatusLabel(context, c.status), color: _statusColor(c.status)),
                       ]),
                     ),
-                  ),
-              ]);
+                );
+              });
             },
           ),
         ),

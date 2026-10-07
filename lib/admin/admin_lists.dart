@@ -206,9 +206,9 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
               _loaded = snap.data!;
               final list = [for (final d in snap.data!) if (AdminConsoleService.userMatches(d.data(), d.id, _query)) d];
               if (list.isEmpty) return _empty(context);
-              return ListView(children: [
-                for (final d in list)
-                  ListTile(
+              return ListView.builder(itemCount: list.length, itemBuilder: (context, i) {
+                final d = list[i];
+                return ListTile(
                     key: ValueKey('user_${d.id}'),
                     selected: _selected.contains(d.id),
                     leading: _selecting ? Checkbox(key: ValueKey('pick_${d.id}'), value: _selected.contains(d.id), onChanged: (_) => _toggle(d.id)) : null,
@@ -245,8 +245,8 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                               });
                             }
                           },
-                  ),
-              ]);
+                  );
+              });
             },
           ),
         ),
