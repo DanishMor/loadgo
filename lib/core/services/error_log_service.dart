@@ -42,6 +42,10 @@ class ErrorLogService {
   /// Off in debug builds (tests switch it on).
   static bool enabled = !kDebugMode;
 
+  /// The newest cleaned error text of this app run (shown to support when a
+  /// person reports a problem). Never holds personal data.
+  static String? lastError;
+
   static int _written = 0;
   static DateTime? _last;
   static final _seen = <String>{};
@@ -51,6 +55,7 @@ class ErrorLogService {
     _written = 0;
     _last = null;
     _seen.clear();
+    lastError = null;
     sampleRate = 0.25;
     enabled = !kDebugMode;
   }
@@ -78,9 +83,10 @@ class ErrorLogService {
   /// Writes the error when it is sampled in, new this session, signed in and
   /// not too soon after the last one. Never throws. Returns true when written.
   static Future<bool> logSampled(Object error, StackTrace? stack, {bool fatal = false, Random? random, DateTime Function()? now}) async {
+    final message = sanitize('$error');
+    if (message.isNotEmpty) lastError = message;
     if (!enabled || Backend.uid == null) return false;
     if (_written >= maxPerSession) return false;
-    final message = sanitize('$error');
     if (message.isEmpty || _seen.contains(message)) return false;
     final at = (now ?? DateTime.now)();
     final last = _last;

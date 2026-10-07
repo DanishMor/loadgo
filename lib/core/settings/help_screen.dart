@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../features/features.dart';
+import '../support/problem_report.dart';
+import '../widgets/feature_gate.dart';
+
 import '../l10n/l10n.dart';
 import 'feedback_screen.dart';
 import 'legal_screens.dart';
@@ -35,6 +39,16 @@ class HelpScreen extends StatelessWidget {
           title: Text(tr(context, 'fbTitle')),
           trailing: const Icon(Icons.chevron_right_rounded),
           onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const FeedbackScreen())),
+        ),
+        FeatureGate(
+          featureKey: FeatureKey.problemReport,
+          child: ListTile(
+            key: const ValueKey('helpProblem'),
+            leading: const Icon(Icons.report_gmailerrorred_rounded),
+            title: Text(tr(context, 'prButton')),
+            trailing: const Icon(Icons.chevron_right_rounded),
+            onTap: () => showProblemReportSheet(context, screen: 'help'),
+          ),
         ),
         ListTile(
           key: const ValueKey('helpTour'),

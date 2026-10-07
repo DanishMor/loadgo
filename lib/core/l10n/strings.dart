@@ -67,6 +67,7 @@ import 'feature_strings.dart';
 import 'supply_demand_strings.dart';
 import 'unit_economics_strings.dart';
 import 'payment_timeline_strings.dart';
+import 'problem_report_strings.dart';
 import 'assistant_strings.dart';
 import 'earn_history_strings.dart';
 import 'feedback_cancel_strings.dart';
@@ -149,6 +150,7 @@ const List<Map<String, List<String>>> stringTables = [
   supplyDemandStrings,
   unitEconomicsStrings,
   paymentTimelineStrings,
+  problemReportStrings,
 ];
 
 final Map<String, List<String>> extraStrings = {

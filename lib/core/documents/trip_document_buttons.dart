@@ -6,6 +6,8 @@ import '../models/booking.dart';
 import 'lr_screen.dart';
 import 'pod_screen.dart';
 import '../chat/chat_screen.dart';
+import '../services/backend.dart';
+import '../support/problem_report.dart';
 import '../support/support_screens.dart';
 import '../models/support_ticket.dart';
 
@@ -37,6 +39,7 @@ class TripDocumentButtons extends StatelessWidget {
           icon: const Icon(Icons.support_agent_rounded),
           label: Text(tr(context, 'helpSupport')),
         ),
+        ReportProblemButton(bookingId: booking.id, screen: 'trip', role: Backend.uid == booking.driverId ? 'driver' : 'customer'),
         if (booking.pickupOtpVerified)
           OutlinedButton.icon(
             key: const ValueKey('viewPod'),
