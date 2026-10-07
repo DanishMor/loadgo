@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import '../analytics/unit_economics.dart';
 import '../matching/supply_demand.dart';
+import '../models/ledger_entry.dart';
 import '../models/load.dart';
 import '../models/vehicle.dart';
 import 'user_service.dart';
@@ -290,6 +292,31 @@ class AdminConsoleService {
   static Future<int> _count(Query<Map<String, dynamic>> q) async => (await q.count().get()).count ?? 0;
 
   /// Document counts for the health screen.
+  static Future<EconomicsCosts> economicsCosts() async =>
+      EconomicsCosts.fromMap((await withRetry(() => _db.collection('config').doc('economics').get())).data());
+
+  static Future<void> saveEconomicsCosts(EconomicsCosts c) => writeConfig('economics', c.toMap());
+
+  /// Last [days] days: bookings (newest 1000), platform commission lines of
+  /// the driver ledger (newest 1000 lines) and the typed costs.
+  static Future<UnitEconomics> unitEconomics({int days = 30, DateTime? now}) => withRetry(() async {
+        final at = now ?? DateTime.now();
+        final since = DateTime(at.year, at.month, at.day).subtract(Duration(days: days - 1));
+        final bookings = await recentBookings();
+        final snap = await _db
+            .collection('ledger')
+            .where('createdAt', isGreaterThanOrEqualTo: Timestamp.fromDate(since))
+            .orderBy('createdAt', descending: true)
+            .limit(1000)
+            .get();
+        final lines = <CommissionLine>[
+          for (final d in snap.docs)
+            if (d.data()['type'] == LedgerType.platformCommission && d.data()['createdAt'] is Timestamp)
+              (at: (d.data()['createdAt'] as Timestamp).toDate(), paise: -((d.data()['amountPaise'] as num?)?.round() ?? 0)),
+        ];
+        return UnitEconomics.compute(bookings, lines, costs: await economicsCosts(), now: at, days: days);
+      });
+
   /// Open loads against free trucks (newest [limit] of each; drivers with a
   /// saved position place their truck, an assigned fleet driver wins over the owner).
   static Future<SupplyDemand> supplyDemand({int limit = 500}) => withRetry(() async {

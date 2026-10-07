@@ -12,6 +12,7 @@ import 'admin_claims_screen.dart';
 import 'admin_feedback_screen.dart';
 import 'admin_demo_screen.dart';
 import 'admin_features_screen.dart';
+import 'admin_unit_economics_screen.dart';
 import 'admin_supply_demand_screen.dart';
 import 'admin_health_screen.dart';
 import 'admin_templates_screen.dart';
@@ -69,6 +70,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       ('adminHealth', 'adminHealth', Icons.monitor_heart_outlined, const AdminHealthScreen()),
       ('adminTemplates', 'adminTemplates', Icons.quickreply_outlined, const AdminTemplatesScreen()),
       ('adminSupplyDemand', 'adminSupplyDemand', Icons.balance_rounded, const AdminSupplyDemandScreen()),
+      ('adminUnitEconomics', 'adminUnitEconomics', Icons.calculate_outlined, const AdminUnitEconomicsScreen()),
       ('adminFeatures', 'adminFeatures', Icons.toggle_on_outlined, const AdminFeaturesScreen()),
       ('adminDemo', 'adminDemo', Icons.science_outlined, const AdminDemoScreen()),
       ('flaggedUsers', 'flaggedUsers', Icons.warning_amber_rounded, const FlaggedUsersScreen()),
