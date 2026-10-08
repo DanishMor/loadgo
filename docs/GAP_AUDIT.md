@@ -136,11 +136,56 @@ Method: the same eight angles, read against the new code (`lib/fleet/`, `lib/cor
 ### Round 4, second look
 After Tasks 69 and 70 the eight angles were read again, including the new Home entries, the admin screens and the generated hosting pages: no further FREE gap that is not built, listed above as paid / manual, or recorded in docs/SECURITY_REVIEW.md.
 
+## Round 5 (MASTER-5: hardening, quality and small free gaps)
+
+Method: the eight angles again, against the whole app instead of only the newest code, with a test or a measurement behind every claim (a static audit of the rules, a listener ratchet, an index check, a layout test of all 95 screens in four language / theme variants, contrast numbers, a generated rules matrix, a fuzz of every model reader). `Task` = MASTER-5 Phase A task that closes it.
+
+| ID | Gap | Type | Task |
+|---|---|---|---|
+| G11.1 | Support tickets could be created without limit (the only unlimited create path with a free-text field) | FREE | 2 (`ticket` kind, 10 an hour) |
+| G11.2 | An admin reassign could write a phone number into a booking both parties read | FREE | 4 |
+| G11.3 | 14 admin writes left no audit event (vehicle, SOS, report, ticket, deletion request, rating flag, payout, promo, credits, referral bonus, pricing, offers, vehicle types, licence override) | FREE | 5 |
+| G11.4 | LR share links stayed open after the owner deleted the account | FREE | 6 |
+| G11.5 | Error samples, unanswered assistant questions and call records never expired | FREE | 7 (`expireAt` + a console TTL policy) |
+| G11.6 | Privacy and Terms did not mention the automatic clean-up, the LR-link switch-off and the hourly limits | FREE | 8 |
+| G11.7 | Six admin "all" lists had no limit | FREE | 9 |
+| G11.8 | `config/support` was read on every use | FREE | 12 |
+| G11.9 | Three Save buttons could write twice on a double tap | FREE | 16 |
+| G11.10 | A revoked or expired session left the person on screens that only failed | FREE | 17 |
+| G11.11 | A widget that failed to build showed the framework error box in a release build | FREE | 18 |
+| G11.12 | A shared-load link meant for one session could open in the next one | FREE | 19 |
+| G11.13 | Screens and pre-checks trusted the phone clock for expiry, schedule and grant checks | FREE | 20 (`ServerClock`) |
+| G11.14 | Urdu and Kashmiri text was right to left but the layout stayed left to right | FREE (bug) | 24 |
+| G11.15 | Real overflows at 360 px / 1.3x text: the first-time location consent and verification-pending screens (buttons could be pushed off screen), the shared empty state, the empty-trucks filter row, reply templates, My Loads and Recent headers, the driver plan row | FREE (bug) | 25, 26, 48 |
+| G11.16 | Dark mode: the "online" chip had light text on a light green background | FREE (bug) | 25 |
+| G11.17 | The light-mode hint colour was 2.6:1 against white; six icon-only buttons had no spoken label | FREE | 23 |
+| G11.18 | No first-time guide per role | FREE | 27 |
+| G11.19 | Notifications were one flat list; Mark all read stayed active with nothing unread | FREE | 29 |
+| G11.20 | The Post Load form read as one very long page | FREE | 31 (three numbered steps) |
+| G11.21 | The cancel dialog of an open load did not say there is no charge | FREE | 32 |
+| G11.22 | No way to remove an abusive rating comment | FREE | 33 |
+| G11.23 | A dispute showed claims and messages but not what the trip itself recorded | FREE | 34 |
+| G11.24 | No earnings statement for drivers; no party statement for transporters | FREE | 35, 37 |
+| G11.25 | The invoice PDF used a Latin-only font, Western digit grouping and no amount in words | FREE | 36 |
+| G11.26 | Admin lists had no search, saved filters, paging or export; no pilot funnel; no announcement banner | FREE | 38, 39, 40 |
+| G11.27 | The offers switches OFF path (promo, credits, referral) had no test | FREE | 41 |
+| G11.28 | The Help centre showed the same eleven questions to everyone | FREE | 42 |
+| G11.29 | The public token pages had no security headers; the Android app allowed cloud backup (saved LR copies live on the phone) | FREE | 49 |
+| G11.30 | Opening Admin > Config > Support with no document started from the vehicle-types text | FREE (bug) | 40 |
+| G11.31 | Release build signing still uses the debug key; `flutter build apk` needs the Android SDK | manual (owner) | docs/PLAY_STORE_CHECKLIST.md, docs/BLOCKED.md |
+| G11.32 | Counters and audit lines are still written by the client; a modified app could skip them | needs Cloud Functions | docs/SECURITY_REVIEW.md |
+| G11.33 | Per-user lists (bookings, offers, tickets, notifications ...) are still read without a limit; paging each needs a composite index | not a gap yet (a real account passes 300 documents), plan in docs/COST_WATCH.md | - |
+
+### Round 5, second look
+After the tasks were done the angles were read again (customer, driver, transporter, admin, bilty, chat and calls, cost, security, quality): the generated rules matrix, the fuzz of 80 model readers, the listener and index ratchets and the layout matrix found nothing more that is free and not built. One bug was found in the review of the round's own changes (the referral bonus had been cached for 15 minutes while the rules compare it with the server value; it is read fresh again, docs/BUG_REPORT.md).
+
 ## Counts
 
 - Round 1: 60 gaps found, of which 55 FREE (closed by Tasks 41-57) and 5 PAID (G3.7, G3.8, G4.12, G5.7, G7.7; in docs/PAID_UPGRADE_PLAN.md).
 - Round 2: 5 more gaps: 3 FREE closed by Tasks 58 and 59 (G9.1-G9.3), 1 manual for the owner (G9.4), 1 cosmetic left (G9.5).
 - Round 4 (MASTER-3): 18 more gaps: 15 FREE closed by Tasks 69 and 70 (G10.1-G10.14 and G10.18), 3 paid, device-test or Cloud-Functions items recorded elsewhere (G10.15-G10.17).
-- Total: 83 gaps, 73 FREE closed, 8 PAID or needing Functions, 1 manual, 1 cosmetic left open.
+- Round 5 (MASTER-5): 33 more: 30 FREE closed (G11.1-G11.30), 1 manual for the owner (G11.31), 1 needing Cloud Functions (G11.32), 1 not yet needed (G11.33).
+- Total: 116 gaps, 103 FREE closed, 9 PAID or needing Functions, 2 manual, 1 cosmetic left open, 1 not yet needed.
 
 Free gaps: 0 (every FREE gap is closed; G9.5 is cosmetic and recorded above)
+Open bugs: 0 (free)
