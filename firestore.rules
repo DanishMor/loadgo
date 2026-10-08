@@ -1807,9 +1807,11 @@ service cloud.firestore {
       let vehicle = get(docPath('vehicles', o.vehicleId)).data;
       return offerId == o.loadId + '_' + request.auth.uid
           && o.keys().hasOnly(['loadId', 'driverId', 'customerId', 'pickup', 'drop', 'vehicleId', 'vehicleNumber', 'vehicleType',
-                               'driverName', 'pricePaise', 'originalPaise', 'status', 'fleetOwnerId', 'createdAt', 'updatedAt'])
+                               'driverName', 'pricePaise', 'originalPaise', 'status', 'fleetOwnerId', 'companyVerified', 'createdAt', 'updatedAt'])
           && o.driverId == request.auth.uid
           && (!('fleetOwnerId' in o) || (o.fleetOwnerId == request.auth.uid && isTransporter(request.auth.uid)))
+          // The "Verified transporter" mark on a bid is only true for an admin-approved account.
+          && (!('companyVerified' in o) || (o.companyVerified == true && 'fleetOwnerId' in o && get(docPath('users', request.auth.uid)).data.get('verified', false) == true))
           && canTransact(request.auth.uid)
           && rateBumped('offer', offerId)
           && o.status == 'pending'
@@ -3074,7 +3076,7 @@ service cloud.firestore {
       let n = request.resource.data;
       let b = getAfter(docPath('bookings', n.relatedId)).data;
       return n.keys().hasOnly(['userId', 'type', 'message', 'relatedId', 'status', 'read', 'createdAt'])
-          && n.type in ['load_accepted', 'status_changed', 'rating_received', 'booking_cancelled', 'breakdown_reported', 'payment_marked', 'payment_confirmed', 'accident_reported', 'driver_arriving_soon', 'chat_message']
+          && n.type in ['load_accepted', 'status_changed', 'rating_received', 'booking_cancelled', 'breakdown_reported', 'payment_marked', 'payment_confirmed', 'accident_reported', 'driver_arriving_soon', 'chat_message', 'trip_assigned', 'missed_call']
           && n.message is string && n.message.size() <= 200
           && n.read == false
           && n.userId != request.auth.uid

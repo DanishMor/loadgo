@@ -5,7 +5,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:transport_app/core/constants/logistics.dart';
 import 'package:transport_app/core/documents/payment_card.dart';
 import 'package:transport_app/core/l10n/l10n.dart';
+import 'package:transport_app/core/call/call_controller.dart';
 import 'package:transport_app/core/call/call_models.dart';
+import 'package:transport_app/core/call/call_provider.dart';
 import 'package:transport_app/core/models/booking.dart';
 import 'package:transport_app/core/models/fleet.dart';
 import 'package:transport_app/core/models/load.dart';
@@ -24,6 +26,32 @@ import 'package:transport_app/driver/driver_trip_screen.dart';
 import 'test_utils.dart';
 
 /// Bug-hunt tests for the transporter and private-chat code (Phases 1-5).
+/// A call provider that never connects (nobody picks up).
+class _Quiet implements CallProvider {
+  @override
+  bool get supported => true;
+  @override
+  Future<void> init() async {}
+  @override
+  Future<String> createOffer() async => 'v=0 an offer that is long enough';
+  @override
+  Future<String> acceptOffer(String offerSdp) async => 'v=0';
+  @override
+  Future<void> setAnswer(String answerSdp) async {}
+  @override
+  Future<void> addRemoteCandidate(CallCandidate c) async {}
+  @override
+  Stream<CallCandidate> get localCandidates => const Stream.empty();
+  @override
+  Stream<bool> get connected => const Stream.empty();
+  @override
+  Future<void> setMuted(bool muted) async {}
+  @override
+  Future<void> setSpeaker(bool on) async {}
+  @override
+  Future<void> close() async {}
+}
+
 void main() {
   late FakeFirebaseFirestore db;
   String? uid;
@@ -118,6 +146,58 @@ void main() {
       await tester.pumpWidget(LanguageScope(notifier: languageNotifier, child: MaterialApp(home: DriverTripScreen(bookingId: bid))));
       await settle(tester);
       expect(find.byType(PaymentCard), findsOneWidget, reason: 'the holder keeps the money part');
+    });
+  });
+
+  group('notices', () {
+    test('assigning tells the driver once; reassigning to the same driver does not repeat it', () async {
+      final bid = await assignedBooking();
+      final mine = (await db.collection('notifications').where('userId', isEqualTo: 'd1').get()).docs.where((n) => n.data()['type'] == 'trip_assigned').toList();
+      expect(mine.length, 1);
+      expect(mine.single.data()['relatedId'], bid);
+      uid = 'tr1';
+      final b = Booking.fromDoc(await db.collection('bookings').doc(bid).get());
+      await TransporterService.assign(booking: b, vehicle: Vehicle.fromDoc(await db.collection('vehicles').doc('tv2').get()), driver: const FleetMember(id: 'tr1_d1', ownerId: 'tr1', driverId: 'd1', driverName: 'Ramesh', active: true));
+      expect((await db.collection('notifications').where('userId', isEqualTo: 'd1').get()).docs.where((n) => n.data()['type'] == 'trip_assigned').length, 1);
+    });
+
+    test('the transporter hears about every step the assigned driver takes', () async {
+      final bid = await assignedBooking();
+      uid = 'd1';
+      await BookingService.advance(bid);
+      final holder = (await db.collection('notifications').where('userId', isEqualTo: 'tr1').get()).docs.map((n) => n.data()).where((n) => n['type'] == 'status_changed').toList();
+      expect(holder.length, 1);
+      expect(holder.single['status'], 'driver_arriving');
+    });
+
+    test('an unanswered call leaves one missed-call notice for the other person', () async {
+      final bid = await assignedBooking();
+      final b = Booking.fromDoc(await db.collection('bookings').doc(bid).get());
+      uid = 'customer1';
+      final c = CallController(_Quiet(), ringTimeout: const Duration(milliseconds: 40));
+      await c.start(booking: b, calleeId: 'd1', callerName: 'Anil');
+      await Future<void>.delayed(const Duration(milliseconds: 150));
+      expect(c.endReason, CallEnd.noAnswer);
+      final missed = (await db.collection('notifications').where('userId', isEqualTo: 'd1').get()).docs.where((n) => n.data()['type'] == 'missed_call').toList();
+      expect(missed.length, 1);
+      expect(missed.single.id, startsWith('missed_'));
+    });
+  });
+
+  group('the Verified mark on a bid', () {
+    test('only an admin-approved transporter\'s company bid carries it', () async {
+      uid = 'customer1';
+      final lid = await LoadService.post(pickup: 'Delhi', drop: 'Jaipur', cargoType: 'FMCG', weight: 2, vehicleType: '14ft', budget: null, pickupDate: DateTime(2026, 10, 9), notes: '');
+      final load = Load.fromDoc(await db.collection('loads').doc(lid).get());
+      final v = Vehicle.fromDoc(await db.collection('vehicles').doc('tv1').get());
+      uid = 'tr1';
+      var oid = await OfferService.send(load: load, vehicle: v, pricePaise: 2400000, asCompany: true);
+      expect(Offer.fromDoc(await db.collection('offers').doc(oid).get()).companyVerified, isFalse);
+      await db.collection('offers').doc(oid).delete();
+      await db.collection('users').doc('tr1').update({'verified': true});
+      oid = await OfferService.send(load: load, vehicle: v, pricePaise: 2400000, asCompany: true);
+      final o = Offer.fromDoc(await db.collection('offers').doc(oid).get());
+      expect((o.isCompanyBid, o.companyVerified), (true, true));
     });
   });
 

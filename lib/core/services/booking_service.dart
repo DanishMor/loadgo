@@ -283,6 +283,17 @@ class BookingService {
         relatedId: booking.id,
         status: next,
       );
+      // The transporter who holds the booking hears about the assigned driver's steps too.
+      if (!holder) {
+        NotificationService.addInTransaction(
+          tx,
+          userId: booking.driverId,
+          type: NotificationType.statusChanged,
+          message: '${booking.pickup} → ${booking.drop}',
+          relatedId: booking.id,
+          status: next,
+        );
+      }
       return next;
     });
   }

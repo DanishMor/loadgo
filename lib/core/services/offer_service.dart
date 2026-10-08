@@ -51,6 +51,7 @@ class OfferService {
         'vehicleType': vehicle.type,
         'driverName': (asCompany ? profile['companyName'] : profile['driverName']) ?? '',
         if (asCompany) 'fleetOwnerId': uid,
+        if (asCompany && profile['verified'] == true) 'companyVerified': true,
         'pricePaise': pricePaise,
         'originalPaise': pricePaise,
         'status': OfferStatus.pending,

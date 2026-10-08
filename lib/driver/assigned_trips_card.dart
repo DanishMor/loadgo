@@ -41,9 +41,13 @@ class _AssignedTripsCardState extends State<AssignedTripsCard> {
                   onTap: () => widget.onOpen(b.id),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8),
-                    child: Row(children: [
-                      Expanded(child: Text('${b.pickup} → ${b.drop}\n${b.assignedVehicleNumber}', style: const TextStyle(fontWeight: FontWeight.w600))),
-                      StatusChip(label: bookingStatusLabel(context, b.status), color: bookingStatusColor(b.status)),
+                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      Text('${b.pickup} → ${b.drop}', style: const TextStyle(fontWeight: FontWeight.w600)),
+                      const SizedBox(height: 4),
+                      Wrap(spacing: 8, runSpacing: 4, crossAxisAlignment: WrapCrossAlignment.center, children: [
+                        if (b.assignedVehicleNumber.isNotEmpty) Text(b.assignedVehicleNumber, style: TextStyle(color: AppColors.muted)),
+                        StatusChip(label: bookingStatusLabel(context, b.status), color: bookingStatusColor(b.status)),
+                      ]),
                     ]),
                   ),
                 ),

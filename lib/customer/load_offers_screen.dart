@@ -137,7 +137,13 @@ class _CustomerOfferCardState extends State<_CustomerOfferCard> {
           ),
           Text('${o.vehicleNumber} • ${vehicleTypeLabel(context, o.vehicleType)}', style: TextStyle(color: AppColors.muted)),
           if (o.isCompanyBid)
-            Padding(padding: const EdgeInsets.only(top: 4), child: Align(alignment: Alignment.centerLeft, child: StatusChip(key: ValueKey('companyChip_${o.id}'), label: tr(context, 'fleetOwner'), color: AppColors.primary))),
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Wrap(spacing: 6, children: [
+                StatusChip(key: ValueKey('companyChip_${o.id}'), label: tr(context, 'fleetOwner'), color: AppColors.primary),
+                if (o.companyVerified) StatusChip(key: ValueKey('verifiedChip_${o.id}'), label: tr(context, 'trpVerified'), color: AppColors.success),
+              ]),
+            ),
           const SizedBox(height: 6),
           Text(formatPaise(o.pricePaise),
               key: ValueKey('price_${o.id}'),

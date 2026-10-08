@@ -135,11 +135,9 @@ class _TransporterTripsScreenState extends State<TransporterTripsScreen> {
               padding: const EdgeInsets.only(top: 8),
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Text('${o.pickup} → ${o.drop}', style: const TextStyle(fontWeight: FontWeight.w700)),
-                Row(children: [
+                Wrap(spacing: 8, runSpacing: 4, crossAxisAlignment: WrapCrossAlignment.center, children: [
                   Text(formatPaise(o.pricePaise), style: const TextStyle(fontWeight: FontWeight.w800, color: AppColors.primary)),
-                  const SizedBox(width: 8),
                   StatusChip(label: offerStatusLabel(context, o.status), color: offerStatusColor(o.status)),
-                  const Spacer(),
                   if (o.status == OfferStatus.selected) FilledButton(key: ValueKey('trpConfirm_${o.id}'), onPressed: () => _confirm(o), child: Text(tr(context, 'trpConfirmJob'))),
                 ]),
               ]),
@@ -160,7 +158,7 @@ class _TransporterTripsScreenState extends State<TransporterTripsScreen> {
           Row(children: [
             const Icon(Icons.schedule_rounded, color: AppColors.warning),
             const SizedBox(width: 8),
-            Text(tr(context, 'trpDelayTitle'), style: const TextStyle(fontWeight: FontWeight.w800)),
+            Expanded(child: Text(tr(context, 'trpDelayTitle'), style: const TextStyle(fontWeight: FontWeight.w800))),
           ]),
           for (final a in alerts)
             Padding(
@@ -179,10 +177,9 @@ class _TransporterTripsScreenState extends State<TransporterTripsScreen> {
       child: AppCard(
         key: ValueKey('trpTrip_${b.id}'),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Row(children: [
-            Expanded(child: Text('${b.pickup} → ${b.drop}', style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16))),
-            StatusChip(label: bookingStatusLabel(context, b.status), color: bookingStatusColor(b.status)),
-          ]),
+          Text('${b.pickup} → ${b.drop}', style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+          const SizedBox(height: 4),
+          StatusChip(label: bookingStatusLabel(context, b.status), color: bookingStatusColor(b.status)),
           const SizedBox(height: 2),
           Text('${b.cargoType} • ${formatNum(b.weight)} T${b.billAmountPaise == null ? '' : ' • ${formatPaise(b.billAmountPaise!)}'}', style: TextStyle(color: AppColors.muted)),
           if (b.isCompanyBooking)

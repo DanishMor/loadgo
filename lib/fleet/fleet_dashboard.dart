@@ -23,7 +23,10 @@ class FleetDashboard extends StatefulWidget {
   final Stream<List<Load>>? openLoads;
   final DateTime Function() now;
 
-  const FleetDashboard({super.key, this.vehicles, this.bookings, this.members, this.openLoads, this.now = DateTime.now});
+  /// Shown at the top of the scrolling page (the transporter shortcuts), also when there are no vehicles yet.
+  final Widget? header;
+
+  const FleetDashboard({super.key, this.vehicles, this.bookings, this.members, this.openLoads, this.now = DateTime.now, this.header});
 
   @override
   State<FleetDashboard> createState() => _FleetDashboardState();
@@ -121,9 +124,21 @@ class _FleetDashboardState extends State<FleetDashboard> {
           builder: (context, members) {
             final s = FleetSummary.from(vehicles: vehicles, bookings: bookings, members: members, now: widget.now());
             if (vehicles.isEmpty) {
-              return EmptyState(icon: Icons.local_shipping_outlined, title: tr(context, 'fleetNoVehicles'), subtitle: tr(context, 'fleetNoVehiclesSub'));
+              final empty = EmptyState(icon: Icons.local_shipping_outlined, title: tr(context, 'fleetNoVehicles'), subtitle: tr(context, 'fleetNoVehiclesSub'));
+              if (widget.header == null) return empty;
+              // With the shortcuts on top the page scrolls, so the message is plain text, not a centred block.
+              return ListView(padding: const EdgeInsets.fromLTRB(16, 4, 16, 24), children: [
+                widget.header!,
+                const SizedBox(height: 24),
+                Icon(Icons.local_shipping_outlined, size: 56, color: AppColors.muted),
+                const SizedBox(height: 12),
+                Text(tr(context, 'fleetNoVehicles'), textAlign: TextAlign.center, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+                const SizedBox(height: 6),
+                Text(tr(context, 'fleetNoVehiclesSub'), textAlign: TextAlign.center, style: TextStyle(color: AppColors.muted)),
+              ]);
             }
             return ListView(padding: const EdgeInsets.fromLTRB(16, 4, 16, 24), children: [
+              if (widget.header != null) widget.header!,
               Row(children: [
                 _stat(tr(context, 'fleetVehicles'), '${vehicles.length}', key: const ValueKey('statVehicles')),
                 const SizedBox(width: 8),

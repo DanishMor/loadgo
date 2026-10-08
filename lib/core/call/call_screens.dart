@@ -101,41 +101,46 @@ class _CallScreenState extends State<CallScreen> {
       child: Scaffold(
         backgroundColor: const Color(0xFF0B1B33),
         body: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(28),
-            child: Column(children: [
-              const Spacer(),
-              const CircleAvatar(radius: 48, backgroundColor: Color(0xFF1565C0), child: Icon(Icons.person_rounded, size: 56, color: Colors.white)),
-              const SizedBox(height: 20),
-              Text(name, key: const ValueKey('callName'), style: const TextStyle(color: Colors.white, fontSize: 26, fontWeight: FontWeight.w800), textAlign: TextAlign.center),
-              if (incoming != null && incoming.vehicleNumber.isNotEmpty)
-                Padding(padding: const EdgeInsets.only(top: 4), child: Text(incoming.vehicleNumber, style: const TextStyle(color: Colors.white70))),
-              const SizedBox(height: 12),
-              Text(_status(context), key: const ValueKey('callStatus'), style: const TextStyle(color: Colors.white70, fontSize: 16), textAlign: TextAlign.center),
-              const Spacer(),
-              if (waiting)
-                Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
-                  _round(Icons.call_end_rounded, Colors.red, tr(context, 'pcDecline'), () async {
-                    await c.decline(incoming);
-                  }, key: const ValueKey('callDecline')),
-                  _round(Icons.call_rounded, AppColors.success, tr(context, 'pcAnswer'), () async {
-                    if (!await PermissionRationale.ask(context, RationaleKind.callMicrophone)) {
-                      await c.decline(incoming);
-                      return;
-                    }
-                    await c.answer(incoming);
-                  }, key: const ValueKey('callAnswer')),
-                ])
-              else if (live)
-                Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
-                  _round(c.muted ? Icons.mic_off_rounded : Icons.mic_rounded, Colors.white24, tr(context, c.muted ? 'pcUnmute' : 'pcMute'), c.toggleMute, key: const ValueKey('callMute')),
-                  _round(Icons.call_end_rounded, Colors.red, tr(context, 'pcEnd'), c.hangUp, key: const ValueKey('callEnd')),
-                  _round(c.speaker ? Icons.volume_up_rounded : Icons.volume_down_rounded, Colors.white24, tr(context, 'pcSpeaker'), c.toggleSpeaker, key: const ValueKey('callSpeaker')),
-                ])
-              else
-                FilledButton(onPressed: _close, child: Text(tr(context, 'pcDone'))),
-              const SizedBox(height: 20),
-            ]),
+          child: LayoutBuilder(
+            builder: (context, box) => SingleChildScrollView(
+              padding: const EdgeInsets.all(24),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: box.maxHeight - 48),
+                child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+                  const SizedBox(height: 24),
+                  const CircleAvatar(radius: 44, backgroundColor: Color(0xFF1565C0), child: Icon(Icons.person_rounded, size: 52, color: Colors.white)),
+                  const SizedBox(height: 20),
+                  Text(name, key: const ValueKey('callName'), style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w800), textAlign: TextAlign.center),
+                  if (incoming != null && incoming.vehicleNumber.isNotEmpty)
+                    Padding(padding: const EdgeInsets.only(top: 4), child: Text(incoming.vehicleNumber, style: const TextStyle(color: Colors.white70))),
+                  const SizedBox(height: 12),
+                  Text(_status(context), key: const ValueKey('callStatus'), style: const TextStyle(color: Colors.white70, fontSize: 16), textAlign: TextAlign.center),
+                  const SizedBox(height: 40),
+                  if (waiting)
+                    Wrap(alignment: WrapAlignment.center, spacing: 32, runSpacing: 20, children: [
+                      _round(Icons.call_end_rounded, Colors.red, tr(context, 'pcDecline'), () async {
+                        await c.decline(incoming);
+                      }, key: const ValueKey('callDecline')),
+                      _round(Icons.call_rounded, AppColors.success, tr(context, 'pcAnswer'), () async {
+                        if (!await PermissionRationale.ask(context, RationaleKind.callMicrophone)) {
+                          await c.decline(incoming);
+                          return;
+                        }
+                        await c.answer(incoming);
+                      }, key: const ValueKey('callAnswer')),
+                    ])
+                  else if (live)
+                    Wrap(alignment: WrapAlignment.center, spacing: 24, runSpacing: 20, children: [
+                      _round(c.muted ? Icons.mic_off_rounded : Icons.mic_rounded, Colors.white24, tr(context, c.muted ? 'pcUnmute' : 'pcMute'), c.toggleMute, key: const ValueKey('callMute')),
+                      _round(Icons.call_end_rounded, Colors.red, tr(context, 'pcEnd'), c.hangUp, key: const ValueKey('callEnd')),
+                      _round(c.speaker ? Icons.volume_up_rounded : Icons.volume_down_rounded, Colors.white24, tr(context, 'pcSpeaker'), c.toggleSpeaker, key: const ValueKey('callSpeaker')),
+                    ])
+                  else
+                    FilledButton(onPressed: _close, child: Text(tr(context, 'pcDone'))),
+                  const SizedBox(height: 24),
+                ]),
+              ),
+            ),
           ),
         ),
       ),
@@ -149,7 +154,7 @@ class _CallScreenState extends State<CallScreen> {
           child: CircleAvatar(radius: 32, backgroundColor: color, child: Icon(icon, color: Colors.white, size: 30)),
         ),
         const SizedBox(height: 6),
-        Text(label, style: const TextStyle(color: Colors.white70, fontSize: 12)),
+        SizedBox(width: 96, child: Text(label, style: const TextStyle(color: Colors.white70, fontSize: 12), textAlign: TextAlign.center)),
       ]);
 }
 

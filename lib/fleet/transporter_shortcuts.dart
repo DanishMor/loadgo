@@ -70,7 +70,7 @@ class _TransporterShortcutsState extends State<TransporterShortcuts> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 4),
+      padding: const EdgeInsets.fromLTRB(0, 4, 0, 4),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         FutureBuilder<TransporterProfile>(
           future: _profile,
@@ -81,11 +81,16 @@ class _TransporterShortcutsState extends State<TransporterShortcuts> {
               padding: const EdgeInsets.only(bottom: 8),
               child: AppCard(
                 key: const ValueKey('trpCompleteCard'),
-                child: Row(children: [
-                  const Icon(Icons.business_outlined, color: AppColors.warning),
-                  const SizedBox(width: 10),
-                  Expanded(child: Text(tr(context, 'trpCompleteCard'))),
-                  TextButton(onPressed: () => _open(const TransporterProfileScreen()), child: Text(tr(context, 'trpTitle'))),
+                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    const Icon(Icons.business_outlined, color: AppColors.warning),
+                    const SizedBox(width: 10),
+                    Expanded(child: Text(tr(context, 'trpCompleteCard'))),
+                  ]),
+                  Align(
+                    alignment: AlignmentDirectional.centerEnd,
+                    child: TextButton(onPressed: () => _open(const TransporterProfileScreen()), child: Text(tr(context, 'trpTitle'))),
+                  ),
                 ]),
               ),
             );
@@ -104,7 +109,7 @@ class _TransporterShortcutsState extends State<TransporterShortcuts> {
                   Row(children: [
                     Icon(Icons.event_busy_outlined, color: reminders.first.expired ? Colors.red : AppColors.warning),
                     const SizedBox(width: 8),
-                    Text(tr(context, 'trpDocsTitle'), style: const TextStyle(fontWeight: FontWeight.w800)),
+                    Expanded(child: Text(tr(context, 'trpDocsTitle'), style: const TextStyle(fontWeight: FontWeight.w800))),
                   ]),
                   for (final r in reminders.take(5))
                     Padding(

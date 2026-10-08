@@ -2,9 +2,11 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 
+import '../models/app_notification.dart';
 import '../models/booking.dart';
 import '../services/backend.dart';
 import '../services/comm_guard.dart';
+import '../services/notification_service.dart';
 import '../services/rate_limit_service.dart';
 import 'call_models.dart';
 import 'call_provider.dart';
@@ -74,6 +76,14 @@ class CallController extends ChangeNotifier {
         if (phase != CallPhase.ringing) return;
         _endingHere = true;
         await _safe(() => CallSignaling.cancel(id));
+        // The other side may have the app closed: leave a note they will see.
+        await _safe(() => NotificationService.sendOnce(
+              id: 'missed_$id',
+              userId: calleeId,
+              type: NotificationType.missedCall,
+              message: '${booking.pickup} → ${booking.drop}',
+              relatedId: booking.id,
+            ));
         await _finish(CallEnd.noAnswer);
       });
     } on ChatBlockedException {

@@ -25,6 +25,8 @@ String notificationTitle(
   NotificationType.breakdownReported => tr(context, 'notifBreakdown'),
   NotificationType.arrivingSoon => tr(context, 'notifArrivingSoon'),
   NotificationType.chatMessage => tr(context, 'notifChat'),
+  NotificationType.tripAssigned => tr(context, 'notifTripAssigned'),
+  NotificationType.missedCall => tr(context, 'notifMissedCall'),
   _ => n.type,
 };
 
@@ -36,6 +38,8 @@ IconData _iconFor(String type) => switch (type) {
   NotificationType.breakdownReported => Icons.car_crash_outlined,
   NotificationType.arrivingSoon => Icons.near_me_rounded,
   NotificationType.chatMessage => Icons.chat_bubble_outline_rounded,
+  NotificationType.tripAssigned => Icons.assignment_ind_outlined,
+  NotificationType.missedCall => Icons.phone_missed_rounded,
   _ => Icons.notifications_none_rounded,
 };
 

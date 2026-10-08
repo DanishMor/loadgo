@@ -26,7 +26,7 @@ class _FleetHomeScreenState extends State<FleetHomeScreen> {
   @override
   Widget build(BuildContext context) {
     final pages = <Widget>[
-      const Column(children: [TransporterShortcuts(), Expanded(child: FleetDashboard())]),
+      const FleetDashboard(header: TransporterShortcuts()),
       const TransporterLoadsScreen(),
       const TransporterTripsScreen(),
       const TransporterFleetScreen(),

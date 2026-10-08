@@ -59,6 +59,9 @@ class Offer {
   /// Set on a company bid: the transporter who offers (equals [driverId]).
   final String? fleetOwnerId;
 
+  /// A company bid from an admin-approved ("Verified") transporter.
+  final bool companyVerified;
+
   const Offer({
     required this.id,
     required this.loadId,
@@ -77,6 +80,7 @@ class Offer {
     this.bookingId,
     this.createdAt,
     this.fleetOwnerId,
+    this.companyVerified = false,
   });
 
   bool get isCompanyBid => fleetOwnerId != null;
@@ -108,6 +112,7 @@ class Offer {
       bookingId: d['bookingId'] as String?,
       createdAt: d['createdAt'] as Timestamp?,
       fleetOwnerId: d['fleetOwnerId'] as String?,
+      companyVerified: d['companyVerified'] == true,
     );
   }
 }

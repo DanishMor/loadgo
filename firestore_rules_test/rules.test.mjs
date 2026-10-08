@@ -1438,6 +1438,19 @@ describe('transporter (Task 67)', () => {
     await assertFails(setDoc(ref(as('tr1')), { ...COMPANY_OFFER, vehicleId: 'dv2', vehicleNumber: 'KA01CD9999' }), 'not attached');
   });
 
+  test('the Verified mark on a bid is true only for an admin-approved transporter', async () => {
+    await seedAll();
+    const ref = (db) => doc(db, 'offers', 'L1_tr1');
+    await assertFails(setDoc(ref(as('tr1')), { ...COMPANY_OFFER, companyVerified: true }), 'not approved yet');
+    await seed((db) => updateDoc(doc(db, 'users', 'tr1'), { verified: true, verificationStatus: 'approved' }));
+    await assertFails(setDoc(ref(as('tr1')), { ...COMPANY_OFFER, companyVerified: false }), 'only true is allowed');
+    await assertSucceeds(setDoc(ref(as('tr1')), { ...COMPANY_OFFER, companyVerified: true }));
+    // A plain driver offer cannot carry the mark.
+    const plain = { loadId: 'L1', driverId: 'driver1', customerId: 'customer1', vehicleId: 'dv1', vehicleNumber: 'KA01CD5678', vehicleType: '20ft', driverName: 'Ramesh', pricePaise: 2400000, originalPaise: 2400000, status: 'pending' };
+    await assertSucceeds(setDoc(doc(as('driver1'), 'offers', 'L1_driver1'), plain));
+    await assertFails(setDoc(doc(as('driver2'), 'offers', 'L1_driver2'), { ...plain, driverId: 'driver2', vehicleId: 'dv2', vehicleNumber: 'KA01CD9999', companyVerified: true }));
+  });
+
   test('company bid with an attached vehicle works while the owner is a member', async () => {
     await seedAll();
     await seed((db) => updateDoc(doc(db, 'vehicles', 'dv1'), { attachedTo: 'tr1' }));
@@ -1539,6 +1552,22 @@ describe('transporter (Task 67)', () => {
     await assertFails(updateDoc(doc(d, 'bookings', 'B1'), { driverId: 'driver1' }));
     await assertFails(updateDoc(doc(d, 'bookings', 'B1'), { vehicleId: 'dv1' }));
     await assertSucceeds(updateDoc(doc(as('tr1'), 'bookings', 'B1'), { ewayBillNo: '123456789012', updatedAt: serverTimestamp() }));
+  });
+
+  test('assigning tells the driver; the assigned driver tells the holder; only those two kinds of notice', async () => {
+    await seedBookingHeld();
+    const note = (type, userId) => ({ userId, type, message: 'Delhi -> Jaipur', relatedId: 'B1', read: false, createdAt: serverTimestamp() });
+    // The notice rides with the assignment (the rules read the booking after the write).
+    const t = as('tr1');
+    const b = writeBatch(t);
+    b.update(doc(t, 'bookings', 'B1'), assignData());
+    b.set(doc(t, 'notifications', 'n1'), note('trip_assigned', 'driver1'));
+    await assertSucceeds(b.commit());
+    await assertFails(setDoc(doc(as('tr1'), 'notifications', 'n2'), note('trip_assigned', 'driver2')), 'not on this booking');
+    await assertFails(setDoc(doc(as('driver2'), 'notifications', 'n3'), note('trip_assigned', 'driver1')), 'outsider');
+    await assertSucceeds(setDoc(doc(as('driver1'), 'notifications', 'n4'), { ...note('status_changed', 'tr1'), status: 'driver_arriving' }));
+    await assertSucceeds(setDoc(doc(as('customer1'), 'notifications', 'n5'), note('missed_call', 'driver1')));
+    await assertFails(setDoc(doc(as('customer1'), 'notifications', 'n6'), note('made_up_type', 'driver1')));
   });
 
   test('the books: only the transporter, only for their own booking, integer paise', async () => {

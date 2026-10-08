@@ -46,10 +46,8 @@ class _AdminViolationsScreenState extends State<AdminViolationsScreen> {
           child: AppCard(
             key: ValueKey('violUser_$uid'),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Row(children: [
-                Expanded(child: Text(name, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16))),
-                Text(trf(context, 'pcStrikes', {'n': (u['chatStrikes'] as num?)?.toInt() ?? 0}), key: ValueKey('strikes_$uid'), style: const TextStyle(fontWeight: FontWeight.w700)),
-              ]),
+              Text(name, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+              Text(trf(context, 'pcStrikes', {'n': (u['chatStrikes'] as num?)?.toInt() ?? 0}), key: ValueKey('strikes_$uid'), style: const TextStyle(fontWeight: FontWeight.w700)),
               AdminPhoneText(uid: uid, phone: (u['phone'] ?? '').toString(), style: TextStyle(color: AppColors.muted)),
               Wrap(spacing: 6, children: [
                 if (suspended) StatusChip(label: trf(context, 'pcSuspendedUntil', {'until': formatDateTime(until)}), color: Colors.red),

@@ -13,6 +13,12 @@ class NotificationType {
   static const arrivingSoon = 'driver_arriving_soon';
   static const chatMessage = 'chat_message';
 
+  /// A transporter gave the driver a trip (Task 67).
+  static const tripAssigned = 'trip_assigned';
+
+  /// A call rang and was not answered (Task 68).
+  static const missedCall = 'missed_call';
+
   /// Must stay in sync with firestore.rules.
   static const all = [
     loadAccepted,
@@ -25,6 +31,8 @@ class NotificationType {
     accidentReported,
     arrivingSoon,
     chatMessage,
+    tripAssigned,
+    missedCall,
   ];
 }
 

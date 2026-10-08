@@ -131,7 +131,10 @@ class StatusChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Never wider than most of the screen: a long label (Tamil, Telugu, big
+    // text) wraps instead of overflowing.
     return Container(
+      constraints: BoxConstraints(maxWidth: MediaQuery.sizeOf(context).width * 0.8),
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.12),

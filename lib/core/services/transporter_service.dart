@@ -5,7 +5,9 @@ import '../models/booking.dart';
 import '../models/fleet.dart';
 import '../models/vehicle.dart';
 import '../transporter/transporter_logic.dart';
+import '../models/app_notification.dart';
 import 'audit_service.dart';
+import 'notification_service.dart';
 import 'backend.dart';
 
 /// Thrown by [TransporterService.assign]. [reason] is one of the values of
@@ -99,6 +101,10 @@ class TransporterService {
       'previousVehicleId': previousVehicle,
       'reassign': booking.assignedDriverId != null,
     });
+    if (booking.assignedDriverId != driver.driverId) {
+      NotificationService.addInBatch(batch,
+          userId: driver.driverId, type: NotificationType.tripAssigned, message: '${booking.pickup} → ${booking.drop}', relatedId: booking.id);
+    }
     await batch.commit();
   }
 
