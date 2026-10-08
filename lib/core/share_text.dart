@@ -1,6 +1,5 @@
 import 'models/booking.dart';
 import 'models/load.dart';
-import 'share/share_links.dart';
 import 'widgets/common.dart';
 
 /// Plain-text summaries to paste into chats. Kept in English on purpose: the
@@ -19,8 +18,7 @@ String bookingShareText(Booking b) => [
       'Status: ${b.status.replaceAll('_', ' ')}',
       '${b.cargoType}, ${formatNum(b.weight)} T',
       'Vehicle: ${b.vehicleNumber} (${b.vehicleType})',
-      if (b.driverName.isNotEmpty)
-        'Driver: ${b.driverName}${PhoneVisibility.visiblePhone(b.status, b.driverPhone).isEmpty ? '' : ', ${b.driverPhone}'}',
+      if (b.driverName.isNotEmpty) 'Driver: ${b.driverName}',
       'Pickup: ${formatDate(b.pickupDate)}',
       'Booking ID: ${b.id}',
     ].join('\n');

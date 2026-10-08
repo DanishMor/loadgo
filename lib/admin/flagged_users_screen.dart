@@ -1,3 +1,4 @@
+import '../core/services/auth_helpers.dart';
 import 'package:flutter/material.dart';
 
 import '../core/l10n/l10n.dart';
@@ -101,7 +102,7 @@ class _FlaggedUsersScreenState extends State<FlaggedUsersScreen> {
   }
 
   Future<void> _edit(FlaggedUser u) async {
-    if (await editRiskTier(context, uid: u.uid, name: u.name.isEmpty ? u.phone : u.name, tier: u.riskTier)) _reload();
+    if (await editRiskTier(context, uid: u.uid, name: u.name.isEmpty ? maskPhone(u.phone) : u.name, tier: u.riskTier)) _reload();
   }
 
   @override
@@ -138,7 +139,7 @@ class _FlaggedUsersScreenState extends State<FlaggedUsersScreen> {
                   value: _selected.contains(u.uid),
                   onChanged: (v) => setState(() => v == true ? _selected.add(u.uid) : _selected.remove(u.uid)),
                 ),
-                title: Text(u.name.isEmpty ? u.phone : u.name),
+                title: Text(u.name.isEmpty ? maskPhone(u.phone) : u.name),
                 subtitle: Text([
                   riskTierLabel(context, u.riskTier),
                   trf(context, 'cancelsCount', {'n': u.cancelCount}),

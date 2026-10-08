@@ -181,7 +181,7 @@ class AdminConsoleService {
       'vehicleNumber': v['number'],
       'vehicleType': v['type'],
       'driverName': owner['driverName'] ?? owner['name'] ?? '',
-      'driverPhone': owner['phone'] ?? '',
+      'driverPhone': '',
       'reassignedAt': FieldValue.serverTimestamp(),
       'updatedAt': FieldValue.serverTimestamp(),
     });

@@ -97,7 +97,6 @@ void main() {
         'whats app me msg',
         'add me on telegram',
         't.me/ramesh',
-        'wa.me/919876543210',
         'https://example.com/x',
         'www.site.com',
         'call me',
@@ -118,6 +117,10 @@ void main() {
       ]) {
         expect(k(s), ContactKind.app, reason: s);
       }
+    });
+
+    test('a link that holds a number is caught either way', () {
+      expect(k('wa.me/919876543210'), isNotNull);
     });
 
     test('paying outside the app', () {

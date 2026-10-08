@@ -1,3 +1,4 @@
+import '../core/services/auth_helpers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -92,7 +93,7 @@ class _FleetDriversScreenState extends State<FleetDriversScreen> {
                   key: ValueKey('member_${m.driverId}'),
                   contentPadding: EdgeInsets.zero,
                   leading: const Icon(Icons.person_rounded),
-                  title: Text(m.driverName.isEmpty ? m.driverPhone : m.driverName),
+                  title: Text(m.driverName.isEmpty ? maskPhone(m.driverPhone) : m.driverName),
                   subtitle: Text(trf(context, 'fleetVehiclesAssigned', {'n': vehicles.where((v) => v.assignedDriverId == m.driverId).length})),
                   trailing: TextButton(
                     key: ValueKey('remove_${m.driverId}'),
@@ -115,7 +116,7 @@ class _FleetDriversScreenState extends State<FleetDriversScreen> {
             ListTile(
               key: ValueKey('invite_${i.id}'),
               contentPadding: EdgeInsets.zero,
-              title: Text(i.phone),
+              title: Text(maskPhone(i.phone)),
               subtitle: Text(tr(context, 'invite_${i.status}')),
               trailing: i.status == FleetInvite.pending
                   ? TextButton(key: ValueKey('cancelInvite_${i.id}'), onPressed: () => FleetService.cancelInvite(i.id), child: Text(tr(context, 'cancel')))

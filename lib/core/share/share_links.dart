@@ -24,17 +24,17 @@ class ShareLinks {
   static String withLink(String text, String id) => '$text\n${loadLink(id)}';
 }
 
-/// The driver's or customer's phone is private until the booking exists:
-/// shown from `accepted` onwards, never on a cancelled booking.
+/// Phone numbers of the customer, the driver and the transporter are never
+/// shown to each other (Task 68): they chat and call inside the app. Admins
+/// see them in the admin screens, and every view is written to `audit_events`.
+/// Only SOS, 112 and the user's own emergency contacts open the dialer.
 class PhoneVisibility {
   PhoneVisibility._();
 
-  static const _confirmed = ['accepted', 'driver_arriving', 'loading', 'picked_up', 'in_transit', 'unloading', 'delivered'];
+  static bool canShow(String? status) => false;
 
-  static bool canShow(String? status) => _confirmed.contains(status);
-
-  /// The phone to show, or an empty string while it must stay hidden.
-  static String visiblePhone(String? status, String phone) => canShow(status) ? phone : '';
+  /// Always empty: the other party's number stays hidden.
+  static String visiblePhone(String? status, String phone) => '';
 }
 
 /// Google Maps directions link. No API key: it opens the Maps app or site.

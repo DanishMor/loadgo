@@ -18,12 +18,18 @@ class AuditType {
   /// A transporter assigned or reassigned the vehicle and driver of a booking.
   static const assign = 'assign';
 
+  /// An admin looked at a person's phone number (Task 68). One line per view.
+  static const contactView = 'contact_view';
+
+  /// An admin opened the chat of a booking for a report or dispute.
+  static const chatView = 'chat_view';
+
   /// A party wrote evidence on a booking (GPS, odometer, signature, cargo document, accident).
   static const evidence = 'evidence';
 
   /// A party opened the cargo documents of a booking.
   static const docView = 'doc_view';
-  static const all = [verification, accept, statusChange, cancel, riskChange, reassign, configChange, userAction, evidence, docView, assign];
+  static const all = [verification, accept, statusChange, cancel, riskChange, reassign, configChange, userAction, evidence, docView, assign, contactView, chatView];
 }
 
 class AuditService {

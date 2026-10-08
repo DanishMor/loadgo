@@ -52,21 +52,19 @@ void main() {
     });
   });
 
-  group('PhoneVisibility', () {
-    test('shown only from accepted onwards', () {
-      for (final s in ['accepted', 'driver_arriving', 'loading', 'picked_up', 'in_transit', 'unloading', 'delivered']) {
-        expect(PhoneVisibility.canShow(s), isTrue, reason: s);
-      }
-      for (final s in [null, '', 'open', 'pending', 'awaiting_approval', 'cancelled']) {
+  group('PhoneVisibility (Task 68: numbers stay private)', () {
+    test('no status ever shows the other party\'s number', () {
+      for (final s in [null, '', 'open', 'accepted', 'driver_arriving', 'loading', 'picked_up', 'in_transit', 'unloading', 'delivered', 'cancelled']) {
         expect(PhoneVisibility.canShow(s), isFalse, reason: '$s');
+        expect(PhoneVisibility.visiblePhone(s, '123'), '', reason: '$s');
       }
-      expect(PhoneVisibility.visiblePhone('open', '123'), '');
-      expect(PhoneVisibility.visiblePhone('accepted', '123'), '123');
     });
 
-    test('a cancelled booking share text drops the phone', () {
-      expect(bookingShareText(booking('accepted')), contains('9876543210'));
-      expect(bookingShareText(booking('cancelled')), isNot(contains('9876543210')));
+    test('share texts carry the driver name but never a phone number', () {
+      for (final s in ['accepted', 'in_transit', 'delivered', 'cancelled']) {
+        expect(bookingShareText(booking(s)), isNot(contains('9876543210')), reason: s);
+        expect(bookingShareText(booking(s)), contains('Ravi'), reason: s);
+      }
     });
   });
 
@@ -88,22 +86,13 @@ void main() {
   group('widgets', () {
     Widget app(Widget child) => MaterialApp(home: LanguageScope(notifier: languageNotifier, child: Scaffold(body: SingleChildScrollView(child: child))));
 
-    testWidgets('call button hidden before confirmation, shown after', (t) async {
-      await t.pumpWidget(app(const ConfirmedPhoneButton(status: 'open', phone: '98', label: 'Call')));
-      expect(find.byKey(const ValueKey('confirmedCall')), findsNothing);
-      await t.pumpWidget(app(const ConfirmedPhoneButton(status: 'accepted', phone: '98', label: 'Call')));
-      expect(find.byKey(const ValueKey('confirmedCall')), findsOneWidget);
-      await t.pumpWidget(app(const ConfirmedPhoneButton(status: 'accepted', phone: '', label: 'Call')));
-      expect(find.byKey(const ValueKey('confirmedCall')), findsNothing);
-    });
-
-    testWidgets('booking summary shows the phone and a call button once confirmed only', (t) async {
-      await t.pumpWidget(app(BookingSummary(booking: booking('accepted'), showDriver: true)));
-      expect(find.textContaining('9876543210'), findsOneWidget);
-      expect(find.text('Call driver'), findsOneWidget);
-      await t.pumpWidget(app(BookingSummary(booking: booking('cancelled'), showDriver: true)));
-      expect(find.textContaining('9876543210'), findsNothing);
-      expect(find.text('Call driver'), findsNothing);
+    testWidgets('booking summary shows the driver name and never a phone number or a dialer button', (t) async {
+      for (final status in ['accepted', 'in_transit', 'cancelled']) {
+        await t.pumpWidget(app(BookingSummary(booking: booking(status), showDriver: true)));
+        expect(find.textContaining('9876543210'), findsNothing, reason: status);
+        expect(find.byKey(const ValueKey('confirmedCall')), findsNothing, reason: status);
+        expect(find.textContaining('Ravi'), findsOneWidget, reason: status);
+      }
     });
 
     testWidgets('load card share menu offers share, WhatsApp and copy', (t) async {

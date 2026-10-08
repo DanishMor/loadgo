@@ -219,6 +219,65 @@ service cloud.firestore {
                   && d.reviewFlag.at == request.time));
     }
 
+    // Task 68: chat strikes. The owner's own client records a violation (it
+    // blocked a message that shared a number, UPI id or app) by creating
+    // violations/{uid}_{seq} and raising chatStrikes by one in the same batch.
+    // The ladder is enforced here: strikes 1-2 warn, 3 blocks chat and calls
+    // for 24 hours, 4 for 3 days, 5 and more for 7 days and an admin review.
+    // The block end may be at most one hour earlier than the ladder says (a
+    // phone clock can be off). Thirty clean days take one strike off.
+    // TODO(functions): do this server side so a modified app cannot skip it.
+    function chatFieldsAbsent(d) {
+      return !d.keys().hasAny(['chatStrikes', 'chatSeq', 'chatStrikeAt', 'chatBlockedUntil', 'chatReview']);
+    }
+
+    function chatBlockOk(strikes) {
+      let a = request.resource.data;
+      return strikes < 3
+          ? a.get('chatBlockedUntil', null) == resource.data.get('chatBlockedUntil', null)
+          : (a.chatBlockedUntil is timestamp
+              && a.chatBlockedUntil >= request.time + (strikes == 3 ? duration.value(23, 'h') : (strikes == 4 ? duration.value(71, 'h') : duration.value(167, 'h')))
+              && a.chatBlockedUntil <= request.time + duration.value(8, 'd')
+              && (strikes < 5 || a.get('chatReview', false) == true));
+    }
+
+    function chatViolationStep() {
+      let a = request.resource.data;
+      let seq = resource.data.get('chatSeq', 0) + 1;
+      let strikes = resource.data.get('chatStrikes', 0) + 1;
+      return changedKeys().hasOnly(['chatStrikes', 'chatSeq', 'chatStrikeAt', 'chatBlockedUntil', 'chatReview', 'updatedAt'])
+          && a.chatSeq == seq
+          && a.chatStrikes == strikes
+          && a.chatStrikeAt == request.time
+          && existsAfter(docPath('violations', request.auth.uid + '_' + string(seq)))
+          && chatBlockOk(strikes);
+    }
+
+    function chatDecayStep() {
+      let a = request.resource.data;
+      return changedKeys().hasOnly(['chatStrikes', 'chatStrikeAt', 'updatedAt'])
+          && resource.data.get('chatStrikes', 0) > 0
+          && a.chatStrikes == resource.data.chatStrikes - 1
+          && a.chatStrikeAt == request.time
+          && request.time >= resource.data.get('chatStrikeAt', request.time) + duration.value(30, 'd');
+    }
+
+    function chatFieldsOk() {
+      return !changedKeys().hasAny(['chatStrikes', 'chatSeq', 'chatStrikeAt', 'chatBlockedUntil', 'chatReview'])
+          || chatViolationStep() || chatDecayStep();
+    }
+
+    // An admin lengthens or lifts a chat suspension, resets the strikes or
+    // clears the review flag.
+    function adminChatUpdate() {
+      let a = request.resource.data;
+      return adminIn(['super', 'support', 'ops'])
+          && changedKeys().hasOnly(['chatStrikes', 'chatBlockedUntil', 'chatReview', 'chatStrikeAt', 'updatedAt'])
+          && a.get('chatStrikes', 0) is int && a.get('chatStrikes', 0) >= 0 && a.get('chatStrikes', 0) <= 20
+          && (!('chatBlockedUntil' in a) || (a.chatBlockedUntil is timestamp && a.chatBlockedUntil <= request.time + duration.value(365, 'd')))
+          && a.get('chatReview', false) is bool;
+    }
+
     function adminRiskUpdate() {
       let d = request.resource.data;
       return adminIn(['super', 'ops'])
@@ -302,16 +361,16 @@ service cloud.firestore {
           && validKyc(request.resource.data) && validProfileText(request.resource.data) && reviewMetaAbsent(request.resource.data) && planFieldsAbsent(request.resource.data) && !('docOverrideUntil' in request.resource.data) && referralCodeOk(request.resource.data) && validIdentityHashes(request.resource.data) && validLastLocation(request.resource.data) && validRole(request.resource.data.get('role', null))
           && (request.resource.data.get('role', null) == null
               || request.resource.data.get('selectedRole', request.resource.data.role) == request.resource.data.role)
-          && validEmergencyContacts(request.resource.data) && validProfileExtras(request.resource.data) && validFleetProfile(request.resource.data) && riskFieldsAbsent(request.resource.data)
+          && validEmergencyContacts(request.resource.data) && validProfileExtras(request.resource.data) && validFleetProfile(request.resource.data) && riskFieldsAbsent(request.resource.data) && chatFieldsAbsent(request.resource.data)
           && validPrefs(request.resource.data) && validBusiness(request.resource.data);
       // Demo data (Task 53), after the normal create so it costs nothing there.
       allow create: if demoCreate(userId);
       allow delete: if demoDelete(userId);
-      allow update: if adminVerificationUpdate() || adminReviewFlagUpdate() || adminRiskUpdate() || adminPlanUpdate() || adminDocOverride() || (isUser(userId)
+      allow update: if adminVerificationUpdate() || adminChatUpdate() || adminReviewFlagUpdate() || adminRiskUpdate() || adminPlanUpdate() || adminDocOverride() || (isUser(userId)
           && roleLockOk() && validKyc(request.resource.data) && validProfileText(request.resource.data) && !changedKeys().hasAny(['plan', 'planUntil', 'verificationMeta', 'docOverrideUntil']) && referralCodeOk(request.resource.data) && referralCodeKept() && validIdentityHashes(request.resource.data) && validLastLocation(request.resource.data)
           && validEmergencyContacts(request.resource.data) && validProfileExtras(request.resource.data) && validFleetProfile(request.resource.data)
           && validPrefs(request.resource.data) && validBusiness(request.resource.data)
-          && ownerRiskFieldsUntouched()
+          && ownerRiskFieldsUntouched() && chatFieldsOk()
           && (!changedKeys().hasAny(['verified', 'verificationStatus'])
               || (resource.data.get('verificationStatus', null) == null
                   && verificationInitOk(request.resource.data))));
@@ -1509,6 +1568,7 @@ service cloud.firestore {
           && b.get('businessId', null) == load.get('businessId', null)
           && b.get('costCenter', null) == load.get('costCenter', null)
           && b.get('paymentStatus', 'pending') == 'pending'
+          && b.get('driverPhone', '') == ''
           && !('paidAmountPaise' in b)
           && loadAfter.status == 'matched'
           && loadAfter.driverId == request.auth.uid
@@ -1644,7 +1704,10 @@ service cloud.firestore {
       }
 
       match /messages/{messageId} {
-        allow read: if signedIn() && isParty(get(docPath('bookings', bookingId)).data);
+        // An admin reads a chat only after opening a review for it (chat_reviews),
+        // which needs a report or a dispute ticket about that booking.
+        allow read: if signedIn() && (isParty(get(docPath('bookings', bookingId)).data)
+            || (isAdmin() && exists(docPath('chat_reviews', bookingId))));
         allow create: if signedIn()
             && isParty(get(docPath('bookings', bookingId)).data)
             && request.resource.data.keys().hasOnly(['senderId', 'text', 'flagged', 'createdAt'])
@@ -1653,6 +1716,8 @@ service cloud.firestore {
             && request.resource.data.text.trim().size() >= 1 && request.resource.data.text.size() <= 500
             && request.resource.data.flagged is bool
             && request.resource.data.createdAt == request.time
+            && chatAllowed(request.auth.uid)
+            && chatTextClean(request.resource.data.text)
             && rateBumped('message', messageId)
             && !exists(/databases/$(database)/documents/users/$(
                    get(docPath('bookings', bookingId)).data.driverId == request.auth.uid
@@ -1908,10 +1973,27 @@ service cloud.firestore {
     // reports: a booking party reports the other one. Reporters see their
     // own reports; admins review them. Nobody edits a report after filing.
     // ------------------------------------------------------------------
+    function bookingParty(b, uid) {
+      return uid == b.customerId || uid == b.driverId || uid == b.get('assignedDriverId', '');
+    }
+
     function reportAboutOtherParty(r) {
       let b = get(docPath('bookings', r.bookingId)).data;
-      return (b.driverId == request.auth.uid && b.customerId == r.reportedId)
-          || (b.customerId == request.auth.uid && b.driverId == r.reportedId);
+      return bookingParty(b, request.auth.uid) && bookingParty(b, r.reportedId);
+    }
+
+    // Task 68. A chat message or a call needs the sender not to be suspended
+    // (users.chatBlockedUntil in the past or absent). The text may not carry
+    // a mobile number or an "@": the app blocks far more before sending, this
+    // is only the part a modified app cannot get around.
+    function chatAllowed(uid) {
+      let p = docPath('users', uid);
+      return !exists(p) || get(p).data.get('chatBlockedUntil', request.time) <= request.time;
+    }
+
+    function chatTextClean(t) {
+      return !t.matches('(?s).*@.*')
+          && !t.matches('(?s).*(^|[^0-9])([+]?91[ -]?|0)?[6-9][0-9]{9}([^0-9]|$).*');
     }
 
     // What the Sahayak assistant could not answer (Task 48). The app strips
@@ -2007,12 +2089,111 @@ service cloud.firestore {
           && request.resource.data.keys().hasOnly(['reporterId', 'reportedId', 'bookingId', 'reason', 'details', 'messageId', 'status', 'createdAt'])
           && request.resource.data.reporterId == request.auth.uid
           && request.resource.data.reportedId != request.auth.uid
-          && request.resource.data.reason in ['abuse', 'fraud', 'off_platform', 'other']
+          && request.resource.data.reason in ['abuse', 'fraud', 'off_platform', 'asked_number', 'sent_number', 'other']
           && request.resource.data.details is string && request.resource.data.details.size() <= 300
           && request.resource.data.status == 'open'
           && reportAboutOtherParty(request.resource.data);
       allow update: if adminIn(['super', 'support', 'ops']) && changedKeys().hasOnly(['status', 'resolvedAt', 'resolvedBy', 'adminNote']);
       allow delete: if false;
+    }
+
+    // violations/{uid}_{seq}: one blocked chat message (Task 68). Create-only,
+    // by the sender, in the same batch that raises users.chatStrikes by one
+    // (the rules of users/{uid} check the id, the count and the ladder).
+    // The excerpt is what the person tried to send; only admins and the
+    // person read it.
+    match /violations/{violationId} {
+      allow read: if signedIn() && (resource.data.userId == request.auth.uid || adminIn(['super', 'support', 'ops']));
+      allow create: if signedIn()
+          && request.resource.data.keys().hasOnly(['userId', 'bookingId', 'kind', 'excerpt', 'createdAt'])
+          && request.resource.data.userId == request.auth.uid
+          && violationId == request.auth.uid + '_' + string(getAfter(docPath('users', request.auth.uid)).data.get('chatSeq', 0))
+          && request.resource.data.kind in ['phone', 'upi', 'app', 'payment', 'asked_number', 'sent_number']
+          && request.resource.data.excerpt is string && request.resource.data.excerpt.size() <= 120
+          && request.resource.data.bookingId is string
+          && bookingParty(get(docPath('bookings', request.resource.data.bookingId)).data, request.auth.uid)
+          && request.resource.data.createdAt == request.time
+          && getAfter(docPath('users', request.auth.uid)).data.get('chatStrikes', 0)
+              == (exists(docPath('users', request.auth.uid)) ? get(docPath('users', request.auth.uid)).data.get('chatStrikes', 0) : 0) + 1;
+      allow update, delete: if false;
+    }
+
+    // chat_reviews/{bookingId}: an admin opens one chat for review. Needs a
+    // report (reportId) or a dispute ticket (ticketId) about the same booking.
+    match /chat_reviews/{bookingId} {
+      allow read: if adminIn(['super', 'support', 'ops']);
+      allow create: if adminIn(['super', 'support', 'ops'])
+          && request.resource.data.keys().hasOnly(['by', 'reportId', 'ticketId', 'createdAt'])
+          && request.resource.data.by == request.auth.uid
+          && request.resource.data.createdAt == request.time
+          && (('reportId' in request.resource.data && get(docPath('reports', request.resource.data.reportId)).data.bookingId == bookingId)
+              || ('ticketId' in request.resource.data
+                  && get(docPath('tickets', request.resource.data.ticketId)).data.get('bookingId', '') == bookingId
+                  && get(docPath('tickets', request.resource.data.ticketId)).data.category == 'dispute'));
+      allow update, delete: if false;
+    }
+
+    // calls/{callId}: signalling for an in-app voice call (Task 68). Free
+    // WebRTC: the two phones swap an offer, an answer and network candidates
+    // through these documents; the audio itself never touches Firestore. Only
+    // two people of a confirmed booking, never when the caller is suspended.
+    // Metadata (who, when, how it ended) is kept for admins. No phone number
+    // is stored. LATER(paid): a masked-number provider and a push to ring.
+    function callMedia(m) {
+      return m is map && m.keys().hasOnly(['type', 'sdp']) && m.type in ['offer', 'answer']
+          && m.sdp is string && m.sdp.size() >= 20 && m.sdp.size() <= 12000;
+    }
+
+    function callBookingOk(c) {
+      let b = get(docPath('bookings', c.bookingId)).data;
+      return b.status in ['accepted', 'driver_arriving', 'loading', 'picked_up', 'in_transit', 'unloading']
+          && bookingParty(b, c.callerId) && bookingParty(b, c.calleeId);
+    }
+
+    match /calls/{callId} {
+      allow read: if signedIn() && (request.auth.uid in [resource.data.callerId, resource.data.calleeId]
+          || adminIn(['super', 'support', 'ops']));
+      allow create: if signedIn()
+          && request.resource.data.keys().hasOnly(['bookingId', 'callerId', 'calleeId', 'callerName', 'vehicleNumber', 'status', 'offer', 'createdAt', 'updatedAt'])
+          && request.resource.data.callerId == request.auth.uid
+          && request.resource.data.calleeId is string && request.resource.data.calleeId != request.auth.uid
+          && request.resource.data.bookingId is string
+          && request.resource.data.status == 'ringing'
+          && request.resource.data.callerName is string && request.resource.data.callerName.size() <= 60
+          && request.resource.data.vehicleNumber is string && request.resource.data.vehicleNumber.size() <= 12
+          && callMedia(request.resource.data.offer) && request.resource.data.offer.type == 'offer'
+          && request.resource.data.createdAt == request.time
+          && request.resource.data.updatedAt == request.time
+          && callBookingOk(request.resource.data)
+          && chatAllowed(request.auth.uid);
+      allow update: if signedIn()
+          && request.auth.uid in [resource.data.callerId, resource.data.calleeId]
+          && request.resource.data.updatedAt == request.time
+          && ((request.auth.uid == resource.data.calleeId && resource.data.status == 'ringing'
+                  && changedKeys().hasOnly(['status', 'answer', 'updatedAt'])
+                  && ((request.resource.data.status == 'accepted' && callMedia(request.resource.data.answer) && request.resource.data.answer.type == 'answer')
+                      || request.resource.data.status == 'declined'))
+              || (request.auth.uid == resource.data.callerId && resource.data.status == 'ringing'
+                  && changedKeys().hasOnly(['status', 'updatedAt'])
+                  && request.resource.data.status == 'cancelled')
+              || (resource.data.status == 'accepted'
+                  && changedKeys().hasOnly(['status', 'updatedAt'])
+                  && request.resource.data.status == 'ended'));
+      allow delete: if false;
+
+      match /candidates/{candidateId} {
+        allow read: if signedIn() && request.auth.uid in [get(docPath('calls', callId)).data.callerId, get(docPath('calls', callId)).data.calleeId];
+        allow create: if signedIn()
+            && request.auth.uid in [get(docPath('calls', callId)).data.callerId, get(docPath('calls', callId)).data.calleeId]
+            && get(docPath('calls', callId)).data.status in ['ringing', 'accepted']
+            && request.resource.data.keys().hasOnly(['from', 'candidate', 'sdpMid', 'sdpMLineIndex', 'createdAt'])
+            && request.resource.data.from == request.auth.uid
+            && request.resource.data.candidate is string && request.resource.data.candidate.size() <= 1000
+            && request.resource.data.get('sdpMid', '') is string
+            && request.resource.data.get('sdpMLineIndex', 0) is int
+            && request.resource.data.createdAt == request.time;
+        allow update, delete: if false;
+      }
     }
 
     // ------------------------------------------------------------------
@@ -2026,10 +2207,10 @@ service cloud.firestore {
       allow create: if signedIn()
           && request.resource.data.keys().hasOnly(['type', 'actorId', 'targetId', 'bookingId', 'loadId', 'data', 'createdAt'])
           && request.resource.data.actorId == request.auth.uid
-          && request.resource.data.type in ['verification', 'accept', 'status_change', 'cancel', 'risk_change', 'reassign', 'config_change', 'user_action', 'evidence', 'doc_view', 'assign']
+          && request.resource.data.type in ['verification', 'accept', 'status_change', 'cancel', 'risk_change', 'reassign', 'config_change', 'user_action', 'evidence', 'doc_view', 'assign', 'contact_view', 'chat_view']
           && request.resource.data.data is map
           && request.resource.data.createdAt == request.time
-          && (!(request.resource.data.type in ['verification', 'risk_change', 'reassign', 'config_change', 'user_action']) || isAdmin())
+          && (!(request.resource.data.type in ['verification', 'risk_change', 'reassign', 'config_change', 'user_action', 'contact_view', 'chat_view']) || isAdmin())
           && (request.resource.data.type != 'assign'
               || (request.resource.data.bookingId is string
                   && get(docPath('bookings', request.resource.data.bookingId)).data.get('fleetOwnerId', '') == request.auth.uid))

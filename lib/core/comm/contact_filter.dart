@@ -115,12 +115,13 @@ class ContactFilter {
     final t = normalise(raw);
     if (t.trim().isEmpty) return null;
     if (_upi.hasMatch(t)) return ContactKind.upi;
+    if (_numberChain(t.replaceAll(_date, ' ').replaceAll(_time, ' '))) return ContactKind.phone;
     if (_link.hasMatch(t) || _appNames.hasMatch(t) || _appWords.hasMatch(t) || _askPhrases.hasMatch(t)) return ContactKind.app;
     // "w h a t s a p p", "t e l e g r a m": letters pulled apart with spaces or dots.
     final squashed = t.replaceAll(RegExp(r'[\s.\-_*]+'), '');
     if (_appNames.hasMatch(squashed)) return ContactKind.app;
     if (_payOutside.hasMatch(t)) return ContactKind.payment;
-    return _numberChain(t.replaceAll(_date, ' ').replaceAll(_time, ' ')) ? ContactKind.phone : null;
+    return null;
   }
 
   /// True when a chain of digits, spelled-out digits and separators makes a

@@ -5,6 +5,7 @@ import '../l10n/l10n.dart';
 import '../models/booking.dart';
 import 'lr_screen.dart';
 import 'pod_screen.dart';
+import '../call/call_screens.dart';
 import '../chat/chat_screen.dart';
 import '../services/backend.dart';
 import '../support/problem_report.dart';
@@ -24,6 +25,9 @@ class TripDocumentButtons extends StatelessWidget {
       runSpacing: 8,
       children: [
         BookingChatButton(booking: booking),
+        BookingCallButton(booking: booking),
+        if (Backend.uid == booking.driverId && booking.assignedDriverId != null)
+          BookingCallButton(booking: booking, preferDriver: true, label: tr(context, 'callDriver')),
         OutlinedButton.icon(
           key: const ValueKey('viewLr'),
           onPressed: () =>

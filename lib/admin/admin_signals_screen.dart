@@ -1,3 +1,4 @@
+import '../core/services/auth_helpers.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
@@ -114,7 +115,7 @@ class _RandomCheckTabState extends State<_RandomCheckTab> {
         ListTile(
           key: ValueKey('sample_${d.uid}'),
           title: Text(d.name.isEmpty ? d.uid : d.name),
-          subtitle: Text('${d.phone} · ${d.vehicleNumber}'),
+          subtitle: Text('${maskPhone(d.phone)} · ${d.vehicleNumber}'),
           trailing: TextButton(
             key: ValueKey('reverify_${d.uid}'),
             onPressed: () async {

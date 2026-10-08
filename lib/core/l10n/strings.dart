@@ -4,6 +4,7 @@
 /// en, hi, hinglish, kn, ta, te, mr, gu, bn, pa, ks, ur.
 library;
 
+import 'private_comm_strings.dart';
 import 'transporter_strings.dart';
 import 'badge_strings.dart';
 import 'booking_type_strings.dart';
@@ -153,6 +154,7 @@ const List<Map<String, List<String>>> stringTables = [
   paymentTimelineStrings,
   problemReportStrings,
   transporterStrings,
+  privateCommStrings,
 ];
 
 final Map<String, List<String>> extraStrings = {

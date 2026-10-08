@@ -1,3 +1,4 @@
+import '../call/call_screens.dart';
 import 'dart:ui' show PlatformDispatcher;
 
 import 'package:flutter/widgets.dart';
@@ -88,5 +89,6 @@ class _DeepLinkListenerState extends State<DeepLinkListener> {
   }
 
   @override
-  Widget build(BuildContext context) => widget.child;
+  // Also the one place every signed-in home passes through: calls ring here.
+  Widget build(BuildContext context) => IncomingCallHost(child: widget.child);
 }

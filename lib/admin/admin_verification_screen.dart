@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../core/l10n/l10n.dart';
 import '../core/services/admin_service.dart';
+import '../core/widgets/admin_phone.dart';
 import '../core/widgets/common.dart';
 import '../core/widgets/live_stream.dart';
 import '../core/widgets/kyc_check_widgets.dart';
@@ -128,10 +129,11 @@ class _DriverCardState extends State<_DriverCard> {
             ),
           ),
           const SizedBox(height: 4),
+          AdminPhoneText(uid: d.uid, phone: d.phone, style: TextStyle(color: AppColors.muted)),
           Text(
             d.isTransporter
-                ? '${d.phone} • ${tr(context, 'fleetOwner')} • ${((d.data['fleet'] as Map?)?['officeCity'] ?? '')} • ${((d.data['fleet'] as Map?)?['vehicleCount'] ?? 0)} ${tr(context, 'fleetVehicles')}'
-                : '${d.phone} • ${d.vehicleNumber} • ${d.vehicleType}',
+                ? '${tr(context, 'fleetOwner')} • ${((d.data['fleet'] as Map?)?['officeCity'] ?? '')} • ${((d.data['fleet'] as Map?)?['vehicleCount'] ?? 0)} ${tr(context, 'fleetVehicles')}'
+                : '${d.vehicleNumber} • ${d.vehicleType}',
             style: TextStyle(color: AppColors.muted),
           ),
           const SizedBox(height: 8),

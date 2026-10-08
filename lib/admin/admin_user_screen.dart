@@ -1,3 +1,4 @@
+import '../core/widgets/admin_phone.dart';
 import 'package:flutter/material.dart';
 
 import '../core/l10n/l10n.dart';
@@ -127,7 +128,10 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
             AppCard(
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Text(name, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
-                Text('${u['phone'] ?? ''}  ·  ${widget.uid}', style: TextStyle(color: AppColors.muted, fontSize: 12)),
+                Row(children: [
+                  AdminPhoneText(uid: widget.uid, phone: '${u['phone'] ?? ''}', style: TextStyle(color: AppColors.muted, fontSize: 12)),
+                  Text('  ·  ${widget.uid}', style: TextStyle(color: AppColors.muted, fontSize: 12)),
+                ]),
                 const SizedBox(height: 8),
                 Text('${tr(context, 'auStatus')}: ${riskTierLabel(context, tier)}', key: const ValueKey('userStanding'), style: const TextStyle(fontWeight: FontWeight.w700)),
                 if ((u['riskReason'] as String?)?.isNotEmpty ?? false) Text(u['riskReason'] as String, style: TextStyle(color: AppColors.muted)),

@@ -1,3 +1,4 @@
+import '../core/call/call_screens.dart';
 import 'package:flutter/material.dart';
 
 import '../core/assistant/sahayak_screen.dart';
@@ -31,7 +32,8 @@ class _FleetHomeScreenState extends State<FleetHomeScreen> {
       const TransporterFleetScreen(),
       const ProfileView(isDriver: false),
     ];
-    return Scaffold(
+    return IncomingCallHost(
+      child: Scaffold(
       backgroundColor: AppColors.background,
       appBar: _index == 4
           ? null
@@ -54,6 +56,7 @@ class _FleetHomeScreenState extends State<FleetHomeScreen> {
           NavigationDestination(icon: const Icon(Icons.person_outline_rounded), selectedIcon: const Icon(Icons.person_rounded), label: tr(context, 'profile')),
         ],
       ),
+    ),
     );
   }
 }

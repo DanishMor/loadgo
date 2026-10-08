@@ -11,6 +11,7 @@ import '../core/models/risk.dart';
 import '../core/models/support_ticket.dart';
 import '../core/admin/staff_roles.dart';
 import '../core/services/admin_console_service.dart';
+import '../core/services/auth_helpers.dart';
 import '../core/services/admin_user_service.dart';
 import '../core/share/share_csv.dart';
 import '../core/support/support_screens.dart';
@@ -18,6 +19,8 @@ import '../core/widgets/common.dart';
 import '../core/widgets/live_stream.dart';
 import '../core/widgets/logistics_labels.dart';
 import '../core/services/fraud_case_service.dart';
+import 'admin_chat_review_screen.dart';
+import '../core/services/comm_admin_service.dart';
 import 'admin_fraud_cases_screen.dart';
 import 'flagged_users_screen.dart';
 
@@ -214,7 +217,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                     leading: _selecting ? Checkbox(key: ValueKey('pick_${d.id}'), value: _selected.contains(d.id), onChanged: (_) => _toggle(d.id)) : null,
                     title: Text((d.data()['name'] ?? d.data()['driverName'] ?? d.id).toString()),
                     subtitle: Text([
-                      d.data()['phone'] ?? '',
+                      maskPhone(d.data()['phone'] as String?),
                       riskTierLabel(context, d.data()['riskTier'] as String? ?? RiskTier.normal),
                       if ((d.data()['roles'] as List?)?.isNotEmpty ?? false) (d.data()['roles'] as List).join('/'),
                       if (DocExpiry.licenceBlocked(d.data(), DateTime.now())) tr(context, 'adminLicenceExpiredTag'),
@@ -583,6 +586,19 @@ class AdminReportsScreen extends StatelessWidget {
                     }),
                     child: Text(tr(context, 'openCase')),
                   ),
+                  if ('${r['bookingId'] ?? ''}'.isNotEmpty)
+                    TextButton(
+                      key: ValueKey('openChat_${d.id}'),
+                      onPressed: () => _run(context, () async {
+                        await CommAdminService.openChatForReview('${r['bookingId']}', reportId: d.id);
+                        if (context.mounted) {
+                          Navigator.of(context).push(MaterialPageRoute(
+                            builder: (_) => AdminChatReviewScreen(bookingId: '${r['bookingId']}', parties: ['${r['reporterId'] ?? ''}', '${r['reportedId'] ?? ''}']),
+                          ));
+                        }
+                      }),
+                      child: Text(tr(context, 'pcOpenChat')),
+                    ),
                   TextButton(
                     key: ValueKey('resolveReport_${d.id}'),
                     onPressed: () => _run(context, () => AdminConsoleService.resolveReport(d.id)),

@@ -24,6 +24,7 @@ const Map<String, List<String>> staffAreas = {
   'adminTickets': [StaffRole.superAdmin, StaffRole.support],
   'adminSos': [StaffRole.superAdmin, StaffRole.support, StaffRole.ops],
   'adminReports': [StaffRole.superAdmin, StaffRole.support, StaffRole.ops],
+  'pcAdminViolations': [StaffRole.superAdmin, StaffRole.support, StaffRole.ops],
   'adminSignals': [StaffRole.superAdmin, StaffRole.ops, StaffRole.verifier],
   'adminFraudCases': [StaffRole.superAdmin, StaffRole.ops],
   'adminDisputes': [StaffRole.superAdmin, StaffRole.support],

@@ -3,7 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../l10n/l10n.dart';
 
-enum RationaleKind { location, notifications, microphone }
+enum RationaleKind { location, notifications, microphone, callMicrophone }
 
 /// A plain-words explanation shown once before the system permission prompt
 /// (Play Store policy: say why before asking). "Continue" is remembered on the
@@ -18,6 +18,8 @@ class PermissionRationale {
         RationaleKind.location => ('rationaleLocationTitle', 'rationaleLocationBody', Icons.location_on_outlined),
         RationaleKind.notifications => ('rationaleNotifTitle', 'rationaleNotifBody', Icons.notifications_active_outlined),
         RationaleKind.microphone => ('rationaleMicTitle', 'rationaleMicBody', Icons.mic_none_rounded),
+        // Task 68: the in-app voice call.
+        RationaleKind.callMicrophone => ('pcMicTitle', 'pcMicBody', Icons.call_rounded),
       };
 
   static Future<bool> seen(RationaleKind k) async {

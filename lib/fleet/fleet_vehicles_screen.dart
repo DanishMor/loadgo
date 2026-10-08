@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import '../core/l10n/l10n.dart';
 import '../core/models/fleet.dart';
 import '../core/models/vehicle.dart';
+import '../core/services/auth_helpers.dart';
 import '../core/services/fleet_service.dart';
 import '../core/services/transporter_service.dart';
 import '../core/services/vehicle_service.dart';
@@ -129,7 +130,7 @@ class _FleetVehiclesScreenState extends State<FleetVehiclesScreen> {
                         decoration: InputDecoration(labelText: tr(context, 'fleetAssignedDriver')),
                         items: [
                           DropdownMenuItem(value: null, child: Text(tr(context, 'fleetNoDriver'))),
-                          for (final m in active) DropdownMenuItem(value: m.driverId, child: Text(m.driverName.isEmpty ? m.driverPhone : m.driverName)),
+                          for (final m in active) DropdownMenuItem(value: m.driverId, child: Text(m.driverName.isEmpty ? maskPhone(m.driverPhone) : m.driverName)),
                         ],
                         onChanged: (d) => _assign(v, d),
                       ),

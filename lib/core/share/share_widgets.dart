@@ -5,7 +5,6 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../l10n/l10n.dart';
 import '../models/load.dart';
-import '../safety/call.dart';
 import '../share_text.dart';
 import '../widgets/common.dart';
 import 'share_links.dart';
@@ -57,27 +56,6 @@ class LoadShareButton extends StatelessWidget {
           PopupMenuItem(value: 'copy', child: Text(tr(context, 'shareCopyLink'))),
         ],
       );
-}
-
-/// Call button that stays hidden until the booking is confirmed.
-class ConfirmedPhoneButton extends StatelessWidget {
-  final String? status;
-  final String phone;
-  final String label;
-
-  const ConfirmedPhoneButton({super.key, required this.status, required this.phone, required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    final shown = PhoneVisibility.visiblePhone(status, phone);
-    if (shown.isEmpty) return const SizedBox.shrink();
-    return TextButton.icon(
-      key: const ValueKey('confirmedCall'),
-      icon: const Icon(Icons.call_rounded, size: 18),
-      label: Text(label),
-      onPressed: () => callNumber(context, shown),
-    );
-  }
 }
 
 /// Opens Google Maps directions to [place] (or the saved GPS point).

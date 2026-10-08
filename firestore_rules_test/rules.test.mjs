@@ -168,7 +168,7 @@ function bookingFor(loadId, overrides = {}) {
     notes: '',
     vehicleNumber: VEHICLE.number,
     driverName: 'Ramesh',
-    driverPhone: '+919800000000',
+    driverPhone: '',
     timeline: { accepted: serverTimestamp() },
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
@@ -2471,6 +2471,282 @@ describe('booking chat', () => {
     await assertFails(setDoc(doc(as('customer1'), 'reports', 'r5'), rep('customer1', 'driver1', { status: 'resolved' })));
     await assertFails(updateDoc(doc(as('customer1'), 'reports', 'r1'), { status: 'resolved' }));
     await assertSucceeds(updateDoc(doc(asAdmin(), 'reports', 'r1'), { status: 'resolved', resolvedBy: 'admin1' }));
+  });
+});
+
+describe('private chat and call (Task 68)', () => {
+  const msg = (sender, text = 'Namaste', extra = {}) => ({ senderId: sender, text, flagged: false, createdAt: serverTimestamp(), ...extra });
+  const msgs = (db) => collection(db, 'bookings', 'L1', 'messages');
+  const hours = (h) => Timestamp.fromMillis(Date.now() + h * 3600000);
+  const seedUsers = (extra = {}) =>
+    seed(async (db) => {
+      await setDoc(doc(db, 'users', 'customer1'), { role: 'customer', selectedRole: 'customer', ...extra.customer1 });
+      await setDoc(doc(db, 'users', 'driver1'), { role: 'driver', selectedRole: 'driver', ...extra.driver1 });
+    });
+
+  test('a message with a mobile number, a UPI id or any "@" is refused even from a modified app', async () => {
+    await seedBooking();
+    const t = (text) => addDoc(msgs(as('customer1')), msg('customer1', text));
+    await assertSucceeds(t('Load is 12000 kg, 20 ft'));
+    await assertSucceeds(t('Invoice 1234567890123 ready'));
+    await assertSucceeds(t('Vehicle MH12AB1234 at gate 4'));
+    await assertFails(t('call 9876543210'));
+    await assertFails(t('+91 9876543210 pe baat karo'));
+    await assertFails(t('+919876543210'));
+    await assertFails(t('09876543210'));
+    await assertFails(t('mera upi ramesh@ybl'));
+    await assertFails(t('mail a@b.com'));
+    await assertFails(t('line one\n9876543210\nline three'));
+  });
+
+  test('a suspended sender cannot send; the other party can; the block ends by itself', async () => {
+    await seedBooking();
+    await seedUsers({ customer1: { chatBlockedUntil: hours(5) } });
+    await assertFails(addDoc(msgs(as('customer1')), msg('customer1')));
+    await assertSucceeds(addDoc(msgs(as('driver1')), msg('driver1')));
+    await seedUsers({ customer1: { chatBlockedUntil: hours(-1) } });
+    await assertSucceeds(addDoc(msgs(as('customer1')), msg('customer1')));
+  });
+
+  // The two writes the app makes when it blocks a message (CommGuard.recordViolation).
+  const violation = (uid, seq, over = {}) => ({ userId: uid, bookingId: 'L1', kind: 'phone', excerpt: 'call 98xxx', createdAt: serverTimestamp(), ...over });
+  const strike = (db, uid, strikes, seq, userOver = {}, vOver = {}) => {
+    const b = writeBatch(db);
+    b.set(doc(db, 'violations', `${uid}_${seq}`), violation(uid, seq, vOver));
+    b.update(doc(db, 'users', uid), { chatStrikes: strikes, chatSeq: seq, chatStrikeAt: serverTimestamp(), updatedAt: serverTimestamp(), ...userOver });
+    return b.commit();
+  };
+
+  test('strike 1 and 2 warn only: violation + strikes in one batch, nothing else changes', async () => {
+    await seedBooking();
+    await seedUsers();
+    await assertSucceeds(strike(as('customer1'), 'customer1', 1, 1));
+    await assertSucceeds(strike(as('customer1'), 'customer1', 2, 2));
+    const u = (await getDoc(doc(asAdmin(), 'users', 'customer1'))).data();
+    assert.equal(u.chatStrikes, 2);
+    assert.equal(u.chatBlockedUntil, undefined);
+    await assertSucceeds(addDoc(msgs(as('customer1')), msg('customer1')), 'still allowed to chat');
+  });
+
+  test('the strike is all-or-nothing and goes up by exactly one', async () => {
+    await seedBooking();
+    await seedUsers();
+    const c = as('customer1');
+    await assertFails(strike(c, 'customer1', 2, 1), 'two strikes at once');
+    await assertFails(strike(c, 'customer1', 1, 2), 'wrong sequence');
+    await assertFails(strike(c, 'customer1', 1, 1, {}, { userId: 'driver1' }));
+    await assertFails(strike(c, 'customer1', 1, 1, {}, { kind: 'rude' }));
+    await assertFails(strike(c, 'customer1', 1, 1, {}, { bookingId: 'nope' }));
+    await assertFails(strike(c, 'customer1', 1, 1, {}, { excerpt: 'x'.repeat(121) }));
+    // A violation alone, or the user counter alone, is refused.
+    await assertFails(setDoc(doc(c, 'violations', 'customer1_1'), violation('customer1', 1)));
+    await assertFails(updateDoc(doc(c, 'users', 'customer1'), { chatStrikes: 1, chatSeq: 1, chatStrikeAt: serverTimestamp() }));
+    // Nobody can strike someone else.
+    await assertFails(strike(as('driver1'), 'customer1', 1, 1));
+    await assertFails(updateDoc(doc(as('driver1'), 'users', 'customer1'), { chatStrikes: 1 }));
+    await assertSucceeds(strike(c, 'customer1', 1, 1));
+    await assertFails(strike(c, 'customer1', 2, 1), 'the same violation id twice');
+  });
+
+  test('strike 3 blocks for 24 hours, 4 for 3 days, 5 for 7 days with an admin review', async () => {
+    await seedBooking();
+    await seedUsers({ customer1: { chatStrikes: 2, chatSeq: 2, chatStrikeAt: Timestamp.now() } });
+    const c = as('customer1');
+    await assertFails(strike(c, 'customer1', 3, 3), 'no block written');
+    await assertFails(strike(c, 'customer1', 3, 3, { chatBlockedUntil: hours(2) }), 'block too short');
+    await assertSucceeds(strike(c, 'customer1', 3, 3, { chatBlockedUntil: hours(24) }));
+    await assertFails(addDoc(msgs(c), msg('customer1')), 'now blocked');
+    await assertSucceeds(strike(c, 'customer1', 4, 4, { chatBlockedUntil: hours(72) }));
+    await assertFails(strike(c, 'customer1', 5, 5, { chatBlockedUntil: hours(168) }), 'strike 5 needs the review flag');
+    await assertFails(strike(c, 'customer1', 5, 5, { chatBlockedUntil: hours(72), chatReview: true }), 'strike 5 needs 7 days');
+    await assertSucceeds(strike(c, 'customer1', 5, 5, { chatBlockedUntil: hours(168), chatReview: true }));
+    const u = (await getDoc(doc(asAdmin(), 'users', 'customer1'))).data();
+    assert.equal(u.chatReview, true);
+  });
+
+  test('a suspended person cannot lift the block, lower the count or skip the clock', async () => {
+    await seedBooking();
+    await seedUsers({ customer1: { chatStrikes: 3, chatSeq: 3, chatStrikeAt: Timestamp.now(), chatBlockedUntil: hours(20) } });
+    const ref = () => doc(as('customer1'), 'users', 'customer1');
+    await assertFails(updateDoc(ref(), { chatBlockedUntil: deleteField() }));
+    await assertFails(updateDoc(ref(), { chatBlockedUntil: hours(-1) }));
+    await assertFails(updateDoc(ref(), { chatBlockedUntil: hours(1) }));
+    await assertFails(updateDoc(ref(), { chatStrikes: 0 }), 'no decay before 30 clean days');
+    await assertFails(updateDoc(ref(), { chatStrikes: 0, chatStrikeAt: serverTimestamp() }));
+    await assertFails(updateDoc(ref(), { chatReview: false }));
+    await assertSucceeds(updateDoc(ref(), { name: 'New' }), 'other profile edits are fine');
+  });
+
+  test('30 clean days take one strike off, once per 30 days', async () => {
+    await seedBooking();
+    const old = Timestamp.fromMillis(Date.now() - 31 * 86400000);
+    await seedUsers({ customer1: { chatStrikes: 2, chatSeq: 2, chatStrikeAt: old }, driver1: { chatStrikes: 2, chatSeq: 2, chatStrikeAt: Timestamp.now() } });
+    await assertFails(updateDoc(doc(as('driver1'), 'users', 'driver1'), { chatStrikes: 1, chatStrikeAt: serverTimestamp() }), 'not 30 days yet');
+    await assertFails(updateDoc(doc(as('customer1'), 'users', 'customer1'), { chatStrikes: 0, chatStrikeAt: serverTimestamp() }), 'one at a time');
+    await assertFails(updateDoc(doc(as('customer1'), 'users', 'customer1'), { chatStrikes: 1 }), 'the clock must restart');
+    await assertSucceeds(updateDoc(doc(as('customer1'), 'users', 'customer1'), { chatStrikes: 1, chatStrikeAt: serverTimestamp() }));
+    await assertFails(updateDoc(doc(as('customer1'), 'users', 'customer1'), { chatStrikes: 0, chatStrikeAt: serverTimestamp() }), 'next one only after another 30 days');
+  });
+
+  test('violations are read by their owner and admins; never changed', async () => {
+    await seedBooking();
+    await seedUsers();
+    await strike(as('customer1'), 'customer1', 1, 1);
+    await assertSucceeds(getDoc(doc(as('customer1'), 'violations', 'customer1_1')));
+    await assertSucceeds(getDoc(doc(asAdmin(), 'violations', 'customer1_1')));
+    await assertFails(getDoc(doc(as('driver1'), 'violations', 'customer1_1')));
+    await assertFails(updateDoc(doc(as('customer1'), 'violations', 'customer1_1'), { excerpt: 'clean' }));
+    await assertFails(deleteDoc(doc(as('customer1'), 'violations', 'customer1_1')));
+    await assertFails(updateDoc(doc(asAdmin(), 'violations', 'customer1_1'), { excerpt: 'clean' }));
+  });
+
+  test('admins extend or lift a suspension; users cannot', async () => {
+    await seedBooking();
+    await seedUsers({ customer1: { chatStrikes: 3, chatSeq: 3, chatStrikeAt: Timestamp.now(), chatBlockedUntil: hours(20) } });
+    await assertSucceeds(updateDoc(doc(asAdmin(), 'users', 'customer1'), { chatBlockedUntil: hours(24 * 30), updatedAt: serverTimestamp() }));
+    await assertSucceeds(updateDoc(doc(asAdmin(), 'users', 'customer1'), { chatBlockedUntil: deleteField(), chatStrikes: 0, chatReview: false, updatedAt: serverTimestamp() }));
+    await assertFails(updateDoc(doc(asAdmin(), 'users', 'customer1'), { chatBlockedUntil: hours(24 * 400) }), 'too long');
+    await assertFails(updateDoc(doc(asAdmin(), 'users', 'customer1'), { chatStrikes: 1, role: 'driver' }));
+    await assertFails(updateDoc(doc(as('driver1'), 'users', 'customer1'), { chatBlockedUntil: deleteField() }));
+    await assertSucceeds(addDoc(msgs(as('customer1')), msg('customer1')), 'chat works again');
+  });
+
+  test('a new account cannot start with chat fields set', async () => {
+    await assertFails(setDoc(doc(as('n1'), 'users', 'n1'), { role: 'customer', selectedRole: 'customer', chatStrikes: 0 }));
+    await assertFails(setDoc(doc(as('n2'), 'users', 'n2'), { role: 'customer', selectedRole: 'customer', chatBlockedUntil: hours(-5) }));
+    await assertSucceeds(setDoc(doc(as('n3'), 'users', 'n3'), { role: 'customer', selectedRole: 'customer' }));
+  });
+
+  test('reports: "asked for my number" and "sent a number" are accepted reasons', async () => {
+    await seedBooking();
+    const rep = (reason) => ({ reporterId: 'customer1', reportedId: 'driver1', bookingId: 'L1', reason, details: '', status: 'open', createdAt: serverTimestamp() });
+    await assertSucceeds(setDoc(doc(as('customer1'), 'reports', 'r1'), rep('asked_number')));
+    await assertSucceeds(setDoc(doc(as('customer1'), 'reports', 'r2'), rep('sent_number')));
+    await assertFails(setDoc(doc(as('customer1'), 'reports', 'r3'), rep('rude')));
+  });
+
+  describe('calls', () => {
+    const SDP = 'v=0\r\no=- 1 2 IN IP4 127.0.0.1\r\ns=-\r\nt=0 0\r\nm=audio 9 UDP/TLS/RTP/SAVPF 111\r\n';
+    const call = (over = {}) => ({
+      bookingId: 'L1', callerId: 'customer1', calleeId: 'driver1', callerName: 'Anil', vehicleNumber: 'MH12AB1234', status: 'ringing',
+      offer: { type: 'offer', sdp: SDP }, createdAt: serverTimestamp(), updatedAt: serverTimestamp(), ...over,
+    });
+    const ring = (db = as('customer1'), id = 'c1', over = {}) => setDoc(doc(db, 'calls', id), call(over));
+
+    test('only the two people of a confirmed booking can ring each other', async () => {
+      await seedBooking();
+      await assertSucceeds(ring());
+      await assertFails(ring(as('driver2'), 'c2', { callerId: 'driver2' }), 'not a party');
+      await assertFails(ring(as('customer1'), 'c3', { calleeId: 'driver2' }), 'callee not a party');
+      await assertFails(ring(as('customer1'), 'c4', { calleeId: 'customer1' }), 'a call to yourself');
+      await assertFails(ring(as('customer1'), 'c5', { callerId: 'driver1' }), 'not your call');
+      await assertFails(ring(as('customer1'), 'c6', { status: 'accepted' }));
+      await assertFails(ring(as('customer1'), 'c7', { offer: { type: 'offer', sdp: 'x' } }), 'tiny sdp');
+      await assertFails(ring(as('customer1'), 'c8', { offer: { type: 'offer', sdp: SDP.padEnd(13000, 'a') } }), 'huge sdp');
+      await assertFails(ring(as('customer1'), 'c9', { phone: '+919876543210' }), 'no extra fields, no phone number');
+      await assertFails(ring(as('customer1'), 'c10', { callerName: 'x'.repeat(61) }));
+    });
+
+    test('no call on a finished or cancelled booking, nor while suspended', async () => {
+      await seedBooking('delivered');
+      await assertFails(ring());
+      await seedBooking('cancelled');
+      await assertFails(ring());
+      await seedBooking('in_transit');
+      await assertSucceeds(ring());
+      await seedUsers({ customer1: { chatBlockedUntil: hours(10) } });
+      await assertFails(ring(as('customer1'), 'c2'));
+      await assertSucceeds(ring(as('driver1'), 'c3', { callerId: 'driver1', calleeId: 'customer1' }), 'the other person is not suspended');
+    });
+
+    test('answer, decline, cancel and end follow the order; outsiders read nothing', async () => {
+      await seedBooking();
+      await ring();
+      const ans = { status: 'accepted', answer: { type: 'answer', sdp: SDP }, updatedAt: serverTimestamp() };
+      await assertFails(updateDoc(doc(as('customer1'), 'calls', 'c1'), ans), 'the caller cannot answer');
+      await assertFails(updateDoc(doc(as('driver2'), 'calls', 'c1'), ans), 'outsider');
+      await assertFails(getDoc(doc(as('driver2'), 'calls', 'c1')));
+      await assertFails(updateDoc(doc(as('driver1'), 'calls', 'c1'), { ...ans, answer: { type: 'offer', sdp: SDP } }));
+      await assertFails(updateDoc(doc(as('driver1'), 'calls', 'c1'), { ...ans, extra: 1 }));
+      await assertSucceeds(updateDoc(doc(as('driver1'), 'calls', 'c1'), ans));
+      await assertFails(updateDoc(doc(as('driver1'), 'calls', 'c1'), { status: 'declined', updatedAt: serverTimestamp() }), 'already answered');
+      await assertSucceeds(updateDoc(doc(as('customer1'), 'calls', 'c1'), { status: 'ended', updatedAt: serverTimestamp() }));
+      await assertFails(updateDoc(doc(as('customer1'), 'calls', 'c1'), { status: 'accepted', updatedAt: serverTimestamp() }), 'ended stays ended');
+      await assertFails(deleteDoc(doc(as('customer1'), 'calls', 'c1')));
+      // decline and cancel
+      await ring(as('customer1'), 'c2');
+      await assertSucceeds(updateDoc(doc(as('driver1'), 'calls', 'c2'), { status: 'declined', updatedAt: serverTimestamp() }));
+      await ring(as('customer1'), 'c3');
+      await assertFails(updateDoc(doc(as('driver1'), 'calls', 'c3'), { status: 'cancelled', updatedAt: serverTimestamp() }), 'only the caller cancels');
+      await assertSucceeds(updateDoc(doc(as('customer1'), 'calls', 'c3'), { status: 'cancelled', updatedAt: serverTimestamp() }));
+    });
+
+    test('network candidates: only the two people, only while the call is live, small', async () => {
+      await seedBooking();
+      await ring();
+      const cand = (uid, over = {}) => ({ from: uid, candidate: 'candidate:1 1 UDP 2122 10.0.0.1 5000 typ host', sdpMid: '0', sdpMLineIndex: 0, createdAt: serverTimestamp(), ...over });
+      const col = (db) => collection(db, 'calls', 'c1', 'candidates');
+      await assertSucceeds(addDoc(col(as('customer1')), cand('customer1')));
+      await assertSucceeds(addDoc(col(as('driver1')), cand('driver1')));
+      await assertFails(addDoc(col(as('driver1')), cand('customer1')), 'from must be you');
+      await assertFails(addDoc(col(as('driver2')), cand('driver2')));
+      await assertFails(addDoc(col(as('customer1')), cand('customer1', { candidate: 'x'.repeat(1001) })));
+      await assertFails(getDocs(col(as('driver2'))));
+      await assertSucceeds(getDocs(col(as('driver1'))));
+      await seed((db) => updateDoc(doc(db, 'calls', 'c1'), { status: 'ended' }));
+      await assertFails(addDoc(col(as('customer1')), cand('customer1')), 'call is over');
+    });
+
+    test('admins read call metadata; other people do not', async () => {
+      await seedBooking();
+      await ring();
+      await assertSucceeds(getDoc(doc(asAdmin(), 'calls', 'c1')));
+      await assertFails(getDoc(doc(as('customer2'), 'calls', 'c1')));
+    });
+  });
+
+  describe('admin review of a chat and number views', () => {
+    test('an admin reads a chat only after opening a review that rests on a report or a dispute', async () => {
+      await seedBooking();
+      await seed((db) => setDoc(doc(db, 'bookings', 'L1', 'messages', 'm1'), msg('customer1', 'Namaste', { createdAt: Timestamp.now() })));
+      await assertFails(getDocs(msgs(asAdmin())), 'no review yet');
+      const review = (extra) => ({ by: 'admin1', createdAt: serverTimestamp(), ...extra });
+      await assertFails(setDoc(doc(asAdmin(), 'chat_reviews', 'L1'), review({ reportId: 'nope' })));
+      await assertFails(setDoc(doc(as('customer1'), 'chat_reviews', 'L1'), review({ by: 'customer1', reportId: 'r1' })), 'not an admin');
+      await seed(async (db) => {
+        await setDoc(doc(db, 'reports', 'r1'), { reporterId: 'customer1', reportedId: 'driver1', bookingId: 'L1', reason: 'abuse', details: '', status: 'open', createdAt: Timestamp.now() });
+        await setDoc(doc(db, 'reports', 'r2'), { reporterId: 'customer1', reportedId: 'driver1', bookingId: 'OTHER', reason: 'abuse', details: '', status: 'open', createdAt: Timestamp.now() });
+      });
+      await assertFails(setDoc(doc(asAdmin(), 'chat_reviews', 'L1'), review({ reportId: 'r2' })), 'a report about another booking');
+      await assertSucceeds(setDoc(doc(asAdmin(), 'chat_reviews', 'L1'), review({ reportId: 'r1' })));
+      await assertSucceeds(getDocs(msgs(asAdmin())));
+      await assertFails(updateDoc(doc(asAdmin(), 'chat_reviews', 'L1'), { by: 'x' }));
+      await assertFails(addDoc(msgs(asAdmin()), msg('admin1')), 'admins read, they do not write');
+    });
+
+    test('a dispute ticket also opens a review; a plain ticket does not', async () => {
+      await seedBooking();
+      await seed(async (db) => {
+        await setDoc(doc(db, 'tickets', 't1'), { userId: 'customer1', category: 'dispute', bookingId: 'L1', subject: 'abc', status: 'open' });
+        await setDoc(doc(db, 'tickets', 't2'), { userId: 'customer1', category: 'payment', bookingId: 'L1', subject: 'abc', status: 'open' });
+      });
+      await assertFails(setDoc(doc(asAdmin(), 'chat_reviews', 'L1'), { by: 'admin1', ticketId: 't2', createdAt: serverTimestamp() }));
+      await assertSucceeds(setDoc(doc(asAdmin(), 'chat_reviews', 'L1'), { by: 'admin1', ticketId: 't1', createdAt: serverTimestamp() }));
+    });
+
+    test('contact_view and chat_view audit lines are admin only', async () => {
+      const line = (type, actorId) => ({ type, actorId, targetId: 'driver1', bookingId: 'L1', data: { fields: ['phone'] }, createdAt: serverTimestamp() });
+      await assertSucceeds(addDoc(collection(asAdmin(), 'audit_events'), line('contact_view', 'admin1')));
+      await assertSucceeds(addDoc(collection(asAdmin(), 'audit_events'), line('chat_view', 'admin1')));
+      await assertFails(addDoc(collection(as('customer1'), 'audit_events'), line('contact_view', 'customer1')));
+      await assertFails(addDoc(collection(as('driver1'), 'audit_events'), line('chat_view', 'driver1')));
+    });
+  });
+
+  test('a booking cannot store the driver\'s phone number', async () => {
+    await seedOpenLoad();
+    await assertFails(acceptBatch(as('driver1'), 'L1', 'driver1', { driverPhone: '+919800000000' }));
+    await assertSucceeds(acceptBatch(as('driver1'), 'L1', 'driver1', { driverPhone: '' }));
   });
 });
 

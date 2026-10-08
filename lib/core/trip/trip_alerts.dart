@@ -78,7 +78,7 @@ String tripSummaryText(Booking b, {String? who, String? link}) => [
       'Status: ${b.status.replaceAll('_', ' ')}',
       '${b.cargoType}, ${b.weight} T',
       if (b.vehicleNumber.isNotEmpty) 'Vehicle: ${b.vehicleNumber} (${b.vehicleType})',
-      if (b.driverName.isNotEmpty) 'Driver: ${b.driverName}${b.driverPhone.isEmpty ? '' : ', ${b.driverPhone}'}',
+      if (b.driverName.isNotEmpty) 'Driver: ${b.driverName}',
       if (b.lastKnownLocation != null) 'Last seen: https://maps.google.com/?q=${b.lastKnownLocation!.latitude.toStringAsFixed(4)},${b.lastKnownLocation!.longitude.toStringAsFixed(4)}',
       if (link != null) 'Follow this trip (valid 24 hours): $link',
       'Booking ID: ${b.id}',

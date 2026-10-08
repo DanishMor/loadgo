@@ -53,6 +53,7 @@ dependencies:
   package_info_plus: ^10.2.2
   share_plus: ^13.3.1
   speech_to_text: ^7.5.0
+  flutter_webrtc: ^1.6.2+hotfix.4
 
 dev_dependencies:
   flutter_test:

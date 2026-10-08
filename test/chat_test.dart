@@ -8,13 +8,14 @@ import 'package:transport_app/core/models/booking.dart';
 import 'package:transport_app/core/services/backend.dart';
 import 'package:transport_app/core/services/booking_service.dart';
 import 'package:transport_app/core/services/chat_service.dart';
+import 'package:transport_app/core/services/comm_guard.dart';
 import 'package:transport_app/core/services/load_service.dart';
 import 'package:transport_app/core/services/vehicle_service.dart';
 
 import 'test_utils.dart';
 
 void main() {
-  group('off-platform detector', () {
+  group('off-platform detector (wrapper over ContactFilter)', () {
     test('phone numbers', () {
       expect(offPlatformReason('call 9876543210'), OffPlatformReason.phone);
       expect(offPlatformReason('+91 98765 43210 pe call karo'), OffPlatformReason.phone);
@@ -23,10 +24,10 @@ void main() {
       expect(offPlatformReason('Invoice 1234567890123'), isNull, reason: 'longer digit runs are not phones');
     });
 
-    test('UPI ids and phrases', () {
+    test('UPI ids, e-mail and phrases', () {
       expect(offPlatformReason('send to ramesh.k@okaxis'), OffPlatformReason.upi);
       expect(offPlatformReason('9876543210@ybl'), OffPlatformReason.upi);
-      expect(offPlatformReason('mail me at a@gmail.com'), isNull);
+      expect(offPlatformReason('mail me at a@gmail.com'), OffPlatformReason.upi, reason: 'any name@handle is contact information');
       expect(offPlatformReason('Pay outside the app, cheaper'), OffPlatformReason.phrase);
       expect(offPlatformReason('app ke bahar payment karo'), OffPlatformReason.phrase);
       expect(offPlatformReason('Reached the gate, loading now'), isNull);
@@ -52,14 +53,14 @@ void main() {
     booking = Booking.fromDoc(await db.collection('bookings').doc(id).get());
   });
 
-  test('send, flag, unread count and read marks', () async {
+  test('send, unread count and read marks', () async {
     uid = 'driver1';
     expect(ChatService.otherParty(booking), 'customer1');
     await ChatService.send(booking, '  Reaching in 20 min ');
-    await ChatService.send(booking, 'my upi is ramesh@ybl');
+    await ChatService.send(booking, 'Loading done');
     final msgs = await ChatService.watch(booking.id).first;
-    expect(msgs.map((m) => m.text), ['Reaching in 20 min', 'my upi is ramesh@ybl']);
-    expect(msgs.map((m) => m.flagged), [false, true]);
+    expect(msgs.map((m) => m.text), ['Reaching in 20 min', 'Loading done']);
+    expect(msgs.map((m) => m.flagged), [false, false]);
     expect(await ChatService.watchUnread(booking.id).first, 0, reason: 'own messages are never unread');
 
     uid = 'customer1';
@@ -67,6 +68,27 @@ void main() {
     expect(await ChatService.watchUnread(booking.id).first, 2);
     await ChatService.markRead(booking.id);
     expect(await ChatService.watchUnread(booking.id).first, 0);
+  });
+
+  test('a message with a number or UPI id is never sent; it costs a strike and is logged', () async {
+    uid = 'driver1';
+    await db.collection('users').doc('driver1').set({'driverName': 'Ramesh'});
+    await expectLater(ChatService.send(booking, 'my upi is ramesh@ybl'), throwsA(isA<ChatContactException>().having((e) => e.outcome.strikes, 'strikes', 1)));
+    expect((await db.collection('bookings').doc(booking.id).collection('messages').get()).docs, isEmpty);
+    final v = (await db.collection('violations').get()).docs.single;
+    expect(v.id, 'driver1_1');
+    expect(v.data()['userId'], 'driver1');
+    expect(v.data()['kind'], 'upi');
+    expect(v.data()['bookingId'], booking.id);
+    expect((await db.collection('users').doc('driver1').get()).data()!['chatStrikes'], 1);
+  });
+
+  test('a number split over two messages is caught on the second', () async {
+    uid = 'driver1';
+    await db.collection('users').doc('driver1').set({'driverName': 'Ramesh'});
+    await ChatService.send(booking, '98765');
+    await expectLater(ChatService.send(booking, '43210'), throwsA(isA<ChatContactException>()));
+    expect((await db.collection('bookings').doc(booking.id).collection('messages').get()).docs.length, 1);
   });
 
   test('empty and too-long messages are refused', () async {
@@ -91,20 +113,21 @@ void main() {
     expect(r['status'], 'open');
   });
 
-  testWidgets('chat screen warns before sending contact details and shows the flag', (tester) async {
+  testWidgets('chat screen blocks contact details before sending and warns', (tester) async {
     uid = 'customer1';
+    await db.collection('users').doc('customer1').set({'name': 'Anil'});
     await tester.pumpWidget(LanguageScope(notifier: languageNotifier, child: MaterialApp(home: ChatScreen(booking: booking))));
     await settle(tester);
     expect(find.text('No messages yet. Say hello!'), findsOneWidget);
 
     await tester.enterText(find.byKey(const ValueKey('chatInput')), 'call me on 9876543210');
     await tester.tap(find.byKey(const ValueKey('chatSend')));
-    await tester.pumpAndSettle();
-    expect(find.textContaining('Send anyway?'), findsOneWidget);
-    await tester.tap(find.text('Send anyway'));
     await settle(tester);
-    expect(find.text('call me on 9876543210'), findsOneWidget);
-    expect(find.text('May share contact or payment details'), findsOneWidget);
+    expect(find.byKey(const ValueKey('contactWarning')), findsOneWidget);
+    expect(find.textContaining('Warning 1 of 2'), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('contactWarningOk')));
+    await settle(tester);
+    expect((await db.collection('bookings').doc(booking.id).collection('messages').get()).docs, isEmpty, reason: 'nothing was sent');
 
     await tester.enterText(find.byKey(const ValueKey('chatInput')), 'Thanks');
     await tester.tap(find.byKey(const ValueKey('chatSend')));

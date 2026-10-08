@@ -8,7 +8,10 @@ import '../models/chat_message.dart';
 import '../services/backend.dart';
 import '../services/chat_service.dart';
 import '../widgets/common.dart';
-import 'off_platform.dart';
+import '../call/call_models.dart';
+import '../call/call_screens.dart';
+import '../comm/chat_strikes.dart';
+import '../services/comm_guard.dart';
 
 /// "Chat" button with an unread badge for a booking (both roles).
 class BookingChatButton extends StatelessWidget {
@@ -58,6 +61,7 @@ class _ChatScreenState extends State<ChatScreen> {
   void initState() {
     super.initState();
     ChatService.markRead(widget.booking.id).catchError((_) {});
+    CommGuard.decayIfDue();
   }
 
   @override
@@ -73,23 +77,15 @@ class _ChatScreenState extends State<ChatScreen> {
       showSnack(context, tr(context, 'messageTooLong'));
       return;
     }
-    if (looksOffPlatform(text)) {
-      final ok = await showDialog<bool>(
-        context: context,
-        builder: (c) => AlertDialog(
-          content: Text(tr(c, 'offPlatformConfirm')),
-          actions: [
-            TextButton(onPressed: () => Navigator.of(c).pop(false), child: Text(tr(c, 'cancel'))),
-            FilledButton(onPressed: () => Navigator.of(c).pop(true), child: Text(tr(c, 'sendAnyway'))),
-          ],
-        ),
-      );
-      if (ok != true || !mounted) return;
-    }
     setState(() => _sending = true);
     try {
       await ChatService.send(widget.booking, text);
       _ctrl.clear();
+    } on ChatContactException catch (e) {
+      // Nothing was sent. The text stays in the box so it can be edited.
+      if (mounted) await _showContactWarning(e.outcome);
+    } on ChatBlockedException catch (e) {
+      if (mounted) showSnack(context, trf(context, 'pcBlockedBanner', {'until': formatDateTime(e.until)}));
     } on RateLimitException catch (e) {
       if (mounted) showSnack(context, trf(context, 'rateLimited', {'m': e.minutesLeft}));
     } on ChatSendException catch (e) {
@@ -100,6 +96,29 @@ class _ChatScreenState extends State<ChatScreen> {
       if (mounted) setState(() => _sending = false);
     }
     ChatService.markRead(widget.booking.id).catchError((_) {});
+  }
+
+  Future<void> _showContactWarning(ViolationOutcome o) {
+    final until = o.blockedUntil;
+    final body = until == null
+        ? trf(context, 'pcWarnBody', {'n': o.strikes.clamp(1, ChatLadder.warnings)})
+        : trf(context, 'pcBlockBody', {'until': formatDateTime(until), 'n': o.strikes});
+    return showDialog<void>(
+      context: context,
+      builder: (c) => AlertDialog(
+        key: const ValueKey('contactWarning'),
+        icon: const Icon(Icons.shield_outlined),
+        title: Text(tr(c, 'pcWarnTitle')),
+        content: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(tr(c, 'pcKind${o.kind.name}'), style: const TextStyle(fontWeight: FontWeight.w700)),
+          const SizedBox(height: 8),
+          Text(body),
+          if (o.review) Padding(padding: const EdgeInsets.only(top: 8), child: Text(tr(c, 'pcReviewNote'))),
+          if (!o.recorded) Padding(padding: const EdgeInsets.only(top: 8), child: Text(tr(c, 'pcNotRecorded'), style: TextStyle(color: AppColors.muted, fontSize: 12))),
+        ]),
+        actions: [FilledButton(key: const ValueKey('contactWarningOk'), onPressed: () => Navigator.of(c).pop(), child: Text(tr(c, 'pcOk')))],
+      ),
+    );
   }
 
   Future<void> _report({String? messageId}) async {
@@ -166,6 +185,13 @@ class _ChatScreenState extends State<ChatScreen> {
         scrolledUnderElevation: 0,
         title: Text(tr(context, 'chat'), style: const TextStyle(fontWeight: FontWeight.w700)),
         actions: [
+          if (bookingAllowsCall(widget.booking))
+            IconButton(
+              key: const ValueKey('chatCall'),
+              tooltip: tr(context, 'pcCall'),
+              icon: const Icon(Icons.call_rounded),
+              onPressed: () => startBookingCall(context, widget.booking),
+            ),
           StreamBuilder<bool>(
             stream: _blocked,
             builder: (context, snap) {
@@ -193,7 +219,21 @@ class _ChatScreenState extends State<ChatScreen> {
               width: double.infinity,
               color: AppColors.warnBg,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              child: Text(tr(context, 'offPlatformWarning'), style: TextStyle(fontSize: 12, color: AppColors.body)),
+              child: Text(tr(context, 'pcChatNote'), style: TextStyle(fontSize: 12, color: AppColors.body)),
+            ),
+            StreamBuilder<ChatStatus>(
+              stream: CommGuard.watch(),
+              builder: (context, snap) {
+                final until = snap.data?.blockedUntil;
+                if (until == null || !until.isAfter(DateTime.now())) return const SizedBox.shrink();
+                return Container(
+                  key: const ValueKey('chatBlockedBanner'),
+                  width: double.infinity,
+                  color: Colors.red.withValues(alpha: 0.12),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  child: Text(trf(context, 'pcBlockedBanner', {'until': formatDateTime(until)}), style: TextStyle(fontSize: 12, color: AppColors.body)),
+                );
+              },
             ),
             Expanded(
               child: LiveStream<List<ChatMessage>>(
@@ -272,6 +312,8 @@ class _ReportDialogState extends State<_ReportDialog> {
   static String _label(String r) => switch (r) {
         ReportReason.fraud => 'reasonFraud',
         ReportReason.offPlatform => 'reasonOffPlatform',
+        ReportReason.askedNumber => 'reasonAskedNumber',
+        ReportReason.sentNumber => 'reasonSentNumber',
         ReportReason.other => 'reasonOther',
         _ => 'reasonAbuse',
       };

@@ -10,6 +10,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
   firebase_core
   firebase_remote_config
   firebase_storage
+  flutter_webrtc
   geolocator_windows
   printing
   share_plus

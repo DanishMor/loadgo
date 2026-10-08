@@ -2,11 +2,12 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-import '../chat/off_platform.dart';
+import '../comm/contact_filter.dart';
 import '../models/booking.dart';
 import '../models/app_notification.dart';
 import '../models/chat_message.dart';
 import 'backend.dart';
+import 'comm_guard.dart';
 import 'notification_service.dart';
 import 'rate_limit_service.dart';
 
@@ -22,8 +23,12 @@ class ReportReason {
   static const abuse = 'abuse';
   static const fraud = 'fraud';
   static const offPlatform = 'off_platform';
+
+  /// Task 68: the other person asked for my number / sent me one.
+  static const askedNumber = 'asked_number';
+  static const sentNumber = 'sent_number';
   static const other = 'other';
-  static const all = [abuse, fraud, offPlatform, other];
+  static const all = [abuse, fraud, offPlatform, askedNumber, sentNumber, other];
 }
 
 /// Chat between the customer and driver of one booking.
@@ -52,13 +57,24 @@ class ChatService {
       .snapshots()
       .map((s) => s.docs.map(ChatMessage.fromDoc).toList().reversed.toList());
 
+  /// Sends [text], unless it carries a phone number, a UPI id, another app or
+  /// "call me" (Task 68): then nothing is sent, a strike is recorded and
+  /// [ChatContactException] says how it went. While the sender is suspended
+  /// [ChatBlockedException] is thrown.
   static Future<void> send(Booking booking, String text) async {
     final uid = Backend.requireUid();
     final t = text.trim();
     if (t.isEmpty) throw ChatSendException('empty');
     if (t.length > ChatMessage.maxLength) throw ChatSendException('tooLong');
-    final last = await _lastMessage(booking.id);
+    await CommGuard.ensureAllowed();
+    final recent = await _recent(booking.id);
+    final last = recent.isEmpty ? null : recent.first;
     if (last != null && last['senderId'] == uid && isRepeat(last['text'] as String? ?? '', t)) throw ChatSendException('repeat');
+    final own = [for (final m in recent) if (m['senderId'] == uid) m['text'] as String? ?? ''];
+    final kind = ContactFilter.check(t, recent: own);
+    if (kind != null) {
+      throw ChatContactException(await CommGuard.recordViolation(bookingId: booking.id, kind: kind, text: t));
+    }
     final msgRef = _messages(booking.id).doc();
     final rate = await RateLimit.prepare(RateLimit.messageKind, docId: msgRef.id);
     final notify = _shouldNotify(last, uid);
@@ -67,7 +83,7 @@ class ChatService {
       batch.set(msgRef, {
         'senderId': uid,
         'text': t,
-        'flagged': looksOffPlatform(t),
+        'flagged': false,
         'createdAt': FieldValue.serverTimestamp(),
       });
       rate.addToBatch(batch);
@@ -101,13 +117,13 @@ class ChatService {
     return last['senderId'] != uid || at == null || DateTime.now().difference(at) > notifyBurst;
   }
 
-  /// The newest message of the chat, or null (also when it cannot be read).
-  static Future<Map<String, dynamic>?> _lastMessage(String bookingId) async {
+  /// The newest messages of the chat, newest first (empty when they cannot be read).
+  static Future<List<Map<String, dynamic>>> _recent(String bookingId) async {
     try {
-      final snap = await _messages(bookingId).orderBy('createdAt', descending: true).limit(1).get();
-      return snap.docs.isEmpty ? null : snap.docs.first.data();
+      final snap = await _messages(bookingId).orderBy('createdAt', descending: true).limit(6).get();
+      return [for (final d in snap.docs) d.data()];
     } on FirebaseException {
-      return null;
+      return const [];
     }
   }
 

@@ -121,7 +121,8 @@ class BookingService {
           'notes': load.notes,
           'vehicleNumber': vehicle.number,
           'driverName': (asCompany ? profile['companyName'] : profile['driverName']) ?? '',
-          'driverPhone': profile['phone'] ?? '',
+          // Phone numbers stay private (Task 68): chat and call happen inside the app.
+          'driverPhone': '',
           if (asCompany) 'fleetOwnerId': uid else if (vehicle.ownerId != uid) 'fleetOwnerId': vehicle.ownerId,
           'timeline': {BookingStatus.accepted: FieldValue.serverTimestamp()},
           'createdAt': FieldValue.serverTimestamp(),

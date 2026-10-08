@@ -1,3 +1,4 @@
+import 'admin_violations_screen.dart';
 import 'package:flutter/material.dart';
 
 import '../core/admin/staff_roles.dart';
@@ -60,6 +61,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       ('adminTickets', 'adminTickets', Icons.support_agent_rounded, const AdminTicketsScreen()),
       ('adminSos', 'adminSos', Icons.sos_rounded, const AdminSosScreen()),
       ('adminReports', 'adminReports', Icons.flag_outlined, const AdminReportsScreen()),
+      ('pcAdminViolations', 'pcAdminViolations', Icons.gpp_maybe_outlined, const AdminViolationsScreen()),
       ('adminSignals', 'adminSignals', Icons.shield_outlined, const AdminSignalsScreen()),
       ('adminFraudCases', 'adminFraudCases', Icons.gavel_rounded, const AdminFraudCasesScreen()),
       ('adminDisputes', 'adminDisputes', Icons.report_problem_outlined, const AdminClaimsScreen()),
