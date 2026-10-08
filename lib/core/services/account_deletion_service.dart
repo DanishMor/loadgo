@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../constants/logistics.dart';
 import '../identity/identity_index.dart';
 import 'backend.dart';
+import 'session_watcher.dart';
 
 /// The account still has trips in progress.
 class ActiveTripsException implements Exception {
@@ -144,6 +145,7 @@ class AccountDeletionService {
     last.delete(userRef);
     await last.commit();
 
+    SessionWatcher.expectSignOut();
     await deleteAuthUser();
   }
 

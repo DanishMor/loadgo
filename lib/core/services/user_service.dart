@@ -8,6 +8,7 @@ import '../identity/kyc_validators.dart';
 import '../identity/profile_extras.dart';
 import 'backend.dart';
 import 'push_service.dart';
+import 'session_watcher.dart';
 
 /// The account is already locked to [existing]; [requested] was chosen at login.
 class RoleMismatchException implements Exception {
@@ -307,6 +308,7 @@ class UserService {
 
   static Future<void> logout() async {
     await PushService.unregister();
+    SessionWatcher.expectSignOut();
     await Backend.auth.signOut();
   }
 }
