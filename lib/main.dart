@@ -40,11 +40,16 @@ Future<void> main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await CrashService.init();
   Backend.enableOfflinePersistence();
-  await ConnectivityService.start();
-  applyLanguageName(await LanguageStore.loadLocal());
   AppControlService.refresh();
-  await ThemeStore.load();
-  await SimpleMode.load();
+  // The local settings do not depend on each other: read them together so the
+  // first screen is not held up by four reads in a row (MASTER-5 Task 14).
+  final results = await Future.wait<Object?>([
+    LanguageStore.loadLocal(),
+    ConnectivityService.start(),
+    ThemeStore.load(),
+    SimpleMode.load(),
+  ]);
+  applyLanguageName(results[0] as String?);
   // Register for push whenever a user is signed in (also after app restarts).
   String? configUid;
   FirebaseAuth.instance.authStateChanges().listen((user) {

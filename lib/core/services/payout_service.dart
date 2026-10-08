@@ -29,7 +29,7 @@ class PayoutService {
     return _col.where('driverId', isEqualTo: uid).snapshots().map(_sorted);
   }
 
-  static Stream<List<Payout>> watchAll() => _col.snapshots().map(_sorted);
+  static Stream<List<Payout>> watchAll() => _col.limit(300).snapshots().map(_sorted);
 
   static List<Payout> _sorted(QuerySnapshot<Map<String, dynamic>> s) {
     final list = [for (final d in s.docs) Payout.fromDoc(d.id, d.data())];

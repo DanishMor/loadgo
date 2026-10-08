@@ -114,7 +114,7 @@ class ClaimService {
 
   // ---- admin ----
 
-  static Stream<List<Claim>> watchAll() => _col.snapshots().map((s) {
+  static Stream<List<Claim>> watchAll() => _col.limit(300).snapshots().map((s) {
         final list = [for (final d in s.docs) Claim.fromDoc(d.id, d.data())];
         list.sort((a, b) {
           int rank(Claim c) => c.isClosed ? 1 : 0;

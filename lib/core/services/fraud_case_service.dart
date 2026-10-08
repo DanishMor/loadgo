@@ -30,7 +30,7 @@ class FraudCaseService {
     return ref.id;
   }
 
-  static Stream<List<FraudCase>> watchAll() => _col.snapshots().map((s) {
+  static Stream<List<FraudCase>> watchAll() => _col.limit(300).snapshots().map((s) {
         final list = [for (final d in s.docs) FraudCase.fromDoc(d.id, d.data())];
         list.sort((a, b) => (b.createdAt ?? DateTime(3000)).compareTo(a.createdAt ?? DateTime(3000)));
         return list;

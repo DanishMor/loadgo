@@ -121,7 +121,7 @@ class RatingService {
 
   static CollectionReference<Map<String, dynamic>> get _flags => Backend.db.collection('rating_flags');
 
-  static Stream<List<RatingFlag>> watchFlags() => _flags.snapshots().map((s) {
+  static Stream<List<RatingFlag>> watchFlags() => _flags.limit(300).snapshots().map((s) {
         final list = [for (final d in s.docs) RatingFlag.fromDoc(d.id, d.data())];
         list.sort((a, b) => (a.status == RatingFlag.open ? 0 : 1).compareTo(b.status == RatingFlag.open ? 0 : 1));
         return list;

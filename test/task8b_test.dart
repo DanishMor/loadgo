@@ -34,6 +34,7 @@ void main() {
     uid = 'd1';
     Backend.useFakes(db: db, uid: () => uid);
     PricingService.reset();
+    SupportConfig.reset();
     languageNotifier.value = AppLanguage.english;
   });
 
@@ -81,6 +82,7 @@ void main() {
       await settle(tester);
       expect(find.byKey(const ValueKey('callSupport')), findsNothing);
       await tester.runAsync(() => db.collection('config').doc('support').set({'phone': '+9118001234567', 'hours': 'Mon-Sat 9-6'}));
+      SupportConfig.reset(); // the 15-minute cache would show the old value
       await tester.pumpWidget(app(SupportHomeScreen(key: UniqueKey())));
       await settle(tester);
       expect(find.byKey(const ValueKey('callSupport')), findsOneWidget);

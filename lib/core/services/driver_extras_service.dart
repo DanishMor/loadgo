@@ -106,7 +106,7 @@ class DriverExtrasService {
   }
 
   /// Admin: every claim, newest first.
-  static Stream<List<IncentiveClaim>> watchAllClaims() => _db.collection('incentive_claims').snapshots().map(_claims);
+  static Stream<List<IncentiveClaim>> watchAllClaims() => _db.collection('incentive_claims').limit(300).snapshots().map(_claims);
 
   static List<IncentiveClaim> _claims(QuerySnapshot<Map<String, dynamic>> s) {
     final list = [for (final d in s.docs) IncentiveClaim.fromDoc(d.id, d.data())];
@@ -161,7 +161,7 @@ class DriverExtrasService {
   }
 
   static Stream<List<QueryDocumentSnapshot<Map<String, dynamic>>>> watchPlanRequests() =>
-      _db.collection('plan_requests').snapshots().map((s) => s.docs);
+      _db.collection('plan_requests').limit(300).snapshots().map((s) => s.docs);
 
   /// Admin: set a driver's plan (and answer their request, if any).
   /// [days] null = no end date. Rules let only admins write these fields.

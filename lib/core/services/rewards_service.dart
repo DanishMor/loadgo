@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../offers/promo.dart';
 import 'backend.dart';
 import 'audit_service.dart';
+import 'ttl_cache.dart';
 
 enum ReferralProblem { unknownCode, ownCode, alreadyReferred, tooLate }
 
@@ -125,9 +126,17 @@ class RewardsService {
   // referrals
   // ------------------------------------------------------------------
 
+  static final TtlCache _bonusCache = TtlCache(const Duration(minutes: 15));
+  static int _bonus = defaultReferralBonusPaise;
+  static Object? _bonusDb;
+
   static Future<int> referralBonus() async {
+    if (_bonusCache.fresh && identical(_bonusDb, _db)) return _bonus;
     final d = (await _db.collection('config').doc('offers').get()).data();
-    return (d?['referralBonusPaise'] as num?)?.toInt() ?? defaultReferralBonusPaise;
+    _bonus = (d?['referralBonusPaise'] as num?)?.toInt() ?? defaultReferralBonusPaise;
+    _bonusCache.markFetched();
+    _bonusDb = _db;
+    return _bonus;
   }
 
   static String _randomCode(Random r) => String.fromCharCodes([for (var i = 0; i < 6; i++) _codeAlphabet.codeUnitAt(r.nextInt(_codeAlphabet.length))]);
@@ -226,6 +235,7 @@ class RewardsService {
 
   static Future<void> setReferralBonus(int paise) {
     final batch = _db.batch();
+    _bonusCache.invalidate();
     batch.set(_db.collection('config').doc('offers'), {'referralBonusPaise': paise}, SetOptions(merge: true));
     AuditService.inBatch(batch, AuditType.configChange, targetId: 'offers', data: {'doc': 'offers', 'changedKeys': ['referralBonusPaise']});
     return batch.commit();
