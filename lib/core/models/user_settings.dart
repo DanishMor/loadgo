@@ -86,7 +86,13 @@ class NotificationPrefs {
 
   /// Whether an in-app notification of [type] should be shown.
   bool allows(String type) =>
-      type == NotificationType.breakdownReported || type == NotificationType.accidentReported || isOn(NotifCategory.ofType(type));
+      type == NotificationType.breakdownReported ||
+      type == NotificationType.accidentReported ||
+      // An inspection is asked for on the road: these are never muted.
+      type == NotificationType.inspectionRequest ||
+      type == NotificationType.inspectionApproved ||
+      type == NotificationType.inspectionDenied ||
+      isOn(NotifCategory.ofType(type));
 
   /// Whether an in-app reminder of [kind] should be shown.
   bool allowsReminder(ReminderKind kind) => isOn(NotifCategory.ofReminder(kind));

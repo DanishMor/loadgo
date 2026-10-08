@@ -22,7 +22,7 @@ Fares shown in the app are estimates. The agreed price is the accepted offer. Pa
 Cancellation charges follow the cancellation policy shown in the app. Damage, shortage or delay can be raised as a claim from the trip screen; support reviews it.
 
 ## Bilty (LR)
-An LR made in the app is a record made by the person who issued it; they are responsible for what it says. After it is issued it is not edited: a change is a new version and a cancellation needs a reason. Share links and PDFs are made by the issuer and can be revoked; do not forward them to people who should not see the goods. The e-way bill field is only a record: nothing is filed with the government portal.
+An LR made in the app is a record made by the person who issued it; they are responsible for what it says. After it is issued it is not edited: a change is a new version and a cancellation needs a reason. Share links and PDFs are made by the issuer and can be revoked; do not forward them to people who should not see the goods. The e-way bill field is only a record: nothing is filed with the government portal. When a driver asks to show an LR for an inspection (RTO, GST), the owner decides, and every request, approval, refusal and expiry is recorded.
 
 ## Liability
 To the extent the law allows, LoadGo is not liable for loss of goods, delays, or the behaviour of users. Nothing here limits rights you have under Indian consumer law.

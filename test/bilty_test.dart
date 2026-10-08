@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:transport_app/core/bilty/bilty_card.dart';
 import 'package:transport_app/core/bilty/lr_copy_screen.dart';
 import 'package:transport_app/core/bilty/lr_model.dart';
@@ -41,6 +42,7 @@ void main() {
   String? uid;
 
   setUp(() async {
+    SharedPreferences.setMockInitialValues({});
     db = FakeFirebaseFirestore();
     Backend.useFakes(db: db, uid: () => uid);
     languageNotifier.value = AppLanguage.english;

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../bilty/inspection_widgets.dart';
 import '../models/app_notification.dart';
 import '../models/user_settings.dart';
 import '../services/settings_service.dart';
@@ -28,6 +29,9 @@ String notificationTitle(
   NotificationType.tripAssigned => tr(context, 'notifTripAssigned'),
   NotificationType.missedCall => tr(context, 'notifMissedCall'),
   NotificationType.lrSent => tr(context, 'notifLrSent'),
+  NotificationType.inspectionRequest => tr(context, 'notifInspectionRequest'),
+  NotificationType.inspectionApproved => tr(context, 'notifInspectionApproved'),
+  NotificationType.inspectionDenied => tr(context, 'notifInspectionDenied'),
   _ => n.type,
 };
 
@@ -42,6 +46,9 @@ IconData _iconFor(String type) => switch (type) {
   NotificationType.tripAssigned => Icons.assignment_ind_outlined,
   NotificationType.missedCall => Icons.phone_missed_rounded,
   NotificationType.lrSent => Icons.receipt_long_outlined,
+  NotificationType.inspectionRequest => Icons.policy_outlined,
+  NotificationType.inspectionApproved => Icons.verified_user_outlined,
+  NotificationType.inspectionDenied => Icons.block_outlined,
   _ => Icons.notifications_none_rounded,
 };
 
@@ -128,6 +135,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     if (!n.read) {
       // Best effort: opening still works if marking read fails (e.g. offline).
       NotificationService.markRead(n.id).ignore();
+    }
+    if (n.type == NotificationType.inspectionRequest && n.relatedId.isNotEmpty) {
+      await showInspectionDecision(context, n.relatedId);
+      return;
     }
     if (n.relatedId.isNotEmpty) widget.onOpenBooking(n.relatedId);
   }

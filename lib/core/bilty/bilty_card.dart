@@ -8,6 +8,7 @@ import '../services/backend.dart';
 import '../services/features_service.dart';
 import '../widgets/common.dart';
 import '../widgets/live_stream.dart';
+import 'inspection_widgets.dart';
 import 'lr_copy_screen.dart';
 import 'lr_copy_view.dart';
 import 'lr_form_screen.dart';
@@ -92,7 +93,7 @@ class BiltyCard extends StatelessWidget {
                     OutlinedButton(key: const ValueKey('biltyCancel'), onPressed: () => _askCancel(context, lr), child: Text(tr(context, 'blCancel'))),
                   ],
                 ]),
-                if (canIssue && lr.issuerId == uid && lr.isCurrent) _ModePicker(lr: lr),
+                if (canIssue && lr.issuerId == uid && lr.isCurrent) ...[_ModePicker(lr: lr), InspectionOwnerPanel(booking: booking, lr: lr)],
                 if (all.where((l) => l.id != lr.id && l.seq == lr.seq).isNotEmpty) ...[
                   const SizedBox(height: 10),
                   Text(tr(context, 'blHistory'), style: const TextStyle(fontWeight: FontWeight.w700)),

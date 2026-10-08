@@ -45,7 +45,7 @@ class LrPdfInput {
   final AppLanguage language;
 
   /// Link in the verify QR code (shows only LR no, route, status, issuer).
-  final String verifyUrl;
+  final String? verifyUrl;
   final String issuerName;
   final bool delivered;
   final DateTime generatedAt;
@@ -60,7 +60,7 @@ class LrPdfInput {
     required this.copy,
     required this.issuerRole,
     required this.language,
-    required this.verifyUrl,
+    this.verifyUrl,
     required this.issuerName,
     required this.delivered,
     required this.generatedAt,
@@ -117,11 +117,12 @@ Future<Uint8List> buildLrPdf(LrPdfInput i) async {
             pw.SizedBox(height: 4),
             pw.Text('${t('blPodLine')}: ${i.delivered ? t('blPodVerified') : t('blPodPending')}'),
           ]),
-          pw.Column(children: [
-            pw.BarcodeWidget(barcode: pw.Barcode.qrCode(), data: i.verifyUrl, width: 84, height: 84, drawText: false),
-            pw.SizedBox(height: 2),
-            pw.Text(t('blVerifyLine'), style: const pw.TextStyle(fontSize: 8)),
-          ]),
+          if (i.verifyUrl != null)
+            pw.Column(children: [
+              pw.BarcodeWidget(barcode: pw.Barcode.qrCode(), data: i.verifyUrl!, width: 84, height: 84, drawText: false),
+              pw.SizedBox(height: 2),
+              pw.Text(t('blVerifyLine'), style: const pw.TextStyle(fontSize: 8)),
+            ]),
         ]),
       ]),
     ]),

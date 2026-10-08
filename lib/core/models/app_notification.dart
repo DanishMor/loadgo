@@ -22,6 +22,11 @@ class NotificationType {
   /// An LR copy was sent to the driver of the trip (Task 70).
   static const lrSent = 'lr_sent';
 
+  /// Inspection mode (Task 71): the driver asks, the owner answers.
+  static const inspectionRequest = 'inspection_request';
+  static const inspectionApproved = 'inspection_approved';
+  static const inspectionDenied = 'inspection_denied';
+
   /// Must stay in sync with firestore.rules.
   static const all = [
     loadAccepted,
@@ -37,6 +42,9 @@ class NotificationType {
     tripAssigned,
     missedCall,
     lrSent,
+    inspectionRequest,
+    inspectionApproved,
+    inspectionDenied,
   ];
 }
 

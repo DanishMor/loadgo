@@ -35,6 +35,14 @@ Tick every line on a real Android phone before a release. Test in English and on
 - [ ] Edit: a new version, same number; the old one is listed under Versions as view only. Cancel needs a reason; the verify link then says CANCELLED.
 - [ ] E-way bill field is a record only (note under the field).
 
+## Bilty inspection mode (RTO / GST)
+- [ ] Default mode is Hide: the driver copy shows no goods value, invoice, GSTIN or e-way bill, the labels say "Rate hidden by owner" and "Owner approval needed for inspection". The rate, margin and phones never show to the driver in any mode.
+- [ ] Owner changes the mode on the LR card (Hide / Show / Only when an inspection is asked): no new version; the change is in Admin > Audit log (lr_mode).
+- [ ] Driver taps "Show inspection": the owner gets a request in the notification bell (and on the LR card); Approve gives the driver the details for 2 hours ("Inspection allowed until HH:MM"); Deny shows "The owner did not allow it".
+- [ ] After 2 hours the driver screen goes back to hidden, the saved inspection copy is gone, and `inspection_expire` is in the audit log once.
+- [ ] Owner: "Show for this trip" (mode Show) and "Allow inspection for the next N hours" before the trip; the driver saves the inspection copy, switches the phone to flight mode, and "Show saved inspection copy" still opens it (watermark, LR no, QR, date and time, driver name, no rate).
+- [ ] Another driver, or a driver after expiry, cannot read the details (rules tests cover this).
+
 ## Fleet owner
 - [ ] Login through the fleet door, profile (PAN), invite a driver by phone, driver accepts.
 - [ ] Add vehicle, assign driver, dashboard figures, expenses, analytics.

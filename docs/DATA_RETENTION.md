@@ -17,6 +17,7 @@ Written 2026-10-04 for the free stack (Auth + Firestore). It states what LoadGo 
 | In-app call records (who, when, how it ended; no audio, no phone number) | `calls`, `calls/*/candidates` | 1 year | Admin clean-up (`TODO(functions)`: scheduled delete) |
 | Admin views of a phone number or a chat | `audit_events` (`contact_view`, `chat_view`), `chat_reviews` | 3 years | Admin clean-up |
 | Transporter books (what a party pays, what a driver is owed; private to the transporter) | `transporter_accounts` | While the account exists | The owner, or account deletion (done in the app) |
+| LR (bilty): public part, private rate and compliance parts, versions, number counter, inspection requests and grants, share links | `lrs`, `lrs/*/private`, `lrs/*/inspection_*`, `lr_series`, `lr_shares` | 8 years with the booking (tax records); share links end at their end date | Not deleted on request (tax); admin clean-up. Inspection copies saved on a driver's phone delete themselves when the grant ends |
 | Fleet membership, attached vehicle | `fleet_members`, `vehicles.attachedTo` | While active | Either side ends it; the driver can detach a vehicle any time |
 | Promo redemptions, credits ledger, referrals | `promos/*/slots`, `users/{uid}/credits`, `referrals` | 3 years | Account deletion (credits lines are cleared) |
 

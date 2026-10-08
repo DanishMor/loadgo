@@ -5159,3 +5159,164 @@ describe('bilty (Task 70)', () => {
     }
   });
 });
+
+// ---------------------------------------------------------------------------
+// Task 71: bilty inspection mode
+// ---------------------------------------------------------------------------
+describe('bilty inspection mode (Task 71)', () => {
+  const YEAR = 2026;
+  const ID = `tr1_${YEAR}_1_v1`;
+  const hours = (h) => Timestamp.fromMillis(Date.now() + h * 3600000);
+  const lr = (mode) => ({
+    bookingId: 'B1', issuerId: 'tr1', issuerRole: 'transporter', customerId: 'customer1', fleetOwnerId: 'tr1', lrNo: 'TR-2026-000001', seq: 1, year: YEAR, version: 1,
+    status: 'issued', date: Timestamp.now(), pickup: 'Delhi', drop: 'Jaipur', goods: 'FMCG', complianceMode: mode, createdAt: Timestamp.now(),
+  });
+  const grant = (over = {}) => ({ driverId: 'drvA', ownerId: 'tr1', kind: 'approved', expiresAt: hours(2) , verifyToken: '', createdAt: serverTimestamp(), ...over });
+  const seedLr = async (mode = 'inspection_on_request') => {
+    await seed(async (db) => {
+      await setDoc(doc(db, 'users', 'tr1'), { role: 'fleet', name: 'Fast Cargo' });
+      await setDoc(doc(db, 'bookings', 'B1'), { ...bookingFor('L1', { driverId: 'tr1', fleetOwnerId: 'tr1', assignedDriverId: 'drvA' }), timeline: {} });
+      await setDoc(doc(db, 'bookings', 'B2'), { ...bookingFor('L2', { driverId: 'driver1' }), timeline: {} });
+      await setDoc(doc(db, 'lrs', ID), lr(mode));
+      await setDoc(doc(db, 'lrs', ID, 'private', 'details'), { freightPaise: 100, advancePaise: 0, balancePaise: 100, marginPaise: 5, gstPaise: 0, createdAt: Timestamp.now() });
+      await setDoc(doc(db, 'lrs', ID, 'private', 'compliance'), { goodsValuePaise: 9000, invoiceNo: 'I1', ewayBillNo: '123456789012', createdAt: Timestamp.now() });
+    });
+  };
+  const comp = (uid) => getDoc(doc(as(uid), 'lrs', ID, 'private', 'compliance'));
+  const details = (uid) => getDoc(doc(as(uid), 'lrs', ID, 'private', 'details'));
+
+  test('the driver never reads the rate group, in any mode, with or without a grant', async () => {
+    for (const mode of ['hide', 'show', 'inspection_on_request']) {
+      await seedLr(mode);
+      await seed((db) => setDoc(doc(db, 'lrs', ID, 'inspection_grants', 'drvA'), { driverId: 'drvA', ownerId: 'tr1', kind: 'approved', expiresAt: hours(1), verifyToken: '', createdAt: Timestamp.now() }));
+      await assertFails(details('drvA'));
+      await assertSucceeds(details('tr1'));
+    }
+  });
+
+  test('compliance: hidden in hide and inspection_on_request mode, open in show mode', async () => {
+    await seedLr('hide');
+    await assertFails(comp('drvA'));
+    await seedLr('inspection_on_request');
+    await assertFails(comp('drvA'));
+    await seedLr('show');
+    await assertSucceeds(comp('drvA'));
+    await assertSucceeds(comp('tr1'));
+    await assertSucceeds(comp('customer1'));
+    await assertFails(comp('customer2'));
+    await assertFails(comp('drvB'));
+  });
+
+  test('compliance opens on a valid grant and closes when it expires', async () => {
+    await seedLr('inspection_on_request');
+    await seed((db) => setDoc(doc(db, 'lrs', ID, 'inspection_grants', 'drvA'), { driverId: 'drvA', ownerId: 'tr1', kind: 'approved', expiresAt: hours(1), verifyToken: '', createdAt: Timestamp.now() }));
+    await assertSucceeds(comp('drvA'));
+    await seed((db) => setDoc(doc(db, 'lrs', ID, 'inspection_grants', 'drvA'), { driverId: 'drvA', ownerId: 'tr1', kind: 'approved', expiresAt: Timestamp.fromMillis(Date.now() - 1000), verifyToken: '', createdAt: Timestamp.now() }));
+    await assertFails(comp('drvA'));
+  });
+
+  test('another driver\'s grant does not work for me', async () => {
+    await seedLr('inspection_on_request');
+    await seed((db) => setDoc(doc(db, 'lrs', ID, 'inspection_grants', 'drvB'), { driverId: 'drvB', ownerId: 'tr1', kind: 'approved', expiresAt: hours(1), verifyToken: '', createdAt: Timestamp.now() }));
+    await assertFails(comp('drvA'));
+    await assertFails(comp('drvB')); // drvB is not the driver of this booking
+    await assertFails(getDoc(doc(as('drvA'), 'lrs', ID, 'inspection_grants', 'drvB')));
+  });
+
+  describe('grants', () => {
+    beforeEach(() => seedLr());
+    const put = (uid, driver, data) => setDoc(doc(as(uid), 'lrs', ID, 'inspection_grants', driver), data);
+
+    test('only the issuer creates, only for the trip driver, 2 hours at most when approved', async () => {
+      await assertSucceeds(put('tr1', 'drvA', grant()));
+      await assertFails(put('customer1', 'drvA', grant({ ownerId: 'customer1' })));
+      await assertFails(put('drvA', 'drvA', grant({ ownerId: 'drvA' })));
+      await assertFails(put('tr1', 'drvB', grant({ driverId: 'drvB' })));
+      await assertFails(put('tr1', 'drvA', grant({ expiresAt: hours(3) })));
+      await assertFails(put('tr1', 'drvA', grant({ expiresAt: Timestamp.fromMillis(Date.now() - 1000) })));
+      await assertFails(put('tr1', 'drvA', grant({ kind: 'forever' })));
+    });
+
+    test('a pre-approved grant may last up to 72 hours, not more', async () => {
+      await assertSucceeds(put('tr1', 'drvA', grant({ kind: 'preapproved', expiresAt: hours(48) })));
+      await assertFails(put('tr1', 'drvA', grant({ kind: 'preapproved', expiresAt: hours(80) })));
+    });
+
+    test('the driver reads their grant; another driver and a stranger do not', async () => {
+      await put('tr1', 'drvA', grant());
+      await assertSucceeds(getDoc(doc(as('drvA'), 'lrs', ID, 'inspection_grants', 'drvA')));
+      await assertSucceeds(getDoc(doc(as('tr1'), 'lrs', ID, 'inspection_grants', 'drvA')));
+      await assertFails(getDoc(doc(as('drvB'), 'lrs', ID, 'inspection_grants', 'drvA')));
+      await assertFails(getDoc(doc(as('customer2'), 'lrs', ID, 'inspection_grants', 'drvA')));
+    });
+
+    test('the driver cannot make or extend their own grant; the issuer can end it', async () => {
+      await assertFails(put('drvA', 'drvA', grant({ ownerId: 'tr1' })));
+      await put('tr1', 'drvA', grant());
+      await assertFails(put('drvA', 'drvA', grant({ expiresAt: hours(2) })));
+      await assertFails(deleteDoc(doc(as('drvA'), 'lrs', ID, 'inspection_grants', 'drvA')));
+      await assertSucceeds(deleteDoc(doc(as('tr1'), 'lrs', ID, 'inspection_grants', 'drvA')));
+    });
+  });
+
+  describe('requests', () => {
+    beforeEach(() => seedLr());
+    const req = (over = {}) => ({ driverId: 'drvA', ownerId: 'tr1', bookingId: 'B1', driverName: 'Suresh', status: 'pending', requestedAt: serverTimestamp(), ...over });
+    const reqRef = (uid, driver = 'drvA') => doc(as(uid), 'lrs', ID, 'inspection_requests', driver);
+
+    test('the trip driver asks; others cannot ask for someone else or as a non-driver', async () => {
+      await assertSucceeds(setDoc(reqRef('drvA'), req()));
+      await assertFails(setDoc(reqRef('drvB', 'drvB'), req({ driverId: 'drvB' })));
+      await assertFails(setDoc(reqRef('customer1', 'customer1'), req({ driverId: 'customer1' })));
+      await assertFails(setDoc(reqRef('drvA', 'drvB'), req({ driverId: 'drvB' })));
+      await assertFails(setDoc(reqRef('drvA'), req({ status: 'approved' })));
+      await assertFails(setDoc(reqRef('drvA'), req({ ownerId: 'drvA' })));
+    });
+
+    test('the issuer approves or denies a pending request; the driver cannot', async () => {
+      await setDoc(reqRef('drvA'), req());
+      await assertFails(updateDoc(reqRef('drvA'), { status: 'approved', decidedAt: serverTimestamp() }));
+      await assertFails(updateDoc(reqRef('customer1'), { status: 'approved', decidedAt: serverTimestamp() }));
+      await assertSucceeds(updateDoc(reqRef('tr1'), { status: 'approved', decidedAt: serverTimestamp() }));
+      await assertFails(updateDoc(reqRef('tr1'), { status: 'denied', decidedAt: serverTimestamp() }));
+    });
+
+    test('after a denial the driver may ask again', async () => {
+      await setDoc(reqRef('drvA'), req());
+      await updateDoc(reqRef('tr1'), { status: 'denied', decidedAt: serverTimestamp() });
+      await assertSucceeds(updateDoc(reqRef('drvA'), { status: 'pending', requestedAt: serverTimestamp() }));
+    });
+
+    test('the driver marks an approved request expired only once the grant has run out', async () => {
+      await setDoc(reqRef('drvA'), req());
+      await updateDoc(reqRef('tr1'), { status: 'approved', decidedAt: serverTimestamp() });
+      await seed((db) => setDoc(doc(db, 'lrs', ID, 'inspection_grants', 'drvA'), { driverId: 'drvA', ownerId: 'tr1', kind: 'approved', expiresAt: hours(1), verifyToken: '', createdAt: Timestamp.now() }));
+      await assertFails(updateDoc(reqRef('drvA'), { status: 'expired', decidedAt: serverTimestamp() }));
+      await seed((db) => setDoc(doc(db, 'lrs', ID, 'inspection_grants', 'drvA'), { driverId: 'drvA', ownerId: 'tr1', kind: 'approved', expiresAt: Timestamp.fromMillis(Date.now() - 1000), verifyToken: '', createdAt: Timestamp.now() }));
+      await assertSucceeds(updateDoc(reqRef('drvA'), { status: 'expired', decidedAt: serverTimestamp() }));
+    });
+
+    test('requests are readable by the driver and the parties only; never deleted', async () => {
+      await setDoc(reqRef('drvA'), req());
+      await assertSucceeds(getDoc(reqRef('drvA')));
+      await assertSucceeds(getDoc(reqRef('tr1', 'drvA')));
+      await assertFails(getDoc(reqRef('drvB', 'drvA')));
+      await assertFails(deleteDoc(reqRef('tr1')));
+    });
+  });
+
+  test('audit and notices for inspection', async () => {
+    await seedLr();
+    const ev = (uid, type) => ({ type, actorId: uid, bookingId: 'B1', data: {}, createdAt: serverTimestamp() });
+    for (const type of ['inspection_request', 'inspection_approve', 'inspection_deny', 'inspection_expire']) {
+      await assertSucceeds(addDoc(collection(as('drvA'), 'audit_events'), ev('drvA', type)));
+      await assertSucceeds(addDoc(collection(as('tr1'), 'audit_events'), ev('tr1', type)));
+      await assertFails(addDoc(collection(as('drvB'), 'audit_events'), ev('drvB', type)));
+    }
+    const note = (type, to) => ({ userId: to, type, message: 'x', relatedId: 'B1', read: false, createdAt: serverTimestamp() });
+    await assertSucceeds(setDoc(doc(as('drvA'), 'notifications', 'n1'), note('inspection_request', 'tr1')));
+    await assertSucceeds(setDoc(doc(as('tr1'), 'notifications', 'n2'), note('inspection_approved', 'drvA')));
+    await assertSucceeds(setDoc(doc(as('tr1'), 'notifications', 'n3'), note('inspection_denied', 'drvA')));
+    await assertSucceeds(setDoc(doc(as('tr1'), 'notifications', 'n4'), note('lr_sent', 'drvA')));
+  });
+});

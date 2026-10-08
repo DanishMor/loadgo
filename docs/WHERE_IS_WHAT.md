@@ -34,7 +34,7 @@ Bottom bar: **Home**, **Bookings**, **Loads**, **Profile**.
 |---|---|
 | Book a truck / post a load | Home > hero button, Quick actions > Book a truck / Post a load; Loads tab > Post |
 | Book a bike | Home > Quick actions > Book a bike |
-| Make a booking slip (consignor LR) with copies, PDF and link | Bookings tab > the booking > LR > Bilty (LR) |
+| Make a booking slip (consignor LR) with copies, PDF and link; answer inspection requests | Bookings tab > the booking > LR > Bilty (LR); the notification bell |
 | Track a shipment, status, ETA, chat, call, LR, POD, invoice | Bookings tab > the booking (chat, call, LR, help and report buttons are on the trip screen) |
 | My loads, offers on a load (counter, pick one) | Loads tab > a load |
 | Documents (invoices, LR, POD, e-way bills) | Home > Quick actions > Documents |
@@ -70,7 +70,7 @@ Bottom bar: **Home**, **Loads**, **Trips**, **Earnings**, **Profile**.
 | Trips from my transporter | Home > Trips from your transporter (only when a transporter assigned one) |
 | Transporter invites, attach my vehicle | Home > the fleet card (accept, attach or detach a vehicle, leave) |
 | My truck, vehicle papers, expiry | Home > My truck, Documents and KYC |
-| LR (driver copy): route, goods, "Rate hidden by owner" | Trip screen > LR (driver copy) |
+| LR (driver copy): route, goods, "Rate hidden by owner"; Show inspection, save the inspection copy | Trip screen > LR (driver copy) |
 | Documents center (invoices, LR, POD) | Home > Documents center |
 | My offers | Home > My offers |
 | Wallet | Home > Wallet; Earnings tab |
@@ -99,7 +99,7 @@ Bottom bar: **Dashboard**, **Loads**, **Trips**, **Fleet**, **Profile**. Flag: `
 | My bids, confirm a selected bid | Trips tab > My bids |
 | Assign or change the vehicle and driver | Trips tab > a company trip |
 | Late trips, LR / bilty, trip details | Trips tab |
-| Issue an LR, new version, cancel, copies, PDF, link | Trips tab > LR > Bilty (LR) |
+| Issue an LR, new version, cancel, copies, PDF, link; answer inspection requests, allow inspection in advance | Trips tab > LR > Bilty (LR); the notification bell |
 | Vehicles (own and attached) | Fleet tab > Vehicles |
 | Drivers, invite by phone | Fleet tab > Drivers |
 | Chat and in-app call (customer, assigned driver) | Trip details > Chat, Call, Call driver |

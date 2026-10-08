@@ -2093,6 +2093,24 @@ service cloud.firestore {
       return uid in [b.customerId, b.driverId, b.get('assignedDriverId', ''), b.get('fleetOwnerId', '')];
     }
 
+    // The person on the road: the driver a transporter assigned, or the driver
+    // of a booking that has no transporter.
+    function lrTripDriver(b) {
+      let uid = request.auth.uid;
+      return uid == b.get('assignedDriverId', '') || (uid == b.driverId && !('fleetOwnerId' in b));
+    }
+
+    function lrTripDriverId(b, id) {
+      return id == b.get('assignedDriverId', '') || (id == b.driverId && !('fleetOwnerId' in b));
+    }
+
+    // An inspection grant (Task 71): the issuer lets the trip driver read the
+    // compliance group until expiresAt. The rules stop honouring it at that time.
+    function lrGrantValid(lrId) {
+      let g = /databases/$(database)/documents/lrs/$(lrId)/inspection_grants/$(request.auth.uid);
+      return exists(g) && get(g).data.expiresAt > request.time;
+    }
+
     function lrPrivateReader(l) {
       let uid = request.auth.uid;
       return l.issuerId == uid || l.customerId == uid || l.get('fleetOwnerId', '') == uid || isAdmin();
@@ -2201,7 +2219,12 @@ service cloud.firestore {
       }
 
       match /private/compliance {
-        allow read: if signedIn() && lrPrivateReader(get(docPath('lrs', lrId)).data);
+        // The driver never reads `details` (the rate group). The compliance
+        // group opens to the trip driver only in mode `show` or with a valid grant.
+        allow read: if signedIn()
+            && (lrPrivateReader(get(docPath('lrs', lrId)).data)
+                || (lrTripDriver(get(docPath('bookings', get(docPath('lrs', lrId)).data.bookingId)).data)
+                    && (get(docPath('lrs', lrId)).data.complianceMode == 'show' || lrGrantValid(lrId))));
         allow create: if signedIn()
             && getAfter(docPath('lrs', lrId)).data.issuerId == request.auth.uid
             && request.resource.data.keys().hasOnly(['goodsValuePaise', 'invoiceNo', 'consignorGstin', 'consigneeGstin', 'ewayBillNo', 'ewayValidUntil', 'createdAt'])
@@ -2211,6 +2234,59 @@ service cloud.firestore {
             && request.resource.data.get('consignorGstin', '') is string && request.resource.data.get('consigneeGstin', '') is string
             && request.resource.data.get('ewayBillNo', '') is string && request.resource.data.get('ewayBillNo', '').size() <= 12;
         allow update, delete: if false;
+      }
+      // Inspection mode (Task 71). Grant: the issuer creates it for the trip
+      // driver (2 hours after an approval, up to 72 hours when approved in
+      // advance); the driver reads it; after expiresAt the compliance rule above
+      // refuses. Request: the driver asks, the issuer answers.
+      match /inspection_grants/{driverId} {
+        allow read: if signedIn() && (driverId == request.auth.uid || lrPrivateReader(get(docPath('lrs', lrId)).data));
+        allow create, update: if signedIn()
+            && get(docPath('lrs', lrId)).data.issuerId == request.auth.uid
+            && lrTripDriverId(get(docPath('bookings', get(docPath('lrs', lrId)).data.bookingId)).data, driverId)
+            && request.resource.data.keys().hasOnly(['driverId', 'ownerId', 'kind', 'expiresAt', 'verifyToken', 'createdAt'])
+            && request.resource.data.driverId == driverId
+            && request.resource.data.ownerId == request.auth.uid
+            && request.resource.data.kind in ['approved', 'preapproved']
+            && request.resource.data.expiresAt is timestamp
+            && request.resource.data.expiresAt > request.time
+            && request.resource.data.expiresAt <= request.time + duration.value(request.resource.data.kind == 'approved' ? 2 : 72, 'h')
+            && request.resource.data.verifyToken is string && request.resource.data.verifyToken.size() <= 32
+            && request.resource.data.createdAt == request.time;
+        allow delete: if signedIn() && get(docPath('lrs', lrId)).data.issuerId == request.auth.uid;
+      }
+
+      match /inspection_requests/{driverId} {
+        allow read: if signedIn() && (driverId == request.auth.uid || lrPrivateReader(get(docPath('lrs', lrId)).data));
+        allow create: if signedIn()
+            && driverId == request.auth.uid
+            && request.resource.data.keys().hasOnly(['driverId', 'ownerId', 'bookingId', 'driverName', 'status', 'requestedAt'])
+            && request.resource.data.driverId == driverId
+            && request.resource.data.ownerId == get(docPath('lrs', lrId)).data.issuerId
+            && request.resource.data.bookingId == get(docPath('lrs', lrId)).data.bookingId
+            && lrTripDriver(get(docPath('bookings', get(docPath('lrs', lrId)).data.bookingId)).data)
+            && request.resource.data.driverName is string && request.resource.data.driverName.size() <= 60
+            && request.resource.data.status == 'pending'
+            && request.resource.data.requestedAt == request.time;
+        allow update: if signedIn()
+            && ((driverId == request.auth.uid
+                 && resource.data.status in ['denied', 'approved', 'expired']
+                 && changedKeys().hasOnly(['status', 'requestedAt'])
+                 && request.resource.data.status == 'pending'
+                 && request.resource.data.requestedAt == request.time)
+                || (get(docPath('lrs', lrId)).data.issuerId == request.auth.uid
+                    && resource.data.status == 'pending'
+                    && changedKeys().hasOnly(['status', 'decidedAt'])
+                    && request.resource.data.status in ['approved', 'denied']
+                    && request.resource.data.decidedAt == request.time)
+                || (driverId == request.auth.uid
+                    && resource.data.status == 'approved'
+                    && changedKeys().hasOnly(['status', 'decidedAt'])
+                    && request.resource.data.status == 'expired'
+                    && request.resource.data.decidedAt == request.time
+                    && exists(/databases/$(database)/documents/lrs/$(lrId)/inspection_grants/$(driverId))
+                    && get(/databases/$(database)/documents/lrs/$(lrId)/inspection_grants/$(driverId)).data.expiresAt <= request.time));
+        allow delete: if false;
       }
     }
 
