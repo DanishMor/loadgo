@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../bilty/inspection_widgets.dart';
 import '../models/app_notification.dart';
 import '../models/user_settings.dart';
+import '../services/server_clock.dart';
 import '../services/settings_service.dart';
 import '../services/notification_service.dart';
 import '../widgets/common.dart';
@@ -119,8 +120,24 @@ class NotificationsScreen extends StatefulWidget {
   State<NotificationsScreen> createState() => _NotificationsScreenState();
 }
 
+/// Which heading a notification sits under: 0 today, 1 yesterday, 2 earlier
+/// (also for one without a time).
+class NotifGroup {
+  NotifGroup._();
+  static const keys = ['notifToday', 'notifYesterday', 'notifEarlier'];
+
+  static int of(DateTime? at, DateTime now) {
+    if (at == null) return 2;
+    final day = DateTime(at.year, at.month, at.day);
+    final today = DateTime(now.year, now.month, now.day);
+    final days = today.difference(day).inDays;
+    return days <= 0 ? 0 : (days == 1 ? 1 : 2);
+  }
+}
+
 class _NotificationsScreenState extends State<NotificationsScreen> {
   List<AppNotification> _latest = const [];
+  final ValueNotifier<bool> _hasUnread = ValueNotifier(true);
 
   /// Selected category chip (null = all).
   String? _category;
@@ -130,6 +147,12 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   // the screen is closed.
   late final Stream<List<Reminder>> _reminders =
       widget.reminders ?? ReminderService.watch(isDriver: widget.isDriver);
+
+  @override
+  void dispose() {
+    _hasUnread.dispose();
+    super.dispose();
+  }
 
   Future<void> _open(AppNotification n) async {
     if (!n.read) {
@@ -161,9 +184,14 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             icon: const Icon(Icons.tune_rounded),
             onPressed: _openSettings,
           ),
-          TextButton(
-            onPressed: () => NotificationService.markAllRead(_latest).ignore(),
-            child: Text(tr(context, 'markAllRead')),
+          ValueListenableBuilder<bool>(
+            valueListenable: _hasUnread,
+            builder: (context, unread, _) => TextButton(
+              key: const ValueKey('notifMarkAll'),
+              // Nothing unread: nothing to mark.
+              onPressed: unread ? () => NotificationService.markAllRead(_latest).ignore() : null,
+              child: Text(tr(context, 'markAllRead')),
+            ),
           ),
         ],
       ),
@@ -284,18 +312,41 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 if (prefs.allows(n.type) && (_category == null || NotifCategory.ofType(n.type) == _category)) n,
             ];
             _latest = items;
+            final unread = items.any((n) => !n.read);
+            if (_hasUnread.value != unread) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (mounted) _hasUnread.value = unread;
+              });
+            }
             if (items.isEmpty) {
               return EmptyState(
                 icon: Icons.notifications_none_rounded,
                 title: tr(context, 'noNotifications'),
               );
             }
+            // Today / Yesterday / Earlier headings between the cards (Task 29).
+            final now = ServerClock.now();
+            final rows = <Object>[];
+            int? lastGroup;
+            for (final n in items) {
+              final g = NotifGroup.of(n.createdAt?.toDate(), now);
+              if (g != lastGroup) rows.add(g);
+              lastGroup = g;
+              rows.add(n);
+            }
             return ListView.separated(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 30),
-              itemCount: items.length,
+              itemCount: rows.length,
               separatorBuilder: (_, _) => const SizedBox(height: 8),
               itemBuilder: (context, i) {
-                final n = items[i];
+                final row = rows[i];
+                if (row is int) {
+                  return Padding(
+                    padding: const EdgeInsets.only(top: 6),
+                    child: Text(tr(context, NotifGroup.keys[row]), key: ValueKey('notifGroup_$row'), style: TextStyle(fontWeight: FontWeight.w800, color: AppColors.muted)),
+                  );
+                }
+                final n = row as AppNotification;
                 return AppCard(
                   onTap: () => _open(n),
                   padding: const EdgeInsets.all(14),

@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:transport_app/core/l10n/l10n.dart';
 import 'package:transport_app/core/models/app_notification.dart';
 import 'package:transport_app/core/models/user_settings.dart';
 import 'package:transport_app/core/notifications/notifications_screen.dart';
@@ -31,6 +32,18 @@ void main() {
   });
 
   tearDown(() => SettingsService.prefs.value = const NotificationPrefs());
+
+  test('MASTER-5 Task 29: notifications sit under Today / Yesterday / Earlier', () {
+    final now = DateTime(2026, 10, 8, 10);
+    expect(NotifGroup.of(DateTime(2026, 10, 8, 0, 1), now), 0);
+    expect(NotifGroup.of(DateTime(2026, 10, 7, 23, 59), now), 1);
+    expect(NotifGroup.of(DateTime(2026, 10, 6, 12), now), 2);
+    expect(NotifGroup.of(null, now), 2);
+    expect(NotifGroup.of(DateTime(2026, 10, 9), now), 0, reason: 'a time a little ahead (clock skew) counts as today');
+    for (final k in NotifGroup.keys) {
+      expect(T.get(k, AppLanguage.tamil).trim(), isNotEmpty);
+    }
+  });
 
   test('categories of notification types and reminders', () {
     expect(NotifCategory.ofType(NotificationType.loadAccepted), NotifCategory.bookings);

@@ -68,6 +68,8 @@ class _TruckBoardScreenState extends State<TruckBoardScreen> {
     );
   }
 
+  void _clearFilters() => _apply(const {});
+
   void _apply(Map<String, dynamic> m) {
     final f = TruckFilter.fromMap(m);
     _from.text = f.from;
@@ -194,7 +196,10 @@ class _TruckBoardScreenState extends State<TruckBoardScreen> {
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: SavedSearchMenu(kind: SearchKind.trucks, canSave: !_filter.isEmpty, currentFilter: () => _filter.toMap(), onApply: _apply),
+            child: Row(children: [
+              Expanded(child: SavedSearchMenu(kind: SearchKind.trucks, canSave: !_filter.isEmpty, currentFilter: () => _filter.toMap(), onApply: _apply)),
+              if (!_filter.isEmpty) TextButton(key: const ValueKey('boardClear'), onPressed: _clearFilters, child: Text(tr(context, 'clearFilters'))),
+            ]),
           ),
           Expanded(
             child: LiveStream<List<TruckPost>>(
