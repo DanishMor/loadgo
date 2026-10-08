@@ -377,6 +377,7 @@ void main() {
 
     testWidgets('Help has the feedback entry', (t) async {
       await t.pumpWidget(host(const HelpScreen()));
+      await t.scrollUntilVisible(find.byKey(const ValueKey('helpFeedback')), 300, scrollable: find.byType(Scrollable).first);
       await t.tap(find.byKey(const ValueKey('helpFeedback')));
       await t.pumpAndSettle();
       expect(find.byType(FeedbackScreen), findsOneWidget);

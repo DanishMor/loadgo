@@ -5,8 +5,9 @@ Truck and cargo booking app (Flutter + Firebase). Customers post loads; verified
 ## Features
 
 **Everyone**
-- Phone (OTP) login with Customer and Driver roles (the role is set once and locked); 12 languages (English, Hindi, Hinglish, Kannada, Tamil, Telugu, Marathi, Gujarati, Bengali, Punjabi, Kashmiri, Urdu), a test checks every key has all 12
-- Booking chat with off-platform warning, report and block; support tickets with escalation and a call-support button; in-app notifications and reminders (pickup soon, papers expiring, offers waiting)
+- Phone (OTP) login with Customer, Driver and Transporter roles (the role is set once and locked); 12 languages (English, Hindi, Hinglish, Kannada, Tamil, Telugu, Marathi, Gujarati, Bengali, Punjabi, Kashmiri, Urdu), a test checks every key has all 12
+- **Private chat and call** (Task 68): phone numbers are never shown between customers, drivers and transporters; they chat and make a free in-app voice call (WebRTC). Messages with a number, UPI id, WhatsApp or "call me" are stopped before sending, with warnings and a strike ladder (24 h, 3 days, 7 days with admin review); report "asked for my number"; admins see numbers and chats only logged and only for a report or dispute (`docs/PRIVATE_COMM.md`)
+- Booking chat with report and block; support tickets with escalation and a call-support button; in-app notifications and reminders (pickup soon, papers expiring, offers waiting)
 - Documents center (invoice with GST, digital LR, proof of delivery with GPS, odometer and receiver signature), cargo document records with history, settings, consent center (location is stored only with consent), My devices (trust, sign out, log out everywhere), delete-account request
 
 - Notification center with categories and switches, dark mode and large-text support, help and FAQ, Terms, Privacy and Refund screens, first-time tour, offline cache with retry, **account deletion** (profile, private data, vehicles and identity entries; Auth user last)
@@ -31,8 +32,8 @@ Truck and cargo booking app (Flutter + Firebase). Customers post loads; verified
 - Admin: staff roles (support, verifier, ops), editable risk thresholds, behaviour score, duplicate-account and vehicle/RC checks, bulk hold, evidence and document-view audit
 - Identity: addresses, payout UPI id, GSTIN checksum, mismatch review flag, auto KYC check, phone change, Download my data
 
-**Fleet owner**
-- Third role: vehicles, invited drivers, assignment, trips on the road, earnings per vehicle
+**Transporter** (Task 67, `docs/TRANSPORTER.md`)
+- Third role: company profile with GST/PAN checks and an admin-approved "Verified transporter" badge, own and attached vehicles, invited drivers, document-expiry reminders for vehicles and driver licences, loads that fit the routes first, bids for the company, assigning and reassigning a vehicle and driver (audited), trips with late alerts and LR, posting loads ("Posted by transporter"), and private books (margin, owed to drivers, party-wise dues)
 
 **Admin** (only users with an `admins/<uid>` document; rules enforce it)
 - Users and risk tier, driver verification with masked document numbers, vehicles, loads, bookings with manual reassign, tickets, SOS, reports and fraud cases, flagged users with a risk score, risk signals and shared devices, payout requests, promo codes and credits, driver bonuses and plans, audit log, config editors (pricing, vehicle types, support number)
@@ -54,7 +55,7 @@ Quality checks:
 
 ```bash
 flutter analyze        # must report 0 issues
-flutter test           # all tests must pass (includes test/e2e_flow_test.dart: customer to driver to payment on fake Firestore + mock Auth)
+flutter test           # all tests must pass (includes test/e2e_flow_test.dart: customer to driver to payment, and test/e2e/: a transporter wins a load, assigns a driver, chat and call, strikes, delivery, books)
 cd firestore_rules_test && npm install && npm test   # security rules, uses emulators
 ```
 
@@ -68,7 +69,9 @@ dart run flutter_native_splash:create
 ## Project layout
 
 - `lib/core` shared: models, services (Firestore access goes through `Backend`, so tests use a fake), l10n, pricing, matching, analytics, enterprise helpers, shared widgets
-- `lib/auth`, `lib/customer`, `lib/driver`, `lib/admin` role-specific screens (they never import each other); see `docs/ARCHITECTURE.md`
+- `lib/auth`, `lib/customer`, `lib/driver`, `lib/fleet` (transporter), `lib/admin` role-specific screens (they never import each other); see `docs/ARCHITECTURE.md`
+- `lib/core/app_info.dart` is the one place that names the app; `dart run tool/apply_app_info.dart` writes it into the hosting pages and the Android, iOS and web files (`docs/NAMING.md`)
+- `docs/WHERE_IS_WHAT.md` lists, for each role, where every feature is and which feature flag switches it
 - `lib/main.dart` app shell and role selection
 - `firestore.rules`, `firestore.indexes.json`, `storage.rules`, `functions/` (push sender, needs Blaze)
 - `firestore_rules_test/` rules tests against the emulator; CI in `.github/workflows/ci.yml`
@@ -91,6 +94,7 @@ See `docs/MANUAL_TODO.md` for the full list. The short version:
 
 ## Known limitations
 
+- Calls use free WebRTC with STUN only (a strict network may need a TURN server) and ring only while the other person has the app open; masked numbers and push need paid services
 - No real deep links; sharing copies a text summary
 - Customer tracking shows coordinates as text, not a map (waiting on the Maps key)
 - Distances come from an offline 64-city table, so fares are estimates

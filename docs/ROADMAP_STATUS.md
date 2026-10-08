@@ -542,3 +542,17 @@ Written 2026-10-04. "Seen in" comes from general knowledge of how these apps are
 | Pickup/delivery OTP | Porter, Rapido | S-module, F10, F11 | Done (trip OTPs) | none |
 | Driver KYC and document expiry | all | K8, K12 | Onboarding gate + vehicle paper alerts | Licence expiry reminder: task 9 |
 | Multilingual UI | Porter, Rapido, Vahak | P0-06 | 12 languages | none |
+
+
+## MASTER-3 addendum (2026-10-08)
+
+The 347 roadmap codes above are unchanged (236 Done, 111 Paid-or-Later, 0 open). MASTER-3 built features that sit next to them:
+
+| Feature | Roadmap neighbour | State |
+|---|---|---|
+| Transporter role: company profile, Verified badge, attached vehicles, bids, assign, books, loads that fit | V (Truck + fleet), BIZ12 (transporter view) | Done (docs/TRANSPORTER.md) |
+| Private chat: numbers hidden, contact filter, strikes, admin review | SAFE-chat, anti-fraud | Done on the free stack; server-side check is `// TODO(functions)` |
+| In-app voice call (free WebRTC, STUN) | SAFE8 masked calling | Calls inside the app Done; **masked-number provider and push to ring stay Paid-or-Later** (SAFE8 count unchanged) |
+| Feature map, app name in one file | - | Done (docs/WHERE_IS_WHAT.md, docs/NAMING.md) |
+
+Free gaps after the fourth audit round: 0 (docs/GAP_AUDIT.md).
