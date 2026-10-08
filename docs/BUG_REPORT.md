@@ -40,7 +40,7 @@ See docs/PROGRESS.md for the last full run (analyze, Flutter tests, rules tests)
 
 # Bug report (MASTER-5, Phase B)
 
-Method, three rounds. **Round 1**: every folder read as a reviewer (null and crash paths, wrong state, permission-denied against the rules, indexes, money, leaks, overflow), each class of defect also turned into a test so it cannot return: `model_fuzz_test` (every model reader gets an empty document and one with all keys null), `listener_audit_test`, `index_audit_test`, `state_audit_test`, `layout_all_screens_test` (95 screens x 4 variants), `rules_audit_test`, the generated rules matrix, `phone_privacy_test`. **Round 2**: every flow of docs/TEST_PLAN.md mapped to test code (`test_plan_map_test`). **Round 3**: docs/GAP_AUDIT.md read again (Round 5 there).
+Method, three rounds. **Round 1**: not a line-by-line read of every file; each class of defect (null and crash paths, wrong state, permission-denied against the rules, indexes, money, leaks, overflow) was searched across all of `lib/` with scans and tests, the code changed in this round was read against the rules, and the classes were turned into tests so they cannot return: `model_fuzz_test` (every model reader gets an empty document and one with all keys null), `listener_audit_test`, `index_audit_test`, `state_audit_test`, `layout_all_screens_test` (95 screens x 4 variants), `rules_audit_test`, the generated rules matrix, `phone_privacy_test`. **Round 2**: every flow of docs/TEST_PLAN.md mapped to test code (`test_plan_map_test`). **Round 3**: docs/GAP_AUDIT.md read again (Round 5 there).
 
 | # | Found in | Problem | How found | Severity | Fix | Test |
 |---|---|---|---|---|---|---|
