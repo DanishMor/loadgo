@@ -47,6 +47,7 @@ import 'limit_strings.dart';
 import 'admin_user_strings.dart';
 import 'trend_strings.dart';
 import 'trip_watch_strings.dart';
+import 'bilty_strings.dart';
 import 'vehicle_strings.dart';
 import 'help_strings.dart';
 import 'ui_strings.dart';
@@ -103,6 +104,7 @@ const List<Map<String, List<String>>> stringTables = [
   evidenceStrings,
   securityStrings,
   tripWatchStrings,
+  biltyStrings,
   scheduleStrings,
   truckBoardStrings,
   fleetStrings,

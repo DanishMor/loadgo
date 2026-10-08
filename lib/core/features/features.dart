@@ -18,6 +18,7 @@ class FeatureKey {
   static const tripShare = 'tripShare';
   static const problemReport = 'problemReport';
   static const transporter = 'transporter';
+  static const bilty = 'bilty';
 }
 
 /// `config/features`: {pilotMode: bool, flags: {key: bool}}. A missing
@@ -40,6 +41,8 @@ class Features {
     FeatureSpec(FeatureKey.problemReport, pilotOn: true),
     // Task 67: the Transporter role. ON by default (also in pilot mode) for testing.
     FeatureSpec(FeatureKey.transporter, pilotOn: true),
+    // Task 70: numbered LR (bilty) with copy types, PDF and share links. ON for testing.
+    FeatureSpec(FeatureKey.bilty, pilotOn: true),
   ];
 
   static final _byKey = {for (final s in registry) s.key: s};

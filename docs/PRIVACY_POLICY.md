@@ -22,6 +22,8 @@ Google Firebase (Authentication, Firestore, Cloud Messaging, Crashlytics, Analyt
 
 **What LoadGo staff can see.** For safety, LoadGo admins can see a person's phone number (every view is written to an audit log), the call history details (who, when, how it ended; calls are not recorded) and the chat of one booking, but a chat is opened only when there is a report or a dispute about that booking (and that is logged too).
 
+**Bilty (LR) and share links.** A transporter, or a customer on their own booking, can make a numbered LR. The rate, margin, phone numbers and value fields are kept apart from the public part and are readable only by the person who made it, the two parties of the booking and admins; the driver gets a driver copy without them. A share link shows only the copy type you choose, has an end date, can be revoked, and counts how many times it was opened. Making and sharing an LR, and every inspection request or approval, are recorded in an audit log.
+
 ## Your choices
 - Consent switches for location, analytics and marketing are in Settings.
 - You can download your data and delete your account from Settings. Deletion is blocked while a trip is active. Bookings, invoices, ledger lines, ratings and chats of finished trips are kept for the legal retention period (see the retention table in the app documentation) and are no longer linked to a usable account.

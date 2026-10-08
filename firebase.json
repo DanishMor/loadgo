@@ -66,6 +66,10 @@
         "destination": "/delete-account.html"
       },
       {
+        "source": "/lr/**",
+        "destination": "/lr.html"
+      },
+      {
         "source": "/load/**",
         "destination": "/load.html"
       }

@@ -25,6 +25,16 @@ Tick every line on a real Android phone before a release. Test in English and on
 - [ ] Empty truck post, driver network (nearby, connections, groups).
 - [ ] Simple Mode: four big buttons, money screen.
 
+## Bilty (LR)
+- [ ] Transporter: Trips > LR > Create LR, fill the form, number looks like TR-2026-000001; a second LR gets 000002.
+- [ ] Customer on own booking: Create LR gives CS-... with the title "Consignor LR / booking slip"; the driver and an admin never see a Create button.
+- [ ] Send screen: switch Driver / Consignee / Full; the preview changes; Driver copy has no rate, margin or phone; Consignee copy shows the rate only with the switch on.
+- [ ] Send to the driver in app: the assigned driver gets a notice and "LR (driver copy)" on the trip screen with the label "Rate hidden by owner".
+- [ ] Share PDF opens the share sheet (WhatsApp); open it: Hindi text has no boxes, the QR code opens /lr/<token> with only LR number, route, status, issuer.
+- [ ] Create a link, open it in a browser (shows only that copy), revoke it (page says the link has ended); view count goes up.
+- [ ] Edit: a new version, same number; the old one is listed under Versions as view only. Cancel needs a reason; the verify link then says CANCELLED.
+- [ ] E-way bill field is a record only (note under the field).
+
 ## Fleet owner
 - [ ] Login through the fleet door, profile (PAN), invite a driver by phone, driver accepts.
 - [ ] Add vehicle, assign driver, dashboard figures, expenses, analytics.

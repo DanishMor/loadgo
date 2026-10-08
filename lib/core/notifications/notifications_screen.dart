@@ -27,6 +27,7 @@ String notificationTitle(
   NotificationType.chatMessage => tr(context, 'notifChat'),
   NotificationType.tripAssigned => tr(context, 'notifTripAssigned'),
   NotificationType.missedCall => tr(context, 'notifMissedCall'),
+  NotificationType.lrSent => tr(context, 'notifLrSent'),
   _ => n.type,
 };
 
@@ -40,6 +41,7 @@ IconData _iconFor(String type) => switch (type) {
   NotificationType.chatMessage => Icons.chat_bubble_outline_rounded,
   NotificationType.tripAssigned => Icons.assignment_ind_outlined,
   NotificationType.missedCall => Icons.phone_missed_rounded,
+  NotificationType.lrSent => Icons.receipt_long_outlined,
   _ => Icons.notifications_none_rounded,
 };
 

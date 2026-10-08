@@ -29,7 +29,19 @@ class AuditType {
 
   /// A party opened the cargo documents of a booking.
   static const docView = 'doc_view';
-  static const all = [verification, accept, statusChange, cancel, riskChange, reassign, configChange, userAction, evidence, docView, assign, contactView, chatView];
+
+  /// Bilty (Task 70) and inspection (Task 71) events.
+  static const lrIssue = 'lr_issue';
+  static const lrVersion = 'lr_version';
+  static const lrCancel = 'lr_cancel';
+  static const lrShare = 'lr_share';
+  static const lrRevoke = 'lr_revoke';
+  static const lrMode = 'lr_mode';
+  static const inspectionRequest = 'inspection_request';
+  static const inspectionApprove = 'inspection_approve';
+  static const inspectionDeny = 'inspection_deny';
+  static const inspectionExpire = 'inspection_expire';
+  static const all = [verification, accept, statusChange, cancel, riskChange, reassign, configChange, userAction, evidence, docView, assign, contactView, chatView, lrIssue, lrVersion, lrCancel, lrShare, lrRevoke, lrMode, inspectionRequest, inspectionApprove, inspectionDeny, inspectionExpire];
 }
 
 class AuditService {

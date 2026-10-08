@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>LR - {{APP_NAME}}</title><style>body{font-family:system-ui,sans-serif;max-width:720px;margin:0 auto;padding:20px 16px;line-height:1.5;color:#111827;background:#fff}
+h1{font-size:1.6rem}a{color:#1d4ed8}nav a{margin-right:14px}@media(prefers-color-scheme:dark){body{background:#0f172a;color:#e5e7eb}a{color:#93c5fd}}
+.card{border:1px solid #d0d5dd;border-radius:12px;padding:14px 16px;margin:12px 0}.big{font-size:1.25rem;font-weight:700}.muted{opacity:.7;font-size:.9rem}
+table{border-collapse:collapse;width:100%}td{padding:4px 0;vertical-align:top}td:first-child{opacity:.7;width:40%}.bad{color:#b42318;font-weight:700}</style></head><body>
+<h1>{{APP_NAME}} LR</h1>
+<div id="out" class="card"><p>Loading...</p></div>
+<p class="muted">This page shows only what the sender chose to share. A link made for verification shows only the LR number, route, status and issuer. It stops working after its end date or when the sender revokes it.</p>
+<nav><a href="/">{{APP_NAME}}</a><a href="/privacy">Privacy policy</a></nav>
+<script>
+(function () {
+  var out = document.getElementById('out');
+  var m = location.pathname.match(/^\/lr\/([0-9a-f]{32})\/?$/);
+  function show(html) { out.innerHTML = html; }
+  function esc(s) { var d = document.createElement('div'); d.textContent = String(s); return d.innerHTML; }
+  if (!m) { show('<p>This link is not valid.</p>'); return; }
+  var base = 'https://firestore.googleapis.com/v1/projects/loadgo-defc2/databases/(default)/documents';
+  var labels = {lrNo: 'LR number', date: 'Date', route: 'Route', goods: 'Goods', packages: 'Packages', weightTons: 'Weight (tons)', vehicleNumber: 'Vehicle', driverName: 'Driver', consignorName: 'Consignor', consigneeName: 'Consignee', issuerName: 'Issued by', status: 'Status', version: 'Version',
+    freightPaise: 'Freight', advancePaise: 'Advance', balancePaise: 'Balance', gstPaise: 'GST', goodsValuePaise: 'Goods value', invoiceNo: 'Invoice no.', consignorGstin: 'Consignor GSTIN', consigneeGstin: 'Consignee GSTIN', ewayBillNo: 'E-way bill no.', ewayValidUntil: 'E-way valid until'};
+  var order = ['lrNo', 'version', 'date', 'consignorName', 'consigneeName', 'route', 'goods', 'packages', 'weightTons', 'vehicleNumber', 'driverName', 'freightPaise', 'advancePaise', 'balancePaise', 'gstPaise', 'goodsValuePaise', 'invoiceNo', 'consignorGstin', 'consigneeGstin', 'ewayBillNo', 'ewayValidUntil', 'issuerName', 'status'];
+  var statusText = {issued: 'Valid', superseded: 'Replaced by a newer version', cancelled: 'CANCELLED'};
+  function val(v) { if (!v) return ''; if (v.stringValue !== undefined) return v.stringValue; if (v.integerValue !== undefined) return v.integerValue; if (v.doubleValue !== undefined) return v.doubleValue; return ''; }
+  function money(p) { var n = Number(p) / 100; return '₹ ' + n.toLocaleString('en-IN', {maximumFractionDigits: 2}); }
+  fetch(base + '/lr_shares/' + m[1]).then(function (r) {
+    if (!r.ok) throw new Error('gone');
+    return r.json();
+  }).then(function (doc) {
+    var f = doc.fields || {};
+    var snap = (f.fields && f.fields.mapValue && f.fields.mapValue.fields) || {};
+    var live = f.status && f.status.stringValue;
+    var h = '<table>';
+    order.forEach(function (k) {
+      if (!snap[k]) return;
+      var v = val(snap[k]);
+      if (v === '' || v === undefined) return;
+      if (/Paise$/.test(k)) v = money(v);
+      if (k === 'status') v = statusText[live || v] || (live || v);
+      h += '<tr><td>' + esc(labels[k]) + '</td><td' + (k === 'status' && (live || v) === 'cancelled' ? ' class="bad"' : '') + '>' + esc(v) + '</td></tr>';
+    });
+    h += '</table>';
+    show(h);
+    // Count this view (rules allow only +1 on a live link).
+    fetch(base + ':commit', {method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({writes: [{transform: {document: 'projects/loadgo-defc2/databases/(default)/documents/lr_shares/' + m[1], fieldTransforms: [{fieldPath: 'views', increment: {integerValue: '1'}}]}}]})}).catch(function () {});
+  }).catch(function () {
+    show('<p>This link has ended or is not valid. Ask the sender for a new one.</p>');
+  });
+})();
+</script>
+</body></html>

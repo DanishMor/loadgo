@@ -23,6 +23,7 @@ void main() {
       FeatureKey.tripShare: 'Trip share link',
       FeatureKey.problemReport: 'Report a problem',
       FeatureKey.transporter: 'Transporter accounts',
+      FeatureKey.bilty: 'Bilty (LR)',
     };
     expect(labels.keys.toSet(), Features.registry.map((s) => s.key).toSet(), reason: 'a new feature needs a row in ADDON_PILOT.md');
     for (final s in Features.registry) {

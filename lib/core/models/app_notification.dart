@@ -19,6 +19,9 @@ class NotificationType {
   /// A call rang and was not answered (Task 68).
   static const missedCall = 'missed_call';
 
+  /// An LR copy was sent to the driver of the trip (Task 70).
+  static const lrSent = 'lr_sent';
+
   /// Must stay in sync with firestore.rules.
   static const all = [
     loadAccepted,
@@ -33,6 +36,7 @@ class NotificationType {
     chatMessage,
     tripAssigned,
     missedCall,
+    lrSent,
   ];
 }
 

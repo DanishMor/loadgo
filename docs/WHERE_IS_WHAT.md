@@ -17,6 +17,7 @@ force any flag On or Off; a forced value always wins. A flag that is OFF hides i
 | `tripShare` | 24-hour trip link for family (no phone number, no live position) | ON | ON | Trip screens > Share trip |
 | `problemReport` | Two-tap "Report a problem" on trip screens and in Help | ON | ON | Trip screens, Help |
 | `transporter` | The Transporter role (company profile, bids, assigning, books) | ON | ON | First screen > Transporter card; Transporter app |
+| `bilty` | Numbered LR (bilty) with driver, consignee and full copies, PDF and share link | ON | ON | Trip screen > LR; Transporter > Trips > LR |
 
 Other switches that are not in the list above:
 
@@ -33,6 +34,7 @@ Bottom bar: **Home**, **Bookings**, **Loads**, **Profile**.
 |---|---|
 | Book a truck / post a load | Home > hero button, Quick actions > Book a truck / Post a load; Loads tab > Post |
 | Book a bike | Home > Quick actions > Book a bike |
+| Make a booking slip (consignor LR) with copies, PDF and link | Bookings tab > the booking > LR > Bilty (LR) |
 | Track a shipment, status, ETA, chat, call, LR, POD, invoice | Bookings tab > the booking (chat, call, LR, help and report buttons are on the trip screen) |
 | My loads, offers on a load (counter, pick one) | Loads tab > a load |
 | Documents (invoices, LR, POD, e-way bills) | Home > Quick actions > Documents |
@@ -68,6 +70,7 @@ Bottom bar: **Home**, **Loads**, **Trips**, **Earnings**, **Profile**.
 | Trips from my transporter | Home > Trips from your transporter (only when a transporter assigned one) |
 | Transporter invites, attach my vehicle | Home > the fleet card (accept, attach or detach a vehicle, leave) |
 | My truck, vehicle papers, expiry | Home > My truck, Documents and KYC |
+| LR (driver copy): route, goods, "Rate hidden by owner" | Trip screen > LR (driver copy) |
 | Documents center (invoices, LR, POD) | Home > Documents center |
 | My offers | Home > My offers |
 | Wallet | Home > Wallet; Earnings tab |
@@ -96,6 +99,7 @@ Bottom bar: **Dashboard**, **Loads**, **Trips**, **Fleet**, **Profile**. Flag: `
 | My bids, confirm a selected bid | Trips tab > My bids |
 | Assign or change the vehicle and driver | Trips tab > a company trip |
 | Late trips, LR / bilty, trip details | Trips tab |
+| Issue an LR, new version, cancel, copies, PDF, link | Trips tab > LR > Bilty (LR) |
 | Vehicles (own and attached) | Fleet tab > Vehicles |
 | Drivers, invite by phone | Fleet tab > Drivers |
 | Chat and in-app call (customer, assigned driver) | Trip details > Chat, Call, Call driver |

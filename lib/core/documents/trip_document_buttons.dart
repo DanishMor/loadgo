@@ -4,6 +4,7 @@ import '../constants/logistics.dart';
 import '../l10n/l10n.dart';
 import '../models/booking.dart';
 import 'lr_screen.dart';
+import '../bilty/bilty_card.dart';
 import 'pod_screen.dart';
 import '../call/call_screens.dart';
 import '../chat/chat_screen.dart';
@@ -35,6 +36,7 @@ class TripDocumentButtons extends StatelessWidget {
           icon: const Icon(Icons.receipt_long_outlined),
           label: Text(tr(context, 'viewLr')),
         ),
+        DriverLrButton(booking: booking),
         OutlinedButton.icon(
           key: const ValueKey('getHelp'),
           onPressed: () => Navigator.of(context).push(MaterialPageRoute(

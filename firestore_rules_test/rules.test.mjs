@@ -4913,3 +4913,249 @@ describe('admin lock (Task 69)', () => {
     await assertSucceeds(getDocs(collection(asAdmin(), 'fraud_cases')));
   });
 });
+
+// ---------------------------------------------------------------------------
+// Task 70: bilty (LR)
+// ---------------------------------------------------------------------------
+describe('bilty (Task 70)', () => {
+  const YEAR = 2026;
+  const lrIdOf = (issuer, seq, v = 1) => `${issuer}_${YEAR}_${seq}_v${v}`;
+  const pub = (issuer, role, seq, over = {}) => ({
+    bookingId: 'B1', issuerId: issuer, issuerRole: role, customerId: 'customer1', ...((over.bookingId ?? 'B1') !== 'B2' ? { fleetOwnerId: 'tr1' } : {}),
+    lrNo: `${role === 'transporter' ? 'TR' : 'CS'}-${YEAR}-00000${seq}`, seq, year: YEAR, version: 1, status: 'issued', date: Timestamp.now(),
+    pickup: 'Delhi', drop: 'Jaipur', route: 'Delhi → Jaipur', goods: 'FMCG', packages: 40, weightTons: 7.5, vehicleNumber: 'MH12AB1234',
+    driverName: 'Suresh', consignorName: 'A Traders', consigneeName: 'B Stores', issuerName: 'Fast Cargo', complianceMode: 'hide',
+    createdAt: serverTimestamp(), ...over,
+  });
+  const DETAILS = { freightPaise: 2500000, advancePaise: 500000, balancePaise: 2000000, marginPaise: 100000, gstPaise: 0, consignorPhone: '+919800000001', createdAt: serverTimestamp() };
+  const COMPLIANCE = { goodsValuePaise: 90000000, invoiceNo: 'INV-1', ewayBillNo: '123456789012', createdAt: serverTimestamp() };
+
+  async function issue(db, issuer, role, seq, over = {}, { compliance = true, series = true } = {}) {
+    const id = lrIdOf(issuer, seq, over.version ?? 1);
+    const b = writeBatch(db);
+    b.set(doc(db, 'lrs', id), pub(issuer, role, seq, over));
+    b.set(doc(db, 'lrs', id, 'private', 'details'), DETAILS);
+    if (compliance) b.set(doc(db, 'lrs', id, 'private', 'compliance'), COMPLIANCE);
+    if (series) b.set(doc(db, 'lr_series', `${issuer}_${YEAR}`), { next: seq + 1, updatedAt: serverTimestamp() });
+    await b.commit();
+    return id;
+  }
+
+  beforeEach(async () => {
+    await seed(async (db) => {
+      await setDoc(doc(db, 'users', 'tr1'), { role: 'fleet', name: 'Fast Cargo' });
+      await setDoc(doc(db, 'users', 'customer1'), { role: 'customer', name: 'C' });
+      await setDoc(doc(db, 'users', 'drvA'), { role: 'driver', name: 'Suresh' });
+      await setDoc(doc(db, 'bookings', 'B1'), { ...bookingFor('L1', { driverId: 'tr1', fleetOwnerId: 'tr1', assignedDriverId: 'drvA' }), timeline: {} });
+      await setDoc(doc(db, 'bookings', 'B2'), { ...bookingFor('L2', { driverId: 'driver1' }), timeline: {} });
+      await setDoc(doc(db, 'bookings', 'B3'), { ...bookingFor('L3', { driverId: 'tr1', fleetOwnerId: 'tr1', customerId: 'customer2' }), timeline: {} });
+    });
+  });
+
+  test('transporter and customer issue; driver, admin and strangers cannot', async () => {
+    await assertSucceeds(issue(as('tr1'), 'tr1', 'transporter', 1));
+    await assertSucceeds(issue(as('customer1'), 'customer1', 'customer', 1));
+    await assertFails(issue(as('drvA'), 'drvA', 'transporter', 1));
+    await assertFails(issue(as('driver1'), 'driver1', 'customer', 1, { bookingId: 'B2' }));
+    await assertFails(issue(asAdmin(), 'admin1', 'customer', 1));
+    await assertFails(issue(as('customer2'), 'customer2', 'customer', 1)); // not their booking B1
+    await assertFails(issue(as('customer1'), 'customer1', 'customer', 1, { bookingId: 'B3', customerId: 'customer1' })); // B3 belongs to customer2
+    await assertFails(issue(as('tr2'), 'tr2', 'transporter', 1));
+  });
+
+  test('a customer cannot issue as transporter, and a transporter only on their own booking', async () => {
+    await assertFails(issue(as('customer1'), 'customer1', 'transporter', 1));
+    await assertSucceeds(issue(as('tr1'), 'tr1', 'transporter', 1, { bookingId: 'B3', customerId: 'customer2' }));
+    await assertFails(issue(as('tr1'), 'tr1', 'transporter', 2, { bookingId: 'B2' })); // B2 has no fleetOwnerId
+  });
+
+  test('number series: seq must follow the counter; a repeat is refused', async () => {
+    await assertSucceeds(issue(as('tr1'), 'tr1', 'transporter', 1));
+    await assertFails(issue(as('tr1'), 'tr1', 'transporter', 1)); // same id and seq again
+    await assertFails(issue(as('tr1'), 'tr1', 'transporter', 3)); // skipped 2
+    await assertSucceeds(issue(as('tr1'), 'tr1', 'transporter', 2));
+    await assertFails(issue(as('tr1'), 'tr1', 'transporter', 3, {}, { series: false }));
+    await assertFails(setDoc(doc(as('tr2'), 'lr_series', 'tr1_2026'), { next: 9, updatedAt: serverTimestamp() }));
+  });
+
+  test('the id must match issuer, year, seq and version', async () => {
+    const db = as('tr1');
+    const b = writeBatch(db);
+    b.set(doc(db, 'lrs', 'tr1_2026_1_v2'), pub('tr1', 'transporter', 1));
+    b.set(doc(db, 'lrs', 'tr1_2026_1_v2', 'private', 'details'), DETAILS);
+    b.set(doc(db, 'lr_series', 'tr1_2026'), { next: 2, updatedAt: serverTimestamp() });
+    await assertFails(b.commit());
+  });
+
+  describe('who reads what', () => {
+    let id;
+    beforeEach(async () => {
+      id = await issue(as('tr1'), 'tr1', 'transporter', 1);
+    });
+    const priv = (uid, name) => getDoc(doc(as(uid), 'lrs', id, 'private', name));
+
+    test('private details and compliance: issuer, customer, admin; never the driver or a stranger', async () => {
+      for (const name of ['details', 'compliance']) {
+        await assertSucceeds(priv('tr1', name));
+        await assertSucceeds(priv('customer1', name));
+        await assertSucceeds(priv('admin1', name));
+        await assertFails(priv('drvA', name));
+        await assertFails(priv('driver1', name));
+        await assertFails(priv('customer2', name));
+        await assertFails(priv('tr2', name));
+      }
+    });
+
+    test('public part: parties, the assigned driver and admin; not a stranger or another driver', async () => {
+      for (const uid of ['tr1', 'customer1', 'drvA', 'admin1']) await assertSucceeds(getDoc(doc(as(uid), 'lrs', id)));
+      for (const uid of ['customer2', 'tr2', 'driver1', 'drvB']) await assertFails(getDoc(doc(as(uid), 'lrs', id)));
+    });
+
+    test('lists by booking work for the parties and the driver, not for others', async () => {
+      const q = (uid) => getDocs(query(collection(as(uid), 'lrs'), where('bookingId', '==', 'B1')));
+      for (const uid of ['tr1', 'customer1', 'drvA']) await assertSucceeds(q(uid));
+      await assertFails(q('customer2'));
+      await assertFails(q('drvB'));
+    });
+
+    test('an independent driver reads the customer LR of their own booking (public only)', async () => {
+      const cid = await issue(as('customer1'), 'customer1', 'customer', 1, { bookingId: 'B2' });
+      await assertSucceeds(getDoc(doc(as('driver1'), 'lrs', cid)));
+      await assertFails(getDoc(doc(as('driver1'), 'lrs', cid, 'private', 'details')));
+      await assertFails(getDoc(doc(as('driver1'), 'lrs', cid, 'private', 'compliance')));
+      await assertSucceeds(getDoc(doc(as('customer1'), 'lrs', cid, 'private', 'details')));
+    });
+  });
+
+  describe('lock after issue', () => {
+    let id;
+    beforeEach(async () => {
+      id = await issue(as('tr1'), 'tr1', 'transporter', 1);
+    });
+
+    test('content never changes; private parts cannot be edited or deleted', async () => {
+      const db = as('tr1');
+      await assertFails(updateDoc(doc(db, 'lrs', id), { goods: 'Steel', updatedAt: serverTimestamp() }));
+      await assertFails(updateDoc(doc(db, 'lrs', id, 'private', 'details'), { freightPaise: 1 }));
+      await assertFails(deleteDoc(doc(db, 'lrs', id)));
+      await assertFails(deleteDoc(doc(db, 'lrs', id, 'private', 'details')));
+    });
+
+    test('edit = a new version; the old one becomes superseded and stays view-only', async () => {
+      const db = as('tr1');
+      const b = writeBatch(db);
+      b.update(doc(db, 'lrs', id), { status: 'superseded', supersededBy: 2, updatedAt: serverTimestamp() });
+      b.set(doc(db, 'lrs', lrIdOf('tr1', 1, 2)), pub('tr1', 'transporter', 1, { version: 2 }));
+      b.set(doc(db, 'lrs', lrIdOf('tr1', 1, 2), 'private', 'details'), DETAILS);
+      await assertSucceeds(b.commit());
+      await assertFails(updateDoc(doc(db, 'lrs', id), { status: 'cancelled', cancelReason: 'late', updatedAt: serverTimestamp() }));
+    });
+
+    test('a new version without superseding the old one is refused, and nobody else versions it', async () => {
+      const tdb = as('tr1');
+      const b = writeBatch(tdb);
+      b.set(doc(tdb, 'lrs', lrIdOf('tr1', 1, 2)), pub('tr1', 'transporter', 1, { version: 2 }));
+      b.set(doc(tdb, 'lrs', lrIdOf('tr1', 1, 2), 'private', 'details'), DETAILS);
+      await assertFails(b.commit());
+      const cdb = as('customer1');
+      const c = writeBatch(cdb);
+      c.update(doc(cdb, 'lrs', id), { status: 'superseded', supersededBy: 2, updatedAt: serverTimestamp() });
+      await assertFails(c.commit());
+    });
+
+    test('cancel needs a reason and the issuer; the customer cannot cancel the transporter LR', async () => {
+      await assertFails(updateDoc(doc(as('tr1'), 'lrs', id), { status: 'cancelled', cancelReason: '', updatedAt: serverTimestamp() }));
+      await assertFails(updateDoc(doc(as('customer1'), 'lrs', id), { status: 'cancelled', cancelReason: 'no thanks', updatedAt: serverTimestamp() }));
+      await assertFails(updateDoc(doc(as('drvA'), 'lrs', id), { status: 'cancelled', cancelReason: 'no thanks', updatedAt: serverTimestamp() }));
+      await assertSucceeds(updateDoc(doc(as('tr1'), 'lrs', id), { status: 'cancelled', cancelReason: 'wrong vehicle', updatedAt: serverTimestamp() }));
+      await assertFails(updateDoc(doc(as('tr1'), 'lrs', id), { status: 'issued', updatedAt: serverTimestamp() }));
+    });
+
+    test('the issuer changes the compliance mode, nobody else', async () => {
+      await assertSucceeds(updateDoc(doc(as('tr1'), 'lrs', id), { complianceMode: 'inspection_on_request', updatedAt: serverTimestamp() }));
+      await assertFails(updateDoc(doc(as('tr1'), 'lrs', id), { complianceMode: 'everyone', updatedAt: serverTimestamp() }));
+      await assertFails(updateDoc(doc(as('customer1'), 'lrs', id), { complianceMode: 'show', updatedAt: serverTimestamp() }));
+      await assertFails(updateDoc(doc(as('drvA'), 'lrs', id), { complianceMode: 'show', updatedAt: serverTimestamp() }));
+    });
+  });
+
+  describe('share links', () => {
+    let id;
+    const TOKEN = '0123456789abcdef0123456789abcdef';
+    const share = (over = {}) => ({
+      lrId: id, bookingId: 'B1', ownerId: 'tr1', copyType: 'driver', fields: { lrNo: 'TR-2026-000001', route: 'Delhi → Jaipur', goods: 'FMCG' },
+      status: 'issued', statusAt: serverTimestamp(), expiresAt: Timestamp.fromMillis(Date.now() + 86400000), createdAt: serverTimestamp(), revoked: false, views: 0, ...over,
+    });
+    beforeEach(async () => {
+      id = await issue(as('tr1'), 'tr1', 'transporter', 1);
+    });
+
+    test('only the issuer creates; token must be 32 hex letters', async () => {
+      await assertSucceeds(setDoc(doc(as('tr1'), 'lr_shares', TOKEN), share()));
+      await assertFails(setDoc(doc(as('customer1'), 'lr_shares', 'fedcba9876543210fedcba9876543210'), share({ ownerId: 'customer1' })));
+      await assertFails(setDoc(doc(as('drvA'), 'lr_shares', 'fedcba9876543210fedcba9876543210'), share({ ownerId: 'drvA' })));
+      await assertFails(setDoc(doc(as('tr1'), 'lr_shares', 'short'), share()));
+      await assertFails(setDoc(doc(as('tr1'), 'lr_shares', 'ABCDEF9876543210fedcba9876543210'), share()));
+    });
+
+    test('driver copy cannot carry rate, margin, phone or compliance; consignee never carries margin or phone', async () => {
+      const t = (n) => `${n}`.padStart(32, 'a');
+      await assertFails(setDoc(doc(as('tr1'), 'lr_shares', t(1)), share({ fields: { lrNo: 'x', freightPaise: 1 } })));
+      await assertFails(setDoc(doc(as('tr1'), 'lr_shares', t(2)), share({ fields: { lrNo: 'x', marginPaise: 1 } })));
+      await assertFails(setDoc(doc(as('tr1'), 'lr_shares', t(3)), share({ fields: { lrNo: 'x', consignorPhone: '+91' } })));
+      await assertFails(setDoc(doc(as('tr1'), 'lr_shares', t(4)), share({ fields: { lrNo: 'x', ewayBillNo: '123456789012' } })));
+      await assertFails(setDoc(doc(as('tr1'), 'lr_shares', t(5)), share({ copyType: 'consignee', fields: { lrNo: 'x', marginPaise: 1 } })));
+      await assertFails(setDoc(doc(as('tr1'), 'lr_shares', t(6)), share({ copyType: 'consignee', fields: { lrNo: 'x', consigneePhone: '+91' } })));
+      await assertSucceeds(setDoc(doc(as('tr1'), 'lr_shares', t(7)), share({ copyType: 'consignee', fields: { lrNo: 'x', freightPaise: 100 } })));
+      await assertSucceeds(setDoc(doc(as('tr1'), 'lr_shares', t(8)), share({ copyType: 'full', fields: { lrNo: 'x', marginPaise: 100 } })));
+      await assertFails(setDoc(doc(as('tr1'), 'lr_shares', t(9)), share({ copyType: 'verify', fields: { lrNo: 'x', freightPaise: 100 } })));
+      await assertSucceeds(setDoc(doc(as('tr1'), 'lr_shares', t(10)), share({ copyType: 'verify', fields: { lrNo: 'x', route: 'a', status: 'issued', issuerName: 'F' } })));
+    });
+
+    test('a share of someone else\'s LR, or one that lasts too long, is refused', async () => {
+      await assertFails(setDoc(doc(as('tr2'), 'lr_shares', TOKEN), share({ ownerId: 'tr2' })));
+      await assertFails(setDoc(doc(as('tr1'), 'lr_shares', TOKEN), share({ expiresAt: Timestamp.fromMillis(Date.now() + 500 * 86400000) })));
+      await assertFails(setDoc(doc(as('tr1'), 'lr_shares', TOKEN), share({ expiresAt: Timestamp.fromMillis(Date.now() - 1000) })));
+    });
+
+    test('get by token works for anyone while valid; list is closed except for the owner\'s own', async () => {
+      await setDoc(doc(as('tr1'), 'lr_shares', TOKEN), share());
+      await assertSucceeds(getDoc(doc(anon(), 'lr_shares', TOKEN)));
+      await assertFails(getDocs(collection(anon(), 'lr_shares')));
+      await assertFails(getDocs(collection(as('customer1'), 'lr_shares')));
+      await assertFails(getDocs(query(collection(as('customer1'), 'lr_shares'), where('ownerId', '==', 'tr1'))));
+      await assertSucceeds(getDocs(query(collection(as('tr1'), 'lr_shares'), where('ownerId', '==', 'tr1'))));
+    });
+
+    test('expired and revoked tokens fail', async () => {
+      await seed(async (db) => {
+        await setDoc(doc(db, 'lr_shares', 'e'.repeat(32)), share({ expiresAt: Timestamp.fromMillis(Date.now() - 1000), statusAt: Timestamp.now(), createdAt: Timestamp.now() }));
+        await setDoc(doc(db, 'lr_shares', 'f'.repeat(32)), share({ revoked: true, statusAt: Timestamp.now(), createdAt: Timestamp.now() }));
+      });
+      await assertFails(getDoc(doc(anon(), 'lr_shares', 'e'.repeat(32))));
+      await assertFails(getDoc(doc(anon(), 'lr_shares', 'f'.repeat(32))));
+      await assertFails(updateDoc(doc(anon(), 'lr_shares', 'e'.repeat(32)), { views: increment(1) }));
+      await assertFails(updateDoc(doc(anon(), 'lr_shares', 'f'.repeat(32)), { views: increment(1) }));
+    });
+
+    test('revoke by the owner; view count goes up by one for anyone with the token', async () => {
+      await setDoc(doc(as('tr1'), 'lr_shares', TOKEN), share());
+      await assertSucceeds(updateDoc(doc(anon(), 'lr_shares', TOKEN), { views: increment(1) }));
+      await assertFails(updateDoc(doc(anon(), 'lr_shares', TOKEN), { views: increment(5) }));
+      await assertFails(updateDoc(doc(anon(), 'lr_shares', TOKEN), { revoked: true, statusAt: serverTimestamp(), status: 'x' }));
+      await assertFails(updateDoc(doc(as('customer1'), 'lr_shares', TOKEN), { revoked: true, statusAt: serverTimestamp(), status: 'issued' }));
+      await assertSucceeds(updateDoc(doc(as('tr1'), 'lr_shares', TOKEN), { revoked: true, statusAt: serverTimestamp(), status: 'issued' }));
+      await assertFails(updateDoc(doc(as('tr1'), 'lr_shares', TOKEN), { revoked: false, statusAt: serverTimestamp(), status: 'issued' }));
+      await assertFails(getDoc(doc(anon(), 'lr_shares', TOKEN)));
+    });
+  });
+
+  test('audit events for bilty actions: parties only', async () => {
+    const ev = (uid, type) => ({ type, actorId: uid, bookingId: 'B1', data: {}, createdAt: serverTimestamp() });
+    for (const type of ['lr_issue', 'lr_version', 'lr_cancel', 'lr_share', 'lr_revoke', 'lr_mode']) {
+      await assertSucceeds(addDoc(collection(as('tr1'), 'audit_events'), ev('tr1', type)));
+      await assertSucceeds(addDoc(collection(as('customer1'), 'audit_events'), ev('customer1', type)));
+      await assertFails(addDoc(collection(as('customer2'), 'audit_events'), ev('customer2', type)));
+    }
+  });
+});

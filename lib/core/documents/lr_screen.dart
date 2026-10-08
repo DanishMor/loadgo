@@ -9,6 +9,8 @@ import '../widgets/common.dart';
 import '../widgets/live_stream.dart';
 import '../widgets/logistics_labels.dart';
 import 'pod_screen.dart';
+import '../bilty/bilty_card.dart';
+import '../services/backend.dart';
 
 /// Digital lorry receipt (LR / bilty) generated from the booking, with the
 /// e-way bill number either party can record.
@@ -35,6 +37,7 @@ class LrScreen extends StatelessWidget {
             return ListView(
               padding: const EdgeInsets.fromLTRB(20, 10, 20, 30),
               children: [
+                BiltyCard(booking: b),
                 AppCard(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -62,7 +65,7 @@ class LrScreen extends StatelessWidget {
                         row(tr(context, 'sealNumber'), b.pickupProof!.sealNumber)
                       else if (b.sealNumber.isNotEmpty)
                         row(tr(context, 'sealNumber'), b.sealNumber),
-                      if (b.agreedFarePaise != null) row(tr(context, 'agreedFare'), formatPaise(b.agreedFarePaise!)),
+                      if (b.agreedFarePaise != null && Backend.uid != b.assignedDriverId) row(tr(context, 'agreedFare'), formatPaise(b.agreedFarePaise!)),
                     ],
                   ),
                 ),

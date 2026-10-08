@@ -2074,6 +2074,196 @@ service cloud.firestore {
       allow delete: if signedIn() && resource.data.ownerId == request.auth.uid;
     }
 
+
+    // ------------------------------------------------------------------
+    // Bilty / LR (Task 70). One document per version:
+    //   lrs/{issuer}_{year}_{seq}_v{n}            the public part
+    //   lrs/{id}/private/details                  rate group + GST + phones
+    //   lrs/{id}/private/compliance               goods value, invoice no, GSTINs, e-way bill no
+    // Only a transporter (own booking, bookings.fleetOwnerId) or the customer
+    // (own booking) issues one; drivers and admins never do. The private
+    // documents are for the issuer, both parties and admins, never the driver.
+    // A version never changes after it is written; only its status moves
+    // (issued -> superseded | cancelled) and the issuer can change the
+    // compliance mode. lr_series/{issuer}_{year}.next is the per-issuer number
+    // counter, bumped in the same batch.
+    // ------------------------------------------------------------------
+    function lrAuditParty(b) {
+      let uid = request.auth.uid;
+      return uid in [b.customerId, b.driverId, b.get('assignedDriverId', ''), b.get('fleetOwnerId', '')];
+    }
+
+    function lrPrivateReader(l) {
+      let uid = request.auth.uid;
+      return l.issuerId == uid || l.customerId == uid || l.get('fleetOwnerId', '') == uid || isAdmin();
+    }
+
+    function lrIssuerOk(l, b) {
+      let uid = request.auth.uid;
+      return l.issuerId == uid
+          && b.status != 'cancelled'
+          && ((l.issuerRole == 'customer' && b.customerId == uid)
+              || (l.issuerRole == 'transporter' && b.get('fleetOwnerId', '') == uid && isTransporter(uid)));
+    }
+
+    function lrIdOf(l) {
+      return l.issuerId + '_' + string(l.year) + '_' + string(l.seq) + '_v' + string(l.version);
+    }
+
+    function lrSeriesOk(l) {
+      let sid = l.issuerId + '_' + string(l.year);
+      let after = getAfter(docPath('lr_series', sid)).data;
+      return after.next == l.seq + 1
+          && (exists(docPath('lr_series', sid)) ? get(docPath('lr_series', sid)).data.next == l.seq : l.seq == 1);
+    }
+
+    function lrPublicShape(l) {
+      return l.keys().hasOnly(['bookingId', 'issuerId', 'issuerRole', 'customerId', 'fleetOwnerId', 'lrNo', 'seq', 'year', 'version',
+                               'status', 'cancelReason', 'supersededBy', 'date', 'pickup', 'drop', 'route', 'goods', 'packages', 'weightTons',
+                               'vehicleNumber', 'driverName', 'consignorName', 'consigneeName', 'issuerName', 'complianceMode',
+                               'createdAt', 'updatedAt'])
+          && l.keys().hasAll(['bookingId', 'issuerId', 'issuerRole', 'customerId', 'lrNo', 'seq', 'year', 'version', 'status', 'date', 'pickup', 'drop', 'goods', 'complianceMode', 'createdAt'])
+          && l.issuerRole in ['transporter', 'customer']
+          && l.seq is int && l.seq >= 1 && l.year is int && l.year >= 2024 && l.year <= 2100
+          && l.version is int && l.version >= 1 && l.version <= 50
+          && l.status == 'issued'
+          && l.lrNo is string && l.lrNo.size() >= 5 && l.lrNo.size() <= 24
+          && l.complianceMode in ['hide', 'show', 'inspection_on_request']
+          && l.pickup is string && l.pickup.size() <= 200 && l.drop is string && l.drop.size() <= 200
+          && l.goods is string && l.goods.size() <= 120
+          && (!('route' in l) || (l.route is string && l.route.size() <= 400))
+          && (!('packages' in l) || (l.packages is int && l.packages >= 0 && l.packages <= 100000))
+          && (!('weightTons' in l) || ((l.weightTons is int || l.weightTons is float) && l.weightTons >= 0 && l.weightTons <= 1000))
+          && (!('vehicleNumber' in l) || (l.vehicleNumber is string && l.vehicleNumber.size() <= 20))
+          && (!('driverName' in l) || (l.driverName is string && l.driverName.size() <= 60))
+          && (!('consignorName' in l) || (l.consignorName is string && l.consignorName.size() <= 80))
+          && (!('consigneeName' in l) || (l.consigneeName is string && l.consigneeName.size() <= 80))
+          && (!('issuerName' in l) || (l.issuerName is string && l.issuerName.size() <= 80))
+          && l.createdAt == request.time;
+    }
+
+    match /lr_series/{seriesId} {
+      allow read: if signedIn() && seriesId.matches(request.auth.uid + '_[0-9]{4}');
+      allow create, update: if signedIn()
+          && seriesId.matches(request.auth.uid + '_[0-9]{4}')
+          && request.resource.data.keys().hasOnly(['next', 'updatedAt'])
+          && request.resource.data.next is int
+          && request.resource.data.next == (resource == null ? 1 : resource.data.next) + 1
+          && request.resource.data.updatedAt == request.time;
+    }
+
+    match /lrs/{lrId} {
+      allow read: if signedIn() && (isAdmin() || lrAuditParty(get(docPath('bookings', resource.data.bookingId)).data));
+      allow create: if signedIn()
+          && lrPublicShape(request.resource.data)
+          && lrId == lrIdOf(request.resource.data)
+          && lrIssuerOk(request.resource.data, get(docPath('bookings', request.resource.data.bookingId)).data)
+          && request.resource.data.customerId == get(docPath('bookings', request.resource.data.bookingId)).data.customerId
+          && request.resource.data.get('fleetOwnerId', '') == get(docPath('bookings', request.resource.data.bookingId)).data.get('fleetOwnerId', '')
+          && existsAfter(/databases/$(database)/documents/lrs/$(lrId)/private/details)
+          && (request.resource.data.version == 1
+              ? lrSeriesOk(request.resource.data)
+              : (get(docPath('lrs', request.resource.data.issuerId + '_' + string(request.resource.data.year) + '_' + string(request.resource.data.seq) + '_v' + string(request.resource.data.version - 1))).data.issuerId == request.auth.uid
+                 && getAfter(docPath('lrs', request.resource.data.issuerId + '_' + string(request.resource.data.year) + '_' + string(request.resource.data.seq) + '_v' + string(request.resource.data.version - 1))).data.status == 'superseded'));
+      // The issuer moves the status once (issued -> superseded | cancelled)
+      // and may change the compliance mode; nothing else of a version changes.
+      allow update: if signedIn()
+          && resource.data.issuerId == request.auth.uid
+          && ((changedKeys().hasOnly(['status', 'supersededBy', 'updatedAt'])
+               && resource.data.status == 'issued'
+               && request.resource.data.status == 'superseded'
+               && request.resource.data.supersededBy == resource.data.version + 1
+               && request.resource.data.updatedAt == request.time)
+              || (changedKeys().hasOnly(['status', 'cancelReason', 'updatedAt'])
+                  && resource.data.status == 'issued'
+                  && request.resource.data.status == 'cancelled'
+                  && request.resource.data.cancelReason is string
+                  && request.resource.data.cancelReason.size() >= 3 && request.resource.data.cancelReason.size() <= 200
+                  && request.resource.data.updatedAt == request.time)
+              || (changedKeys().hasOnly(['complianceMode', 'updatedAt'])
+                  && request.resource.data.complianceMode in ['hide', 'show', 'inspection_on_request']
+                  && request.resource.data.updatedAt == request.time));
+      allow delete: if false;
+
+      match /private/details {
+        allow read: if signedIn() && lrPrivateReader(get(docPath('lrs', lrId)).data);
+        allow create: if signedIn()
+            && getAfter(docPath('lrs', lrId)).data.issuerId == request.auth.uid
+            && request.resource.data.keys().hasOnly(['freightPaise', 'advancePaise', 'balancePaise', 'marginPaise', 'gstPaise', 'consignorPhone', 'consigneePhone', 'createdAt'])
+            && request.resource.data.createdAt == request.time
+            && request.resource.data.get('freightPaise', 0) is int && request.resource.data.get('freightPaise', 0) >= 0
+            && request.resource.data.get('advancePaise', 0) is int && request.resource.data.get('advancePaise', 0) >= 0
+            && request.resource.data.get('balancePaise', 0) is int
+            && request.resource.data.get('marginPaise', 0) is int
+            && request.resource.data.get('gstPaise', 0) is int
+            && request.resource.data.get('consignorPhone', '') is string && request.resource.data.get('consigneePhone', '') is string;
+        allow update, delete: if false;
+      }
+
+      match /private/compliance {
+        allow read: if signedIn() && lrPrivateReader(get(docPath('lrs', lrId)).data);
+        allow create: if signedIn()
+            && getAfter(docPath('lrs', lrId)).data.issuerId == request.auth.uid
+            && request.resource.data.keys().hasOnly(['goodsValuePaise', 'invoiceNo', 'consignorGstin', 'consigneeGstin', 'ewayBillNo', 'ewayValidUntil', 'createdAt'])
+            && request.resource.data.createdAt == request.time
+            && request.resource.data.get('goodsValuePaise', 0) is int && request.resource.data.get('goodsValuePaise', 0) >= 0
+            && request.resource.data.get('invoiceNo', '') is string && request.resource.data.get('invoiceNo', '').size() <= 40
+            && request.resource.data.get('consignorGstin', '') is string && request.resource.data.get('consigneeGstin', '') is string
+            && request.resource.data.get('ewayBillNo', '') is string && request.resource.data.get('ewayBillNo', '').size() <= 12;
+        allow update, delete: if false;
+      }
+    }
+
+    // lr_shares/{token}: a link to one copy of an LR (Task 70). The 128-bit
+    // token (32 hex letters) is the secret: anyone holding it may GET one
+    // document while it is neither expired nor revoked; nobody lists. `fields`
+    // is a snapshot of that copy type only, so a driver copy has no rate,
+    // margin, phone or compliance field and a consignee copy has no margin.
+    // The issuer creates, revokes and lists their own; anyone with the token
+    // adds one to the view counter.
+    function lrShareFieldsOk(d) {
+      let f = d.fields;
+      return f is map && f.size() <= 30
+          && (d.copyType == 'verify'
+              ? f.keys().hasOnly(['lrNo', 'route', 'status', 'issuerName'])
+              : (f.keys().hasOnly(['lrNo', 'date', 'route', 'goods', 'packages', 'weightTons', 'vehicleNumber', 'driverName', 'consignorName', 'consigneeName', 'issuerName', 'status', 'version',
+                                   'freightPaise', 'advancePaise', 'balancePaise', 'marginPaise', 'gstPaise', 'consignorPhone', 'consigneePhone',
+                                   'goodsValuePaise', 'invoiceNo', 'consignorGstin', 'consigneeGstin', 'ewayBillNo', 'ewayValidUntil'])
+                 && (d.copyType != 'driver' || !f.keys().hasAny(['freightPaise', 'advancePaise', 'balancePaise', 'marginPaise', 'gstPaise', 'consignorPhone', 'consigneePhone', 'goodsValuePaise', 'invoiceNo', 'consignorGstin', 'consigneeGstin', 'ewayBillNo', 'ewayValidUntil']))
+                 && (d.copyType != 'consignee' || !f.keys().hasAny(['marginPaise', 'consignorPhone', 'consigneePhone']))));
+    }
+
+    match /lr_shares/{token} {
+      allow get: if resource.data.expiresAt > request.time && resource.data.revoked == false;
+      allow list: if signedIn() && resource.data.ownerId == request.auth.uid;
+      allow create: if signedIn()
+          && token.matches('[0-9a-f]{32}')
+          && request.resource.data.keys().hasOnly(['lrId', 'bookingId', 'ownerId', 'copyType', 'fields', 'status', 'statusAt', 'expiresAt', 'createdAt', 'revoked', 'views'])
+          && request.resource.data.ownerId == request.auth.uid
+          && request.resource.data.copyType in ['full', 'driver', 'consignee', 'verify']
+          && request.resource.data.lrId is string
+          && get(docPath('lrs', request.resource.data.lrId)).data.issuerId == request.auth.uid
+          && get(docPath('lrs', request.resource.data.lrId)).data.bookingId == request.resource.data.bookingId
+          && lrShareFieldsOk(request.resource.data)
+          && request.resource.data.status is string && request.resource.data.status.size() <= 20
+          && request.resource.data.statusAt == request.time
+          && request.resource.data.revoked == false
+          && request.resource.data.views == 0
+          && request.resource.data.createdAt == request.time
+          && request.resource.data.expiresAt is timestamp
+          && request.resource.data.expiresAt > request.time
+          && request.resource.data.expiresAt <= request.time + duration.value(400, 'd');
+      allow update: if (resource.data.expiresAt > request.time && resource.data.revoked == false
+                        && changedKeys().hasOnly(['views'])
+                        && request.resource.data.views == resource.data.views + 1)
+          || (isUser(resource.data.ownerId)
+              && changedKeys().hasOnly(['revoked', 'status', 'statusAt'])
+              && request.resource.data.statusAt == request.time
+              && request.resource.data.status is string && request.resource.data.status.size() <= 20
+              && (request.resource.data.revoked == resource.data.revoked || request.resource.data.revoked == true));
+      allow delete: if false;
+    }
+
     match /app_errors/{id} {
       allow read: if adminIn(['super', 'ops']);
       allow create: if signedIn()
@@ -2213,13 +2403,16 @@ service cloud.firestore {
       allow create: if signedIn()
           && request.resource.data.keys().hasOnly(['type', 'actorId', 'targetId', 'bookingId', 'loadId', 'data', 'createdAt'])
           && request.resource.data.actorId == request.auth.uid
-          && request.resource.data.type in ['verification', 'accept', 'status_change', 'cancel', 'risk_change', 'reassign', 'config_change', 'user_action', 'evidence', 'doc_view', 'assign', 'contact_view', 'chat_view']
+          && request.resource.data.type in ['verification', 'accept', 'status_change', 'cancel', 'risk_change', 'reassign', 'config_change', 'user_action', 'evidence', 'doc_view', 'assign', 'contact_view', 'chat_view', 'lr_issue', 'lr_version', 'lr_cancel', 'lr_share', 'lr_revoke', 'lr_mode', 'inspection_request', 'inspection_approve', 'inspection_deny', 'inspection_expire']
           && request.resource.data.data is map
           && request.resource.data.createdAt == request.time
           && (!(request.resource.data.type in ['verification', 'risk_change', 'reassign', 'config_change', 'user_action', 'contact_view', 'chat_view']) || isAdmin())
           && (request.resource.data.type != 'assign'
               || (request.resource.data.bookingId is string
                   && get(docPath('bookings', request.resource.data.bookingId)).data.get('fleetOwnerId', '') == request.auth.uid))
+          && (!(request.resource.data.type in ['lr_issue', 'lr_version', 'lr_cancel', 'lr_share', 'lr_revoke', 'lr_mode', 'inspection_request', 'inspection_approve', 'inspection_deny', 'inspection_expire'])
+              || (request.resource.data.bookingId is string
+                  && lrAuditParty(get(docPath('bookings', request.resource.data.bookingId)).data)))
           && (!(request.resource.data.type in ['evidence', 'doc_view'])
               || (request.resource.data.bookingId is string
                   && request.auth.uid in [get(docPath('bookings', request.resource.data.bookingId)).data.driverId, get(docPath('bookings', request.resource.data.bookingId)).data.customerId]));
@@ -3086,12 +3279,12 @@ service cloud.firestore {
       let n = request.resource.data;
       let b = getAfter(docPath('bookings', n.relatedId)).data;
       return n.keys().hasOnly(['userId', 'type', 'message', 'relatedId', 'status', 'read', 'createdAt'])
-          && n.type in ['load_accepted', 'status_changed', 'rating_received', 'booking_cancelled', 'breakdown_reported', 'payment_marked', 'payment_confirmed', 'accident_reported', 'driver_arriving_soon', 'chat_message', 'trip_assigned', 'missed_call']
+          && n.type in ['load_accepted', 'status_changed', 'rating_received', 'booking_cancelled', 'breakdown_reported', 'payment_marked', 'payment_confirmed', 'accident_reported', 'driver_arriving_soon', 'chat_message', 'trip_assigned', 'missed_call', 'lr_sent', 'inspection_request', 'inspection_approved', 'inspection_denied']
           && n.message is string && n.message.size() <= 200
           && n.read == false
           && n.userId != request.auth.uid
-          && request.auth.uid in [b.driverId, b.customerId, b.get('assignedDriverId', '')]
-          && n.userId in [b.driverId, b.customerId, b.get('assignedDriverId', '')];
+          && request.auth.uid in [b.driverId, b.customerId, b.get('assignedDriverId', ''), b.get('fleetOwnerId', '')]
+          && n.userId in [b.driverId, b.customerId, b.get('assignedDriverId', ''), b.get('fleetOwnerId', '')];
     }
 
     match /notifications/{notificationId} {
