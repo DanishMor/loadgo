@@ -155,6 +155,7 @@ class _NearbyTabState extends State<_NearbyTab> {
             builder: (context, links) => StreamBuilder<List<DriverPresence>>(
               stream: _nearby,
               builder: (context, snap) {
+                if (snap.hasError) return ErrorState(error: snap.error);
                 final linked = {for (final l in links.data ?? const <DriverLink>[]) l.otherUid(me)};
                 final list = nearbyDrivers(snap.data ?? const [], lat: _here!.lat, lng: _here!.lng, myUid: me, now: DateTime.now());
                 if (list.isEmpty) return Padding(padding: const EdgeInsets.all(16), child: Text(tr(context, 'netNoNearby'), style: TextStyle(color: AppColors.muted)));
@@ -313,6 +314,7 @@ class GroupScreen extends StatelessWidget {
     return StreamBuilder<List<DriverGroup>>(
       stream: NetworkService.watchGroups(),
       builder: (context, snap) {
+        if (snap.hasError) return ErrorState(error: snap.error);
         final live = (snap.data ?? const <DriverGroup>[]).where((g) => g.id == group.id);
         final g = live.isEmpty ? group : live.first;
         final owner = g.ownerId == me;

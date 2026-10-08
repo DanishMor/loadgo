@@ -87,6 +87,7 @@ class _FleetDashboardState extends State<FleetDashboard> {
     return StreamBuilder<List<Load>>(
       stream: _loads,
       builder: (context, snap) {
+        if (snap.hasError) return ErrorState(error: snap.error);
         final idle = [for (final v in vehicles) if (v.canTakeBooking) v];
         final list = suggestAllocation(snap.data ?? const [], idle, now: widget.now());
         if (list.isEmpty) return const SizedBox.shrink();

@@ -165,6 +165,7 @@ class TodayEarningsText extends StatelessWidget {
     return StreamBuilder<List<Booking>>(
       stream: bookings,
       builder: (context, snap) {
+        if (snap.hasError) return ErrorState(error: snap.error);
         final today = EarningsSummary.from(snap.data ?? const [], DateTime.now()).today;
         return Text(formatRupees(today),
             style: const TextStyle(color: Colors.white, fontSize: 34, fontWeight: FontWeight.w800));

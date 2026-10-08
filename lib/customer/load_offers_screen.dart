@@ -20,6 +20,7 @@ class LoadOffersButton extends StatelessWidget {
     return StreamBuilder<List<Offer>>(
       stream: OfferService.watchForLoad(load.id),
       builder: (context, snap) {
+        if (snap.hasError) return ErrorState(error: snap.error);
         final open = (snap.data ?? const []).where((o) => o.isOpen).length;
         return SizedBox(
           width: double.infinity,

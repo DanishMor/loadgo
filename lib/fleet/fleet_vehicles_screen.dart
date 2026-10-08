@@ -102,6 +102,7 @@ class _FleetVehiclesScreenState extends State<FleetVehiclesScreen> {
             return StreamBuilder<List<Vehicle>>(
               stream: _attached,
               builder: (context, attachedSnap) {
+                if (attachedSnap.hasError) return ErrorState(error: attachedSnap.error);
             final attached = attachedSnap.data ?? const <Vehicle>[];
             if (vehicles.isEmpty && attached.isEmpty) return EmptyState(icon: Icons.local_shipping_outlined, title: tr(context, 'fleetNoVehicles'));
             return ListView(padding: const EdgeInsets.fromLTRB(16, 4, 16, 90), children: [

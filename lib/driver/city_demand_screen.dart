@@ -45,6 +45,7 @@ class _CityDemandScreenState extends State<CityDemandScreen> {
             return StreamBuilder<List<Vehicle>>(
               stream: _vehicles,
               builder: (context, snap) {
+                if (snap.hasError) return ErrorState(error: snap.error);
                 final mine = {for (final v in snap.data ?? const <Vehicle>[]) v.type};
                 final maxType = summary.byType.values.first;
                 return ListView(

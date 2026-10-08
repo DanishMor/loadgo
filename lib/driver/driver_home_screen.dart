@@ -112,6 +112,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
       builder: (context, favs) => StreamBuilder<List<Load>>(
         stream: _openLoads,
         builder: (context, snap) {
+          if (snap.hasError) return ErrorState(error: snap.error);
           final n = _index == _loadsTab
               ? 0
               : LoadRanker.countNew(snap.data ?? const [], _loadsSeenAt, favourites: favs.data ?? const []);
