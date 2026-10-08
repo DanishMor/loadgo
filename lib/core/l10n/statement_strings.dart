@@ -1,5 +1,9 @@
 /// Earnings statement export (MASTER-5 Task 35). Order: en, hi, hinglish, kn, ta, te, mr, gu, bn, pa, ks, ur.
 const Map<String, List<String>> statementStrings = {
+  // Task 37: the transporter's party statements.
+  'trpExportParties': ['Export all parties (CSV)', 'सभी पार्टियाँ निर्यात करें (CSV)', 'Saari parties export karein (CSV)', 'ಎಲ್ಲ ಪಕ್ಷಗಳನ್ನು ರಫ್ತು ಮಾಡಿ (CSV)', 'அனைத்து தரப்பினரையும் ஏற்றுமதி செய்யவும் (CSV)', 'అన్ని పార్టీలను ఎగుమతి చేయండి (CSV)', 'सर्व पार्ट्या निर्यात करा (CSV)', 'બધી પાર્ટીઓ નિકાસ કરો (CSV)', 'সব পক্ষ রপ্তানি করুন (CSV)', 'ਸਾਰੀਆਂ ਪਾਰਟੀਆਂ ਬਰਾਮਦ ਕਰੋ (CSV)', 'سارٕ پارٹیز ایکسپورٹ کرِو (CSV)', 'تمام پارٹیاں برآمد کریں (CSV)'],
+  'trpPartyStatement': ['Statement for this party', 'इस पार्टी का विवरण', 'Is party ka statement', 'ಈ ಪಕ್ಷದ ವಿವರ', 'இந்தத் தரப்பின் அறிக்கை', 'ఈ పార్టీ వివరణ', 'या पार्टीचे विवरण', 'આ પાર્ટીનું સ્ટેટમેન્ટ', 'এই পক্ষের বিবরণী', 'ਇਸ ਪਾਰਟੀ ਦਾ ਵੇਰਵਾ', 'یمہ پارٹی ہند بیان', 'اس پارٹی کا گوشوارہ'],
+  'trpPartyStatementFor': ['Statement for {party}', '{party} का विवरण', '{party} ka statement', '{party} ಅವರ ವಿವರ', '{party} அறிக்கை', '{party} వివరణ', '{party} चे विवरण', '{party} નું સ્ટેટમેન્ટ', '{party}-এর বিবরণী', '{party} ਦਾ ਵੇਰਵਾ', '{party} ہند بیان', '{party} کا گوشوارہ'],
   'stmtTitle': ['Earnings statement', 'कमाई का विवरण', 'Kamai ka statement', 'ಗಳಿಕೆಯ ವಿವರ', 'வருமான அறிக்கை', 'ఆదాయ వివరణ', 'कमाईचे विवरण', 'કમાણીનું સ્ટેટમેન્ટ', 'আয়ের বিবরণী', 'ਕਮਾਈ ਦਾ ਵੇਰਵਾ', 'کمٲے ہند بیان', 'آمدنی کا گوشوارہ'],
   'stmtMonth': ['This month', 'इस महीने', 'Is mahine', 'ಈ ತಿಂಗಳು', 'இந்த மாதம்', 'ఈ నెల', 'या महिन्यात', 'આ મહિનો', 'এই মাস', 'ਇਹ ਮਹੀਨਾ', 'یہ مہینہ', 'اس مہینے'],
   'stmtLastMonth': ['Last month', 'पिछला महीना', 'Pichhla mahina', 'ಕಳೆದ ತಿಂಗಳು', 'கடந்த மாதம்', 'గత నెల', 'मागील महिना', 'ગયો મહિનો', 'গত মাস', 'ਪਿਛਲਾ ਮਹੀਨਾ', 'گژھمُت مہینہ', 'پچھلا مہینہ'],

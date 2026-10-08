@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:printing/printing.dart';
 
 import '../core/l10n/l10n.dart';
 import '../core/models/booking.dart';
 import '../core/services/transporter_service.dart';
+import '../core/share/share_csv.dart';
+import '../core/transporter/party_statement.dart';
 import '../core/transporter/transporter_logic.dart';
 import '../core/widgets/common.dart';
 import '../core/widgets/live_stream.dart';
@@ -98,6 +101,15 @@ class TransporterBooksScreen extends StatelessWidget {
             if (list.isEmpty) return EmptyState(icon: Icons.account_balance_wallet_outlined, title: tr(context, 'trpNoBooks'));
             final books = TransporterBooks.from(list);
             return ListView(padding: const EdgeInsets.fromLTRB(16, 8, 16, 30), children: [
+              Align(
+                alignment: AlignmentDirectional.centerEnd,
+                child: TextButton.icon(
+                  key: const ValueKey('booksExportAll'),
+                  onPressed: () => shareCsv(PartyStatement.allPartiesCsv(books), 'Parties'),
+                  icon: const Icon(Icons.table_chart_outlined),
+                  label: Text(tr(context, 'trpExportParties')),
+                ),
+              ),
               AppCard(
                 child: Column(children: [
                   _row(tr(context, 'trpTotalMargin'), formatPaise(books.marginPaise), key: const ValueKey('booksMargin'), color: books.marginPaise < 0 ? Colors.red : AppColors.success),
@@ -123,6 +135,12 @@ class TransporterBooksScreen extends StatelessWidget {
                         ]),
                       ),
                       Text(formatPaise(p.duePaise), key: ValueKey('partyDue_${p.partyId}'), style: TextStyle(fontWeight: FontWeight.w800, color: p.duePaise > 0 ? AppColors.warning : AppColors.success)),
+                      IconButton(
+                        key: ValueKey('partyStatement_${p.partyId}'),
+                        tooltip: tr(context, 'trpPartyStatement'),
+                        icon: const Icon(Icons.ios_share_rounded),
+                        onPressed: () => showPartyStatementSheet(context, PartyStatement.of(books, p.partyId)!),
+                      ),
                     ]),
                   ),
                 ),
@@ -132,4 +150,29 @@ class TransporterBooksScreen extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Share one party's statement as CSV or PDF.
+Future<void> showPartyStatementSheet(BuildContext context, PartyStatement statement) {
+  return showModalBottomSheet<void>(
+    context: context,
+    showDragHandle: true,
+    builder: (c) => SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+        child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(trf(c, 'trpPartyStatementFor', {'party': statement.party.partyName.isEmpty ? statement.party.partyId : statement.party.partyName}), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+          const SizedBox(height: 12),
+          FilledButton.icon(key: const ValueKey('partyCsv'), onPressed: () => shareCsv(statement.toCsv(), 'Statement'), icon: const Icon(Icons.table_chart_outlined), label: Text(tr(c, 'stmtCsv'))),
+          const SizedBox(height: 8),
+          OutlinedButton.icon(
+            key: const ValueKey('partyPdf'),
+            onPressed: () async => Printing.sharePdf(bytes: await statement.toPdf(), filename: 'statement.pdf'),
+            icon: const Icon(Icons.picture_as_pdf_outlined),
+            label: Text(tr(c, 'stmtPdf')),
+          ),
+        ]),
+      ),
+    ),
+  );
 }
