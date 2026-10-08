@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 
 import '../l10n/l10n.dart';
 import 'declared_value_line.dart';
+import 'trip_evidence_timeline.dart';
 import '../models/booking.dart';
 import '../models/claim.dart';
 import '../services/backend.dart';
@@ -237,6 +238,10 @@ class _ClaimScreenState extends State<ClaimScreen> {
                   FilledButton(key: const ValueKey('claimResolve'), onPressed: () => _resolve(c), child: Text(tr(context, 'dspResolve'))),
                 ]),
               ),
+            const SizedBox(height: 16),
+            Text(tr(context, 'evTitle'), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+            const SizedBox(height: 4),
+            TripEvidenceTimeline(bookingId: c.bookingId),
             const SizedBox(height: 16),
             Text(tr(context, 'dspTimeline'), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
             LiveStream<List<ClaimEvent>>(
