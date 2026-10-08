@@ -264,6 +264,40 @@ describe('role lock', () => {
   });
 });
 
+describe('role lock and identity index for every role (MASTER-5 Task 3)', () => {
+  const ROLES = ['customer', 'driver', 'fleet'];
+  const HASH = (n) => String(n).repeat(64).slice(0, 64);
+  for (const role of ROLES) {
+    test(`${role}: the role cannot be switched to any other role`, async () => {
+      await seed((db) => setDoc(doc(db, 'users', 'u1'), { phone: '+91', role, selectedRole: role }));
+      const ref = doc(as('u1'), 'users', 'u1');
+      for (const other of ROLES.filter((r) => r !== role)) {
+        await assertFails(updateDoc(ref, { role: other }));
+        await assertFails(updateDoc(ref, { selectedRole: other }));
+        await assertFails(updateDoc(ref, { role: other, selectedRole: other }));
+      }
+      await assertSucceeds(updateDoc(ref, { name: 'Same Role' }));
+    });
+    test(`${role}: an identity entry must carry that role and the owner's uid`, async () => {
+      await seed((db) => setDoc(doc(db, 'users', 'u1'), { role, selectedRole: role }));
+      const entry = (r, uid = 'u1') => ({ uid, role: r, type: 'gst', createdAt: serverTimestamp() });
+      const create = (r, uid, hash) => {
+        const db = as('u1');
+        const b = writeBatch(db);
+        b.set(doc(db, 'identity_index', hash), entry(r, uid));
+        return b.commit();
+      };
+      for (const other of ROLES.filter((r) => r !== role)) await assertFails(create(other, 'u1', HASH(5)));
+      await assertFails(create(role, 'someone-else', HASH(5)));
+      await assertFails(setDoc(doc(as('u1'), 'identity_index', 'short'), entry(role)));
+    });
+  }
+  test('nobody can list the identity index, not even the owner', async () => {
+    await seed((db) => setDoc(doc(db, 'identity_index', HASH(7)), { uid: 'u1', role: 'driver', type: 'dl' }));
+    for (const uid of ['u1', 'u2']) await assertFails(getDocs(collection(as(uid), 'identity_index')));
+  });
+});
+
 describe('driver KYC and identity index', () => {
   const KYC = { dlNumber: 'MH1220110012345', dlExpiry: Timestamp.fromDate(new Date('2030-01-01')), rcNumber: 'MH12AB1234', aadhaarLast4: '4321', pan: 'ABCDE1234F' };
   const H1 = 'a'.repeat(64);
@@ -3076,7 +3110,7 @@ describe('anti-fraud', () => {
 describe('admin allowlist and powers', () => {
   const reassign = (db, extra = {}) => {
     const b = writeBatch(db);
-    b.update(doc(db, 'bookings', 'L1'), { driverId: 'driver2', vehicleId: 'v2', vehicleNumber: 'KA01CD5678', vehicleType: '20ft', driverName: 'Suresh', driverPhone: '+91', reassignedAt: serverTimestamp(), updatedAt: serverTimestamp(), ...extra });
+    b.update(doc(db, 'bookings', 'L1'), { driverId: 'driver2', vehicleId: 'v2', vehicleNumber: 'KA01CD5678', vehicleType: '20ft', driverName: 'Suresh', driverPhone: '', reassignedAt: serverTimestamp(), updatedAt: serverTimestamp(), ...extra });
     b.update(doc(db, 'loads', 'L1'), { driverId: 'driver2' });
     return b.commit();
   };
@@ -3104,6 +3138,7 @@ describe('admin allowlist and powers', () => {
     await assertFails(reassign(as('u1')));
     await assertFails(reassign(asAdmin(), { vehicleId: 'v1' })); // v1 belongs to driver1
     await assertFails(reassign(asAdmin(), { status: 'delivered' }));
+    await assertFails(reassign(asAdmin(), { driverPhone: '+919800000009' })); // numbers stay private (Task 4)
     await assertSucceeds(reassign(asAdmin()));
     await seedBooking('picked_up');
     await assertFails(reassign(asAdmin()));

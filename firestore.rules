@@ -1656,6 +1656,7 @@ service cloud.firestore {
           && resource.data.status in ['accepted', 'driver_arriving', 'loading']
           && changedKeys().hasOnly(['driverId', 'vehicleId', 'vehicleNumber', 'vehicleType', 'driverName', 'driverPhone', 'reassignedAt', 'updatedAt'])
           && a.driverId != resource.data.driverId
+          && a.get('driverPhone', '') == ''
           && a.reassignedAt == request.time
           && get(docPath('vehicles', a.vehicleId)).data.ownerId == a.driverId
           && getAfter(docPath('loads', resource.data.loadId)).data.driverId == a.driverId;
