@@ -53,7 +53,10 @@ class FleetMember {
   final String driverPhone;
   final bool active;
 
-  const FleetMember({required this.id, required this.ownerId, this.ownerName = '', required this.driverId, this.driverName = '', this.driverPhone = '', required this.active});
+  /// The driver's licence expiry, shared by the driver with this fleet (null = not shared).
+  final DateTime? licenceExpiry;
+
+  const FleetMember({required this.id, required this.ownerId, this.ownerName = '', required this.driverId, this.driverName = '', this.driverPhone = '', required this.active, this.licenceExpiry});
 
   factory FleetMember.fromDoc(String id, Map<String, dynamic> d) => FleetMember(
         id: id,
@@ -63,6 +66,7 @@ class FleetMember {
         driverName: d['driverName'] as String? ?? '',
         driverPhone: d['driverPhone'] as String? ?? '',
         active: d['active'] == true,
+        licenceExpiry: (d['licenceExpiry'] as Timestamp?)?.toDate(),
       );
 }
 

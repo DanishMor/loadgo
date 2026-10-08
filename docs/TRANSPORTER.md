@@ -41,6 +41,7 @@ that is already a transporter keeps working.
   keeps its owner; `vehicles.attachedTo` names the transporter. The driver can detach at any time. If the
   driver leaves the fleet the attachment stops working (rules check `fleet_members.active`).
 * The transporter may only flip an attached vehicle between available and on a trip; it cannot edit it.
+* **Licence reminders for drivers**: a driver who joined a fleet shares only the *date* their licence ends with it (`fleet_members.licenceExpiry`, written by the driver, refreshed when the driver opens Home). The Dashboard card lists licences that end within 30 days, expired ones first. A driver who has not entered a licence is not listed.
 * **Document reminders**: Home shows papers (insurance, PUC, fitness, permit) that are expired or end within
   30 days, for own and attached vehicles (`docReminders`). Day granularity: a paper that ends today still counts
   as valid today. No push message (`// LATER(paid)`: FCM sender), the reminder is in the app.
@@ -88,6 +89,13 @@ Trips tab lists every booking with the transporter's vehicles (company bookings 
 drivers with fleet vehicles): status chip, assigned vehicle and driver, **LR / bilty** button (the same digital
 LR the driver and customer have). **Late trips** card: a trip on the road past the estimated arrival plus one
 hour of grace (`TripEta`, offline road distance at 40 km/h, not live traffic). `// LATER(paid)`: traffic API.
+
+## Notices and trust
+
+* The assigned driver gets a "A transporter gave you a trip" notice; the transporter gets a notice for each step the assigned driver takes (`trip_assigned`, `status_changed`).
+* A bid from an admin-approved transporter shows **Transporter** and **Verified transporter** on the customer's offers screen (`offers.companyVerified`, the rules accept `true` only for an approved account).
+* The Loads tab lists loads on the transporter's routes first ("On your route"), then loads of their vehicle types, then loads that start in the office city; "Only my routes" filters (`LoadFit`).
+* Deleting an account is blocked while the person holds or runs an unfinished company trip; the transporter's books are deleted with the account.
 
 ## 7. Books (record only)
 

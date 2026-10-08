@@ -108,10 +108,39 @@ Reviewed and fine: every collection in `firestore.rules` ends in the default-den
 ## Round 3 (second re-audit)
 Looked again at the eight angles after Tasks 58 and 59: no new FREE gap that is not either built, already listed in docs/NEXT_TASKS.md as paid or manual, or listed above as manual. G9.5 is the only open FREE item and changes no behaviour (both figures read the same delivered bookings), so it is not worth a task.
 
+## Round 4 (MASTER-3, after Tasks 67 and 68, the feature map and the naming work)
+
+Method: the same eight angles, read against the new code (`lib/fleet/`, `lib/core/transporter/`, `lib/core/comm/`, `lib/core/call/`, the new rules) and a real run of its queries against the emulator. `Task` = TASK_QUEUE_4 task that closes it.
+
+| ID | Gap | Type | Task |
+|---|---|---|---|
+| G10.1 | The incoming-call listener and the "Download my data" queries would have been refused: the `calls` read rule used `uid in [callerId, calleeId]`, which fails for a query on one field (found by running the queries on the emulator) | FREE (bug) | 69 |
+| G10.2 | An assigned driver could not move the trip: `advance` allowed only the booking holder; closing the load, notices and the vehicle were holder-only | FREE (bug) | 69 |
+| G10.3 | The trip screen showed the assigned driver the payment, papers and cancel parts, which the rules refuse | FREE (bug) | 69 |
+| G10.4 | Chat "other person" and its notice were wrong for the assigned driver and for the customer of a company booking | FREE (bug) | 69 |
+| G10.5 | Nothing limited how often one person could ring another | FREE | 69 (rate limit `call`, 20 an hour) |
+| G10.6 | Several new screens had never been checked at 360 px, 1.6x text, in Tamil, Telugu and Urdu; the check found 5 real overflows (a shared `StatusChip` could be wider than the screen) | FREE | 69 |
+| G10.7 | Deleting an account while assigned to a trip, or holding company trips, was not blocked; the transporter's books were not deleted | FREE | 69 |
+| G10.8 | The assigned driver was not told about a new trip; the transporter was not told about the driver's steps; a missed call left no trace | FREE | 70 |
+| G10.9 | A customer could not see that a bidding transporter is "Verified" (only the transporter saw the badge) | FREE | 70 |
+| G10.10 | The transporter's load list ignored the routes and vehicle types in the profile | FREE | 70 |
+| G10.11 | Help and Sahayak did not explain why numbers are private, why a message was blocked, or what a Transporter is | FREE | 70 |
+| G10.12 | "Download my data", the retention table and the Play data-safety answers did not mention the new records (violations, calls, books, memberships) | FREE | 70 |
+| G10.13 | A mistyped translation key would show the raw key on screen and no test noticed (`tr(c, 'ok')` and `'done'` did not exist) | FREE | 70 (`translation_keys_test`) |
+| G10.14 | The new analytics events (company bid, trip assigned, contact blocked, call started and connected) were missing | FREE | 70 |
+| G10.15 | A real call between two phones, a TURN server, push to ring a closed app, masked numbers | PAID / device test | docs/BLOCKED.md |
+| G10.16 | GST / PAN verification of a transporter | PAID (API) | docs/TRANSPORTER.md |
+| G10.17 | Strikes and audit lines are written by the client, so a modified app can skip them | needs Cloud Functions | docs/SECURITY_REVIEW.md |
+| G10.18 | The transporter had reminders for vehicle papers but not for the licences of their member drivers | FREE | 70 (the driver shares only the expiry date with the fleet; `fleet_members.licenceExpiry`) |
+
+### Round 4, second look
+After Tasks 69 and 70 the eight angles were read again, including the new Home entries, the admin screens and the generated hosting pages: no further FREE gap that is not built, listed above as paid / manual, or recorded in docs/SECURITY_REVIEW.md.
+
 ## Counts
 
 - Round 1: 60 gaps found, of which 55 FREE (closed by Tasks 41-57) and 5 PAID (G3.7, G3.8, G4.12, G5.7, G7.7; in docs/PAID_UPGRADE_PLAN.md).
 - Round 2: 5 more gaps: 3 FREE closed by Tasks 58 and 59 (G9.1-G9.3), 1 manual for the owner (G9.4), 1 cosmetic left (G9.5).
-- Total: 65 gaps, 58 FREE closed, 5 PAID, 1 manual, 1 cosmetic left open.
+- Round 4 (MASTER-3): 18 more gaps: 15 FREE closed by Tasks 69 and 70 (G10.1-G10.14 and G10.18), 3 paid, device-test or Cloud-Functions items recorded elsewhere (G10.15-G10.17).
+- Total: 83 gaps, 73 FREE closed, 8 PAID or needing Functions, 1 manual, 1 cosmetic left open.
 
 Free gaps: 0 (every FREE gap is closed; G9.5 is cosmetic and recorded above)

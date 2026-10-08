@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:firebase_auth_mocks/firebase_auth_mocks.dart';
 import 'package:flutter/material.dart';
@@ -19,12 +20,14 @@ import 'package:transport_app/core/services/backend.dart';
 import 'package:transport_app/core/settings/help_screen.dart';
 import 'package:transport_app/core/services/booking_service.dart';
 import 'package:transport_app/core/services/chat_service.dart';
+import 'package:transport_app/core/services/fleet_service.dart';
 import 'package:transport_app/core/services/comm_guard.dart';
 import 'package:transport_app/core/services/load_service.dart';
 import 'package:transport_app/core/services/offer_service.dart';
 import 'package:transport_app/core/services/transporter_service.dart';
 import 'package:transport_app/core/transporter/transporter_logic.dart';
 import 'package:transport_app/fleet/transporter_loads_screen.dart';
+import 'package:transport_app/fleet/transporter_shortcuts.dart';
 import 'package:transport_app/customer/customer_home_screen.dart';
 import 'package:transport_app/driver/driver_trip_screen.dart';
 
@@ -215,6 +218,65 @@ void main() {
       await settle(tester);
       expect(find.byKey(const ValueKey('trpLoad_mine')), findsOneWidget);
       expect(find.byKey(const ValueKey('trpLoad_other')), findsNothing);
+    });
+  });
+
+  group('licence reminders for member drivers', () {
+    final now = DateTime(2026, 10, 8, 12);
+    FleetMember m(String id, {DateTime? exp, bool active = true}) => FleetMember(id: 'tr1_$id', ownerId: 'tr1', driverId: id, driverName: 'Driver $id', active: active, licenceExpiry: exp);
+
+    test('soonest first; expired included; not shared, inactive and far dates are left out', () {
+      final list = licenceReminders([
+        m('a', exp: DateTime(2026, 10, 20)),
+        m('b', exp: DateTime(2026, 10, 1)),
+        m('c', exp: DateTime(2026, 10, 8)),
+        m('d'),
+        m('e', exp: DateTime(2026, 10, 9), active: false),
+        m('f', exp: DateTime(2027, 3, 1)),
+      ], now);
+      expect([for (final r in list) r.member.driverId], ['b', 'c', 'a']);
+      expect(list.first.expired, isTrue);
+      expect(list[1].daysLeft, 0);
+      expect(list[1].expired, isFalse);
+    });
+
+    test('a driver shares only the date with the fleets they are in; again only when it changed', () async {
+      await db.collection('users').doc('d1').update({'driverKyc': {'dlExpiry': Timestamp.fromDate(DateTime(2026, 11, 1))}});
+      uid = 'd1';
+      await FleetService.shareLicenceWithFleets();
+      var member = FleetMember.fromDoc('tr1_d1', (await db.collection('fleet_members').doc('tr1_d1').get()).data()!);
+      expect(member.licenceExpiry, DateTime(2026, 11, 1));
+      await db.collection('users').doc('d1').update({'driverKyc': {'dlExpiry': Timestamp.fromDate(DateTime(2027, 5, 1))}});
+      await FleetService.shareLicenceWithFleets();
+      member = FleetMember.fromDoc('tr1_d1', (await db.collection('fleet_members').doc('tr1_d1').get()).data()!);
+      expect(member.licenceExpiry, DateTime(2027, 5, 1));
+    });
+
+    test('a driver with no licence on file, or not in a fleet, shares nothing and nothing breaks', () async {
+      uid = 'd1';
+      await FleetService.shareLicenceWithFleets();
+      expect((await db.collection('fleet_members').doc('tr1_d1').get()).data()!.containsKey('licenceExpiry'), isFalse);
+      uid = 'nobody';
+      await FleetService.shareLicenceWithFleets();
+    });
+
+    testWidgets('the dashboard card lists a licence that ends soon', (tester) async {
+      await tester.pumpWidget(LanguageScope(
+        notifier: languageNotifier,
+        child: MaterialApp(
+          home: Scaffold(
+            body: TransporterShortcuts(
+              profile: () async => const TransporterProfile(company: 'Co', officeCity: 'Indore'),
+              vehicles: Stream.value(const []),
+              members: Stream.value([m('d1', exp: DateTime(2026, 10, 15))]),
+              now: () => now,
+            ),
+          ),
+        ),
+      ));
+      await settle(tester);
+      expect(find.byKey(const ValueKey('licenceReminder_d1')), findsOneWidget);
+      expect(find.textContaining('Driver d1: driving licence expires in 7 days'), findsOneWidget);
     });
   });
 

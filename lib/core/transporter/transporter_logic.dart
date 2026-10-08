@@ -129,6 +129,32 @@ List<DocReminder> docReminders(Iterable<Vehicle> vehicles, DateTime now, {int da
   return out;
 }
 
+/// A member driver whose licence ends soon (shared by the driver with this fleet).
+class LicenceReminder {
+  final FleetMember member;
+  final DateTime expiry;
+  final int daysLeft;
+
+  const LicenceReminder(this.member, this.expiry, this.daysLeft);
+
+  bool get expired => daysLeft < 0;
+}
+
+/// Licences of active members that end within [days] (expired included), soonest first.
+/// A member who has not shared a date is not listed.
+List<LicenceReminder> licenceReminders(Iterable<FleetMember> members, DateTime now, {int days = 30}) {
+  final today = DateTime(now.year, now.month, now.day);
+  final out = <LicenceReminder>[];
+  for (final m in members) {
+    final e = m.licenceExpiry;
+    if (!m.active || e == null) continue;
+    final left = DateTime(e.year, e.month, e.day).difference(today).inDays;
+    if (left <= days) out.add(LicenceReminder(m, e, left));
+  }
+  out.sort((a, b) => a.daysLeft.compareTo(b.daysLeft));
+  return out;
+}
+
 /// Why a vehicle / driver pair cannot be assigned to a booking, or null when
 /// it can. Reasons: `status` (loading is over), `not_member`, `vehicle`
 /// (not the transporter's own or an attached one), `busy`, `papers`,

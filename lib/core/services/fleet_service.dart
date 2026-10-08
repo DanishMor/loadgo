@@ -117,10 +117,32 @@ class FleetService {
         'driverName': me['driverName'] ?? '',
         'driverPhone': phone,
         'active': true,
+        if (_licenceOf(me) != null) 'licenceExpiry': Timestamp.fromDate(_licenceOf(me)!),
         'createdAt': FieldValue.serverTimestamp(),
       });
     }
     await batch.commit();
+  }
+
+  static DateTime? _licenceOf(Map<String, dynamic> user) => ((user['driverKyc'] as Map?)?['dlExpiry'] as Timestamp?)?.toDate();
+
+  /// Tells every fleet the driver belongs to when the licence ends, so the
+  /// transporter can remind them. Only the date is shared. Quiet on failure
+  /// (offline, no licence yet); called when the driver opens the home screen
+  /// and after saving documents.
+  static Future<void> shareLicenceWithFleets() async {
+    try {
+      final uid = Backend.uid;
+      if (uid == null) return;
+      final me = (await _db.collection('users').doc(uid).get()).data() ?? const {};
+      final expiry = _licenceOf(me);
+      if (expiry == null) return;
+      final mine = await _db.collection('fleet_members').where('driverId', isEqualTo: uid).get();
+      for (final d in mine.docs) {
+        final shared = (d.data()['licenceExpiry'] as Timestamp?)?.toDate();
+        if (d.data()['active'] == true && shared != expiry) await d.reference.update({'licenceExpiry': Timestamp.fromDate(expiry)});
+      }
+    } catch (_) {}
   }
 
   /// Fleets the signed-in driver belongs to.

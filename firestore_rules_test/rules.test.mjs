@@ -1326,6 +1326,22 @@ describe('fleet owners', () => {
     await assertFails(getDoc(doc(as('customer1'), 'fleet_members', 'owner1_driver1')));
   });
 
+  test('a driver shares the licence date with their fleet; nothing else, nobody else', async () => {
+    await seedUsers();
+    await seed((db) => setDoc(doc(db, 'fleet_members', 'owner1_driver1'), member({ createdAt: Timestamp.now() })));
+    const d = () => as('driver1');
+    const exp = Timestamp.fromDate(new Date('2027-01-01'));
+    await assertSucceeds(updateDoc(doc(d(), 'fleet_members', 'owner1_driver1'), { licenceExpiry: exp }));
+    await assertFails(updateDoc(doc(as('owner1'), 'fleet_members', 'owner1_driver1'), { licenceExpiry: exp }), 'the transporter cannot write it');
+    await assertFails(updateDoc(doc(as('driver2'), 'fleet_members', 'owner1_driver1'), { licenceExpiry: exp }));
+    await assertFails(updateDoc(doc(d(), 'fleet_members', 'owner1_driver1'), { licenceExpiry: 'soon' }));
+    await assertFails(updateDoc(doc(d(), 'fleet_members', 'owner1_driver1'), { licenceExpiry: exp, driverName: 'X' }));
+    await assertFails(updateDoc(doc(d(), 'fleet_members', 'owner1_driver1'), { active: true, licenceExpiry: exp, endedAt: serverTimestamp() }));
+    await assertSucceeds(getDoc(doc(as('owner1'), 'fleet_members', 'owner1_driver1')), 'the transporter reads it');
+    await seed((db) => updateDoc(doc(db, 'fleet_members', 'owner1_driver1'), { active: false }));
+    await assertFails(updateDoc(doc(d(), 'fleet_members', 'owner1_driver1'), { licenceExpiry: exp }), 'after leaving the fleet nothing is shared');
+  });
+
   test('either side ends a membership; nothing else changes', async () => {
     await seedUsers();
     await seed((db) => setDoc(doc(db, 'fleet_members', 'owner1_driver1'), member({ createdAt: Timestamp.now() })));

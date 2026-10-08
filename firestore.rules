@@ -2549,7 +2549,8 @@ service cloud.firestore {
     match /fleet_members/{memberId} {
       allow read: if signedIn() && (resource.data.ownerId == request.auth.uid || resource.data.driverId == request.auth.uid);
       allow create: if signedIn()
-          && request.resource.data.keys().hasOnly(['ownerId', 'ownerName', 'driverId', 'driverName', 'driverPhone', 'active', 'createdAt'])
+          && request.resource.data.keys().hasOnly(['ownerId', 'ownerName', 'driverId', 'driverName', 'driverPhone', 'active', 'licenceExpiry', 'createdAt'])
+          && request.resource.data.get('licenceExpiry', request.time) is timestamp
           && request.resource.data.driverId == request.auth.uid
           && memberId == request.resource.data.ownerId + '_' + request.auth.uid
           && request.resource.data.active == true
@@ -2559,9 +2560,16 @@ service cloud.firestore {
           && request.resource.data.driverPhone == request.auth.token.get('phone_number', '');
       // Either side ends the membership (active goes true -> false only).
       allow update: if signedIn()
-          && (resource.data.ownerId == request.auth.uid || resource.data.driverId == request.auth.uid)
-          && changedKeys().hasOnly(['active', 'endedAt'])
-          && resource.data.active == true && request.resource.data.active == false;
+          && ((resource.data.ownerId == request.auth.uid || resource.data.driverId == request.auth.uid)
+              && changedKeys().hasOnly(['active', 'endedAt'])
+              && resource.data.active == true && request.resource.data.active == false);
+      // The driver shares the expiry date of their licence with the fleet they
+      // belong to (the transporter gets a reminder). Only the date, only by the driver.
+      allow update: if signedIn()
+          && resource.data.driverId == request.auth.uid
+          && resource.data.active == true
+          && changedKeys().hasOnly(['licenceExpiry'])
+          && request.resource.data.licenceExpiry is timestamp;
       allow delete: if false;
     }
 

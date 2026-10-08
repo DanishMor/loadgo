@@ -27,6 +27,13 @@ class _FleetInvitesCardState extends State<FleetInvitesCard> {
   late final Stream<List<FleetMember>> _fleets = (widget.fleets ?? FleetService.watchMyFleets()).asBroadcastStream();
   late final Stream<List<Vehicle>> _vehicles = (widget.vehicles ?? VehicleService.watchMine()).asBroadcastStream();
 
+  @override
+  void initState() {
+    super.initState();
+    // The transporter gets a reminder for this driver's licence (only the date is shared).
+    if (widget.fleets == null) FleetService.shareLicenceWithFleets();
+  }
+
   Future<void> _answer(FleetInvite i, bool accept) async {
     try {
       await FleetService.respond(i, accept: accept);
