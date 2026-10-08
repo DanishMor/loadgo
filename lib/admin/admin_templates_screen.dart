@@ -101,7 +101,7 @@ class _AdminTemplatesScreenState extends State<AdminTemplatesScreen> {
                   Text(t.title, style: const TextStyle(fontWeight: FontWeight.w800)),
                   const SizedBox(height: 4),
                   Text(t.text, maxLines: 3, overflow: TextOverflow.ellipsis),
-                  Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+                  Wrap(alignment: WrapAlignment.end, children: [
                     TextButton(key: ValueKey('tplEdit_${t.id}'), onPressed: () => _edit(t), child: Text(tr(context, 'tplEdit'))),
                     TextButton(key: ValueKey('tplDelete_${t.id}'), onPressed: () => _delete(t), child: Text(tr(context, 'tplDelete'))),
                   ]),

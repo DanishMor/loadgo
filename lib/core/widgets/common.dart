@@ -19,6 +19,8 @@ class AppColors {
   static Color get chip => AppPalette.current.chip;
   static Color get warnBg => AppPalette.current.warnBg;
   static const success = Color(0xFF12B76A);
+  /// Soft green behind "online" and other good states; dark in dark mode so the text stays readable.
+  static Color get successBg => identical(AppPalette.current, AppPalette.dark) ? const Color(0xFF12301F) : const Color(0xFFE7F8EF);
   static const warning = Color(0xFFF79009);
 }
 
@@ -196,7 +198,9 @@ class EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Scrolls when the space left is smaller than the message (big text, short screen).
     return Center(
+      child: SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.all(30),
         child: Column(
@@ -232,6 +236,7 @@ class EmptyState extends StatelessWidget {
             if (action != null) ...[const SizedBox(height: 20), action!],
           ],
         ),
+      ),
       ),
     );
   }

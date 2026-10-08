@@ -85,12 +85,12 @@ class _MyLoadsViewState extends State<MyLoadsView> {
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 18, 12, 8),
-            child: Row(
+            // A Wrap, not a Row: in Tamil at a large text size the title and the button do not fit side by side.
+            child: Wrap(
+              alignment: WrapAlignment.spaceBetween,
+              crossAxisAlignment: WrapCrossAlignment.center,
               children: [
-                Expanded(
-                  child: Text(tr(context, 'myLoads'),
-                      style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: AppColors.title)),
-                ),
+                Text(tr(context, 'myLoads'), style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: AppColors.title)),
                 TextButton.icon(
                   onPressed: widget.onPostLoad,
                   icon: const Icon(Icons.add_rounded),

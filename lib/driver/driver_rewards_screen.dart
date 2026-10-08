@@ -67,8 +67,10 @@ class _DriverRewardsScreenState extends State<DriverRewardsScreen> {
             Row(children: [
               Icon(pro ? Icons.workspace_premium_rounded : Icons.person_outline_rounded, color: pro ? AppColors.warning : AppColors.muted),
               const SizedBox(width: 8),
-              Text(tr(context, pro ? 'planPro' : 'planFree'),
-                  key: const ValueKey('currentPlan'), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+              Expanded(
+                child: Text(tr(context, pro ? 'planPro' : 'planFree'),
+                    key: const ValueKey('currentPlan'), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+              ),
             ]),
             const SizedBox(height: 8),
             Text(trf(context, 'planCommissions', {'free': formatNum(cfg.commissionPercent), 'pro': formatNum(cfg.proCommissionPercent)}),

@@ -64,18 +64,27 @@ class _DriverConsentScreenState extends State<DriverConsentScreen> {
             padding: const EdgeInsets.all(24),
             child: Column(
               children: [
-                const Spacer(),
-                Container(
-                  width: 96,
-                  height: 96,
-                  decoration: BoxDecoration(color: AppColors.primaryLight, borderRadius: BorderRadius.circular(28)),
-                  child: const Icon(Icons.my_location_rounded, size: 50, color: Color(0xFF1565C0)),
+                Expanded(
+                  child: Center(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                        Container(
+                          width: 96,
+                          height: 96,
+                          decoration: BoxDecoration(color: AppColors.primaryLight, borderRadius: BorderRadius.circular(28)),
+                          child: const Icon(Icons.my_location_rounded, size: 50, color: Color(0xFF1565C0)),
+                        ),
+                        const SizedBox(height: 24),
+                        Text(tr(context, 'locConsentTitle'), textAlign: TextAlign.center, style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: AppColors.title)),
+                        const SizedBox(height: 12),
+                        Text(tr(context, 'locConsentBody'), textAlign: TextAlign.center, style: TextStyle(fontSize: 15, height: 1.5, color: AppColors.muted)),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
-                const SizedBox(height: 24),
-                Text(tr(context, 'locConsentTitle'), textAlign: TextAlign.center, style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: AppColors.title)),
-                const SizedBox(height: 12),
-                Text(tr(context, 'locConsentBody'), textAlign: TextAlign.center, style: TextStyle(fontSize: 15, height: 1.5, color: AppColors.muted)),
-                const Spacer(),
                 SizedBox(
                   width: double.infinity,
                   height: 54,

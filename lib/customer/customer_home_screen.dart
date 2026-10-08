@@ -442,10 +442,11 @@ class _CustomerHomeContent extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 28),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            Wrap(
+              alignment: WrapAlignment.spaceBetween,
+              crossAxisAlignment: WrapCrossAlignment.center,
               children: [
-                Expanded(child: Text(tr(context, 'recent'), style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.title))),
+                Text(tr(context, 'recent'), style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.title)),
                 TextButton(
                   onPressed: () {},
                   child: Text(tr(context, 'viewAll'), style: const TextStyle(color: Color(0xFF1565C0), fontWeight: FontWeight.w700)),

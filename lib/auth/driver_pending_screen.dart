@@ -59,26 +59,35 @@ class _DriverPendingScreenState extends State<DriverPendingScreen> {
                   alignment: Alignment.topRight,
                   child: TextButton(onPressed: _logout, child: Text(tr(context, 'logout'))),
                 ),
-                const Spacer(),
-                Container(
-                  width: 110,
-                  height: 110,
-                  decoration: BoxDecoration(color: AppColors.warnBg, borderRadius: BorderRadius.circular(32)),
-                  child: const Icon(Icons.hourglass_top_rounded, size: 56, color: Color(0xFFB54708)),
+                Expanded(
+                  child: Center(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                        Container(
+                          width: 110,
+                          height: 110,
+                          decoration: BoxDecoration(color: AppColors.warnBg, borderRadius: BorderRadius.circular(32)),
+                          child: const Icon(Icons.hourglass_top_rounded, size: 56, color: Color(0xFFB54708)),
+                        ),
+                        const SizedBox(height: 20),
+                        Chip(
+                          key: const ValueKey('pendingChip'),
+                          avatar: const Icon(Icons.pending_actions_rounded, size: 18, color: Color(0xFFB54708)),
+                          label: Text(tr(context, 'pendingVerification'), style: const TextStyle(fontWeight: FontWeight.w700, color: Color(0xFFB54708))),
+                          backgroundColor: AppColors.warnBg,
+                          side: BorderSide.none,
+                        ),
+                        const SizedBox(height: 16),
+                        Text(tr(context, 'pendingTitle'), textAlign: TextAlign.center, style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: AppColors.title)),
+                        const SizedBox(height: 10),
+                        Text(tr(context, 'pendingSub'), textAlign: TextAlign.center, style: TextStyle(fontSize: 15, height: 1.5, color: AppColors.muted)),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
-                const SizedBox(height: 20),
-                Chip(
-                  key: const ValueKey('pendingChip'),
-                  avatar: const Icon(Icons.pending_actions_rounded, size: 18, color: Color(0xFFB54708)),
-                  label: Text(tr(context, 'pendingVerification'), style: const TextStyle(fontWeight: FontWeight.w700, color: Color(0xFFB54708))),
-                  backgroundColor: AppColors.warnBg,
-                  side: BorderSide.none,
-                ),
-                const SizedBox(height: 16),
-                Text(tr(context, 'pendingTitle'), textAlign: TextAlign.center, style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: AppColors.title)),
-                const SizedBox(height: 10),
-                Text(tr(context, 'pendingSub'), textAlign: TextAlign.center, style: TextStyle(fontSize: 15, height: 1.5, color: AppColors.muted)),
-                const Spacer(),
                 SizedBox(
                   width: double.infinity,
                   height: 54,

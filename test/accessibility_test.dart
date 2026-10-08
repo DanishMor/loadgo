@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:transport_app/core/theme/app_theme.dart';
+import 'package:transport_app/core/widgets/common.dart';
 
 /// MASTER-5 Task 23: spoken labels, tap size, contrast.
 double _lum(Color c) {
@@ -17,6 +18,14 @@ double contrast(Color a, Color b) {
 }
 
 void main() {
+  test('the soft green of the online chip is readable in both themes', () {
+    for (final entry in {'light': AppPalette.light, 'dark': AppPalette.dark}.entries) {
+      AppPalette.current = entry.value;
+      addTearDown(() => AppPalette.current = AppPalette.light);
+      expect(contrast(entry.value.text, AppColors.successBg), greaterThanOrEqualTo(7), reason: entry.key);
+    }
+  });
+
   for (final entry in {'light': AppPalette.light, 'dark': AppPalette.dark}.entries) {
     final p = entry.value;
     test('${entry.key}: text colours are readable on the background and on cards', () {

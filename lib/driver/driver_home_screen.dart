@@ -302,7 +302,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
             const SizedBox(height: 18),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
-              decoration: BoxDecoration(color: _isOnline ? const Color(0xFFE7F8EF) : AppColors.chip, borderRadius: BorderRadius.circular(18)),
+              decoration: BoxDecoration(color: _isOnline ? AppColors.successBg : AppColors.chip, borderRadius: BorderRadius.circular(18)),
               child: Row(
                 children: [
                   Icon(Icons.circle, size: 14, color: _isOnline ? const Color(0xFF12B76A) : AppColors.faint),

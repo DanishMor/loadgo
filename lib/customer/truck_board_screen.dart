@@ -165,27 +165,31 @@ class _TruckBoardScreenState extends State<TruckBoardScreen> {
           ),
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
-            child: Row(children: [
-              Expanded(
-                child: TextField(
+            child: Column(children: [
+              TextField(
                   key: const ValueKey('boardCapacity'),
                   controller: _capacity,
                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
                   onChanged: (_) => setState(() => _shown = _boardPage),
                   decoration: InputDecoration(labelText: tr(context, 'capacityMin')), inputFormatters: [LengthLimitingTextInputFormatter(10)]),
-              ),
-              const SizedBox(width: 8),
-              OutlinedButton(
-                key: const ValueKey('boardAfter'),
-                onPressed: () => _pickDate(true),
-                child: Text(_after == null ? tr(context, 'filterDateFrom') : formatDate(_after!)),
-              ),
-              const SizedBox(width: 4),
-              OutlinedButton(
-                key: const ValueKey('boardBefore'),
-                onPressed: () => _pickDate(false),
-                child: Text(_before == null ? tr(context, 'filterDateTo') : formatDate(_before!)),
-              ),
+              const SizedBox(height: 8),
+              Row(children: [
+                Expanded(
+                  child: OutlinedButton(
+                    key: const ValueKey('boardAfter'),
+                    onPressed: () => _pickDate(true),
+                    child: Text(_after == null ? tr(context, 'filterDateFrom') : formatDate(_after!), overflow: TextOverflow.ellipsis),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: OutlinedButton(
+                    key: const ValueKey('boardBefore'),
+                    onPressed: () => _pickDate(false),
+                    child: Text(_before == null ? tr(context, 'filterDateTo') : formatDate(_before!), overflow: TextOverflow.ellipsis),
+                  ),
+                ),
+              ]),
             ]),
           ),
           Padding(
