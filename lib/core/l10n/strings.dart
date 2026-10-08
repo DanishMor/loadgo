@@ -48,6 +48,7 @@ import 'admin_user_strings.dart';
 import 'trend_strings.dart';
 import 'trip_watch_strings.dart';
 import 'bilty_strings.dart';
+import 'a11y_strings.dart';
 import 'inspection_strings.dart';
 import 'vehicle_strings.dart';
 import 'help_strings.dart';
@@ -107,6 +108,7 @@ const List<Map<String, List<String>>> stringTables = [
   tripWatchStrings,
   biltyStrings,
   inspectionStrings,
+  a11yStrings,
   scheduleStrings,
   truckBoardStrings,
   fleetStrings,

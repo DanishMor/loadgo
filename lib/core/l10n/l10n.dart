@@ -24,6 +24,12 @@ enum AppLanguage {
   urdu,
 }
 
+/// Urdu and Kashmiri (Nastaliq / Naskh) are written right to left.
+extension AppLanguageDirection on AppLanguage {
+  bool get isRtl => this == AppLanguage.kashmiri || this == AppLanguage.urdu;
+  TextDirection get textDirection => isRtl ? TextDirection.rtl : TextDirection.ltr;
+}
+
 final ValueNotifier<AppLanguage> languageNotifier = ValueNotifier<AppLanguage>(
   AppLanguage.english,
 );

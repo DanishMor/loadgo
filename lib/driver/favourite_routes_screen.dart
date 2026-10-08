@@ -63,7 +63,7 @@ class _FavouriteRoutesScreenState extends State<FavouriteRoutesScreen> {
                 controller: _drop,
                 decoration: InputDecoration(labelText: tr(context, 'dropLocation')), inputFormatters: [LengthLimitingTextInputFormatter(100)]),
             ),
-            IconButton.filled(key: const ValueKey('favAdd'), onPressed: _add, icon: const Icon(Icons.add_rounded)),
+            IconButton.filled(key: const ValueKey('favAdd'), tooltip: tr(context, 'a11yAdd'), onPressed: _add, icon: const Icon(Icons.add_rounded)),
           ]),
         ),
         Expanded(

@@ -17,7 +17,7 @@ class AppPalette extends ThemeExtension<AppPalette> {
 
   static const light = AppPalette(
     bg: Color(0xFFF6F8FC), card: Colors.white, text: Color(0xFF111827), strong: Color(0xFF344054), muted: Color(0xFF667085),
-    hint: Color(0xFF98A2B3), border: Color(0xFFE4E7EC), tint: Color(0xFFE8F1FF), chip: Color(0xFFF2F4F7), warnBg: Color(0xFFFFF6E5),
+    hint: Color(0xFF7A8598), border: Color(0xFFE4E7EC), tint: Color(0xFFE8F1FF), chip: Color(0xFFF2F4F7), warnBg: Color(0xFFFFF6E5),
   );
 
   static const dark = AppPalette(

@@ -51,7 +51,7 @@ class _SimpleBidSheetState extends State<_SimpleBidSheet> {
   Widget _stepper(IconData icon, bool up, Key key) => SizedBox(
         width: 72,
         height: 72,
-        child: IconButton.filledTonal(key: key, iconSize: 40, onPressed: () => setState(() => _rupees = simpleBidNext(_rupees, up: up)), icon: Icon(icon)),
+        child: IconButton.filledTonal(key: key, tooltip: tr(context, up ? 'a11yMore' : 'a11yLess'), iconSize: 40, onPressed: () => setState(() => _rupees = simpleBidNext(_rupees, up: up)), icon: Icon(icon)),
       );
 
   @override

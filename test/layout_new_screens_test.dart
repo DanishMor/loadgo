@@ -118,7 +118,7 @@ void main() {
         ),
   };
 
-  for (final lang in [AppLanguage.english, AppLanguage.tamil, AppLanguage.telugu, AppLanguage.urdu]) {
+  for (final lang in [AppLanguage.english, AppLanguage.tamil, AppLanguage.telugu, AppLanguage.urdu, AppLanguage.kashmiri]) {
     for (final dark in [false, true]) {
       for (final e in screens.entries) {
         testWidgets('${e.key} fits 360x640 at 1.6x text (${lang.name}, ${dark ? 'dark' : 'light'})', (tester) async {
@@ -135,7 +135,7 @@ void main() {
               theme: AppTheme.build(Brightness.light),
               darkTheme: AppTheme.build(Brightness.dark),
               themeMode: dark ? ThemeMode.dark : ThemeMode.light,
-              builder: (context, c) => MediaQuery(data: MediaQuery.of(context).copyWith(textScaler: const TextScaler.linear(1.6)), child: c!),
+              builder: (context, c) => Directionality(textDirection: lang.textDirection, child: MediaQuery(data: MediaQuery.of(context).copyWith(textScaler: const TextScaler.linear(1.6)), child: c!)),
               home: Scaffold(body: child!),
             ),
           ));

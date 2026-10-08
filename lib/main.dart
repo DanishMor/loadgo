@@ -117,11 +117,15 @@ class LoadGoApp extends StatelessWidget {
           final mq = MediaQuery.of(context);
           return MediaQuery(
             data: mq.copyWith(textScaler: mq.textScaler.clamp(maxScaleFactor: maxTextScale)),
-            child: Column(
-              children: [
-                Expanded(child: AppControlGate(child: child ?? const SizedBox.shrink())),
-                const OfflineBanner(),
-              ],
+            // Urdu and Kashmiri read right to left (MASTER-5 Task 24).
+            child: Directionality(
+              textDirection: LanguageScope.of(context).textDirection,
+              child: Column(
+                children: [
+                  Expanded(child: AppControlGate(child: child ?? const SizedBox.shrink())),
+                  const OfflineBanner(),
+                ],
+              ),
             ),
           );
         },

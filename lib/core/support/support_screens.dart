@@ -484,6 +484,7 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                         ),
                         IconButton.filled(
                           key: const ValueKey('replySend'),
+                          tooltip: tr(context, 'send'),
                           onPressed: _busy
                               ? null
                               : () {

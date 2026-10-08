@@ -71,6 +71,7 @@ class HelpersStepper extends StatelessWidget {
       children: [
         IconButton.outlined(
           key: const ValueKey('helpersMinus'),
+          tooltip: tr(context, 'a11yLess'),
           onPressed: value > 0 ? () => onChanged(value - 1) : null,
           icon: const Icon(Icons.remove_rounded),
         ),
@@ -80,6 +81,7 @@ class HelpersStepper extends StatelessWidget {
         ),
         IconButton.outlined(
           key: const ValueKey('helpersPlus'),
+          tooltip: tr(context, 'a11yMore'),
           onPressed: value < maxHelpers ? () => onChanged(value + 1) : null,
           icon: const Icon(Icons.add_rounded),
         ),
