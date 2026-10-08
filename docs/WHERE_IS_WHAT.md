@@ -53,6 +53,9 @@ Bottom bar: **Home**, **Bookings**, **Loads**, **Profile**.
 | Edit profile, verification card, logout | Profile tab |
 | Settings (theme, notification choices, consents, devices, terms, privacy, refund policy, linked accounts, change mobile number, download my data, delete account) | Profile > Settings |
 | Help and support, tickets | Profile > Help and support |
+| The three first steps of a role (shown once, "Got it" hides them) | Home > top card |
+| A notice from LoadGo (announcement banner) | Home > top, above the first steps |
+| Dispute: what the trip records show (status times, pickup / delivery proof, notes, cancellation charge) | Bookings tab > a booking > Report a problem > the dispute |
 | Emergency contacts, SOS | Profile > Emergency contacts; trip screen > SOS |
 | Chat and in-app call | Trip screen > Chat, Call (phone numbers are never shown) |
 | Report a problem | Trip screen; Help (flag `problemReport`) |
@@ -74,6 +77,7 @@ Bottom bar: **Home**, **Loads**, **Trips**, **Earnings**, **Profile**.
 | Documents center (invoices, LR, POD) | Home > Documents center |
 | My offers | Home > My offers |
 | Wallet | Home > Wallet; Earnings tab |
+| Earnings statement (this month, last month, this financial year, all time) as CSV or PDF | Home > Wallet > Earnings statement |
 | City demand | Home > City demand |
 | Empty trucks | Home > Empty trucks (flag `emptyTrucks`) |
 | My analytics | Home > My analytics; Profile |
@@ -94,6 +98,7 @@ Bottom bar: **Dashboard**, **Loads**, **Trips**, **Fleet**, **Profile**. Flag: `
 | Company profile, Verified badge | Dashboard > Company profile |
 | Papers expiring soon (own and attached vehicles) | Dashboard top card |
 | Books (margin, owed to drivers, party-wise due) | Dashboard > Books; Trips > a company trip > Books |
+| Party statement and the all-parties export (CSV, PDF) | Dashboard > Books > the share icon on a party; "Export all parties" |
 | Analytics (utilisation, revenue, expenses) | Dashboard > Analytics |
 | Open loads, bid for the company, post a load | Loads tab > Bid for company; "Post a load" button |
 | My bids, confirm a selected bid | Trips tab > My bids |
@@ -120,7 +125,7 @@ Admin Panel: **Profile > Admin** (only for accounts in `admins/{uid}`). The pane
 | Reports | user reports, open a case, **open the chat for review** | super, support, ops |
 | Chat violations | strikes, suspensions, phone numbers (logged) | super, support, ops |
 | Signals, Fraud cases, Flagged users | anti-fraud | super, ops (signals also verifier) |
-| Disputes, Rating flags, Rating bursts | claims and ratings | super, support (ops for ratings) |
+| Disputes, Rating flags, Rating bursts | claims and ratings; **Hide comment** blanks an abusive rating comment (the stars stay) | super, support (ops for ratings; hiding: super, support) |
 | Sahayak, Feedback, Templates | assistant and reply templates | super, support |
 | Health | app health | super, ops |
 | Supply and demand, Unit economics | numbers | super (supply and demand also ops) |
@@ -129,4 +134,6 @@ Admin Panel: **Profile > Admin** (only for accounts in `admins/{uid}`). The pane
 | Demo data | seed and remove demo data | super |
 | Deletion requests | account deletions | super, support |
 | Audit log | who did what (includes number views and chat opens) | super, ops |
-| Driver rewards, Payouts, Offers, Config | money records and settings | super |
+| Driver rewards, Payouts, Offers, Config | money records and settings; Config also has the **Announcement banner** (text per language, level, last day, roles) | super |
+
+Every admin list (tickets, SOS, reports, audit log, vehicles, deletion requests ...) has a search box, saved filters (kept on the device), "Show 50 more" and **Export CSV** of what is on screen (no phone numbers, e-mail, KYC or free text). Every admin change also writes an audit event.

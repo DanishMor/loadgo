@@ -24,3 +24,4 @@ Nothing moved into the free stack: every item above still needs a paid service, 
 | Push to ring a closed app, missed-call push | Needs a sender (FCM + Cloud Functions, Blaze) | Blaze plan |
 | Masked-number calling | Paid telephony provider | Provider contract; plug into the `CallProvider` interface |
 | GST / PAN check of a transporter | Paid KYC API | Provider contract (the badge is an admin decision today) |
+- 2026-10-08 MASTER-5 Task 49: `flutter build apk --debug` again: "No Android SDK found". The web release build passes. Needs a machine with the Android SDK (owner).
