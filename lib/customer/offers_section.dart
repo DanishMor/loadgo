@@ -16,6 +16,11 @@ class OffersChoice {
   const OffersChoice({this.promo, this.useCredits = false});
 }
 
+/// What of [c] still counts under the admin switches: a promo code or credits
+/// the customer picked are dropped when their switch is OFF (the rules refuse
+/// them then anyway). MASTER-5 Task 41.
+OffersChoice allowedOffers(OffersChoice c, OffersSwitch s) => OffersChoice(promo: s.promo ? c.promo : null, useCredits: s.credits && c.useCredits);
+
 /// What the customer pays after offers, in paise (never below 0).
 int payableAfterOffers({required int total, Promo? promo, int creditsBalance = 0, bool useCredits = false}) {
   final discount = promo?.discountFor(total) ?? 0;

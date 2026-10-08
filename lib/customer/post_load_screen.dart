@@ -477,10 +477,11 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
       PromoApplication? promo;
       var credits = 0;
       if (quote != null) {
-        if (_offers.promo != null && OffersSwitchService.current.promo) promo = await RewardsService.reserve(_offers.promo!.code, quote.total);
-        if (_offers.useCredits && OffersSwitchService.current.credits) {
+        final offers = allowedOffers(_offers, OffersSwitchService.current);
+        if (offers.promo != null) promo = await RewardsService.reserve(offers.promo!.code, quote.total);
+        if (offers.useCredits) {
           credits = creditsToSpend(
-              total: quote.total, promo: _offers.promo, creditsBalance: await RewardsService.balance(), useCredits: true);
+              total: quote.total, promo: offers.promo, creditsBalance: await RewardsService.balance(), useCredits: true);
         }
       }
       var allowed = const <String>[];
