@@ -4843,3 +4843,73 @@ describe('trip share link (Task 64)', () => {
     await assertSucceeds(deleteDoc(ref(as('customer1'))));
   });
 });
+
+// ---------------------------------------------------------------------------
+// Task 69: admin-only collections stay closed to customer, driver, transporter.
+// ---------------------------------------------------------------------------
+describe('admin lock (Task 69)', () => {
+  const ROLES = ['customer1', 'driver1', 'transporter1'];
+  const auditBody = (uid, type) => ({ type, actorId: uid, data: {}, createdAt: serverTimestamp() });
+
+  for (const uid of ROLES) {
+    test(`${uid}: cannot read or write the admins collection`, async () => {
+      const db = as(uid);
+      await assertFails(getDoc(doc(db, 'admins', 'admin1')));
+      await assertFails(getDocs(collection(db, 'admins')));
+      await assertFails(setDoc(doc(db, 'admins', uid), { role: 'super' }));
+      await assertFails(updateDoc(doc(db, 'admins', 'admin1'), { role: 'support' }));
+      await assertFails(deleteDoc(doc(db, 'admins', 'admin1')));
+    });
+
+    test(`${uid}: no audit_events read, no admin-type audit writes`, async () => {
+      const db = as(uid);
+      await seed((a) => setDoc(doc(a, 'audit_events', 'e1'), { type: 'config_change', actorId: 'admin1', data: {}, createdAt: Timestamp.now() }));
+      await assertFails(getDoc(doc(db, 'audit_events', 'e1')));
+      await assertFails(getDocs(collection(db, 'audit_events')));
+      for (const type of ['verification', 'risk_change', 'reassign', 'config_change', 'user_action', 'contact_view', 'chat_view']) {
+        await assertFails(addDoc(collection(db, 'audit_events'), auditBody(uid, type)));
+      }
+      await assertFails(deleteDoc(doc(db, 'audit_events', 'e1')));
+    });
+
+    test(`${uid}: cannot write config (features, pricing) or admin-only docs`, async () => {
+      const db = as(uid);
+      await assertFails(setDoc(doc(db, 'config', 'features'), { pilotMode: false, flags: { bilty: true } }));
+      await assertFails(setDoc(doc(db, 'config', 'pricing'), { platformFeePercent: 0 }));
+      await assertFails(updateDoc(doc(db, 'config', 'features'), { pilotMode: true }));
+      await assertFails(deleteDoc(doc(db, 'config', 'features')));
+    });
+
+    test(`${uid}: cannot touch fraud cases, error logs or other people's violations`, async () => {
+      const db = as(uid);
+      await seed(async (a) => {
+        await setDoc(doc(a, 'fraud_cases', 'c1'), { userId: 'x', summary: 'abc', status: 'open', reportIds: [], createdBy: 'admin1', createdAt: Timestamp.now(), updatedAt: Timestamp.now() });
+        await setDoc(doc(a, 'app_errors', 'e1'), { message: 'm', screen: 's', kind: 'flutter', appVersion: '1', createdAt: Timestamp.now() });
+        await setDoc(doc(a, 'violations', 'someone_1'), { userId: 'someone', bookingId: 'b', kind: 'phone', excerpt: 'x', createdAt: Timestamp.now() });
+      });
+      await assertFails(getDoc(doc(db, 'fraud_cases', 'c1')));
+      await assertFails(getDocs(collection(db, 'fraud_cases')));
+      await assertFails(setDoc(doc(db, 'fraud_cases', 'c2'), { userId: 'x', summary: 'abc', status: 'open', reportIds: [], createdBy: uid, createdAt: serverTimestamp(), updatedAt: serverTimestamp() }));
+      await assertFails(getDoc(doc(db, 'app_errors', 'e1')));
+      await assertFails(getDocs(collection(db, 'app_errors')));
+      await assertFails(getDoc(doc(db, 'violations', 'someone_1')));
+      await assertFails(getDocs(collection(db, 'violations')));
+      await assertFails(deleteDoc(doc(db, 'violations', 'someone_1')));
+    });
+
+    test(`${uid}: cannot give themselves a risk tier or lift a restriction`, async () => {
+      const db = as(uid);
+      await seed((a) => setDoc(doc(a, 'users', uid), { name: 'N', role: 'customer', riskTier: 'review' }));
+      await assertFails(updateDoc(doc(db, 'users', uid), { riskTier: 'normal' }));
+      await assertFails(updateDoc(doc(db, 'users', uid), { riskTier: 'banned' }));
+      await assertFails(updateDoc(doc(db, 'users', uid), { riskReason: 'none' }));
+    });
+  }
+
+  test('the real admin still reads and writes what the others cannot', async () => {
+    await assertSucceeds(getDoc(doc(asAdmin(), 'admins', 'admin1')));
+    await assertSucceeds(setDoc(doc(asAdmin(), 'config', 'features'), { pilotMode: false, flags: {}, updatedAt: serverTimestamp() }));
+    await assertSucceeds(getDocs(collection(asAdmin(), 'audit_events')));
+    await assertSucceeds(getDocs(collection(asAdmin(), 'fraud_cases')));
+  });
+});

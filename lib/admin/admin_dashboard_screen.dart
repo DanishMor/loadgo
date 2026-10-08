@@ -89,6 +89,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         final role = snap.data;
         return Scaffold(
           appBar: AppBar(
+            leading: BackButton(onPressed: () => Navigator.of(context, rootNavigator: true).maybePop()),
             title: Text(tr(context, 'adminPanel')),
             actions: [
               if (role != null)

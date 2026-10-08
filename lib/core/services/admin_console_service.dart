@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../analytics/unit_economics.dart';
@@ -71,6 +73,16 @@ class AdminConsoleService {
     } catch (_) {
       return false;
     }
+  }
+
+  /// Live check of `admins/{uid}` (Task 69): emits false while signed out,
+  /// on any error, and the moment the document goes away.
+  static Stream<bool> isAdminStream() {
+    final uid = Backend.uid;
+    if (uid == null) return Stream.value(false);
+    return _db.collection('admins').doc(uid).snapshots().map((d) => d.exists).transform(
+          StreamTransformer<bool, bool>.fromHandlers(handleError: (e, st, sink) => sink.add(false)),
+        );
   }
 
   /// The signed-in admin's staff role (BE7); super when the field is missing.

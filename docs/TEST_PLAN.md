@@ -33,7 +33,7 @@ Tick every line on a real Android phone before a release. Test in English and on
 - [ ] Invite a booker, role change, approval limit (load waits for approval), statements by cost centre.
 
 ## Admin
-- [ ] Admin tile only for allowlisted uid; staff roles hide tiles (support, ops, verifier).
+- [ ] Admin tile only for allowlisted uid (live: remove admins/{uid} and the open panel closes); purple "Admin mode" banner on every admin screen; customer, driver, transporter never see the tile, the text or the screens; staff roles hide tiles (support, ops, verifier).
 - [ ] Verification queue, users (suspend, ban, restore, bulk hold with reason), CSV exports masked.
 - [ ] Tickets with reply templates, SOS, reports, claims, fraud cases, payouts, feedback, assistant questions.
 - [ ] Config JSON editors, offers switches, app control (force update, maintenance).
