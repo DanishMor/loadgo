@@ -61,3 +61,23 @@ Tick every line on a real Android phone before a release. Test in English and on
 - [ ] `flutter analyze` 0 issues, `flutter test` green, `cd firestore_rules_test && npm test` green.
 - [ ] Demo data removed from the live project (count 0).
 - [ ] Rules and indexes deployed by the owner (see docs/MANUAL_TODO.md).
+
+## Automated coverage (MASTER-5 Phase B round 2)
+What the ticks above already have as test code, so a release check only needs the parts that need a real phone (OTP SMS, WhatsApp / UPI hand-over, camera, GPS, calls on two networks, push, the PDF look on paper). `test/test_plan_map_test.dart` fails if a file named here disappears.
+
+| Area | Flows | Test files |
+|---|---|---|
+| Customer | post load, fare, offers, counter, select, booking, OTPs, ETA, chat, share trip | `test/load_post_test.dart`, `test/load_posting_upgrade_test.dart`, `test/pricing_test.dart`, `test/offers_test.dart`, `test/booking_flow_test.dart`, `test/trip_eta_test.dart`, `test/chat_test.dart`, `test/share_test.dart` |
+| Customer | cancel (reason, charge, advance booking), pay, rate, tip, invoice, claim | `test/load_cancel_test.dart`, `test/schedule_test.dart`, `test/payments_test.dart`, `test/rating_test.dart`, `test/rating_categories_test.dart`, `test/driver_extras_test.dart`, `test/invoice_series_test.dart`, `test/claim_test.dart`, `test/trip_evidence_test.dart` |
+| Customer | promo, credits, referral (also with the switches OFF), spending, history, search, settings, deletion | `test/rewards_test.dart`, `test/offers_off_test.dart`, `test/customer_history_test.dart`, `test/advanced_search_test.dart`, `test/analytics_settings_test.dart`, `test/help_deletion_test.dart`, `test/e2e/deletion_roles_e2e_test.dart` |
+| Driver | role lock, KYC, identity, documents and expiry, vehicles | `test/role_lock_test.dart`, `test/identity_test.dart`, `test/auth_fixes_test.dart`, `test/doc_expiry_test.dart`, `test/vehicle_documents_test.dart`, `test/add_vehicle_screen_test.dart`, `test/vehicle_service_test.dart` |
+| Driver | loads, ranking, filters, accept, offers, trip, cancel, wallet, payout, earnings, tips, incentives | `test/matching_test.dart`, `test/load_filter_test.dart`, `test/accept_load_test.dart`, `test/booking_flow_test.dart`, `test/driver_cancel_test.dart`, `test/earnings_test.dart`, `test/earnings_statement_test.dart`, `test/e2e_flow_test.dart` |
+| Driver | empty truck board, driver network, Simple Mode | `test/truck_board_test.dart`, `test/task35_test.dart`, `test/task46_test.dart`, `test/task57_test.dart` |
+| Whole trip | customer to driver, bid, trip, delivery, rating, tip and payment | `test/e2e_flow_test.dart` |
+| Bilty and inspection | numbered LR, copies, versions, share links, verify page, inspection requests, grants, expiry, offline copy | `test/bilty_test.dart`, `test/bilty_layout_test.dart`, `test/inspection_test.dart`, `test/e2e/bilty_e2e_test.dart`, `test/e2e/inspection_e2e_test.dart`, `test/pure_logic_matrix_test.dart` |
+| Transporter | company profile, loads, assign, trips, books, party statements | `test/task67_test.dart`, `test/party_statement_test.dart`, `test/fleet_test.dart`, `test/e2e/transporter_private_chat_e2e_test.dart` |
+| Chat and call | numbers hidden, contact filter, strike ladder, blocks, calls | `test/contact_filter_test.dart`, `test/task68_test.dart`, `test/pure_logic_matrix_test.dart`, `test/e2e/transporter_private_chat_e2e_test.dart` |
+| Business account | invites, roles, approval limit, statements | `test/business_team_test.dart`, `test/enterprise_test.dart`, `test/task38_test.dart` |
+| Admin | lock and banner, verification, users, lists, exports, funnel, announcement, moderation, audit of every write | `test/admin_lock_test.dart`, `test/admin_verification_test.dart`, `test/admin_user_test.dart`, `test/admin_console_test.dart`, `test/admin_list_tools_test.dart`, `test/pilot_funnel_test.dart`, `test/announcement_test.dart`, `test/rating_moderation_test.dart`, `test/admin_audit_test.dart` |
+| Rules | every collection, every role | `firestore_rules_test/rules.test.mjs`, `firestore_rules_test/matrix.test.mjs`, `test/rules_audit_test.dart` |
+| Quality | layout of all screens, 12 languages, right-to-left, accessibility, states, listeners, indexes, old documents | `test/layout_all_screens_test.dart`, `test/language_qa_test.dart`, `test/translations_test.dart`, `test/rtl_test.dart`, `test/accessibility_test.dart`, `test/state_audit_test.dart`, `test/listener_audit_test.dart`, `test/index_audit_test.dart`, `test/model_fuzz_test.dart` |
