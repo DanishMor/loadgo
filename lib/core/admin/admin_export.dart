@@ -61,6 +61,29 @@ class AdminExport {
     return rows.join('\n');
   }
 
+  /// Fields that never leave an export (personal or secret), whatever a list shows.
+  static final _private = RegExp(r'phone|email|aadhaar|(^|_)pan($|_)|licen|dlNumber|rcNumber|kyc|address|otp|upi|token|secret|text|description|note|message|comment', caseSensitive: false);
+
+  /// A CSV of any admin list: `id` plus every plain field (text, number, yes/no,
+  /// time) except personal or free-text ones, in a stable column order.
+  static String genericCsv(Iterable<(String, Map<String, dynamic>)> docs) {
+    final rows = docs.toList();
+    final cols = <String>{};
+    for (final (_, d) in rows) {
+      for (final e in d.entries) {
+        final v = e.value;
+        if (_private.hasMatch(e.key)) continue;
+        if (v is String || v is num || v is bool || v is Timestamp) cols.add(e.key);
+      }
+    }
+    final keys = cols.toList()..sort();
+    final out = [['id', ...keys].map(cell).join(',')];
+    for (final (id, d) in rows) {
+      out.add([id, for (final k in keys) d[k] is Timestamp ? _date(d[k]) : d[k]].map(cell).join(','));
+    }
+    return '${out.join('\n')}\n';
+  }
+
   static const bookingsHeader = 'booking,date,status,pickup,drop,cargo,vehicle_type,vehicle,amount_rupees,payment,driver,customer,cancelled_by,cancel_reason';
 
   static String _rupees(int? paise) => paise == null ? '' : '${paise ~/ 100}.${(paise % 100).toString().padLeft(2, '0')}';

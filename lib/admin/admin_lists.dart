@@ -4,6 +4,9 @@ import 'admin_user_screen.dart';
 import 'package:flutter/services.dart';
 import '../core/documents/doc_expiry.dart';
 
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../core/admin/admin_export.dart';
 import '../core/constants/logistics.dart';
 import '../core/l10n/l10n.dart';
 import '../core/models/booking.dart';
@@ -30,8 +33,10 @@ String _ts(Object? v) => v is Timestamp ? v.toDate().toString().split('.').first
 
 Widget _empty(BuildContext context) => EmptyState(icon: Icons.inbox_outlined, title: tr(context, 'adminNothingHere'));
 
-/// Scaffold with a live list; newest first by [sortKey].
-class _LiveList extends StatelessWidget {
+/// Scaffold with a live list; newest first by [sortKey]. MASTER-5 Task 38: a
+/// search box, saved filters (kept on this device), "show more" in steps of
+/// 50 and a CSV of what is on screen (personal and free-text fields left out).
+class _LiveList extends StatefulWidget {
   final String titleKey;
   final Stream<List<Doc>> Function() stream;
   final String sortKey;
@@ -48,25 +53,123 @@ class _LiveList extends StatelessWidget {
   });
 
   @override
+  State<_LiveList> createState() => _LiveListState();
+}
+
+class _LiveListState extends State<_LiveList> {
+  static const _page = 50;
+  final _search = TextEditingController();
+  int _shown = _page;
+  List<String> _saved = const [];
+
+  String get _prefKey => 'adminfilters_${widget.titleKey}';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSaved();
+  }
+
+  @override
+  void dispose() {
+    _search.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadSaved() async {
+    try {
+      final saved = (await SharedPreferences.getInstance()).getStringList(_prefKey) ?? const [];
+      if (mounted) setState(() => _saved = saved);
+    } catch (_) {}
+  }
+
+  Future<void> _saveCurrent() async {
+    final q = _search.text.trim();
+    if (q.isEmpty || _saved.contains(q)) return;
+    final next = [q, ..._saved].take(5).toList();
+    setState(() => _saved = next);
+    try {
+      await (await SharedPreferences.getInstance()).setStringList(_prefKey, next);
+    } catch (_) {}
+  }
+
+  bool _matches(Doc d, String q) {
+    if (q.isEmpty) return true;
+    final text = '${d.id} ${d.data().values.where((v) => v is String || v is num || v is bool).join(' ')}'.toLowerCase();
+    return q.toLowerCase().split(RegExp(r'\s+')).every(text.contains);
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(tr(context, titleKey))),
+      appBar: AppBar(title: Text(tr(context, widget.titleKey)), actions: [
+        PopupMenuButton<String>(
+          key: const ValueKey('adminSavedFilters'),
+          tooltip: tr(context, 'adminSavedFilters'),
+          icon: const Icon(Icons.bookmarks_outlined),
+          onSelected: (q) {
+            if (q == '\u0000save') {
+              _saveCurrent();
+            } else {
+              setState(() {
+                _search.text = q;
+                _shown = _page;
+              });
+            }
+          },
+          itemBuilder: (_) => [
+            PopupMenuItem(value: '\u0000save', enabled: _search.text.trim().isNotEmpty, child: Text(tr(context, 'adminSaveFilter'))),
+            for (final q in _saved) PopupMenuItem(value: q, child: Text(q)),
+          ],
+        ),
+      ]),
       body: Column(children: [
-        ...header,
+        ...widget.header,
+        Padding(
+          padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
+          child: TextField(
+            key: const ValueKey('adminListSearch'),
+            controller: _search,
+            onChanged: (_) => setState(() => _shown = _page),
+            decoration: InputDecoration(
+              isDense: true,
+              prefixIcon: const Icon(Icons.search_rounded),
+              hintText: tr(context, 'adminSearchHint'),
+              suffixIcon: _search.text.isEmpty ? null : IconButton(tooltip: tr(context, 'clear'), icon: const Icon(Icons.close_rounded), onPressed: () => setState(() => _search.clear())),
+            ),
+          ),
+        ),
         Expanded(
           child: LiveStream<List<Doc>>(
-            stream: stream,
+            stream: widget.stream,
             builder: (context, docs) {
               if (docs.isEmpty) return _empty(context);
-              final list = [...docs]..sort((a, b) {
-                  final x = a.data()[sortKey], y = b.data()[sortKey];
+              final list = [...docs.where((d) => _matches(d, _search.text.trim()))]..sort((a, b) {
+                  final x = a.data()[widget.sortKey], y = b.data()[widget.sortKey];
                   if (x is Timestamp && y is Timestamp) return y.compareTo(x);
                   return 0;
                 });
+              final visible = list.take(_shown).toList();
               return ListView.separated(
-                itemCount: list.length,
+                itemCount: visible.length + 1,
                 separatorBuilder: (_, _) => const Divider(height: 1),
-                itemBuilder: (context, i) => tile(context, list[i]),
+                itemBuilder: (context, i) {
+                  if (i < visible.length) return widget.tile(context, visible[i]);
+                  return Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Wrap(spacing: 8, runSpacing: 8, alignment: WrapAlignment.center, children: [
+                      Text(trf(context, 'adminShowing', {'n': visible.length, 'total': list.length}), style: TextStyle(color: AppColors.muted)),
+                      if (visible.length < list.length)
+                        OutlinedButton(key: const ValueKey('adminShowMore'), onPressed: () => setState(() => _shown += _page), child: Text(tr(context, 'adminShowMore'))),
+                      OutlinedButton.icon(
+                        key: const ValueKey('adminExportCsv'),
+                        onPressed: () => shareCsv(AdminExport.genericCsv([for (final d in list) (d.id, d.data())]), widget.titleKey),
+                        icon: const Icon(Icons.table_chart_outlined),
+                        label: Text(tr(context, 'adminExportCsv')),
+                      ),
+                    ]),
+                  );
+                },
               );
             },
           ),
