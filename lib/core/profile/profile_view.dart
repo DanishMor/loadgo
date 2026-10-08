@@ -28,7 +28,10 @@ class ProfileView extends StatefulWidget {
   /// Role-specific rows (analytics, business tools) shown above Settings.
   final List<Widget> extraTiles;
 
-  const ProfileView({super.key, required this.isDriver, this.extraTiles = const []});
+  /// `customer`, `driver` or `fleet` (the Help questions follow it); defaults from [isDriver].
+  final String? role;
+
+  const ProfileView({super.key, required this.isDriver, this.extraTiles = const [], this.role});
 
   @override
   State<ProfileView> createState() => _ProfileViewState();
@@ -186,7 +189,7 @@ class _ProfileViewState extends State<ProfileView> {
                       leading: Icon(Icons.settings_outlined, color: AppColors.muted),
                       title: Text(tr(context, 'settings')),
                       trailing: const Icon(Icons.chevron_right_rounded),
-                      onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => SettingsScreen(onLogout: _logout, showSimpleMode: widget.isDriver))),
+                      onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => SettingsScreen(onLogout: _logout, showSimpleMode: widget.isDriver, helpRole: widget.role ?? (widget.isDriver ? 'driver' : 'customer')))),
                     ),
                     ?AppRoutes.adminEntry?.call(context),
                     ListTile(

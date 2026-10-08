@@ -26,7 +26,10 @@ class SettingsScreen extends StatefulWidget {
   /// Drivers get the Simple Mode switch.
   final bool showSimpleMode;
 
-  const SettingsScreen({super.key, required this.onLogout, this.showSimpleMode = false});
+  /// `customer`, `driver` or `fleet`: Help shows that role's questions.
+  final String? helpRole;
+
+  const SettingsScreen({super.key, required this.onLogout, this.showSimpleMode = false, this.helpRole});
 
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();
@@ -196,7 +199,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 leading: const Icon(Icons.help_outline_rounded),
                 title: Text(tr(context, 'helpCenter')),
                 trailing: const Icon(Icons.chevron_right_rounded),
-                onTap: () => _open(const HelpScreen()),
+                onTap: () => _open(HelpScreen(role: widget.helpRole)),
               ),
               ListTile(
                 leading: const Icon(Icons.info_outline_rounded),

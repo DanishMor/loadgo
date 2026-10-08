@@ -295,10 +295,14 @@ void main() {
       await tester.pumpWidget(LanguageScope(notifier: languageNotifier, child: const MaterialApp(home: HelpScreen())));
       await settle(tester);
       for (var i = 9; i <= HelpScreen.faqCount; i++) {
-        await tester.scrollUntilVisible(find.byKey(ValueKey('faq$i')), 200, scrollable: find.byType(Scrollable).first);
+        // the list builds rows lazily: scroll until this one exists
+        for (var n = 0; n < 30 && find.byKey(ValueKey('faq$i')).evaluate().isEmpty; n++) {
+          await tester.drag(find.byType(ListView).first, const Offset(0, -200));
+          await tester.pump();
+        }
         expect(find.byKey(ValueKey('faq$i')), findsOneWidget);
       }
-      expect(HelpScreen.faqCount, 11);
+      expect(HelpScreen.faqCount, 18);
     });
   });
 

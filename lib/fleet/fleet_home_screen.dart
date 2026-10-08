@@ -32,7 +32,7 @@ class _FleetHomeScreenState extends State<FleetHomeScreen> {
       const TransporterLoadsScreen(),
       const TransporterTripsScreen(),
       const TransporterFleetScreen(),
-      const ProfileView(isDriver: false),
+      const ProfileView(isDriver: false, role: 'fleet'),
     ];
     return IncomingCallHost(
       child: Scaffold(

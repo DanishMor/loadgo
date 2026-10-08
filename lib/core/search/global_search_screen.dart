@@ -113,7 +113,7 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
         for (final l in _loads) GlobalSearch.fromLoad(l),
         for (final t in _tickets) GlobalSearch.fromTicket(t),
         if (!widget.isDriver) ...[for (final p in _places) GlobalSearch.fromPlace(p), ..._cities],
-        ...GlobalSearch.helpTopics([for (var i = 1; i <= HelpScreen.faqCount; i++) (i, tr(context, 'faqQ$i'), tr(context, 'faqA$i'))]),
+        ...GlobalSearch.helpTopics([for (final i in HelpFaq.forRole(widget.isDriver ? HelpFaq.driver : null)) (i, tr(context, 'faqQ$i'), tr(context, 'faqA$i'))]),
       ]);
 
   Future<void> _remember() async {

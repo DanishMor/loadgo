@@ -134,7 +134,7 @@ class _LiveListState extends State<_LiveList> {
             decoration: InputDecoration(
               isDense: true,
               prefixIcon: const Icon(Icons.search_rounded),
-              hintText: tr(context, 'adminSearchHint'),
+              hintText: tr(context, 'adminListSearchHint'),
               suffixIcon: _search.text.isEmpty ? null : IconButton(tooltip: tr(context, 'clear'), icon: const Icon(Icons.close_rounded), onPressed: () => setState(() => _search.clear())),
             ),
           ),
@@ -300,7 +300,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
           padding: const EdgeInsets.all(12),
           child: TextField(
             key: const ValueKey('userSearch'),
-            decoration: InputDecoration(prefixIcon: const Icon(Icons.search), hintText: tr(context, 'adminSearchHint')),
+            decoration: InputDecoration(prefixIcon: const Icon(Icons.search), hintText: tr(context, 'adminListSearchHint')),
             onChanged: (v) => setState(() => _query = v), inputFormatters: [LengthLimitingTextInputFormatter(30)]),
         ),
         Expanded(

@@ -111,7 +111,7 @@ class SimpleDriverHome extends StatelessWidget {
                       icon: Icons.help_outline_rounded,
                       label: tr(context, 'simpleHelp'),
                       color: const Color(0xFF6A1B9A),
-                      onTap: () => _push(context, const HelpScreen())),
+                      onTap: () => _push(context, const HelpScreen(role: 'driver'))),
                   ]),
                 ),
               ),
