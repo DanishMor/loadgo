@@ -2179,6 +2179,24 @@ describe('ratings', () => {
     await assertSucceeds(getDocs(query(collection(as('driver2'), 'ratings'), where('ratedId', '==', 'driver1'))));
   });
 
+  test('support hides an abusive comment (MASTER-5 Task 33): the stars stay, nothing else changes', async () => {
+    await seed(async (db) => {
+      await setDoc(doc(db, 'admins', 'sup1'), { role: 'support' });
+      await setDoc(doc(db, 'admins', 'ops1'), { role: 'ops' });
+      await setDoc(doc(db, 'ratings', 'L1_customer1'), rating('customer1', 'driver1', { stars: 1, comment: 'rude words' }));
+    });
+    const hide = (db, extra = {}) => updateDoc(doc(db, 'ratings', 'L1_customer1'), { comment: '', moderated: true, moderatedAt: serverTimestamp(), ...extra });
+    const staff = (uid) => env.authenticatedContext(uid).firestore();
+    await assertFails(hide(as('customer1')));
+    await assertFails(hide(as('driver1')));
+    await assertFails(hide(staff('ops1')));
+    await assertFails(hide(staff('sup1'), { stars: 5 }));
+    await assertFails(hide(staff('sup1'), { comment: 'edited instead' }));
+    await assertFails(hide(staff('sup1'), { moderated: false }));
+    await assertFails(deleteDoc(doc(staff('sup1'), 'ratings', 'L1_customer1')));
+    await assertSucceeds(hide(staff('sup1')));
+  });
+
   test('rejects early, outsider, mismatched or invalid ratings', async () => {
     await seedBooking('in_transit');
     await assertFails(setDoc(doc(as('customer1'), 'ratings', 'L1_customer1'), rating('customer1', 'driver1')));

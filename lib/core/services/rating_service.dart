@@ -127,6 +127,16 @@ class RatingService {
         return list;
       });
 
+  /// Admin: blanks an abusive comment (the stars stay) and records who did it.
+  static Future<void> hideComment(String ratingId) {
+    final batch = Backend.db.batch();
+    batch.update(_col.doc(ratingId), {'comment': '', 'moderated': true, 'moderatedAt': FieldValue.serverTimestamp()});
+    AuditService.inBatch(batch, AuditType.userAction, targetId: ratingId, data: {'action': 'rating_comment_hidden'});
+    return batch.commit();
+  }
+
+  static Future<DocumentSnapshot<Map<String, dynamic>>> ratingDoc(String ratingId) => _col.doc(ratingId).get();
+
   static Future<void> resolveFlag(String id, String status) {
     if (status != RatingFlag.reviewed && status != RatingFlag.dismissed) throw ArgumentError.value(status, 'status');
     final batch = Backend.db.batch();

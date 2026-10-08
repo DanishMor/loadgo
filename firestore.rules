@@ -2678,7 +2678,14 @@ service cloud.firestore {
     match /ratings/{ratingId} {
       allow read: if signedIn();
       allow create: if signedIn() && validRating(ratingId);
-      allow update, delete: if false;
+      // Moderation (MASTER-5 Task 33): support / super admins can blank an abusive
+      // comment. The stars stay; nothing else can change; nobody deletes.
+      allow update: if adminIn(['super', 'support'])
+          && changedKeys().hasOnly(['comment', 'moderated', 'moderatedAt'])
+          && request.resource.data.comment == ''
+          && request.resource.data.moderated == true
+          && request.resource.data.moderatedAt == request.time;
+      allow delete: if false;
     }
 
     // ------------------------------------------------------------------
