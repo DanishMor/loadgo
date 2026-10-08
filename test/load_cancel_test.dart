@@ -73,6 +73,8 @@ void main() {
 
     await tester.tap(find.text('Cancel load'));
     await tester.pumpAndSettle();
+    // Dialog says plainly that nothing is charged (MASTER-5 Task 32).
+    expect(find.byKey(const ValueKey('cancelLoadFreeNote')), findsOneWidget);
     // Dialog: dismiss first, nothing changes.
     await tester.tap(find.text('Keep load'));
     await tester.pumpAndSettle();

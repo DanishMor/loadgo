@@ -179,6 +179,8 @@ class _CancelLoadButtonState extends State<_CancelLoadButton> {
         title: Text(tr(dialogContext, 'cancelLoad')),
         content: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text(tr(dialogContext, 'cancelLoadConfirm')),
+          const SizedBox(height: 8),
+          Text(tr(dialogContext, 'cancelLoadFreeNote'), key: const ValueKey('cancelLoadFreeNote'), style: TextStyle(fontSize: 13, color: AppColors.muted)),
           const SizedBox(height: 12),
           CancelReasonPicker(by: 'customer', onChanged: (r) => reason = r),
         ]),
