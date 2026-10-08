@@ -8,6 +8,7 @@ import '../models/app_notification.dart';
 import '../models/booking.dart';
 import '../services/audit_service.dart';
 import '../services/backend.dart';
+import '../services/server_clock.dart';
 import '../services/notification_service.dart';
 import '../services/user_service.dart';
 import 'lr_model.dart';
@@ -373,7 +374,7 @@ class LrService {
   }) async {
     final uid = Backend.requireUid();
     if (lr.issuerId != uid) throw LrException('not_allowed');
-    final clock = now ?? DateTime.now();
+    final clock = now ?? ServerClock.now();
     final end = expiresAt ?? defaultExpiry(b, clock);
     final token = newToken();
     final batch = _db.batch();
@@ -399,7 +400,7 @@ class LrService {
   /// and issuer. One per LR version; reused while it is still valid.
   static Future<String> verifyToken(Booking b, LrPublic lr) async {
     final uid = Backend.requireUid();
-    final now = DateTime.now();
+    final now = ServerClock.now();
     final mine = await _shares.where('ownerId', isEqualTo: uid).where('lrId', isEqualTo: lr.id).get();
     for (final d in mine.docs) {
       final s = LrShare.fromDoc(d.id, d.data());

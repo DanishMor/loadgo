@@ -76,6 +76,7 @@ Future<void> main() async {
   SessionWatcher(
     FirebaseAuth.instance.authStateChanges().map((u) => u != null),
     onExpired: () {
+      DeepLinks.pendingLoadId.value = null; // a link meant for the old session
       final nav = appNavigatorKey.currentState;
       final build = AppRoutes.roleSelection;
       if (nav == null || build == null) return;

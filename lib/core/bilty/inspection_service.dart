@@ -9,6 +9,7 @@ import '../models/app_notification.dart';
 import '../models/booking.dart';
 import '../services/audit_service.dart';
 import '../services/backend.dart';
+import '../services/server_clock.dart';
 import '../services/notification_service.dart';
 import 'lr_copy_view.dart';
 import 'lr_model.dart';
@@ -72,7 +73,7 @@ class InspectionService {
   static FirebaseFirestore get _db => Backend.db;
 
   /// Injectable clock for tests.
-  static DateTime Function() now = DateTime.now;
+  static DateTime Function() now = ServerClock.now;
 
   static const approvalDuration = Duration(hours: 2);
   static const maxAdvance = Duration(hours: 72);

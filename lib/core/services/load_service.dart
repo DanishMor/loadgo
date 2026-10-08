@@ -20,6 +20,7 @@ import 'rewards_service.dart';
 import 'risk_service.dart';
 import '../pricing/fare_calculator.dart';
 import 'backend.dart';
+import 'server_clock.dart';
 import 'business_ops_service.dart';
 import 'repeat_service.dart';
 import 'rate_limit_service.dart';
@@ -91,7 +92,7 @@ class LoadService {
     bool instant = false,
   }) async {
     if (scheduledAt != null) {
-      final problem = Schedule.check(scheduledAt, DateTime.now(), PricingService.config.schedule);
+      final problem = Schedule.check(scheduledAt, ServerClock.now(), PricingService.config.schedule);
       if (problem != null) throw ScheduleException(problem);
     }
     if (creditsUsedPaise < 0) throw ArgumentError.value(creditsUsedPaise, 'creditsUsedPaise');

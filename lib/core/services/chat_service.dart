@@ -7,6 +7,7 @@ import '../models/booking.dart';
 import '../models/app_notification.dart';
 import '../models/chat_message.dart';
 import 'backend.dart';
+import 'server_clock.dart';
 import 'comm_guard.dart';
 import 'notification_service.dart';
 import 'rate_limit_service.dart';
@@ -54,7 +55,29 @@ class ChatService {
       .orderBy('createdAt', descending: true)
       .limit(pageSize)
       .snapshots()
-      .map((s) => s.docs.map(ChatMessage.fromDoc).toList().reversed.toList());
+      .map((s) {
+        _learnServerTime(s);
+        return s.docs.map(ChatMessage.fromDoc).toList().reversed.toList();
+      });
+
+  static final Set<String> _pending = {};
+
+  /// A message this phone sent shows up first with no time (the write is still
+  /// pending), then again with the server's time once it is acknowledged: that
+  /// second event tells the app what the server's clock says right now.
+  static void _learnServerTime(QuerySnapshot<Map<String, dynamic>> s) {
+    final uid = Backend.uid;
+    for (final c in s.docChanges) {
+      final d = c.doc;
+      if (uid == null || d.data()?['senderId'] != uid) continue;
+      final at = d.data()?['createdAt'];
+      if (at == null || d.metadata.hasPendingWrites) {
+        _pending.add(d.id);
+      } else if (at is Timestamp && _pending.remove(d.id)) {
+        ServerClock.observe(at.toDate());
+      }
+    }
+  }
 
   /// Sends [text], unless it carries a phone number, a UPI id, another app or
   /// "call me" (Task 68): then nothing is sent, a strike is recorded and

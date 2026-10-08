@@ -12,6 +12,7 @@ import 'pricing_service.dart';
 import 'audit_service.dart';
 import '../safety/trip_share_service.dart';
 import 'backend.dart';
+import 'server_clock.dart';
 import '../documents/doc_expiry.dart';
 import 'notification_service.dart';
 import 'risk_service.dart';
@@ -66,7 +67,7 @@ class BookingService {
     final uid = Backend.requireUid();
     await RiskService.ensureCanTransact();
     final profile = (await Backend.db.collection('users').doc(uid).get()).data() ?? const {};
-    if (DocExpiry.licenceBlocked(profile, DateTime.now())) throw DocsExpiredException('licence');
+    if (DocExpiry.licenceBlocked(profile, ServerClock.now())) throw DocsExpiredException('licence');
     final loadRef = Backend.db.collection('loads').doc(loadId);
     final bookingRef = _col.doc();
 
@@ -78,10 +79,10 @@ class BookingService {
         if (!load.isOpen || load.shipperId == uid || load.blocks(uid)) throw LoadUnavailableException();
         final vehicleRef = Backend.db.collection('vehicles').doc(vehicle.id);
         final vehicleSnap = await tx.get(vehicleRef);
-        if (vehicleSnap.exists && Vehicle.fromDoc(vehicleSnap).papersBlocked(DateTime.now())) throw DocsExpiredException('vehicle');
+        if (vehicleSnap.exists && Vehicle.fromDoc(vehicleSnap).papersBlocked(ServerClock.now())) throw DocsExpiredException('vehicle');
         if (vehicleSnap.exists && !Vehicle.fromDoc(vehicleSnap).canTakeBooking) throw VehicleBusyException();
         final rules = PricingService.config.schedule;
-        final deferVehicle = load.scheduledAt != null && load.scheduledAt!.isAfter(DateTime.now().add(Duration(minutes: rules.leadMinutes)));
+        final deferVehicle = load.scheduledAt != null && load.scheduledAt!.isAfter(ServerClock.now().add(Duration(minutes: rules.leadMinutes)));
         if (deferVehicle && await _vehicleHasClash(vehicle.id, load.scheduledAt!)) throw VehicleBusyException();
         final offerRef = offerId == null ? null : Backend.db.collection('offers').doc(offerId);
         final offer = offerRef == null ? null : Offer.fromDoc(await tx.get(offerRef));
