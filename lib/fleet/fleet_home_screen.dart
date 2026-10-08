@@ -11,6 +11,7 @@ import 'transporter_loads_screen.dart';
 import 'transporter_shortcuts.dart';
 import 'transporter_trips_screen.dart';
 import '../core/widgets/common.dart';
+import '../core/announcement/announcement.dart';
 import '../core/widgets/role_tour_card.dart';
 
 /// Transporter home: dashboard, vehicles, drivers, profile.
@@ -27,7 +28,7 @@ class _FleetHomeScreenState extends State<FleetHomeScreen> {
   @override
   Widget build(BuildContext context) {
     final pages = <Widget>[
-      const FleetDashboard(header: Column(children: [RoleTourCard(role: RoleTour.fleet), TransporterShortcuts()])),
+      const FleetDashboard(header: Column(children: [AnnouncementBanner(role: 'fleet'), RoleTourCard(role: RoleTour.fleet), TransporterShortcuts()])),
       const TransporterLoadsScreen(),
       const TransporterTripsScreen(),
       const TransporterFleetScreen(),

@@ -18,6 +18,7 @@ import '../core/services/match_service.dart';
 import '../core/services/user_service.dart';
 import '../core/services/vehicle_service.dart';
 import '../core/widgets/common.dart';
+import '../core/announcement/announcement.dart';
 import '../core/widgets/role_tour_card.dart';
 import '../core/widgets/kyc_check_widgets.dart';
 import '../core/l10n/l10n.dart';
@@ -315,6 +316,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                 ],
               ),
             ),
+            const AnnouncementBanner(role: 'driver'),
             const RoleTourCard(role: RoleTour.driver),
             const SimpleModePrompt(),
             _noVehiclePrompt(),

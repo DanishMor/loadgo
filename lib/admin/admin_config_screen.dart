@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../core/announcement/announcement.dart';
 import '../core/widgets/once.dart';
 import '../core/l10n/l10n.dart';
 import '../core/models/vehicle_type.dart';
@@ -50,6 +51,13 @@ class AdminConfigScreen extends StatelessWidget {
           subtitle: Text(tr(context, 'adminSupportConfigSub')),
           trailing: const Icon(Icons.chevron_right_rounded),
           onTap: () => open('support', 'adminSupportConfig'),
+        ),
+        ListTile(
+          key: const ValueKey('editAnnouncement'),
+          title: Text(tr(context, 'adminAnnouncement')),
+          subtitle: Text(tr(context, 'adminAnnouncementSub')),
+          trailing: const Icon(Icons.chevron_right_rounded),
+          onTap: () => open('announcement', 'adminAnnouncement'),
         ),
         ListTile(
           key: const ValueKey('backfillGeohash'),
@@ -103,11 +111,13 @@ class _ConfigEditorScreenState extends State<ConfigEditorScreen> {
   Future<void> _load() async {
     var data = await AdminConsoleService.readConfig(widget.docId);
     // No document yet: start from what the app currently uses.
-    data ??= widget.docId == 'pricing'
-        ? PricingService.config.toMap()
-        : widget.docId == 'risk'
-            ? RiskConfigStore.current.toMap()
-            : {'types': [for (final VehicleTypeInfo t in VehicleTypeService.notifier.value) t.toMap()]};
+    data ??= switch (widget.docId) {
+      'pricing' => PricingService.config.toMap(),
+      'risk' => RiskConfigStore.current.toMap(),
+      'support' => {'phone': '', 'hours': ''},
+      'announcement' => {'id': 'notice-1', 'text': '', 'level': 'info', 'until': '', 'roles': <String>[]},
+      _ => {'types': [for (final VehicleTypeInfo t in VehicleTypeService.notifier.value) t.toMap()]},
+    };
     data = Map<String, dynamic>.of(data)..remove('updatedAt');
     if (!mounted) return;
     setState(() {
@@ -133,6 +143,7 @@ class _ConfigEditorScreenState extends State<ConfigEditorScreen> {
       if (widget.docId == 'pricing') await PricingService.refresh();
       if (widget.docId == 'vehicle_types') await VehicleTypeService.refresh();
       if (widget.docId == 'risk') await RiskConfigStore.refresh();
+      if (widget.docId == 'announcement') await AnnouncementService.refresh(force: true);
       if (mounted) showSnack(context, tr(context, 'adminConfigSaved'));
     } catch (_) {
       if (mounted) showSnack(context, tr(context, 'somethingWrong'));

@@ -1,3 +1,4 @@
+import '../announcement/announcement.dart';
 import '../risk/risk_config.dart';
 import 'features_service.dart';
 import 'offers_switch_service.dart';
@@ -19,6 +20,7 @@ Future<void> refreshAppConfig({bool force = false}) => _configCache.run(
         RiskConfigStore.refresh(),
         OffersSwitchService.refresh(force: true),
         FeaturesService.refresh(force: true),
+        AnnouncementService.refresh(force: true),
       ]),
       force: force,
     );

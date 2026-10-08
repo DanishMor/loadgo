@@ -37,6 +37,7 @@ import 'recurring_due_card.dart';
 import '../core/profile/profile_view.dart';
 import '../core/documents/documents_center_screen.dart';
 import '../core/widgets/common.dart';
+import '../core/announcement/announcement.dart';
 import '../core/widgets/role_tour_card.dart';
 
 // ============================================================
@@ -285,6 +286,7 @@ class _CustomerHomeContent extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 25),
+            const AnnouncementBanner(role: 'customer'),
             const RoleTourCard(role: RoleTour.customer),
             Container(
               height: 54,
