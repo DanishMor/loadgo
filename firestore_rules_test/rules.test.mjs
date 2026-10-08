@@ -2792,6 +2792,14 @@ describe('private chat and call (Task 68)', () => {
       await assertFails(ring(as('customer1'), 'c10', { callerName: 'x'.repeat(61) }));
     });
 
+    test('the call record carries an expireAt for the clean-up policy (MASTER-5 Task 7), within a year and a bit', async () => {
+      await seedBooking();
+      const days = (n) => Timestamp.fromMillis(Date.now() + n * 86400000);
+      await assertSucceeds(ring(as('customer1'), 'e1', { expireAt: days(365) }));
+      await assertFails(ring(as('customer1'), 'e2', { expireAt: days(2000) }), 'too far ahead');
+      await assertFails(ring(as('customer1'), 'e3', { expireAt: 'never' }), 'not a time');
+    });
+
     test('no call on a finished or cancelled booking, nor while suspended', async () => {
       await seedBooking('delivered');
       await assertFails(ring());
@@ -4499,6 +4507,8 @@ describe('assistant unknown questions', () => {
     await assertFails(add('customer1', { role: 'admin' }));
     await assertFails(add('customer1', { language: 'x'.repeat(21) }));
     await assertFails(add('customer1', { extra: 1 }));
+    await assertSucceeds(add('customer1', { expireAt: Timestamp.fromMillis(Date.now() + 180 * 86400000) })); // MASTER-5 Task 7 clean-up date
+    await assertFails(add('customer1', { expireAt: Timestamp.fromMillis(Date.now() + 3000 * 86400000) }));
     await assertFails(add('customer1', { resolved: true }));
     await assertFails(add('customer1', { createdAt: Timestamp.fromMillis(1000) }));
   });

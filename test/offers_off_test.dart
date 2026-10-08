@@ -70,7 +70,7 @@ void main() {
     expect(find.byKey(const ValueKey('myReferralCode')), findsNothing);
   });
 
-  test('the referral bonus falls back to the default and an admin value is used after the cache is dropped', () async {
+  test('the referral bonus falls back to the default and an admin change is seen at once (it is never cached: the rules compare it)', () async {
     expect(await RewardsService.referralBonus(), RewardsService.defaultReferralBonusPaise);
     await RewardsService.setReferralBonus(25000);
     expect(await RewardsService.referralBonus(), 25000);

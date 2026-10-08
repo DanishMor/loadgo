@@ -5,7 +5,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../offers/promo.dart';
 import 'backend.dart';
 import 'audit_service.dart';
-import 'ttl_cache.dart';
 
 enum ReferralProblem { unknownCode, ownCode, alreadyReferred, tooLate }
 
@@ -126,17 +125,12 @@ class RewardsService {
   // referrals
   // ------------------------------------------------------------------
 
-  static final TtlCache _bonusCache = TtlCache(const Duration(minutes: 15));
-  static int _bonus = defaultReferralBonusPaise;
-  static Object? _bonusDb;
-
+  /// Read fresh each time (not cached): the rules compare a referral credit
+  /// with the bonus stored on the server, so a value kept for minutes after an
+  /// admin changed it would make the credit write fail (MASTER-5 bug B-5-1).
   static Future<int> referralBonus() async {
-    if (_bonusCache.fresh && identical(_bonusDb, _db)) return _bonus;
     final d = (await _db.collection('config').doc('offers').get()).data();
-    _bonus = (d?['referralBonusPaise'] as num?)?.toInt() ?? defaultReferralBonusPaise;
-    _bonusCache.markFetched();
-    _bonusDb = _db;
-    return _bonus;
+    return (d?['referralBonusPaise'] as num?)?.toInt() ?? defaultReferralBonusPaise;
   }
 
   static String _randomCode(Random r) => String.fromCharCodes([for (var i = 0; i < 6; i++) _codeAlphabet.codeUnitAt(r.nextInt(_codeAlphabet.length))]);
@@ -235,7 +229,6 @@ class RewardsService {
 
   static Future<void> setReferralBonus(int paise) {
     final batch = _db.batch();
-    _bonusCache.invalidate();
     batch.set(_db.collection('config').doc('offers'), {'referralBonusPaise': paise}, SetOptions(merge: true));
     AuditService.inBatch(batch, AuditType.configChange, targetId: 'offers', data: {'doc': 'offers', 'changedKeys': ['referralBonusPaise']});
     return batch.commit();
