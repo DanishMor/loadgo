@@ -5,6 +5,7 @@ import '../core/l10n/l10n.dart';
 import '../core/models/fleet.dart';
 import '../core/models/vehicle.dart';
 import '../core/services/fleet_service.dart';
+import '../core/services/transporter_service.dart';
 import '../core/services/vehicle_service.dart';
 import '../core/services/vehicle_type_service.dart';
 import '../core/vehicles/vehicle_expenses_screen.dart';
@@ -23,6 +24,7 @@ class FleetVehiclesScreen extends StatefulWidget {
 class _FleetVehiclesScreenState extends State<FleetVehiclesScreen> {
   late final Stream<List<Vehicle>> _vehicles = VehicleService.watchMine().asBroadcastStream();
   late final Stream<List<FleetMember>> _members = FleetService.watchMembers().asBroadcastStream();
+  late final Stream<List<Vehicle>> _attached = TransporterService.watchAttached().asBroadcastStream();
 
   Future<void> _add() async {
     final number = TextEditingController();
@@ -96,7 +98,11 @@ class _FleetVehiclesScreenState extends State<FleetVehiclesScreen> {
           compact: true,
           builder: (context, members) {
             final active = [for (final m in members) if (m.active) m];
-            if (vehicles.isEmpty) return EmptyState(icon: Icons.local_shipping_outlined, title: tr(context, 'fleetNoVehicles'));
+            return StreamBuilder<List<Vehicle>>(
+              stream: _attached,
+              builder: (context, attachedSnap) {
+            final attached = attachedSnap.data ?? const <Vehicle>[];
+            if (vehicles.isEmpty && attached.isEmpty) return EmptyState(icon: Icons.local_shipping_outlined, title: tr(context, 'fleetNoVehicles'));
             return ListView(padding: const EdgeInsets.fromLTRB(16, 4, 16, 90), children: [
               for (final v in vehicles)
                 Padding(
@@ -130,7 +136,27 @@ class _FleetVehiclesScreenState extends State<FleetVehiclesScreen> {
                     ]),
                   ),
                 ),
+              if (attached.isNotEmpty) ...[
+                Padding(padding: const EdgeInsets.only(top: 8, bottom: 6), child: Text(tr(context, 'trpAttachedVehicles'), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800))),
+                for (final v in attached)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: AppCard(
+                      key: ValueKey('attachedVehicle_${v.id}'),
+                      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                        Text(v.number, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+                        Text('${vehicleTypeLabel(context, v.type)} • ${formatNum(v.capacity)} T', style: TextStyle(color: AppColors.muted)),
+                        Wrap(spacing: 6, children: [
+                          StatusChip(label: tr(context, 'trpAttachedChip'), color: AppColors.primary),
+                          StatusChip(label: availabilityLabel(context, v.availability), color: availabilityColor(v.availability)),
+                        ]),
+                      ]),
+                    ),
+                  ),
+              ],
             ]);
+              },
+            );
           },
         ),
       ),

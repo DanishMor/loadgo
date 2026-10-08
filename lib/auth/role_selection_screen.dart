@@ -1,4 +1,6 @@
 
+import '../core/features/features.dart';
+import '../core/widgets/feature_gate.dart';
 import 'package:flutter/material.dart';
 
 import '../core/l10n/l10n.dart';
@@ -74,17 +76,22 @@ class RoleSelectionScreen extends StatelessWidget {
                   );
                 },
               ),
-              const SizedBox(height: 18),
-              _RoleCard(
-                icon: Icons.warehouse_rounded,
-                title: tr(context, 'fleetOwner'),
-                subtitle: tr(context, 'fleetOwnerDesc'),
-                buttonText: tr(context, 'continueFleet'),
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => const DriverLoginScreen(role: 'fleet')),
-                  );
-                },
+              FeatureGate(
+                featureKey: FeatureKey.transporter,
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 18),
+                  child: _RoleCard(
+                    icon: Icons.warehouse_rounded,
+                    title: tr(context, 'fleetOwner'),
+                    subtitle: tr(context, 'fleetOwnerDesc'),
+                    buttonText: tr(context, 'continueFleet'),
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => const DriverLoginScreen(role: 'fleet')),
+                      );
+                    },
+                  ),
+                ),
               ),
               const SizedBox(height: 28),
               InkWell(

@@ -7,11 +7,12 @@ import '../core/identity/kyc_validators.dart';
 import '../core/l10n/l10n.dart';
 import '../core/l10n/language_widgets.dart';
 import '../core/services/user_service.dart';
+import '../core/transporter/transporter_logic.dart';
 import 'role_selection_screen.dart';
 import 'start_resolvers.dart';
 import '../core/widgets/common.dart';
 
-/// Fleet owner onboarding: name, company, PAN (unique across accounts) and an
+/// Transporter onboarding: name, company, PAN (unique across accounts) and an
 /// optional GSTIN. Format checks only; nothing is verified (LATER(paid)).
 class FleetProfileSetupScreen extends StatefulWidget {
   const FleetProfileSetupScreen({super.key});
@@ -26,11 +27,15 @@ class _FleetProfileSetupScreenState extends State<FleetProfileSetupScreen> {
   final _company = TextEditingController();
   final _pan = TextEditingController();
   final _gst = TextEditingController();
+  final _city = TextEditingController();
+  final _routes = TextEditingController();
+  final _types = TextEditingController();
+  final _count = TextEditingController();
   bool _saving = false;
 
   @override
   void dispose() {
-    for (final c in [_name, _company, _pan, _gst]) {
+    for (final c in [_name, _company, _pan, _gst, _city, _routes, _types, _count]) {
       c.dispose();
     }
     super.dispose();
@@ -46,6 +51,10 @@ class _FleetProfileSetupScreenState extends State<FleetProfileSetupScreen> {
         pan: _pan.text,
         gstin: _gst.text,
         language: languageNotifier.value.name,
+        officeCity: _city.text.trim(),
+        routes: TransporterProfile.parseList(_routes.text),
+        vehicleTypes: TransporterProfile.parseList(_types.text, max: TransporterProfile.maxVehicleTypes),
+        vehicleCount: int.tryParse(_count.text.trim()) ?? 0,
       );
       if (!mounted) return;
       final next = await resolveFleetStart();
@@ -123,6 +132,37 @@ class _FleetProfileSetupScreenState extends State<FleetProfileSetupScreen> {
                     final g = (v ?? '').trim();
                     return g.isEmpty || isValidGstin(g) ? null : tr(context, 'gstinInvalid');
                   },
+                ),
+                const SizedBox(height: 14),
+                TextFormField(
+                  key: const ValueKey('fleetCity'),
+                  controller: _city,
+                  textCapitalization: TextCapitalization.words,
+                  decoration: InputDecoration(labelText: tr(context, 'trpCity')),
+                  validator: (v) => (v ?? '').trim().length < 2 ? tr(context, 'fieldRequired') : null,
+                  inputFormatters: [LengthLimitingTextInputFormatter(60)],
+                ),
+                const SizedBox(height: 14),
+                TextFormField(
+                  key: const ValueKey('fleetRoutes'),
+                  controller: _routes,
+                  decoration: InputDecoration(labelText: tr(context, 'trpRoutes')),
+                  inputFormatters: [LengthLimitingTextInputFormatter(400)],
+                ),
+                const SizedBox(height: 14),
+                TextFormField(
+                  key: const ValueKey('fleetTypes'),
+                  controller: _types,
+                  decoration: InputDecoration(labelText: tr(context, 'trpVehicleTypes')),
+                  inputFormatters: [LengthLimitingTextInputFormatter(300)],
+                ),
+                const SizedBox(height: 14),
+                TextFormField(
+                  key: const ValueKey('fleetCount'),
+                  controller: _count,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(labelText: tr(context, 'trpVehicleCount')),
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(6)],
                 ),
                 const SizedBox(height: 28),
                 SizedBox(

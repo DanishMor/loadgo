@@ -4,13 +4,14 @@ import '../core/assistant/sahayak_screen.dart';
 import '../core/l10n/l10n.dart';
 import '../core/notifications/notifications_screen.dart';
 import '../core/profile/profile_view.dart';
-import 'fleet_analytics_screen.dart';
 import 'fleet_dashboard.dart';
-import 'fleet_drivers_screen.dart';
-import 'fleet_vehicles_screen.dart';
+import 'transporter_fleet_screen.dart';
+import 'transporter_loads_screen.dart';
+import 'transporter_shortcuts.dart';
+import 'transporter_trips_screen.dart';
 import '../core/widgets/common.dart';
 
-/// Fleet owner home: dashboard, vehicles, drivers, profile.
+/// Transporter home: dashboard, vehicles, drivers, profile.
 class FleetHomeScreen extends StatefulWidget {
   const FleetHomeScreen({super.key});
 
@@ -24,10 +25,10 @@ class _FleetHomeScreenState extends State<FleetHomeScreen> {
   @override
   Widget build(BuildContext context) {
     final pages = <Widget>[
-      const FleetDashboard(),
-      const FleetVehiclesScreen(),
-      const FleetDriversScreen(),
-      const FleetAnalyticsScreen(),
+      const Column(children: [TransporterShortcuts(), Expanded(child: FleetDashboard())]),
+      const TransporterLoadsScreen(),
+      const TransporterTripsScreen(),
+      const TransporterFleetScreen(),
       const ProfileView(isDriver: false),
     ];
     return Scaffold(
@@ -47,9 +48,9 @@ class _FleetHomeScreenState extends State<FleetHomeScreen> {
         onDestinationSelected: (i) => setState(() => _index = i),
         destinations: [
           NavigationDestination(icon: const Icon(Icons.dashboard_outlined), selectedIcon: const Icon(Icons.dashboard_rounded), label: tr(context, 'fleetDashboard')),
-          NavigationDestination(icon: const Icon(Icons.local_shipping_outlined), selectedIcon: const Icon(Icons.local_shipping_rounded), label: tr(context, 'fleetVehicles')),
-          NavigationDestination(icon: const Icon(Icons.people_outline_rounded), selectedIcon: const Icon(Icons.people_rounded), label: tr(context, 'fleetDrivers')),
-          NavigationDestination(icon: const Icon(Icons.insights_outlined), selectedIcon: const Icon(Icons.insights_rounded), label: tr(context, 'fleetAnalytics')),
+          NavigationDestination(icon: const Icon(Icons.inventory_2_outlined), selectedIcon: const Icon(Icons.inventory_2_rounded), label: tr(context, 'trpTabLoads')),
+          NavigationDestination(icon: const Icon(Icons.route_outlined), selectedIcon: const Icon(Icons.route_rounded), label: tr(context, 'trpTabTrips')),
+          NavigationDestination(icon: const Icon(Icons.local_shipping_outlined), selectedIcon: const Icon(Icons.local_shipping_rounded), label: tr(context, 'trpTabFleet')),
           NavigationDestination(icon: const Icon(Icons.person_outline_rounded), selectedIcon: const Icon(Icons.person_rounded), label: tr(context, 'profile')),
         ],
       ),

@@ -15,12 +15,15 @@ class AuditType {
   static const configChange = 'config_change';
   static const userAction = 'user_action';
 
+  /// A transporter assigned or reassigned the vehicle and driver of a booking.
+  static const assign = 'assign';
+
   /// A party wrote evidence on a booking (GPS, odometer, signature, cargo document, accident).
   static const evidence = 'evidence';
 
   /// A party opened the cargo documents of a booking.
   static const docView = 'doc_view';
-  static const all = [verification, accept, statusChange, cancel, riskChange, reassign, configChange, userAction, evidence, docView];
+  static const all = [verification, accept, statusChange, cancel, riskChange, reassign, configChange, userAction, evidence, docView, assign];
 }
 
 class AuditService {

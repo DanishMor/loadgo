@@ -5,7 +5,7 @@ import 'booking.dart';
 import 'earnings.dart';
 import 'vehicle.dart';
 
-/// `fleet_invites/{ownerId}_{phoneDigits}`: a fleet owner invites a driver
+/// `fleet_invites/{ownerId}_{phoneDigits}`: a transporter invites a driver
 /// by phone number.
 class FleetInvite {
   final String id;

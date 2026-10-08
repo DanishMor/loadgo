@@ -13,7 +13,7 @@ class FleetException implements Exception {
   String toString() => 'FleetException($reason)';
 }
 
-/// Fleet owner: invite drivers by phone, see members, assign vehicles
+/// Transporter: invite drivers by phone, see members, assign vehicles
 /// (VehicleService.assignDriver), watch the fleet's trips. Driver: answer an
 /// invite. Records only; earnings are summed from bookings.
 class FleetService {

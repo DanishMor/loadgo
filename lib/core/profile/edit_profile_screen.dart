@@ -33,7 +33,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   late String? _businessType = _extras.businessType;
   bool _saving = false;
 
-  /// Payout details are for the people who get paid: drivers and fleet owners.
+  /// Payout details are for the people who get paid: drivers and transporters.
   bool get _getsPaid => widget.isDriver || widget.profile['role'] == 'fleet';
 
   @override

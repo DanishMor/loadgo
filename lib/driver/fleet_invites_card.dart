@@ -2,16 +2,21 @@ import 'package:flutter/material.dart';
 
 import '../core/l10n/l10n.dart';
 import '../core/models/fleet.dart';
+import '../core/models/vehicle.dart';
+import '../core/services/backend.dart';
 import '../core/services/fleet_service.dart';
+import '../core/services/transporter_service.dart';
+import '../core/services/vehicle_service.dart';
 import '../core/widgets/common.dart';
 
-/// Driver home: pending invites from fleet owners (matched by phone number)
+/// Driver home: pending invites from transporters (matched by phone number)
 /// and the fleets the driver already belongs to. Shows nothing when empty.
 class FleetInvitesCard extends StatefulWidget {
   final Stream<List<FleetInvite>>? invites;
   final Stream<List<FleetMember>>? fleets;
+  final Stream<List<Vehicle>>? vehicles;
 
-  const FleetInvitesCard({super.key, this.invites, this.fleets});
+  const FleetInvitesCard({super.key, this.invites, this.fleets, this.vehicles});
 
   @override
   State<FleetInvitesCard> createState() => _FleetInvitesCardState();
@@ -20,6 +25,7 @@ class FleetInvitesCard extends StatefulWidget {
 class _FleetInvitesCardState extends State<FleetInvitesCard> {
   late final Stream<List<FleetInvite>> _invites = (widget.invites ?? FleetService.watchMyInvites()).asBroadcastStream();
   late final Stream<List<FleetMember>> _fleets = (widget.fleets ?? FleetService.watchMyFleets()).asBroadcastStream();
+  late final Stream<List<Vehicle>> _vehicles = (widget.vehicles ?? VehicleService.watchMine()).asBroadcastStream();
 
   Future<void> _answer(FleetInvite i, bool accept) async {
     try {
@@ -58,6 +64,34 @@ class _FleetInvitesCardState extends State<FleetInvitesCard> {
                     Expanded(child: Text(trf(context, 'fleetOwnerLabel', {'name': m.ownerName.isEmpty ? m.ownerId : m.ownerName}), key: ValueKey('fleet_${m.id}'))),
                     TextButton(key: ValueKey('leave_${m.id}'), onPressed: () => FleetService.leave(m), child: Text(tr(context, 'fleetLeave'))),
                   ]),
+                if (fleets.isNotEmpty)
+                  StreamBuilder<List<Vehicle>>(
+                    stream: _vehicles,
+                    builder: (context, vs) {
+                      final mine = [for (final v in vs.data ?? const <Vehicle>[]) if (v.ownerId == Backend.uid) v];
+                      if (mine.isEmpty) return const SizedBox.shrink();
+                      final m = fleets.first;
+                      final name = m.ownerName.isEmpty ? m.ownerId : m.ownerName;
+                      return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                        for (final v in mine)
+                          SwitchListTile(
+                            key: ValueKey('attach_${v.id}'),
+                            contentPadding: EdgeInsets.zero,
+                            dense: true,
+                            title: Text('${v.number} • ${trf(context, v.attachedTo == m.ownerId ? 'trpDetach' : 'trpAttach', {'name': name})}'),
+                            value: v.attachedTo == m.ownerId,
+                            onChanged: (on) async {
+                              try {
+                                await TransporterService.setAttached(v.id, on ? m.ownerId : null);
+                              } catch (_) {
+                                if (context.mounted) showSnack(context, tr(context, 'somethingWrong'));
+                              }
+                            },
+                          ),
+                        Text(tr(context, 'trpAttachNote'), style: TextStyle(color: AppColors.faint, fontSize: 12)),
+                      ]);
+                    },
+                  ),
               ]),
             ),
           );

@@ -58,7 +58,11 @@ class BookingService {
   /// With [offerId] this is the driver's confirmation of a selected offer:
   /// the offer must still be selected and the booking carries its price as
   /// `agreedFarePaise`.
-  static Future<String> accept({required String loadId, required Vehicle vehicle, String? offerId}) async {
+  ///
+  /// [asCompany] (Task 67): a transporter books for the company; the
+  /// booking then carries `fleetOwnerId` = the transporter, who assigns a
+  /// driver afterwards.
+  static Future<String> accept({required String loadId, required Vehicle vehicle, String? offerId, bool asCompany = false}) async {
     final uid = Backend.requireUid();
     await RiskService.ensureCanTransact();
     final profile = (await Backend.db.collection('users').doc(uid).get()).data() ?? const {};
@@ -116,9 +120,9 @@ class BookingService {
           'pickupDate': snap.data()!['pickupDate'],
           'notes': load.notes,
           'vehicleNumber': vehicle.number,
-          'driverName': profile['driverName'] ?? '',
+          'driverName': (asCompany ? profile['companyName'] : profile['driverName']) ?? '',
           'driverPhone': profile['phone'] ?? '',
-          if (vehicle.ownerId != uid) 'fleetOwnerId': vehicle.ownerId,
+          if (asCompany) 'fleetOwnerId': uid else if (vehicle.ownerId != uid) 'fleetOwnerId': vehicle.ownerId,
           'timeline': {BookingStatus.accepted: FieldValue.serverTimestamp()},
           'createdAt': FieldValue.serverTimestamp(),
           'updatedAt': FieldValue.serverTimestamp(),

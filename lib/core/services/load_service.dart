@@ -118,6 +118,7 @@ class LoadService {
     List<String> clean(List<String> l) =>
         [for (final s in l) if (s.trim().isNotEmpty) s.trim()].take(maxStopsPerSide - 1).toList();
     final geohash = pickupGeohashFor(pickup);
+    final role = (await Backend.db.collection('users').doc(uid).get()).data()?['role'];
     final blocked = await RepeatService.blockedIds(uid);
     // BIZ6: a team member's load over the company's approval limit waits for the owner or a manager.
     final awaiting = businessId != null && businessId != uid && await BusinessOpsService.approvalNeeded(businessId, budget == null ? (estimate?.total ?? 0) : (budget * 100).round());
@@ -128,6 +129,7 @@ class LoadService {
       if (visibility != LoadVisibility.public) 'visibility': visibility,
       if (visibility != LoadVisibility.public) 'allowedDriverIds': allowedDriverIds,
       if (instant) 'instant': true,
+      if (role == 'fleet') 'postedByRole': 'fleet',
       'pickupGeohash': ?geohash,
       'bookingType': bookingType,
       'invitedDriverId': ?invitedDriverId,

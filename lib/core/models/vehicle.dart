@@ -21,8 +21,12 @@ class Vehicle {
   final DateTime? nextServiceDate;
   final DateTime? nextTyreCheckDate;
 
-  /// Driver a fleet owner gave this vehicle to (null = the owner drives it).
+  /// Driver a transporter gave this vehicle to (null = the owner drives it).
   final String? assignedDriverId;
+
+  /// Transporter this vehicle is attached to (its owner is a member of that
+  /// fleet and agreed to it); null when not attached.
+  final String? attachedTo;
 
   /// Optional profile: cargo space in metres, fuel and body type.
   final VehicleProfile profile;
@@ -45,6 +49,7 @@ class Vehicle {
     this.nextServiceDate,
     this.nextTyreCheckDate,
     this.assignedDriverId,
+    this.attachedTo,
     this.profile = const VehicleProfile(),
     this.docOverrideUntil,
   });
@@ -101,6 +106,7 @@ class Vehicle {
       nextServiceDate: (d['nextServiceDate'] as Timestamp?)?.toDate(),
       nextTyreCheckDate: (d['nextTyreCheckDate'] as Timestamp?)?.toDate(),
       assignedDriverId: d['assignedDriverId'] as String?,
+      attachedTo: d['attachedTo'] as String?,
       profile: VehicleProfile.fromMap(d),
       docOverrideUntil: (d['docOverrideUntil'] as Timestamp?)?.toDate(),
     );

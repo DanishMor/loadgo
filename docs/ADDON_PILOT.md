@@ -8,6 +8,7 @@ Goal: put LoadGo in front of a small, known group (one or two corridors, tens of
 | Freight posting, price offers, booking, OTP trip steps, proofs, LR/POD, chat, ratings, support tickets, SOS, reminders, Sahayak, search, earnings, wallet records | ON | always on |
 | Trip share link (`trip_shares`) | ON | Features > Trip share link |
 | Report a problem | ON | Features > Report a problem |
+| Transporter accounts | ON | Features > Transporter accounts |
 | Promo codes, credits, referral | OFF | Offers (three switches, default OFF) |
 | Surge pricing | OFF | `config/pricing.surge.enabled` |
 | Driver network and groups | OFF | Features |

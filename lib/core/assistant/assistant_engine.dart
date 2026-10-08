@@ -254,9 +254,9 @@ class RuleEngine implements AssistantEngine {
       sc[AssistantIntent.nearbyLoads] = (sc[AssistantIntent.nearbyLoads] ?? 0) + sc[AssistantIntent.postLoad]!;
       sc.remove(AssistantIntent.postLoad);
     }
-    // Fleet owners only manage trucks and drivers: they neither post loads nor look for them.
+    // Transporters only manage trucks and drivers: they neither post loads nor look for them.
     if (role == 'fleet') sc.remove(AssistantIntent.postLoad);
-    // Fleet owners and customers do not look for loads on the road.
+    // Transporters and customers do not look for loads on the road.
     if (role != 'driver' && sc.containsKey(AssistantIntent.nearbyLoads)) {
       sc.remove(AssistantIntent.nearbyLoads);
     }

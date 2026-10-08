@@ -100,6 +100,20 @@ service cloud.firestore {
                   && d.payoutProfile.get('holder', '') is string && d.payoutProfile.get('holder', '').size() <= 80));
     }
 
+    // Transporter profile (Task 67): `fleet` holds the PAN plus the office
+    // city, operating routes, vehicle types and vehicle count. Verification
+    // stays in the admin-only `verified` fields, never here.
+    function validFleetProfile(d) {
+      return !('fleet' in d)
+          || (d.fleet is map
+              && d.fleet.keys().hasOnly(['pan', 'officeCity', 'routes', 'vehicleTypes', 'vehicleCount'])
+              && d.fleet.get('pan', '') is string && d.fleet.get('pan', '').size() <= 10
+              && d.fleet.get('officeCity', '') is string && d.fleet.get('officeCity', '').size() <= 60
+              && d.fleet.get('routes', []) is list && d.fleet.get('routes', []).size() <= 10
+              && d.fleet.get('vehicleTypes', []) is list && d.fleet.get('vehicleTypes', []).size() <= 12
+              && d.fleet.get('vehicleCount', 0) is int && d.fleet.get('vehicleCount', 0) >= 0 && d.fleet.get('vehicleCount', 0) <= 100000);
+    }
+
     // At most three {name, phone} emergency contacts on the profile.
     function validEmergencyContacts(d) {
       return !('emergencyContacts' in d)
@@ -288,14 +302,14 @@ service cloud.firestore {
           && validKyc(request.resource.data) && validProfileText(request.resource.data) && reviewMetaAbsent(request.resource.data) && planFieldsAbsent(request.resource.data) && !('docOverrideUntil' in request.resource.data) && referralCodeOk(request.resource.data) && validIdentityHashes(request.resource.data) && validLastLocation(request.resource.data) && validRole(request.resource.data.get('role', null))
           && (request.resource.data.get('role', null) == null
               || request.resource.data.get('selectedRole', request.resource.data.role) == request.resource.data.role)
-          && validEmergencyContacts(request.resource.data) && validProfileExtras(request.resource.data) && riskFieldsAbsent(request.resource.data)
+          && validEmergencyContacts(request.resource.data) && validProfileExtras(request.resource.data) && validFleetProfile(request.resource.data) && riskFieldsAbsent(request.resource.data)
           && validPrefs(request.resource.data) && validBusiness(request.resource.data);
       // Demo data (Task 53), after the normal create so it costs nothing there.
       allow create: if demoCreate(userId);
       allow delete: if demoDelete(userId);
       allow update: if adminVerificationUpdate() || adminReviewFlagUpdate() || adminRiskUpdate() || adminPlanUpdate() || adminDocOverride() || (isUser(userId)
           && roleLockOk() && validKyc(request.resource.data) && validProfileText(request.resource.data) && !changedKeys().hasAny(['plan', 'planUntil', 'verificationMeta', 'docOverrideUntil']) && referralCodeOk(request.resource.data) && referralCodeKept() && validIdentityHashes(request.resource.data) && validLastLocation(request.resource.data)
-          && validEmergencyContacts(request.resource.data) && validProfileExtras(request.resource.data)
+          && validEmergencyContacts(request.resource.data) && validProfileExtras(request.resource.data) && validFleetProfile(request.resource.data)
           && validPrefs(request.resource.data) && validBusiness(request.resource.data)
           && ownerRiskFieldsUntouched()
           && (!changedKeys().hasAny(['verified', 'verificationStatus'])
@@ -563,6 +577,7 @@ service cloud.firestore {
           && (!('nextTyreCheckDate' in d) || d.nextTyreCheckDate is timestamp)
           && validVehicleProfile(d)
           && (!('assignedDriverId' in d) || (d.assignedDriverId is string && d.assignedDriverId.size() >= 1 && d.assignedDriverId.size() <= 60))
+          && (!('attachedTo' in d) || (d.attachedTo is string && d.attachedTo.size() >= 1 && d.attachedTo.size() <= 60))
           // RC photo must point at Firebase Storage when present.
           && (!('rcImageUrl' in d) || (d.rcImageUrl is string
               && d.rcImageUrl.matches('https://firebasestorage[.]googleapis[.]com/.*|http://(127[.]0[.]0[.]1|localhost|10[.]0[.]2[.]2):9199/.*')));
@@ -595,6 +610,34 @@ service cloud.firestore {
           || (now is string && activeMember(request.auth.uid, now));
     }
 
+    // Attaching (Task 67): a driver who joined a transporter's fleet (an
+    // accepted phone invite = consent) attaches their own vehicle to it, and
+    // can detach it again. The transporter may then flip its availability.
+    function attachOk() {
+      let now = request.resource.data.get('attachedTo', null);
+      return now == resource.data.get('attachedTo', null)
+          || now == null
+          || (now is string && activeMember(now, request.auth.uid));
+    }
+
+    function transporterAvailability() {
+      return resource.data.get('attachedTo', '') == request.auth.uid
+          && activeMember(request.auth.uid, resource.data.ownerId)
+          && changedKeys().hasOnly(['availability', 'updatedAt'])
+          && availabilityOf(resource.data) in ['available', 'on_trip']
+          && request.resource.data.availability in ['available', 'on_trip'];
+    }
+
+    // The transporter may run vehicle [v] when it is their own or one a member
+    // attached and is still a member of the fleet.
+    function transporterVehicle(v, uid) {
+      return v.ownerId == uid || (v.get('attachedTo', '') == uid && activeMember(uid, v.ownerId));
+    }
+
+    function isTransporter(uid) {
+      return get(docPath('users', uid)).data.get('role', '') == 'fleet';
+    }
+
     function assignedDriverAvailability() {
       return resource.data.get('assignedDriverId', '') == request.auth.uid
           && changedKeys().hasOnly(['availability', 'updatedAt'])
@@ -620,14 +663,45 @@ service cloud.firestore {
               && !changedKeys().hasAny(['docOverrideUntil'])
               && ownerAvailabilityOk()
               && assignmentOk()
+              && attachOk()
               && (request.resource.data.number == resource.data.number
                   || numberReservedFor(vehicleId, request.resource.data.number)))
             || assignedDriverAvailability()
+            || transporterAvailability()
             || (isAdmin()
               && changedKeys().hasOnly(['availability', 'docOverrideUntil', 'updatedAt'])
               && (!('docOverrideUntil' in request.resource.data) || request.resource.data.docOverrideUntil is timestamp)
               && validVehicle(request.resource.data)));
       allow delete: if signedIn() && resource.data.ownerId == request.auth.uid;
+    }
+
+    // transporter_accounts/{bookingId}: the transporter's private books for a
+    // trip they hold (Task 67): what the party pays, what the driver is owed,
+    // other costs and what has come in. Integer paise, a record only; no money
+    // moves. TODO(functions): nothing server side is needed for a private record.
+    function accountLineOk(a) {
+      return a.revenuePaise is int && a.revenuePaise >= 0 && a.revenuePaise <= 100000000
+          && a.driverPayPaise is int && a.driverPayPaise >= 0 && a.driverPayPaise <= 100000000
+          && a.otherCostPaise is int && a.otherCostPaise >= 0 && a.otherCostPaise <= 100000000
+          && a.receivedPaise is int && a.receivedPaise >= 0 && a.receivedPaise <= 100000000
+          && a.partyName is string && a.partyName.size() <= 80
+          && a.updatedAt == request.time;
+    }
+
+    match /transporter_accounts/{bookingId} {
+      allow read: if signedIn() && resource.data.ownerId == request.auth.uid;
+      allow create: if signedIn()
+          && request.resource.data.keys().hasOnly(['ownerId', 'bookingId', 'partyId', 'partyName', 'revenuePaise', 'driverPayPaise', 'otherCostPaise', 'receivedPaise', 'updatedAt'])
+          && request.resource.data.ownerId == request.auth.uid
+          && request.resource.data.bookingId == bookingId
+          && get(docPath('bookings', bookingId)).data.get('fleetOwnerId', '') == request.auth.uid
+          && request.resource.data.partyId == get(docPath('bookings', bookingId)).data.customerId
+          && accountLineOk(request.resource.data);
+      allow update: if signedIn()
+          && resource.data.ownerId == request.auth.uid
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['partyName', 'revenuePaise', 'driverPayPaise', 'otherCostPaise', 'receivedPaise', 'updatedAt'])
+          && accountLineOk(request.resource.data);
+      allow delete: if false;
     }
 
     // vehicle_expenses/{id}: fuel, toll, repair and service lines the vehicle's
@@ -978,6 +1052,7 @@ service cloud.firestore {
           && validPromoShape(d)
           && d.get('creditsUsedPaise', 0) is int
           && (!('pickupGeohash' in d) || (d.pickupGeohash is string && d.pickupGeohash.matches('^[0-9b-hjkmnp-z]{4,12}$')))
+          && (!('postedByRole' in d) || (d.postedByRole == 'fleet' && isTransporter(d.shipperId)))
           && !prohibitedText(d.get('notes', ''))
           && !prohibitedText(d.cargoType);
     }
@@ -1386,6 +1461,19 @@ service cloud.firestore {
           && stageClockOk('loading') && stageClockOk('unloading');
     }
 
+    // Whose vehicle takes the load: the driver's own (no fleetOwnerId, or the
+    // transporter's own id), the one a transporter assigned to them, or one a
+    // member attached to the transporter who books it (Task 67).
+    function bookingVehicleOk(b) {
+      let v = get(docPath('vehicles', b.vehicleId)).data;
+      let uid = request.auth.uid;
+      return v.ownerId == uid
+          ? (!('fleetOwnerId' in b) || (b.fleetOwnerId == uid && isTransporter(uid)))
+          : (v.get('assignedDriverId', '') == uid
+              ? b.get('fleetOwnerId', '') == v.ownerId
+              : (v.get('attachedTo', '') == uid && activeMember(uid, v.ownerId) && b.get('fleetOwnerId', '') == uid && isTransporter(uid)));
+    }
+
     function validBookingCreate(bookingId) {
       let b = request.resource.data;
       let load = get(docPath('loads', b.loadId)).data;
@@ -1426,11 +1514,7 @@ service cloud.firestore {
           && loadAfter.driverId == request.auth.uid
           && loadAfter.bookingId == bookingId
           && offerConfirmOk(bookingId, b)
-          && (get(docPath('vehicles', b.vehicleId)).data.ownerId == request.auth.uid
-              || get(docPath('vehicles', b.vehicleId)).data.get('assignedDriverId', '') == request.auth.uid)
-          && (get(docPath('vehicles', b.vehicleId)).data.ownerId == request.auth.uid
-              ? !('fleetOwnerId' in b)
-              : b.get('fleetOwnerId', '') == get(docPath('vehicles', b.vehicleId)).data.ownerId)
+          && bookingVehicleOk(b)
           && get(docPath('vehicles', b.vehicleId)).data.get('status', 'active') == 'active'
           && availabilityOf(get(docPath('vehicles', b.vehicleId)).data) == 'available'
           && (vehiclePapersClear(get(docPath('vehicles', b.vehicleId)).data) || overrideActive(get(docPath('vehicles', b.vehicleId)).data));
@@ -1490,6 +1574,20 @@ service cloud.firestore {
 
     // Admin reassigns a not-yet-picked-up booking to another driver and
     // vehicle (the driver details are copied from that driver's profile).
+    // Task 67: the transporter who holds the booking picks the vehicle and
+    // the member driver who runs it, and may change them until loading ends.
+    function transporterAssigns() {
+      let a = request.resource.data;
+      return resource.data.get('fleetOwnerId', '') == request.auth.uid
+          && resource.data.status in ['accepted', 'driver_arriving', 'loading']
+          && changedKeys().hasOnly(['assignedDriverId', 'assignedDriverName', 'assignedVehicleId', 'assignedVehicleNumber', 'assignedAt', 'updatedAt'])
+          && a.assignedAt == request.time
+          && a.assignedDriverId is string && activeMember(request.auth.uid, a.assignedDriverId)
+          && a.assignedDriverName is string && a.assignedDriverName.size() <= 80
+          && transporterVehicle(get(docPath('vehicles', a.assignedVehicleId)).data, request.auth.uid)
+          && get(docPath('vehicles', a.assignedVehicleId)).data.number == a.assignedVehicleNumber;
+    }
+
     function adminReassignBooking() {
       let a = request.resource.data;
       return isAdmin()
@@ -1506,6 +1604,7 @@ service cloud.firestore {
           && (resource.data.driverId == request.auth.uid
               || resource.data.customerId == request.auth.uid
               || resource.data.get('fleetOwnerId', '') == request.auth.uid
+              || resource.data.get('assignedDriverId', '') == request.auth.uid
               || bizReads(resource.data.get('businessId', ''))
               || isAdmin());
       allow create: if signedIn() && validBookingCreate(bookingId);
@@ -1513,7 +1612,10 @@ service cloud.firestore {
       allow create: if demoCreate(bookingId);
       allow delete: if demoDelete(bookingId);
       allow update: if signedIn()
-          && (adminReassignBooking() || (resource.data.customerId == request.auth.uid && (ewayBillUpdate() || customerMarksPaid() || customerRecordsAdvance() || customerCancelsScheduled()))
+          && (adminReassignBooking()
+          || (resource.data.driverId == request.auth.uid && transporterAssigns())
+          || (resource.data.get('assignedDriverId', '') == request.auth.uid && (driverLocationUpdate() || driverStep(bookingId)))
+          || (resource.data.customerId == request.auth.uid && (ewayBillUpdate() || customerMarksPaid() || customerRecordsAdvance() || customerCancelsScheduled()))
           || (resource.data.driverId == request.auth.uid
           && (driverLocationUpdate()
               || ewayBillUpdate()
@@ -1538,7 +1640,7 @@ service cloud.firestore {
       // stamped with the server time, never edited or deleted. Someone who
       // blocked you does not receive your messages.
       function isParty(b) {
-        return request.auth.uid == b.driverId || request.auth.uid == b.customerId;
+        return request.auth.uid == b.driverId || request.auth.uid == b.customerId || request.auth.uid == b.get('assignedDriverId', '');
       }
 
       match /messages/{messageId} {
@@ -1639,8 +1741,9 @@ service cloud.firestore {
       let vehicle = get(docPath('vehicles', o.vehicleId)).data;
       return offerId == o.loadId + '_' + request.auth.uid
           && o.keys().hasOnly(['loadId', 'driverId', 'customerId', 'pickup', 'drop', 'vehicleId', 'vehicleNumber', 'vehicleType',
-                               'driverName', 'pricePaise', 'originalPaise', 'status', 'createdAt', 'updatedAt'])
+                               'driverName', 'pricePaise', 'originalPaise', 'status', 'fleetOwnerId', 'createdAt', 'updatedAt'])
           && o.driverId == request.auth.uid
+          && (!('fleetOwnerId' in o) || (o.fleetOwnerId == request.auth.uid && isTransporter(request.auth.uid)))
           && canTransact(request.auth.uid)
           && rateBumped('offer', offerId)
           && o.status == 'pending'
@@ -1653,7 +1756,8 @@ service cloud.firestore {
           && o.get('driverName', '') is string && o.get('driverName', '').size() <= 80
           && o.get('pickup', load.pickup) == load.pickup
           && o.get('drop', load.drop) == load.drop
-          && vehicle.ownerId == request.auth.uid
+          && transporterVehicle(vehicle, request.auth.uid)
+          && (vehicle.ownerId == request.auth.uid || 'fleetOwnerId' in o)
           && vehicle.number == o.vehicleNumber;
     }
 
@@ -1922,10 +2026,13 @@ service cloud.firestore {
       allow create: if signedIn()
           && request.resource.data.keys().hasOnly(['type', 'actorId', 'targetId', 'bookingId', 'loadId', 'data', 'createdAt'])
           && request.resource.data.actorId == request.auth.uid
-          && request.resource.data.type in ['verification', 'accept', 'status_change', 'cancel', 'risk_change', 'reassign', 'config_change', 'user_action', 'evidence', 'doc_view']
+          && request.resource.data.type in ['verification', 'accept', 'status_change', 'cancel', 'risk_change', 'reassign', 'config_change', 'user_action', 'evidence', 'doc_view', 'assign']
           && request.resource.data.data is map
           && request.resource.data.createdAt == request.time
           && (!(request.resource.data.type in ['verification', 'risk_change', 'reassign', 'config_change', 'user_action']) || isAdmin())
+          && (request.resource.data.type != 'assign'
+              || (request.resource.data.bookingId is string
+                  && get(docPath('bookings', request.resource.data.bookingId)).data.get('fleetOwnerId', '') == request.auth.uid))
           && (!(request.resource.data.type in ['evidence', 'doc_view'])
               || (request.resource.data.bookingId is string
                   && request.auth.uid in [get(docPath('bookings', request.resource.data.bookingId)).data.driverId, get(docPath('bookings', request.resource.data.bookingId)).data.customerId]));
@@ -2697,7 +2804,8 @@ service cloud.firestore {
     }
 
     function offersCreateOk(loadId, d) {
-      return validPromoShape(d) && (!('promo' in d) || validPromoOnCreate(loadId, d)) && validCreditsOnCreate(loadId, d);
+      // validPromoShape(d) already runs in validLoad; not repeated here (the load create rule is near the 1000-expression limit).
+      return (!('promo' in d) || validPromoOnCreate(loadId, d)) && validCreditsOnCreate(loadId, d);
     }
 
     function validPromoShape(d) {

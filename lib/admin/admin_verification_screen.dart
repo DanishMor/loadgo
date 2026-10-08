@@ -129,7 +129,9 @@ class _DriverCardState extends State<_DriverCard> {
           ),
           const SizedBox(height: 4),
           Text(
-            '${d.phone} • ${d.vehicleNumber} • ${d.vehicleType}',
+            d.isTransporter
+                ? '${d.phone} • ${tr(context, 'fleetOwner')} • ${((d.data['fleet'] as Map?)?['officeCity'] ?? '')} • ${((d.data['fleet'] as Map?)?['vehicleCount'] ?? 0)} ${tr(context, 'fleetVehicles')}'
+                : '${d.phone} • ${d.vehicleNumber} • ${d.vehicleType}',
             style: TextStyle(color: AppColors.muted),
           ),
           const SizedBox(height: 8),

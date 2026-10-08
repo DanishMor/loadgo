@@ -26,7 +26,7 @@ class VehicleService {
   static bool isValidNumber(String raw) =>
       RegExp(r'^[A-Z0-9]{6,12}$').hasMatch(normalizeNumber(raw));
 
-  /// Vehicles the signed-in user owns plus vehicles a fleet owner assigned
+  /// Vehicles the signed-in user owns plus vehicles a transporter assigned
   /// to them, newest first.
   static Stream<List<Vehicle>> watchMine() {
     final uid = Backend.uid;
@@ -73,7 +73,7 @@ class VehicleService {
     return byId.values.where((v) => v.isActive).toList();
   }
 
-  /// Fleet owner: give [vehicleId] to one of the active drivers, or take it
+  /// Transporter: give [vehicleId] to one of the active drivers, or take it
   /// back with null. Rules check the driver is an active member.
   static Future<void> assignDriver(String vehicleId, String? driverId) => _col.doc(vehicleId).update({
         'assignedDriverId': driverId ?? FieldValue.delete(),

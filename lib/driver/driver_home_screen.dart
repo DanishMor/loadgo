@@ -45,6 +45,7 @@ import 'vehicle_alerts_banner.dart';
 import 'doc_suspension_banner.dart';
 import '../core/services/doc_expiry_service.dart';
 import 'my_offers_screen.dart';
+import 'assigned_trips_card.dart';
 import 'fleet_invites_card.dart';
 import 'wallet_screen.dart';
 import '../core/documents/documents_center_screen.dart';
@@ -340,7 +341,9 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
               onOpen: (id) => openDriverTrip(context, id),
               empty: _emptyCard(Icons.route_rounded, tr(context, 'noActiveTrip')),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 12),
+            AssignedTripsCard(onOpen: (id) => openDriverTrip(context, id)),
+            const SizedBox(height: 12),
             _title(tr(context, 'availableLoads')),
             const SizedBox(height: 12),
             const FleetInvitesCard(),

@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import '../transporter/transporter_logic.dart';
 import '../enterprise/validators.dart';
 import '../identity/identity_index.dart';
 import '../location/geohash.dart';
@@ -110,7 +111,7 @@ class UserService {
     await batch.commit();
   }
 
-  /// Fleet owner profile: name, company and PAN (unique across accounts),
+  /// Transporter profile: name, company and PAN (unique across accounts),
   /// optional GSTIN. Saved with their identity index entries.
   static Future<void> saveFleetProfile({
     required String name,
@@ -118,6 +119,10 @@ class UserService {
     required String pan,
     String gstin = '',
     required String language,
+    String officeCity = '',
+    List<String> routes = const [],
+    List<String> vehicleTypes = const [],
+    int vehicleCount = 0,
   }) async {
     final user = Backend.currentUser;
     if (user == null) return;
@@ -147,10 +152,12 @@ class UserService {
         'role': 'fleet',
         'selectedRole': 'fleet',
         'roles': FieldValue.arrayUnion(['fleet']),
-        'fleet': {'pan': cleanPan},
+        'fleet': TransporterProfile(pan: cleanPan, officeCity: officeCity, routes: routes, vehicleTypes: vehicleTypes, vehicleCount: vehicleCount).toFleetMap(),
         if (gst.isNotEmpty) 'business': {'legalName': companyName, 'gstin': gst},
         'identityHashes': hashes,
         'fleetProfileComplete': true,
+        // The admin's earlier decision is never overwritten; a new account waits for review.
+        if (before == null || before['verificationStatus'] == null) ...{'verificationStatus': 'pending', 'verified': false},
         'updatedAt': FieldValue.serverTimestamp(),
       },
       SetOptions(merge: true),

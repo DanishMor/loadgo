@@ -56,6 +56,9 @@ class Offer {
   final String? bookingId;
   final Timestamp? createdAt;
 
+  /// Set on a company bid: the transporter who offers (equals [driverId]).
+  final String? fleetOwnerId;
+
   const Offer({
     required this.id,
     required this.loadId,
@@ -73,7 +76,10 @@ class Offer {
     this.counterPaise,
     this.bookingId,
     this.createdAt,
+    this.fleetOwnerId,
   });
+
+  bool get isCompanyBid => fleetOwnerId != null;
 
   static String idFor(String loadId, String driverId) => '${loadId}_$driverId';
 
@@ -101,6 +107,7 @@ class Offer {
       status: d['status'] as String? ?? OfferStatus.pending,
       bookingId: d['bookingId'] as String?,
       createdAt: d['createdAt'] as Timestamp?,
+      fleetOwnerId: d['fleetOwnerId'] as String?,
     );
   }
 }

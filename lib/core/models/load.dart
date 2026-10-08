@@ -89,6 +89,10 @@ class Load {
   /// "Pickup now": wanted within the hour (drivers see a chip, ranked first).
   final bool instant;
 
+  /// `fleet` when a transporter posted the load (shown as "Posted by transporter").
+  final String? postedByRole;
+  bool get postedByTransporter => postedByRole == 'fleet';
+
   /// Exact pickup time for an advance booking (null = no fixed time).
   final DateTime? scheduledAt;
 
@@ -146,6 +150,7 @@ class Load {
     this.visibility = LoadVisibility.public,
     this.allowedDriverIds = const [],
     this.instant = false,
+    this.postedByRole,
     this.fragile = false,
     this.highValue = false,
     this.declaredValuePaise,
@@ -209,6 +214,7 @@ class Load {
       visibility: LoadVisibility.all.contains(d['visibility']) ? d['visibility'] as String : LoadVisibility.public,
       allowedDriverIds: [for (final s in (d['allowedDriverIds'] as List?) ?? const []) s.toString()],
       instant: d['instant'] == true,
+      postedByRole: d['postedByRole'] as String?,
       fragile: d['fragile'] == true,
       highValue: d['highValue'] == true,
       declaredValuePaise: (d['declaredValuePaise'] as num?)?.toInt(),

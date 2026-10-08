@@ -77,7 +77,7 @@ Future<Widget> resolveDriverStart() async {
 
 
 
-/// Fleet owners: profile (name, company, PAN) first, then the fleet home.
+/// Transporters: profile (name, company, PAN) first, then the fleet home.
 Future<Widget> resolveFleetStart() async {
   final data = await UserService.getUser();
   if (data == null || data['fleetProfileComplete'] != true) return const FleetProfileSetupScreen();

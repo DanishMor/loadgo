@@ -22,7 +22,11 @@ class OfferService {
   static bool validPrice(int paise) => paise > 0 && paise <= maxPaise;
 
   /// Driver offers [pricePaise] for [load] with [vehicle].
-  static Future<String> send({required Load load, required Vehicle vehicle, required int pricePaise}) async {
+  ///
+  /// With [asCompany] a transporter bids for the company (Task 67): the
+  /// offer shows the company name, carries `fleetOwnerId`, and may use an
+  /// attached vehicle. The vehicle and driver are assigned after winning.
+  static Future<String> send({required Load load, required Vehicle vehicle, required int pricePaise, bool asCompany = false}) async {
     final uid = Backend.requireUid();
     if (!validPrice(pricePaise)) throw ArgumentError.value(pricePaise, 'pricePaise');
     if (!load.isOpen || load.shipperId == uid) throw OfferStateException();
@@ -45,7 +49,8 @@ class OfferService {
         'vehicleId': vehicle.id,
         'vehicleNumber': vehicle.number,
         'vehicleType': vehicle.type,
-        'driverName': profile['driverName'] ?? '',
+        'driverName': (asCompany ? profile['companyName'] : profile['driverName']) ?? '',
+        if (asCompany) 'fleetOwnerId': uid,
         'pricePaise': pricePaise,
         'originalPaise': pricePaise,
         'status': OfferStatus.pending,
@@ -117,7 +122,7 @@ class OfferService {
   static Future<String> confirm(Offer offer) async {
     if (offer.driverId != Backend.requireUid() || offer.status != OfferStatus.selected) throw OfferStateException();
     final vehicle = Vehicle.fromDoc(await Backend.db.collection('vehicles').doc(offer.vehicleId).get());
-    return BookingService.accept(loadId: offer.loadId, vehicle: vehicle, offerId: offer.id);
+    return BookingService.accept(loadId: offer.loadId, vehicle: vehicle, offerId: offer.id, asCompany: offer.isCompanyBid);
   }
 
   /// Offers on one of the customer's loads, best price first.

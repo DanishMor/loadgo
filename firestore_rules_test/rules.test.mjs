@@ -1380,9 +1380,314 @@ describe('fleet owners', () => {
 
     test('the owner drives their own vehicle without a fleetOwnerId', async () => {
       await seedFleet();
-      await assertFails(acceptBatch(as('owner1'), 'L1', 'owner1', { vehicleId: 'fv1', fleetOwnerId: 'owner1' }));
+      await assertFails(acceptBatch(as('owner1'), 'L1', 'owner1', { vehicleId: 'fv1', fleetOwnerId: 'someoneElse' }));
       await assertSucceeds(acceptBatch(as('owner1'), 'L1', 'owner1', { vehicleId: 'fv1' }));
     });
+  });
+});
+
+describe('transporter (Task 67)', () => {
+  const asPhone = (uid, phone) => env.authenticatedContext(uid, { phone_number: phone }).firestore();
+  const member = (over = {}) => ({ ownerId: 'tr1', ownerName: 'Sunil', driverId: 'driver1', driverName: 'Ramesh', driverPhone: '+919876543210', active: true, createdAt: Timestamp.now(), ...over });
+  const COMPANY_OFFER = { loadId: 'L1', driverId: 'tr1', customerId: 'customer1', vehicleId: 'tv1', vehicleNumber: 'MH12AB1234', vehicleType: '20ft', driverName: 'Sharma Roadlines', pricePaise: 2400000, originalPaise: 2400000, status: 'pending', fleetOwnerId: 'tr1' };
+
+  const seedAll = () =>
+    seed(async (db) => {
+      await setDoc(doc(db, 'users', 'tr1'), { role: 'fleet', selectedRole: 'fleet' });
+      await setDoc(doc(db, 'users', 'driver1'), { role: 'driver', selectedRole: 'driver' });
+      await setDoc(doc(db, 'users', 'driver2'), { role: 'driver', selectedRole: 'driver' });
+      await setDoc(doc(db, 'users', 'customer1'), { role: 'customer', selectedRole: 'customer' });
+      await setDoc(doc(db, 'fleet_members', 'tr1_driver1'), member());
+      await setDoc(doc(db, 'vehicles', 'tv1'), { ...VEHICLE, ownerId: 'tr1' });
+      await setDoc(doc(db, 'vehicles', 'dv1'), { ...VEHICLE, ownerId: 'driver1', number: 'KA01CD5678' });
+      await setDoc(doc(db, 'vehicles', 'dv2'), { ...VEHICLE, ownerId: 'driver2', number: 'KA01CD9999' });
+      await setDoc(doc(db, 'loads', 'L1'), LOAD);
+    });
+
+  test('profile: the owner writes office city, routes, vehicle types and count; junk is refused', async () => {
+    await seedAll();
+    const ref = doc(as('tr1'), 'users', 'tr1');
+    await assertSucceeds(updateDoc(ref, { fleet: { pan: 'ABCDE1234F', officeCity: 'Indore', routes: ['Indore-Pune'], vehicleTypes: ['20ft'], vehicleCount: 12 } }));
+    await assertFails(updateDoc(ref, { fleet: { pan: 'ABCDE1234F', vehicleCount: -1 } }));
+    await assertFails(updateDoc(ref, { fleet: { pan: 'ABCDE1234F', vehicleCount: 1.5 } }));
+    await assertFails(updateDoc(ref, { fleet: { pan: 'ABCDE1234F', verified: true } }));
+    await assertFails(updateDoc(ref, { fleet: { pan: 'ABCDE1234F', routes: Array(11).fill('a-b') } }));
+    // The badge is admin only.
+    await assertFails(updateDoc(ref, { verified: true, verificationStatus: 'approved' }));
+    await assertSucceeds(updateDoc(doc(asAdmin(), 'users', 'tr1'), { verified: true, verificationStatus: 'approved' }));
+  });
+
+  test('attach: a member attaches their own vehicle; a stranger or a non-member cannot', async () => {
+    await seedAll();
+    await assertSucceeds(updateDoc(doc(as('driver1'), 'vehicles', 'dv1'), { attachedTo: 'tr1' }));
+    await assertFails(updateDoc(doc(as('driver2'), 'vehicles', 'dv2'), { attachedTo: 'tr1' }), 'driver2 never joined');
+    await assertFails(updateDoc(doc(as('tr1'), 'vehicles', 'dv1'), { attachedTo: 'tr1' }), 'the transporter cannot attach for the driver');
+    await assertSucceeds(updateDoc(doc(as('tr1'), 'vehicles', 'dv1'), { availability: 'on_trip' }));
+    await assertFails(updateDoc(doc(as('tr1'), 'vehicles', 'dv1'), { capacity: 99 }));
+    await assertFails(updateDoc(doc(as('tr1'), 'vehicles', 'dv1'), { number: 'XX00XX0000' }));
+    await assertSucceeds(updateDoc(doc(as('driver1'), 'vehicles', 'dv1'), { attachedTo: deleteField() }));
+    await assertFails(updateDoc(doc(as('tr1'), 'vehicles', 'dv1'), { availability: 'available' }), 'detached');
+  });
+
+  test('company bid: a transporter offers with an own vehicle and fleetOwnerId; others cannot fake it', async () => {
+    await seedAll();
+    const ref = (db) => doc(db, 'offers', 'L1_tr1');
+    await assertSucceeds(setDoc(ref(as('tr1')), COMPANY_OFFER));
+    await assertFails(setDoc(doc(as('driver1'), 'offers', 'L1_driver1'), { ...COMPANY_OFFER, driverId: 'driver1', fleetOwnerId: 'driver1', vehicleId: 'dv1', vehicleNumber: 'KA01CD5678' }), 'a driver is not a transporter');
+    await assertFails(setDoc(ref(as('tr1')), { ...COMPANY_OFFER, fleetOwnerId: 'someoneElse' }));
+    await assertFails(setDoc(ref(as('tr1')), { ...COMPANY_OFFER, vehicleId: 'dv2', vehicleNumber: 'KA01CD9999' }), 'not attached');
+  });
+
+  test('company bid with an attached vehicle works while the owner is a member', async () => {
+    await seedAll();
+    await seed((db) => updateDoc(doc(db, 'vehicles', 'dv1'), { attachedTo: 'tr1' }));
+    const offer = { ...COMPANY_OFFER, vehicleId: 'dv1', vehicleNumber: 'KA01CD5678' };
+    await assertSucceeds(setDoc(doc(as('tr1'), 'offers', 'L1_tr1'), offer));
+    await seed((db) => updateDoc(doc(db, 'fleet_members', 'tr1_driver1'), { active: false }));
+    await assertFails(setDoc(doc(as('tr1'), 'offers', 'L1_tr1'), offer), 'member left: the attachment is dead');
+  });
+
+  const confirmCompany = (db, over = {}, vehicle = 'tv1') => {
+    const b = writeBatch(db);
+    b.set(doc(db, 'bookings', 'B1'), bookingFor('L1', { driverId: 'tr1', vehicleId: vehicle, vehicleNumber: vehicle === 'tv1' ? 'MH12AB1234' : 'KA01CD5678', fleetOwnerId: 'tr1', offerId: 'L1_tr1', agreedFarePaise: COMPANY_OFFER.pricePaise, ...over }));
+    b.update(doc(db, 'loads', 'L1'), { status: 'matched', driverId: 'tr1', bookingId: 'B1', matchedAt: serverTimestamp() });
+    b.update(doc(db, 'vehicles', vehicle), { availability: 'on_trip' });
+    b.update(doc(db, 'offers', 'L1_tr1'), { status: 'confirmed', bookingId: 'B1', updatedAt: serverTimestamp() });
+    return b.commit();
+  };
+
+  async function seedWonBid() {
+    await seedAll();
+    await seed((db) => setDoc(doc(db, 'offers', 'L1_tr1'), { ...COMPANY_OFFER, status: 'selected' }));
+  }
+
+  test('the selected company bid becomes a booking with fleetOwnerId = the transporter', async () => {
+    await seedWonBid();
+    await assertFails(confirmCompany(as('tr1'), { fleetOwnerId: 'other' }));
+    await assertSucceeds(confirmCompany(as('tr1')));
+    await assertSucceeds(getDoc(doc(as('customer1'), 'bookings', 'B1')));
+    await assertSucceeds(getDoc(doc(as('tr1'), 'bookings', 'B1')));
+  });
+
+  async function seedBookingHeld() {
+    await seedWonBid();
+    await confirmCompany(as('tr1'));
+  }
+
+  const assignData = (over = {}) => ({ assignedDriverId: 'driver1', assignedDriverName: 'Ramesh', assignedVehicleId: 'tv1', assignedVehicleNumber: 'MH12AB1234', assignedAt: serverTimestamp(), updatedAt: serverTimestamp(), ...over });
+
+  test('assign and reassign: only to an active member, with an own or attached vehicle, before pickup', async () => {
+    await seedBookingHeld();
+    const ref = (db) => doc(db, 'bookings', 'B1');
+    await assertFails(updateDoc(ref(as('driver2')), assignData({ assignedDriverId: 'driver2' })), 'a stranger');
+    await assertFails(updateDoc(ref(as('tr1')), assignData({ assignedDriverId: 'driver2' })), 'not a member');
+    await assertFails(updateDoc(ref(as('tr1')), assignData({ assignedVehicleId: 'dv2', assignedVehicleNumber: 'KA01CD9999' })), 'not the fleet vehicle');
+    await assertFails(updateDoc(ref(as('tr1')), assignData({ assignedVehicleNumber: 'WRONG' })));
+    await assertFails(updateDoc(ref(as('tr1')), { ...assignData(), status: 'delivered' }), 'nothing else changes');
+    await assertSucceeds(updateDoc(ref(as('tr1')), assignData()));
+    // The audit line the app writes next to it.
+    await assertSucceeds(addDoc(collection(as('tr1'), 'audit_events'), { type: 'assign', actorId: 'tr1', bookingId: 'B1', targetId: 'driver1', data: { vehicleId: 'tv1' }, createdAt: serverTimestamp() }));
+    await assertFails(addDoc(collection(as('driver2'), 'audit_events'), { type: 'assign', actorId: 'driver2', bookingId: 'B1', data: {}, createdAt: serverTimestamp() }));
+    // Reassign is the same write; after pickup it is refused.
+    await seed((db) => setDoc(doc(db, 'fleet_members', 'tr1_driver3'), member({ driverId: 'driver3' })));
+    await assertSucceeds(updateDoc(ref(as('tr1')), assignData({ assignedDriverId: 'driver3', assignedDriverName: 'Imran' })));
+    await seed((db) => updateDoc(doc(db, 'bookings', 'B1'), { status: 'picked_up' }));
+    await assertFails(updateDoc(ref(as('tr1')), assignData()));
+  });
+
+  test('the assigned driver reads the booking, chats and moves the trip; nobody else', async () => {
+    await seedBookingHeld();
+    await seed((db) => updateDoc(doc(db, 'bookings', 'B1'), { assignedDriverId: 'driver1', assignedDriverName: 'Ramesh', assignedVehicleId: 'tv1', assignedVehicleNumber: 'MH12AB1234' }));
+    await assertSucceeds(getDoc(doc(as('driver1'), 'bookings', 'B1')));
+    await assertFails(getDoc(doc(as('driver2'), 'bookings', 'B1')));
+    await assertSucceeds(updateDoc(doc(as('driver1'), 'bookings', 'B1'), { status: 'driver_arriving', 'timeline.driver_arriving': serverTimestamp(), updatedAt: serverTimestamp() }));
+    await assertFails(updateDoc(doc(as('driver1'), 'bookings', 'B1'), { assignedDriverId: 'driver1', assignedAt: serverTimestamp(), updatedAt: serverTimestamp() }), 'the driver cannot reassign');
+    await assertFails(updateDoc(doc(as('driver1'), 'bookings', 'B1'), { paymentStatus: 'driver_confirmed' }));
+    await assertFails(updateDoc(doc(as('driver1'), 'bookings', 'B1'), { status: 'cancelled' }));
+    await assertSucceeds(addDoc(collection(as('driver1'), 'bookings', 'B1', 'messages'), { senderId: 'driver1', text: 'Namaste', flagged: false, createdAt: serverTimestamp() }));
+  });
+
+  test('the books: only the transporter, only for their own booking, integer paise', async () => {
+    await seedBookingHeld();
+    const line = (over = {}) => ({ ownerId: 'tr1', bookingId: 'B1', partyId: 'customer1', partyName: 'Acme', revenuePaise: 2400000, driverPayPaise: 1800000, otherCostPaise: 100000, receivedPaise: 0, updatedAt: serverTimestamp(), ...over });
+    const ref = (db) => doc(db, 'transporter_accounts', 'B1');
+    await assertFails(setDoc(ref(as('driver1')), line({ ownerId: 'driver1' })));
+    await assertFails(setDoc(ref(as('tr1')), line({ revenuePaise: 10.5 })));
+    await assertFails(setDoc(ref(as('tr1')), line({ driverPayPaise: -1 })));
+    await assertFails(setDoc(ref(as('tr1')), line({ partyId: 'someone' })));
+    await assertSucceeds(setDoc(ref(as('tr1')), line()));
+    await assertSucceeds(getDoc(ref(as('tr1'))));
+    await assertFails(getDoc(ref(as('customer1'))));
+    await assertFails(getDoc(ref(as('driver1'))));
+    await assertFails(getDoc(ref(asAdmin())), 'private books');
+    await assertSucceeds(updateDoc(ref(as('tr1')), { receivedPaise: 500000, updatedAt: serverTimestamp() }));
+    await assertFails(updateDoc(ref(as('tr1')), { ownerId: 'x', updatedAt: serverTimestamp() }));
+    await assertFails(updateDoc(ref(as('tr1')), { bookingId: 'B2', updatedAt: serverTimestamp() }));
+    await assertFails(deleteDoc(ref(as('tr1'))));
+  });
+
+  test('a transporter posts a load with the "posted by transporter" tag; others cannot use it', async () => {
+    await seedAll();
+    const load = (uid, over = {}) => ({ ...LOAD, shipperId: uid, ...over });
+    await assertSucceeds(setDoc(doc(as('tr1'), 'loads', 'T1'), load('tr1', { postedByRole: 'fleet' })));
+    await assertSucceeds(setDoc(doc(as('tr1'), 'loads', 'T2'), load('tr1')));
+    await assertFails(setDoc(doc(as('customer1'), 'loads', 'T3'), load('customer1', { postedByRole: 'fleet' })));
+    await assertFails(setDoc(doc(as('tr1'), 'loads', 'T4'), load('tr1', { postedByRole: 'admin' })));
+  });
+});
+
+describe('transporter security (Phase 2)', () => {
+  const asPhone = (uid, phone) => env.authenticatedContext(uid, { phone_number: phone }).firestore();
+  const member = (over = {}) => ({ ownerId: 'tr1', ownerName: 'Sunil', driverId: 'driver1', driverName: 'Ramesh', driverPhone: '+919876543210', active: true, createdAt: Timestamp.now(), ...over });
+  const BOOKING = { fleetOwnerId: 'tr1', driverId: 'tr1', vehicleId: 'tv1', vehicleNumber: 'MH12AB1234', driverName: 'Sharma Roadlines', driverPhone: '' };
+
+  const seedAll = () =>
+    seed(async (db) => {
+      for (const [uid, role] of [['tr1', 'fleet'], ['tr2', 'fleet'], ['driver1', 'driver'], ['customer1', 'customer']]) {
+        await setDoc(doc(db, 'users', uid), { role, selectedRole: role, name: uid, phone: '+91990000000' + uid.length, riskTier: 'normal' });
+      }
+      await setDoc(doc(db, 'fleet_members', 'tr1_driver1'), member());
+      await setDoc(doc(db, 'fleet_invites', 'tr1_919876543210'), { ownerId: 'tr1', ownerName: 'Sunil', phone: '+919876543210', status: 'accepted', createdAt: Timestamp.now() });
+      await setDoc(doc(db, 'vehicles', 'tv1'), { ...VEHICLE, ownerId: 'tr1' });
+      await setDoc(doc(db, 'vehicles', 'tv2'), { ...VEHICLE, ownerId: 'tr2', number: 'KA01CD5678' });
+      await setDoc(doc(db, 'loads', 'L1'), { ...LOAD, status: 'matched', driverId: 'tr1', bookingId: 'B1' });
+      await setDoc(doc(db, 'bookings', 'B1'), { ...bookingFor('L1'), ...BOOKING, status: 'accepted', timeline: {} });
+      await setDoc(doc(db, 'transporter_accounts', 'B1'), { ownerId: 'tr1', bookingId: 'B1', partyId: 'customer1', partyName: 'Acme', revenuePaise: 1, driverPayPaise: 0, otherCostPaise: 0, receivedPaise: 0, updatedAt: Timestamp.now() });
+    });
+
+  test('a transporter cannot read or write the admins collection or make themselves admin', async () => {
+    await seedAll();
+    const t = as('tr1');
+    await assertFails(getDoc(doc(t, 'admins', 'admin1')));
+    await assertFails(getDocs(collection(t, 'admins')));
+    await assertFails(setDoc(doc(t, 'admins', 'tr1'), { createdBy: 'me' }));
+    await assertFails(updateDoc(doc(t, 'admins', 'admin1'), { role: 'support' }));
+    await assertFails(deleteDoc(doc(t, 'admins', 'admin1')));
+    // Admin-only actions stay refused.
+    await assertFails(updateDoc(doc(t, 'users', 'driver1'), { verified: true, verificationStatus: 'approved' }));
+    await assertFails(updateDoc(doc(t, 'users', 'tr1'), { isAdmin: true, verified: true }));
+    await assertFails(setDoc(doc(t, 'config', 'features'), { pilotMode: false, flags: {} }));
+    await assertFails(addDoc(collection(t, 'audit_events'), { type: 'verification', actorId: 'tr1', data: {}, createdAt: serverTimestamp() }));
+    await assertFails(getDocs(collection(t, 'audit_events')));
+    await assertSucceeds(getDoc(doc(as('admin1'), 'admins', 'admin1')));
+  });
+
+  test('admin comes only from admins/{uid}: a user field or a custom claim name changes nothing', async () => {
+    await seedAll();
+    const fake = env.authenticatedContext('tr1', { admin: true, role: 'admin' }).firestore();
+    await assertFails(getDocs(collection(fake, 'audit_events')));
+    await assertFails(updateDoc(doc(fake, 'users', 'driver1'), { verified: true, verificationStatus: 'approved' }));
+    await assertSucceeds(getDocs(collection(asAdmin(), 'audit_events')));
+  });
+
+  test('another transporter cannot read the books, members, invites or bookings of tr1', async () => {
+    await seedAll();
+    const t2 = as('tr2');
+    await assertFails(getDoc(doc(t2, 'transporter_accounts', 'B1')));
+    await assertFails(getDocs(query(collection(t2, 'transporter_accounts'), where('ownerId', '==', 'tr1'))));
+    await assertFails(getDoc(doc(t2, 'fleet_members', 'tr1_driver1')));
+    await assertFails(getDocs(query(collection(t2, 'fleet_members'), where('ownerId', '==', 'tr1'))));
+    await assertFails(getDoc(doc(t2, 'fleet_invites', 'tr1_919876543210')));
+    await assertFails(getDoc(doc(t2, 'bookings', 'B1')));
+    await assertFails(getDocs(query(collection(t2, 'bookings'), where('fleetOwnerId', '==', 'tr1'))));
+    await assertSucceeds(getDoc(doc(as('tr1'), 'bookings', 'B1')));
+  });
+
+  test('another transporter cannot write on tr1\'s booking, vehicles or fleet', async () => {
+    await seedAll();
+    const t2 = as('tr2');
+    const assign = { assignedDriverId: 'driver1', assignedDriverName: 'Ramesh', assignedVehicleId: 'tv2', assignedVehicleNumber: 'KA01CD5678', assignedAt: serverTimestamp(), updatedAt: serverTimestamp() };
+    await assertFails(updateDoc(doc(t2, 'bookings', 'B1'), assign));
+    await assertFails(updateDoc(doc(t2, 'bookings', 'B1'), { fleetOwnerId: 'tr2' }));
+    await assertFails(updateDoc(doc(t2, 'vehicles', 'tv1'), { assignedDriverId: 'driver1' }));
+    await assertFails(updateDoc(doc(t2, 'vehicles', 'tv1'), { availability: 'on_trip' }));
+    await assertFails(updateDoc(doc(t2, 'vehicles', 'tv1'), { attachedTo: 'tr2' }));
+    await assertFails(updateDoc(doc(t2, 'fleet_members', 'tr1_driver1'), { active: false, endedAt: serverTimestamp() }));
+    await assertFails(setDoc(doc(t2, 'transporter_accounts', 'B1'), { ownerId: 'tr2', bookingId: 'B1', partyId: 'customer1', partyName: 'x', revenuePaise: 1, driverPayPaise: 0, otherCostPaise: 0, receivedPaise: 0, updatedAt: serverTimestamp() }));
+    // Not even the owner of tr1's books can be impersonated through the audit trail.
+    await assertFails(addDoc(collection(t2, 'audit_events'), { type: 'assign', actorId: 'tr2', bookingId: 'B1', data: {}, createdAt: serverTimestamp() }));
+  });
+
+  test('a transporter cannot read customer or driver profiles, the books of others, or list users', async () => {
+    await seedAll();
+    const t = as('tr1');
+    await assertFails(getDoc(doc(t, 'users', 'customer1')));
+    await assertFails(getDoc(doc(t, 'users', 'driver1')));
+    await assertFails(getDoc(doc(t, 'users', 'tr2')));
+    await assertFails(getDocs(collection(t, 'users')));
+    await assertFails(getDocs(query(collection(t, 'users'), where('role', '==', 'driver'))));
+    await assertSucceeds(getDoc(doc(t, 'users', 'tr1')));
+    // The customer's and driver's private lists.
+    await seed((db) => setDoc(doc(db, 'users', 'customer1', 'saved_places', 'p1'), { label: 'home', name: 'Home', address: 'Delhi' }));
+    await assertFails(getDoc(doc(t, 'users', 'customer1', 'saved_places', 'p1')));
+  });
+
+  test('customer and driver cannot read the transporter\'s books, invites or members', async () => {
+    await seedAll();
+    for (const who of ['customer1', 'driver2']) {
+      await assertFails(getDoc(doc(as(who), 'transporter_accounts', 'B1')));
+      await assertFails(getDoc(doc(as(who), 'fleet_members', 'tr1_driver1')));
+    }
+    await assertFails(getDoc(doc(as('customer1'), 'fleet_invites', 'tr1_919876543210')));
+    await assertSucceeds(getDoc(doc(as('driver1'), 'fleet_members', 'tr1_driver1')), 'the member sees their own membership');
+  });
+
+  test('role, fleetOwnerId, riskTier, plan, wallet and verification cannot be changed by the transporter', async () => {
+    await seedAll();
+    const ref = () => doc(as('tr1'), 'users', 'tr1');
+    await assertFails(updateDoc(ref(), { role: 'customer' }));
+    await assertFails(updateDoc(ref(), { role: 'driver', selectedRole: 'driver' }));
+    await assertFails(updateDoc(ref(), { selectedRole: 'customer' }));
+    await assertFails(updateDoc(ref(), { riskTier: 'restricted' }));
+    await assertFails(updateDoc(ref(), { plan: 'pro', planUntil: Timestamp.fromDate(new Date('2030-01-01')) }));
+    await assertFails(updateDoc(ref(), { verified: true, verificationStatus: 'approved' }));
+    await assertFails(updateDoc(ref(), { reviewFlag: { kind: 'other', note: 'x', by: 'tr1', at: serverTimestamp() } }));
+    await assertFails(updateDoc(ref(), { cancelCount: 5 }));
+    await assertFails(updateDoc(ref(), { docOverrideUntil: Timestamp.fromDate(new Date('2030-01-01')) }));
+    // Allowed: a normal profile edit.
+    await assertSucceeds(updateDoc(ref(), { name: 'New Name' }));
+  });
+
+  test('the booking\'s fleetOwnerId cannot be changed or forged', async () => {
+    await seedAll();
+    const t = as('tr1');
+    await assertFails(updateDoc(doc(t, 'bookings', 'B1'), { fleetOwnerId: 'tr2' }));
+    await assertFails(updateDoc(doc(t, 'bookings', 'B1'), { fleetOwnerId: deleteField() }));
+    await assertFails(updateDoc(doc(t, 'bookings', 'B1'), { driverId: 'tr2' }));
+    await assertFails(updateDoc(doc(as('customer1'), 'bookings', 'B1'), { fleetOwnerId: 'customer1' }));
+    // A plain driver cannot claim a fleetOwnerId on their own vehicle, nor a customer-role user.
+    await seed(async (db) => {
+      await setDoc(doc(db, 'loads', 'L2'), { ...LOAD });
+      await setDoc(doc(db, 'vehicles', 'v1'), VEHICLE);
+    });
+    await assertFails(acceptBatch(as('driver1'), 'L2', 'driver1', { vehicleId: 'v1', fleetOwnerId: 'driver1' }));
+    await assertFails(acceptBatch(as('driver1'), 'L2', 'driver1', { vehicleId: 'v1', fleetOwnerId: 'tr1' }));
+  });
+
+  test('the wallet: a transporter cannot write ledger lines for a trip they do not hold or that is not paid', async () => {
+    await seedAll();
+    const line = (type, amountPaise, over = {}) => ({ driverId: 'tr1', bookingId: 'B1', type, amountPaise, createdAt: serverTimestamp(), ...over });
+    await assertFails(setDoc(doc(as('tr1'), 'ledger', 'B1_trip_earning'), line('trip_earning', 999999)), 'not paid yet');
+    await assertFails(setDoc(doc(as('tr2'), 'ledger', 'B1_trip_earning'), line('trip_earning', 100, { driverId: 'tr2' })), 'not their booking');
+    await assertFails(getDoc(doc(as('tr2'), 'ledger', 'B1_trip_earning')));
+  });
+
+  test('the company profile cannot carry extra or oversize fields', async () => {
+    await seedAll();
+    const ref = () => doc(as('tr1'), 'users', 'tr1');
+    await assertFails(updateDoc(ref(), { fleet: { pan: 'ABCDE1234F', walletPaise: 1000000 } }));
+    await assertFails(updateDoc(ref(), { fleet: { pan: 'ABCDE1234F', officeCity: 'x'.repeat(61) } }));
+    await assertFails(updateDoc(ref(), { fleet: { pan: 'ABCDE1234F', vehicleTypes: Array(13).fill('20ft') } }));
+    await assertFails(updateDoc(ref(), { fleet: 'ABCDE1234F' }));
+    await assertSucceeds(updateDoc(ref(), { fleet: { pan: 'ABCDE1234F', officeCity: 'Indore', vehicleCount: 5 } }));
+  });
+
+  test('an attached vehicle cannot be bid with by a transporter the owner never joined', async () => {
+    await seedAll();
+    await seed((db) => setDoc(doc(db, 'vehicles', 'dv1'), { ...VEHICLE, ownerId: 'driver1', number: 'KA01CD0001', attachedTo: 'tr2' }));
+    const offer = { loadId: 'L9', driverId: 'tr2', customerId: 'customer1', vehicleId: 'dv1', vehicleNumber: 'KA01CD0001', vehicleType: '20ft', driverName: 'Co', pricePaise: 2400000, originalPaise: 2400000, status: 'pending', fleetOwnerId: 'tr2' };
+    await seed((db) => setDoc(doc(db, 'loads', 'L9'), LOAD));
+    await assertFails(setDoc(doc(as('tr2'), 'offers', 'L9_tr2'), offer), 'driver1 is not a member of tr2');
   });
 });
 

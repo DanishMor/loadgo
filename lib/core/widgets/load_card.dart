@@ -91,6 +91,7 @@ class LoadCard extends StatelessWidget {
               if (load.bookingType == BookingType.movers && load.movers != null)
                 _meta(Icons.chair_alt_outlined, trf(context, 'moversChip', {'n': load.movers!.units, 'floor': load.movers!.floor})),
               if (load.instant) _meta(Icons.bolt_rounded, tr(context, 'instantLabel')),
+              if (load.postedByTransporter) _meta(Icons.warehouse_outlined, tr(context, 'trpPostedBy')),
               if (load.visibility != LoadVisibility.public) _meta(Icons.lock_outline_rounded, tr(context, 'visPrivateChip')),
               if (load.fragile) _meta(Icons.broken_image_outlined, tr(context, 'fragileChip')),
               if (load.highValue) _meta(Icons.diamond_outlined, tr(context, 'highValueChip')),

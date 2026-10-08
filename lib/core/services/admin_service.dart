@@ -25,11 +25,14 @@ class DriverVerification {
     this.data = const {},
   });
 
+  /// A transporter waiting for (or holding) the "Verified transporter" badge.
+  bool get isTransporter => data['role'] == 'fleet';
+
   factory DriverVerification.fromDoc(DocumentSnapshot<Map<String, dynamic>> doc) {
     final d = doc.data() ?? const {};
     return DriverVerification(
       uid: doc.id,
-      name: d['driverName'] as String? ?? '',
+      name: d['driverName'] as String? ?? (d['role'] == 'fleet' ? (d['companyName'] as String? ?? d['name'] as String? ?? '') : ''),
       phone: d['phone'] as String? ?? '',
       vehicleNumber: d['vehicleNumber'] as String? ?? '',
       vehicleType: d['vehicleType'] as String? ?? '',

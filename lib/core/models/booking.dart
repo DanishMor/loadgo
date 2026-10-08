@@ -39,8 +39,16 @@ class Booking {
   final List<String> extraDrops;
   final String pickupSlot;
 
-  /// Fleet owner of the vehicle when a fleet driver took the load.
+  /// Transporter of the vehicle when a fleet driver took the load, or the
+  /// transporter who holds the booking themselves (company bid).
   final String? fleetOwnerId;
+
+  /// Task 67: the vehicle and member driver the transporter picked to run a
+  /// company booking (changed by reassigning before pickup).
+  final String? assignedDriverId;
+  final String assignedDriverName;
+  final String? assignedVehicleId;
+  final String assignedVehicleNumber;
 
   /// Company account and cost centre copied from the load.
   final String? businessId;
@@ -167,6 +175,10 @@ class Booking {
     this.detention = const Detention(),
     this.scheduledAt,
     this.fleetOwnerId,
+    this.assignedDriverId,
+    this.assignedDriverName = '',
+    this.assignedVehicleId,
+    this.assignedVehicleNumber = '',
     this.businessId,
     this.costCenter,
     this.pickupGps,
@@ -178,6 +190,12 @@ class Booking {
   });
 
   List<String> get route => [pickup, ...extraPickups, ...extraDrops, drop];
+
+  /// The transporter holds this booking themselves (company bid).
+  bool get isCompanyBooking => fleetOwnerId != null && fleetOwnerId == driverId;
+
+  /// Who actually drives: the assigned member driver, else the booking driver.
+  String get runningDriverId => assignedDriverId ?? driverId;
 
   bool get isInTransit => status == BookingStatus.inTransit;
 
@@ -251,6 +269,10 @@ class Booking {
       detention: Detention.fromMap(d['detention']),
       scheduledAt: (d['scheduledAt'] as Timestamp?)?.toDate(),
       fleetOwnerId: d['fleetOwnerId'] as String?,
+      assignedDriverId: d['assignedDriverId'] as String?,
+      assignedDriverName: d['assignedDriverName'] as String? ?? '',
+      assignedVehicleId: d['assignedVehicleId'] as String?,
+      assignedVehicleNumber: d['assignedVehicleNumber'] as String? ?? '',
       businessId: d['businessId'] as String?,
       costCenter: d['costCenter'] as String?,
       pickupGps: d['pickupGps'] as GeoPoint?,

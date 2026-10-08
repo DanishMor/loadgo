@@ -17,6 +17,7 @@ class FeatureKey {
   static const driverRewards = 'driverRewards';
   static const tripShare = 'tripShare';
   static const problemReport = 'problemReport';
+  static const transporter = 'transporter';
 }
 
 /// `config/features`: {pilotMode: bool, flags: {key: bool}}. A missing
@@ -37,6 +38,8 @@ class Features {
     FeatureSpec(FeatureKey.driverRewards, pilotOn: false),
     FeatureSpec(FeatureKey.tripShare, pilotOn: true),
     FeatureSpec(FeatureKey.problemReport, pilotOn: true),
+    // Task 67: the Transporter role. ON by default (also in pilot mode) for testing.
+    FeatureSpec(FeatureKey.transporter, pilotOn: true),
   ];
 
   static final _byKey = {for (final s in registry) s.key: s};
