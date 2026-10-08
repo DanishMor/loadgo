@@ -5,6 +5,8 @@ set -e
 EXEC="./node_modules/.bin/firebase emulators:exec --config ../firebase.json --only firestore,storage --project loadgo-rules-test"
 PARTS=${RULES_PARTS:-4}
 $EXEC "node --test storage.test.mjs"
+echo "== generated matrix =="
+$EXEC "node --test matrix.test.mjs"
 i=1
 while [ $i -le $PARTS ]; do
   echo "== rules slice $i of $PARTS =="

@@ -47,7 +47,8 @@ const PUBLIC_GET = new Set(['trip_shares', 'lr_shares']);
 
 // Collections a signed-in person may list WITHOUT a filter. Frozen on purpose.
 // Everything else needs a query the rules can prove (own id, status, party ...).
-const LISTABLE_BY_ANY_SIGNED_IN = new Set(['vehicles', 'ratings', 'config', 'promos', 'incentives']);
+// truck_posts is the empty-trucks board: open to every signed-in person by design (no phone numbers on it).
+const LISTABLE_BY_ANY_SIGNED_IN = new Set(['vehicles', 'ratings', 'config', 'promos', 'incentives', 'truck_posts']);
 
 describe('collections found in firestore.rules', () => {
   test('the list is not empty and has the ones we know', () => {
