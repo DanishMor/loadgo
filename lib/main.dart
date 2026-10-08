@@ -17,6 +17,7 @@ import 'core/permissions/permission_rationale.dart';
 import 'core/services/app_config.dart';
 import 'core/services/app_control_service.dart';
 import 'core/services/crash_service.dart';
+import 'core/services/device_service.dart';
 import 'core/services/connectivity_service.dart';
 import 'core/services/language_store.dart';
 import 'core/services/backend.dart';
@@ -67,6 +68,7 @@ Future<void> main() async {
         if (seen) PushService.register();
       });
       AppControlService.refresh();
+      DeviceService.syncClock().ignore();
       // Another account needs its own settings; the same one reuses the cache.
       refreshAppConfig(force: user.uid != configUid);
       configUid = user.uid;

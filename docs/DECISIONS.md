@@ -9,3 +9,4 @@ One line per assumption taken without asking.
 - Task 31: the Post Load wizard is three numbered steps on one scrolling page, not three separate screens, so every field stays in the tree and existing flows and tests keep working.
 - Task 20: the phone clock is corrected with a server time learned from a chat message the phone sent; the rules themselves always use the server time. A person who never chats keeps the phone clock for screens (documented in Task 20 progress).
 - Task 38: admin lists page the 100 documents read, 50 at a time, on the client; real server paging would need a cursor per list and a composite index.
+- Task 20 (update): the learning source for `ServerClock` is the device record (`users/{uid}/devices/{id}.lastSeenAt` is stamped by the server and read back) at sign-in and at most every six hours, plus chat acknowledgements. It is not saved between runs: an old offset would be wrong after the person fixes the phone clock.

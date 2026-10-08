@@ -258,7 +258,7 @@ class LrService {
     d.validate();
     final role = roleFor(b, uid);
     final name = await _issuerName(role);
-    final year = DateTime.now().year;
+    final year = ServerClock.now().year;
     final series = _db.collection('lr_series').doc('${uid}_$year');
     late LrPublic made;
     await _db.runTransaction((tx) async {

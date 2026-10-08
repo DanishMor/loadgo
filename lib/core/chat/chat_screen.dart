@@ -12,6 +12,7 @@ import '../call/call_models.dart';
 import '../call/call_screens.dart';
 import '../comm/chat_strikes.dart';
 import '../services/comm_guard.dart';
+import '../services/server_clock.dart';
 
 /// "Chat" button with an unread badge for a booking (both roles).
 class BookingChatButton extends StatelessWidget {
@@ -225,7 +226,7 @@ class _ChatScreenState extends State<ChatScreen> {
               stream: CommGuard.watch(),
               builder: (context, snap) {
                 final until = snap.data?.blockedUntil;
-                if (until == null || !until.isAfter(DateTime.now())) return const SizedBox.shrink();
+                if (until == null || !until.isAfter(ServerClock.now())) return const SizedBox.shrink();
                 return Container(
                   key: const ValueKey('chatBlockedBanner'),
                   width: double.infinity,

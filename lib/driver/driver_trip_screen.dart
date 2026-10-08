@@ -27,6 +27,7 @@ import '../core/documents/eway_status_line.dart';
 import 'return_loads_section.dart';
 import '../core/documents/payment_card.dart';
 import '../core/payments/payment_timeline_card.dart';
+import '../core/services/server_clock.dart';
 
 void openDriverTrip(BuildContext context, String bookingId) {
   Navigator.of(context).push(MaterialPageRoute(builder: (_) => DriverTripScreen(bookingId: bookingId)));
@@ -234,7 +235,7 @@ class _CancelBookingButtonState extends State<_CancelBookingButton> {
 
   Future<void> _cancel() async {
     String? reason;
-    final charge = BookingService.cancellationCharge(widget.booking, DateTime.now());
+    final charge = BookingService.cancellationCharge(widget.booking, ServerClock.now());
     final policy = PricingService.config.cancellation;
     final ok = await showDialog<bool>(
       context: context,

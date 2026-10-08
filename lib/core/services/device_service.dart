@@ -6,6 +6,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../risk/risk_config.dart';
 import 'backend.dart';
+import 'server_clock.dart';
+import 'ttl_cache.dart';
 
 /// One signed-in device of a user (`users/{uid}/devices/{deviceId}`).
 class UserDevice {
@@ -89,6 +91,32 @@ class DeviceService {
 
   static CollectionReference<Map<String, dynamic>> _devices(String uid) => _db.collection('users').doc(uid).collection('devices');
 
+  static final TtlCache _clockCache = TtlCache(const Duration(hours: 6));
+
+  /// Learns the server's time (MASTER-5 Task 20): stamps this device's
+  /// `lastSeenAt` with the server clock and reads it back from the server, so
+  /// [ServerClock] knows how far the phone's own clock is off. One write and
+  /// one read, at most every six hours; a failure just leaves the phone clock.
+  static Future<void> syncClock({bool force = false}) async {
+    final uid = Backend.uid;
+    if (uid == null) return;
+    if (!force && _clockCache.fresh) return;
+    try {
+      final ref = _devices(uid).doc(await deviceId());
+      final sent = ServerClock.deviceNow();
+      await ref.update({'lastSeenAt': FieldValue.serverTimestamp()});
+      final snap = await ref.get(const GetOptions(source: Source.server));
+      final received = ServerClock.deviceNow();
+      final at = (snap.data()?['lastSeenAt'] as Timestamp?)?.toDate();
+      if (at == null) return;
+      // The stamp was made about halfway between sending and getting the answer.
+      ServerClock.observe(at, receivedAt: sent.add(received.difference(sent) ~/ 2));
+      _clockCache.markFetched();
+    } catch (_) {
+      // No device record yet, offline, or refused: keep the phone clock.
+    }
+  }
+
   /// Called after sign-in: records this device, links it to the account, and
   /// raises a risk signal when an account with other devices appears on a new one.
   static Future<DeviceCheck> register() async {
@@ -109,6 +137,7 @@ class DeviceService {
         'lastLoginAt': FieldValue.serverTimestamp(),
         'revoked': false,
       });
+      syncClock(force: true).ignore();
       return DeviceCheck.known;
     }
     final batch = _db.batch();
@@ -143,6 +172,7 @@ class DeviceService {
       });
     }
     await batch.commit();
+    syncClock(force: true).ignore();
     return others == 0 ? DeviceCheck.first : DeviceCheck.newDevice;
   }
 

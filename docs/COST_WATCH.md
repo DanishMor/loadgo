@@ -54,3 +54,5 @@ Policy pages and the trip page are tiny static files. The trip page makes one Fi
 - **Config cache (Task 12).** All admin-managed config documents are read together at most every 15 minutes (`refreshAppConfig`). `config/support` and the referral bonus (`config/offers`) were read on every use; they now use the same 15-minute cache (and a new Firestore instance, such as another account, reads fresh).
 - **Build size (Task 13).** `assets/` is 2 MB: nine Noto fonts used only when a PDF is made (loaded on demand, not at start) and two launcher images used by the icon tools. Nothing unused was found.
 - **Start (Task 14).** The four independent local reads at start (language, connectivity, theme, simple mode) now run together instead of one after another. Everything else (config, push, deep links) was already after the first frame or in the background.
+
+- **Server clock (MASTER-5 Task 20).** `DeviceService.syncClock` costs one write (the device's `lastSeenAt`) and one read at sign-in and at most every six hours of app use, so that the app knows when the phone's clock is wrong. At 1,000 daily users that is about 1,000-3,000 writes a day.

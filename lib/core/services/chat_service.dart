@@ -136,7 +136,7 @@ class ChatService {
   static bool _shouldNotify(Map<String, dynamic>? last, String uid) {
     if (last == null) return true;
     final at = (last['createdAt'] as Timestamp?)?.toDate();
-    return last['senderId'] != uid || at == null || DateTime.now().difference(at) > notifyBurst;
+    return last['senderId'] != uid || at == null || ServerClock.now().difference(at) > notifyBurst;
   }
 
   /// The newest messages of the chat, newest first (empty when they cannot be read).

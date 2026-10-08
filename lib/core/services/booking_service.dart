@@ -197,7 +197,7 @@ class BookingService {
     final stage = b.status;
     final started = b.detention.startedAt(stage);
     if (b.driverId != Backend.requireUid() || started == null) throw StateError('Not waiting');
-    final waited = (((now ?? DateTime.now()).difference(started).inSeconds) / 60).ceil().clamp(0, Detention.maxMinutes);
+    final waited = (((now ?? ServerClock.now()).difference(started).inSeconds) / 60).ceil().clamp(0, Detention.maxMinutes);
     final total = (b.detention.minutes(stage) + waited).clamp(0, Detention.maxMinutes);
     await Backend.db.collection('bookings').doc(b.id).update({
       'detention.${stage}Minutes': total,
@@ -357,7 +357,7 @@ class BookingService {
       tx.update(ref, {
         'status': BookingStatus.cancelled,
         'timeline.${BookingStatus.cancelled}': FieldValue.serverTimestamp(),
-        'cancellation': {'by': 'driver', 'chargePaise': cancellationCharge(booking, DateTime.now()), 'reason': ?reason},
+        'cancellation': {'by': 'driver', 'chargePaise': cancellationCharge(booking, ServerClock.now()), 'reason': ?reason},
         'updatedAt': FieldValue.serverTimestamp(),
       });
       tx.update(Backend.db.collection('loads').doc(booking.loadId), {
@@ -389,7 +389,7 @@ class BookingService {
     if (!CancelReasons.valid('customer', reason)) throw ArgumentError.value(reason, 'reason');
     final uid = Backend.requireUid();
     final ref = _col.doc(bookingId);
-    final at = now ?? DateTime.now();
+    final at = now ?? ServerClock.now();
     return Backend.db.runTransaction((tx) async {
       final snap = await tx.get(ref);
       if (!snap.exists) throw StateError('Booking not found');

@@ -4,6 +4,7 @@ import '../comm/chat_strikes.dart';
 import '../comm/contact_filter.dart';
 import 'analytics_events.dart';
 import 'backend.dart';
+import 'server_clock.dart';
 
 /// Chat and calls are off for this person until [until].
 class ChatBlockedException implements Exception {
@@ -67,7 +68,7 @@ class CommGuard {
   /// Throws [ChatBlockedException] while chat and calls are off.
   static Future<ChatStatus> ensureAllowed({DateTime? now}) async {
     final s = await status();
-    if (s.isBlocked(now ?? DateTime.now())) throw ChatBlockedException(s.blockedUntil!);
+    if (s.isBlocked(now ?? ServerClock.now())) throw ChatBlockedException(s.blockedUntil!);
     return s;
   }
 
@@ -75,7 +76,7 @@ class CommGuard {
   /// person still gets the warning and the message is still not sent.
   static Future<ViolationOutcome> recordViolation({required String bookingId, required ContactKind kind, required String text, DateTime? now}) async {
     final uid = Backend.requireUid();
-    final at = now ?? DateTime.now();
+    final at = now ?? ServerClock.now();
     ChatStatus before;
     try {
       before = await status(uid);
@@ -120,7 +121,7 @@ class CommGuard {
       final uid = Backend.uid;
       if (uid == null) return false;
       final s = await status(uid);
-      if (!ChatLadder.canDecay(strikes: s.strikes, lastChange: s.strikeAt, now: now ?? DateTime.now())) return false;
+      if (!ChatLadder.canDecay(strikes: s.strikes, lastChange: s.strikeAt, now: now ?? ServerClock.now())) return false;
       await _db.collection('users').doc(uid).update({
         'chatStrikes': s.strikes - 1,
         'chatStrikeAt': FieldValue.serverTimestamp(),
