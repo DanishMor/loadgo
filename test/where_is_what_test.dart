@@ -48,6 +48,7 @@ void main() {
       'adminFeatures': 'Features',
       'adminUnitEconomics': 'Unit economics',
       'adminSupplyDemand': 'Supply and demand',
+      'adminPilotFunnel': 'Pilot funnel',
       'flaggedUsers': 'Flagged users',
       'adminDeletionRequests': 'Deletion requests',
       'adminAudit': 'Audit log',

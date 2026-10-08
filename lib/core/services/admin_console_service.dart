@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../analytics/unit_economics.dart';
+import '../admin/pilot_funnel.dart';
 import '../matching/supply_demand.dart';
 import '../models/ledger_entry.dart';
 import '../models/load.dart';
@@ -350,6 +351,32 @@ class AdminConsoleService {
           [for (final d in loads.docs) Load.fromDoc(d)],
           [for (final d in vehicles.docs) Vehicle.fromDoc(d)],
           (v) => spots[v.assignedDriverId] ?? spots[v.ownerId],
+        );
+      });
+
+  /// Customers, drivers and transporters on the way to a first delivery. Reads
+  /// the newest [limit] users of each role, loads and bookings (about 2,000
+  /// reads, once per press).
+  static Future<PilotFunnel> pilotFunnel({int limit = 500}) => withRetry(() async {
+        final users = <(String, Map<String, dynamic>)>[];
+        for (final role in ['customer', 'driver', 'fleet']) {
+          final snap = await _db.collection('users').where('role', isEqualTo: role).limit(limit).get();
+          users.addAll([for (final d in snap.docs) (d.id, d.data())]);
+        }
+        final loads = await _db.collection('loads').limit(limit).get();
+        final bookings = await _db.collection('bookings').limit(limit).get();
+        return PilotFunnel.compute(
+          users: users,
+          loadShippers: [for (final d in loads.docs) '${d.data()['shipperId'] ?? ''}'],
+          bookings: [
+            for (final d in bookings.docs)
+              (
+                customerId: '${d.data()['customerId'] ?? ''}',
+                driverId: '${d.data()['driverId'] ?? ''}',
+                fleetOwnerId: '${d.data()['fleetOwnerId'] ?? ''}',
+                status: '${d.data()['status'] ?? ''}',
+              ),
+          ],
         );
       });
 

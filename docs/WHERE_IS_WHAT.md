@@ -124,6 +124,7 @@ Admin Panel: **Profile > Admin** (only for accounts in `admins/{uid}`). The pane
 | Sahayak, Feedback, Templates | assistant and reply templates | super, support |
 | Health | app health | super, ops |
 | Supply and demand, Unit economics | numbers | super (supply and demand also ops) |
+| Pilot funnel | where customers, drivers and transporters stop before a first delivery | super, ops |
 | Features | the flags above, with a line of meaning for each | super |
 | Demo data | seed and remove demo data | super |
 | Deletion requests | account deletions | super, support |
