@@ -9,6 +9,7 @@ import '../core/services/booking_service.dart';
 import '../core/services/payment_service.dart';
 import '../core/services/payout_service.dart';
 import '../core/models/risk.dart';
+import '../core/payments/statement_sheet.dart';
 import '../core/wallet/txn_history_screen.dart';
 import '../core/widgets/common.dart';
 import '../core/widgets/live_stream.dart';
@@ -150,7 +151,15 @@ class _WalletScreenState extends State<WalletScreen> {
                         ],
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    Align(
+                      alignment: AlignmentDirectional.centerEnd,
+                      child: TextButton.icon(
+                        key: const ValueKey('openStatement'),
+                        onPressed: () => showStatementSheet(context, entries: entries, bookings: bookings),
+                        icon: const Icon(Icons.download_outlined),
+                        label: Text(tr(context, 'stmtTitle')),
+                      ),
+                    ),
                     Text(tr(context, 'recordsOnly'), style: TextStyle(fontSize: 12, color: AppColors.faint)),
                     if (payouts.isNotEmpty) ...[
                       const SizedBox(height: 16),
