@@ -377,7 +377,13 @@ void main() {
 
     testWidgets('Help has the feedback entry', (t) async {
       await t.pumpWidget(host(const HelpScreen()));
-      await t.scrollUntilVisible(find.byKey(const ValueKey('helpFeedback')), 300, scrollable: find.byType(Scrollable).first);
+      // the list builds its rows lazily: scroll until the entry exists
+      for (var n = 0; n < 40 && find.byKey(const ValueKey('helpFeedback')).evaluate().isEmpty; n++) {
+        await t.drag(find.byType(ListView).first, const Offset(0, -300));
+        await t.pump();
+      }
+      await t.ensureVisible(find.byKey(const ValueKey('helpFeedback')));
+      await t.pumpAndSettle();
       await t.tap(find.byKey(const ValueKey('helpFeedback')));
       await t.pumpAndSettle();
       expect(find.byType(FeedbackScreen), findsOneWidget);

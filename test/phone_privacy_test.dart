@@ -9,6 +9,7 @@ void main() {
   final key = RegExp(r"'(phone|driverPhone|consignorPhone|consigneePhone|receiverPhone|customerPhone|memberPhone)'\s*:");
   const allowed = {
     'lib/core/demo/demo_seed.dart': 'demo data only, fake numbers',
+    'lib/admin/admin_config_screen.dart': 'an empty phone in the support-line template (admin-only config)',
     'lib/core/bilty/lr_model.dart': 'LR private/details, never readable by the driver',
     'lib/core/services/admin_console_service.dart': 'writes an empty driverPhone on reassign',
     'lib/core/services/safety_service.dart': 'own emergency contacts on the own profile',

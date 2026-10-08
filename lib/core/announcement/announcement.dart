@@ -147,7 +147,7 @@ class _AnnouncementBannerState extends State<AnnouncementBanner> {
               if (a.dismissible)
                 IconButton(
                   key: const ValueKey('announcementClose'),
-                  tooltip: tr(context, 'close'),
+                  tooltip: tr(context, 'a11yClose'),
                   icon: const Icon(Icons.close_rounded, size: 20),
                   onPressed: () {
                     setState(() => _closedId = a.id);
