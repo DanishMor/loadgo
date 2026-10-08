@@ -27,6 +27,7 @@ Google Firebase (Authentication, Firestore, Cloud Messaging, Crashlytics, Analyt
 ## Your choices
 - Consent switches for location, analytics and marketing are in Settings.
 - You can download your data and delete your account from Settings. Deletion is blocked while a trip is active. Bookings, invoices, ledger lines, ratings and chats of finished trips are kept for the legal retention period (see the retention table in the app documentation) and are no longer linked to a usable account.
+- Technical error samples, unanswered assistant questions and call records have an expiry date (about 3 months, 6 months and 1 year) and are then deleted automatically. On account deletion your bilty (LR) share links are switched off.
 - Account deletion page: /delete-account.
 
 ## Children
