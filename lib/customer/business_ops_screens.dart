@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../core/widgets/once.dart';
 import '../core/enterprise/business_roles.dart';
 import '../core/l10n/l10n.dart';
 import '../core/models/business_ops.dart';
@@ -32,6 +33,7 @@ class ApprovalsScreen extends StatefulWidget {
 }
 
 class _ApprovalsScreenState extends State<ApprovalsScreen> {
+  final _once = Once();
   final _limit = TextEditingController();
   late final Stream<List<Load>> _waiting = BusinessOpsService.watchAwaitingApproval(widget.context.ownerId).asBroadcastStream();
 
@@ -87,7 +89,7 @@ class _ApprovalsScreenState extends State<ApprovalsScreen> {
                   ),
                 ),
                 const SizedBox(width: 8),
-                FilledButton(key: const ValueKey('approvalLimitSave'), onPressed: _saveLimit, child: Text(tr(context, 'save'))),
+                FilledButton(key: const ValueKey('approvalLimitSave'), onPressed: () => _once.run(_saveLimit), child: Text(tr(context, 'save'))),
               ]),
               Text(tr(context, 'bizApprovalHelp'), style: TextStyle(color: AppColors.faint, fontSize: 12)),
             ]),

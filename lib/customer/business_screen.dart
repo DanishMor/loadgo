@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../core/widgets/once.dart';
 import '../core/enterprise/validators.dart';
 import '../core/l10n/l10n.dart';
 import '../core/models/enterprise.dart';
@@ -31,6 +32,7 @@ class BusinessScreen extends StatefulWidget {
 }
 
 class _BusinessScreenState extends State<BusinessScreen> {
+  final _once = Once();
   final _form = GlobalKey<FormState>();
   final _name = TextEditingController();
   final _gstin = TextEditingController();
@@ -125,7 +127,7 @@ class _BusinessScreenState extends State<BusinessScreen> {
                     maxLength: 200,
                     decoration: InputDecoration(labelText: tr(context, 'branchAddress')),
                   ),
-                  FilledButton(key: const ValueKey('bizSave'), onPressed: _save, child: Text(tr(context, 'save'))),
+                  FilledButton(key: const ValueKey('bizSave'), onPressed: () => _once.run(_save), child: Text(tr(context, 'save'))),
                 ]),
               ),
               const SizedBox(height: 24),

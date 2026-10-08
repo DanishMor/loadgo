@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../core/widgets/once.dart';
 import '../core/l10n/l10n.dart';
 import '../core/models/vehicle_type.dart';
 import '../core/risk/risk_config.dart';
@@ -76,6 +77,7 @@ class ConfigEditorScreen extends StatefulWidget {
 }
 
 class _ConfigEditorScreenState extends State<ConfigEditorScreen> {
+  final _once = Once();
   final _text = TextEditingController();
   bool _loaded = false;
 
@@ -160,7 +162,7 @@ class _ConfigEditorScreenState extends State<ConfigEditorScreen> {
                   width: double.infinity,
                   child: FilledButton(
                     key: const ValueKey('saveConfig'),
-                    onPressed: _save,
+                    onPressed: () => _once.run(_save),
                     child: Text(tr(context, 'adminSaveConfig')),
                   ),
                 ),
