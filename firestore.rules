@@ -1274,7 +1274,7 @@ service cloud.firestore {
     // up by one inside a window, restarts at 1 when the hour is over (the
     // window start is the server time), and never passes the limit.
     function rateLimitFor(kind) {
-      return kind == 'load' ? 30 : (kind == 'offer' ? 60 : (kind == 'call' ? 20 : 120));
+      return kind == 'load' ? 30 : (kind == 'offer' ? 60 : (kind == 'call' ? 20 : (kind == 'ticket' ? 10 : 120)));
     }
 
     function validRateCounter(id) {
@@ -1291,8 +1291,8 @@ service cloud.firestore {
     }
 
     match /rate_limits/{counterId} {
-      allow read: if signedIn() && counterId.matches(request.auth.uid + '_(load|offer|message|call)');
-      allow create, update: if signedIn() && counterId.matches(request.auth.uid + '_(load|offer|message|call)') && validRateCounter(counterId);
+      allow read: if signedIn() && counterId.matches(request.auth.uid + '_(load|offer|message|call|ticket)');
+      allow create, update: if signedIn() && counterId.matches(request.auth.uid + '_(load|offer|message|call|ticket)') && validRateCounter(counterId);
       allow delete: if false;
     }
 
@@ -1928,7 +1928,7 @@ service cloud.firestore {
     match /tickets/{ticketId} {
       allow read: if signedIn() && (resource.data.userId == request.auth.uid || isAdmin()
           || bizActs(resource.data.get('businessId', ''), ['manager', 'accounts']));
-      allow create: if signedIn() && validTicketCreate();
+      allow create: if signedIn() && validTicketCreate() && rateBumped('ticket', ticketId);
       allow update: if signedIn() && (ownerTicketUpdate()
           || (adminIn(['super', 'support'])
               && changedKeys().hasOnly(['status', 'priority', 'escalationLevel', 'assignedTo', 'updatedAt'])

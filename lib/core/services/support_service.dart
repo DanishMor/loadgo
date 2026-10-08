@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../models/support_ticket.dart';
 import 'backend.dart';
+import 'rate_limit_service.dart';
 
 /// Help desk tickets. Users open, reply, escalate and close their own
 /// tickets; admins change status/priority and reply (Task 12 screens).
@@ -22,7 +23,10 @@ class SupportService {
     if (category == TicketCategory.dispute && bookingId == null) {
       throw ArgumentError('A dispute needs a booking');
     }
-    final ref = await _col.add({
+    final ref = _col.doc();
+    final bump = await RateLimit.prepare(RateLimit.ticketKind, docId: ref.id);
+    final batch = Backend.db.batch();
+    batch.set(ref, {
       'userId': uid,
       'category': category,
       // A company ticket goes to the front of the queue (BIZ15).
@@ -36,6 +40,8 @@ class SupportService {
       'createdAt': FieldValue.serverTimestamp(),
       'updatedAt': FieldValue.serverTimestamp(),
     });
+    bump.addToBatch(batch);
+    await batch.commit();
     return ref.id;
   }
 

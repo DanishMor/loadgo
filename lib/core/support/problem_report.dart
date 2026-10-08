@@ -7,6 +7,7 @@ import '../l10n/l10n.dart';
 import '../models/support_ticket.dart';
 import '../services/backend.dart';
 import '../services/error_log_service.dart';
+import '../services/rate_limit_service.dart';
 import '../services/support_service.dart';
 import '../widgets/common.dart';
 import '../widgets/feature_gate.dart';
@@ -111,6 +112,11 @@ class _ProblemSheetState extends State<_ProblemSheet> {
       if (!mounted) return;
       Navigator.pop(context, true);
       showSnack(context, tr(context, 'prSent'));
+    } on RateLimitException catch (e) {
+      if (mounted) {
+        setState(() => _busy = false);
+        showSnack(context, trf(context, 'rateLimited', {'m': e.minutesLeft}));
+      }
     } catch (_) {
       if (mounted) {
         setState(() => _busy = false);

@@ -84,8 +84,8 @@ const as = (uid) => {
 // existing suites keep testing what they test; the rate-limit suite below uses
 // the raw functions. The counter is seeded as an expired window, so a bump is
 // always "first in a new hour".
-const COUNTED_PATH = /^(loads|offers|calls)\/[^/]+$|^(bookings|driver_links|driver_groups)\/[^/]+\/messages\/[^/]+$/;
-const kindOf = (path) => (path.startsWith('loads/') ? 'load' : path.startsWith('offers/') ? 'offer' : path.startsWith('calls/') ? 'call' : 'message');
+const COUNTED_PATH = /^(loads|offers|calls|tickets)\/[^/]+$|^(bookings|driver_links|driver_groups)\/[^/]+\/messages\/[^/]+$/;
+const kindOf = (path) => (path.startsWith('loads/') ? 'load' : path.startsWith('offers/') ? 'offer' : path.startsWith('calls/') ? 'call' : path.startsWith('tickets/') ? 'ticket' : 'message');
 const expiredCounter = (uid, kind) =>
   env.withSecurityRulesDisabled((ctx) =>
     rawSetDoc(doc(ctx.firestore(), 'rate_limits', `${uid}_${kind}`), { count: 1, windowStart: Timestamp.fromMillis(Date.now() - 7200000), last: 'seed' }));
@@ -3264,9 +3264,26 @@ describe('hourly abuse limits', () => {
     await assertSucceeds(say({ count: 120, windowStart: w2, last: 'm1' }));
     await assertFails(say({ ...fresh(), last: 'm2' }, 'm2'));
   });
+  test('a support ticket needs a bump that names it; ten an hour', async () => {
+    const open = (bump, id = 't1') => {
+      const db = as('customer1');
+      const b = rawWriteBatch(db);
+      b.set(doc(db, 'tickets', id), { userId: 'customer1', category: 'other', priority: 'normal', status: 'open', subject: 'Help me', description: '', escalationLevel: 0, createdAt: serverTimestamp(), updatedAt: serverTimestamp() });
+      if (bump) b.set(doc(db, 'rate_limits', 'customer1_ticket'), bump);
+      return b.commit();
+    };
+    await assertFails(open(null));
+    await assertSucceeds(open({ ...fresh(), last: 't1' }));
+    await seedCounter('customer1', 'ticket', 10, 3);
+    const w = (await getDoc(counter('customer1', 'ticket'))).data().windowStart;
+    await assertFails(open({ count: 11, windowStart: w, last: 't2' }, 't2'));
+    await seedCounter('customer1', 'ticket', 9, 3);
+    const w2 = (await getDoc(counter('customer1', 'ticket'))).data().windowStart;
+    await assertSucceeds(open({ count: 10, windowStart: w2, last: 't2' }, 't2'));
+  });
   test('counters are private, only your own, only the three kinds, never deleted', async () => {
     await assertFails(rawSetDoc(doc(as('customer2'), 'rate_limits', 'customer1_load'), { ...fresh(), last: 'x' }));
-    await assertFails(rawSetDoc(doc(as('customer1'), 'rate_limits', 'customer1_ticket'), { ...fresh(), last: 'x' }));
+    await assertFails(rawSetDoc(doc(as('customer1'), 'rate_limits', 'customer1_widget'), { ...fresh(), last: 'x' }));
     await assertSucceeds(rawSetDoc(doc(as('customer1'), 'rate_limits', 'customer1_load'), { ...fresh(), last: 'x' }));
     await assertSucceeds(getDoc(counter('customer1', 'load')));
     await assertFails(getDoc(doc(as('customer2'), 'rate_limits', 'customer1_load')));

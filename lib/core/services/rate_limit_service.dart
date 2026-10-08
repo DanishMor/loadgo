@@ -44,9 +44,10 @@ class RateLimit {
   static const offerKind = 'offer';
   static const messageKind = 'message';
   static const callKind = 'call';
+  static const ticketKind = 'ticket';
 
   /// Per user per hour.
-  static const limits = {loadKind: 30, offerKind: 60, messageKind: 120, callKind: 20};
+  static const limits = {loadKind: 30, offerKind: 60, messageKind: 120, callKind: 20, ticketKind: 10};
 
   static const window = Duration(hours: 1);
 

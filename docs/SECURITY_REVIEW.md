@@ -61,3 +61,7 @@ Reviewed with rules tests written first (`transporter security (Phase 2)`, `priv
 
 ## How to re-run
 `cd firestore_rules_test && npm ci && npm test` (needs Java for the emulator). CI runs it on every push.
+
+## MASTER-5 Task 2: hourly abuse limits (coverage)
+Counted per user per hour in `rate_limits/{uid}_{kind}` (bumped in the same batch, checked by the rules): load 30, offer 60, chat message 120, call 20, **ticket 10 (new)**.
+Not counted, and why: one-off or naturally unique documents (ratings = one per booking, invoices = one per booking, claims, deletion requests, `lr_series` counters, `identity_index`), documents that need a confirmed booking with the other party (OTP steps, signatures, cargo docs), and owner-only convenience data (saved places, templates). LR share links and violations are bounded by their parent LR / booking. A server-side counter for the rest is `// TODO(functions)`.

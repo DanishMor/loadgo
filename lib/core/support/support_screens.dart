@@ -10,6 +10,7 @@ import '../services/backend.dart';
 import '../services/reply_template_service.dart';
 import '../services/booking_service.dart';
 import '../services/support_config.dart';
+import '../services/rate_limit_service.dart';
 import '../services/support_service.dart';
 import '../safety/call.dart';
 import '../widgets/common.dart';
@@ -215,6 +216,10 @@ class _NewTicketScreenState extends State<NewTicketScreen> {
       if (!mounted) return;
       showSnack(context, tr(context, 'ticketCreated'));
       Navigator.of(context).pop(true);
+    } on RateLimitException catch (e) {
+      if (!mounted) return;
+      setState(() => _saving = false);
+      showSnack(context, trf(context, 'rateLimited', {'m': e.minutesLeft}));
     } catch (_) {
       if (!mounted) return;
       setState(() => _saving = false);
