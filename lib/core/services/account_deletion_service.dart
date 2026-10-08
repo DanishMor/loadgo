@@ -26,7 +26,8 @@ class AccountRestrictedException implements Exception {
 /// when the profile goes in the same batch), and finally the Auth user.
 ///
 /// Kept on purpose (8 years, docs/DATA_RETENTION.md): bookings, invoices,
-/// ledger, ratings, chats. Cannot be removed from the app, rules forbid it:
+/// ledger, ratings, chats, LRs (tax records; their share links are revoked).
+/// Cannot be removed from the app, rules forbid it:
 /// `users/{uid}/credits`, `admin_notes`, truck posts and requests, offers, the
 /// deletion request. TODO(functions): scrub those and the personal fields on
 /// kept records with the Admin SDK.
@@ -112,6 +113,12 @@ class AccountDeletionService {
     // A transporter's private books (Task 67). Violations and call records stay as safety evidence (docs/DATA_RETENTION.md).
     refs.addAll((await db.collection('transporter_accounts').where('ownerId', isEqualTo: uid).get()).docs.map((d) => d.reference));
 
+    // Bilty share links stay out of the deletion (the rules never delete
+    // them) but are switched off: nobody can open the LR through them after
+    // the account is gone (MASTER-5 Task 6). Trip links end by themselves
+    // within 49 hours; a delivered trip's link already says "ended".
+    await _revokeLrShares(db, uid);
+
     // Open loads only (the rules refuse deleting a matched one; there are none
     // left that matter because active trips were checked above).
     final loads = await db.collection('loads').where('shipperId', isEqualTo: uid).get();
@@ -138,5 +145,23 @@ class AccountDeletionService {
     await last.commit();
 
     await deleteAuthUser();
+  }
+
+  /// Revokes every live LR link the user created. A failure here must not
+  /// block the deletion: the links still end at their own date.
+  static Future<void> _revokeLrShares(FirebaseFirestore db, String uid) async {
+    try {
+      final shares = await db.collection('lr_shares').where('ownerId', isEqualTo: uid).get();
+      final batch = db.batch();
+      var any = false;
+      for (final d in shares.docs) {
+        if (d.data()['revoked'] == true) continue;
+        batch.update(d.reference, {'revoked': true, 'statusAt': FieldValue.serverTimestamp()});
+        any = true;
+      }
+      if (any) await batch.commit();
+    } on FirebaseException {
+      // see above
+    }
   }
 }

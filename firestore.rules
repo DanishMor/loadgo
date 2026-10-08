@@ -2003,10 +2003,20 @@ service cloud.firestore {
 
     // What the Sahayak assistant could not answer (Task 48). The app strips
     // numbers and links first; the rules only cap the size and shape.
+    // Optional `expireAt` (Task 7): a Firestore TTL policy on this field
+    // (console setting, free) deletes the record then. Absent = kept. Only an
+    // upper bound (with room for a wrong phone clock): an early date just
+    // means the record goes sooner.
+    function expireOk(d, maxDays) {
+      return !('expireAt' in d)
+          || (d.expireAt is timestamp && d.expireAt <= request.time + duration.value(maxDays, 'd'));
+    }
+
     match /assistant_unknown/{id} {
       allow read: if adminIn(['super', 'support']);
       allow create: if signedIn()
-          && request.resource.data.keys().hasOnly(['text', 'userId', 'role', 'language', 'resolved', 'createdAt'])
+          && request.resource.data.keys().hasOnly(['text', 'userId', 'role', 'language', 'resolved', 'createdAt', 'expireAt'])
+          && expireOk(request.resource.data, 240)
           && request.resource.data.userId == request.auth.uid
           && request.resource.data.text is string
           && request.resource.data.text.size() >= 1 && request.resource.data.text.size() <= 300
@@ -2344,7 +2354,8 @@ service cloud.firestore {
     match /app_errors/{id} {
       allow read: if adminIn(['super', 'ops']);
       allow create: if signedIn()
-          && request.resource.data.keys().hasOnly(['message', 'screen', 'kind', 'appVersion', 'createdAt'])
+          && request.resource.data.keys().hasOnly(['message', 'screen', 'kind', 'appVersion', 'createdAt', 'expireAt'])
+          && expireOk(request.resource.data, 130)
           && request.resource.data.message is string
           && request.resource.data.message.size() >= 1 && request.resource.data.message.size() <= 300
           && request.resource.data.screen is string && request.resource.data.screen.size() <= 60
@@ -2426,7 +2437,8 @@ service cloud.firestore {
       allow read: if signedIn() && (resource.data.callerId == request.auth.uid || resource.data.calleeId == request.auth.uid
           || adminIn(['super', 'support', 'ops']));
       allow create: if signedIn()
-          && request.resource.data.keys().hasOnly(['bookingId', 'callerId', 'calleeId', 'callerName', 'vehicleNumber', 'status', 'offer', 'createdAt', 'updatedAt'])
+          && request.resource.data.keys().hasOnly(['bookingId', 'callerId', 'calleeId', 'callerName', 'vehicleNumber', 'status', 'offer', 'createdAt', 'updatedAt', 'expireAt'])
+          && expireOk(request.resource.data, 400)
           && request.resource.data.callerId == request.auth.uid
           && request.resource.data.calleeId is string && request.resource.data.calleeId != request.auth.uid
           && request.resource.data.bookingId is string

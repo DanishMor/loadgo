@@ -102,6 +102,7 @@ class ErrorLogService {
         'kind': fatal ? 'flutter' : 'async',
         'appVersion': appVersion.length > 20 ? appVersion.substring(0, 20) : appVersion,
         'createdAt': FieldValue.serverTimestamp(),
+        'expireAt': Timestamp.fromDate(DateTime.now().add(const Duration(days: 90))), // TTL policy, docs/DATA_RETENTION.md
       });
       return true;
     } catch (_) {

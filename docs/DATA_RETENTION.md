@@ -26,3 +26,7 @@ Rules:
 - A deletion request (`deletion_requests/{uid}`) is handled by an admin today. TODO(functions): perform it with the Admin SDK (delete Auth user, `users/{uid}` and its subcollections, `identity_index` entries, device links). Task 28 adds the in-app flow.
 - Anything legally required (GST invoices, e-way bill references, payment records) is kept for the period above even after the account is gone, without the person's contact details.
 - Admin checklist: review `deletion_requests` weekly; remove audit/risk/support records older than 3 years once a year; never export personal data outside the project.
+
+## Automatic clean-up with a Firestore TTL policy (MASTER-5 Task 7, free)
+Three short-lived logs carry an optional `expireAt` timestamp written by the app: `app_errors` (+90 days), `assistant_unknown` (+180 days) and `calls` (+365 days; the candidates sub-collection stays with its call). Turning on the clean-up is one console setting per collection: Firestore > TTL > create policy > collection group `app_errors` / `assistant_unknown` / `calls`, field `expireAt`. Until the policy exists nothing is deleted, so the data is only kept longer, never lost early. The rules accept only an `expireAt` up to 130 / 240 / 400 days ahead (room for a wrong phone clock). Everything else keeps the periods in the table above and is cleaned by an admin; `// TODO(functions)` for a scheduled delete.
+Account deletion: LR share links of the user are switched off (revoked); the LR itself, violations, call records and bookings stay for the periods above.

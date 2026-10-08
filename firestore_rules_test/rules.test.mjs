@@ -264,6 +264,18 @@ describe('role lock', () => {
   });
 });
 
+describe('expireAt on short-lived logs (MASTER-5 Task 7)', () => {
+  const err = (extra = {}) => ({ message: 'boom', screen: 'Home', kind: 'flutter', appVersion: '1.0', createdAt: serverTimestamp(), ...extra });
+  const days = (n) => Timestamp.fromMillis(Date.now() + n * 86400000);
+  test('app_errors accept expireAt within about 4 months, never far in the future or a wrong type', async () => {
+    await assertSucceeds(addDoc(collection(as('u1'), 'app_errors'), err()));
+    await assertSucceeds(addDoc(collection(as('u1'), 'app_errors'), err({ expireAt: days(90) })));
+    await assertSucceeds(addDoc(collection(as('u1'), 'app_errors'), err({ expireAt: days(-3) })));
+    await assertFails(addDoc(collection(as('u1'), 'app_errors'), err({ expireAt: days(900) })));
+    await assertFails(addDoc(collection(as('u1'), 'app_errors'), err({ expireAt: 'never' })));
+  });
+});
+
 describe('role lock and identity index for every role (MASTER-5 Task 3)', () => {
   const ROLES = ['customer', 'driver', 'fleet'];
   const HASH = (n) => String(n).repeat(64).slice(0, 64);

@@ -75,6 +75,7 @@ class AssistantLogService {
         'language': language,
         'resolved': false,
         'createdAt': FieldValue.serverTimestamp(),
+        'expireAt': Timestamp.fromDate(DateTime.now().add(const Duration(days: 180))), // TTL policy, docs/DATA_RETENTION.md
       });
       return true;
     } catch (_) {

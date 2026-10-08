@@ -37,6 +37,7 @@ class CallSignaling {
       'offer': {'type': 'offer', 'sdp': offerSdp},
       'createdAt': FieldValue.serverTimestamp(),
       'updatedAt': FieldValue.serverTimestamp(),
+      'expireAt': Timestamp.fromDate(DateTime.now().add(const Duration(days: 365))), // TTL policy, docs/DATA_RETENTION.md
     });
     rate.addToBatch(batch);
     await batch.commit();
