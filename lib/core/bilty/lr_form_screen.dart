@@ -108,7 +108,7 @@ class _LrFormScreenState extends State<LrFormScreen> {
     try {
       d.validate();
     } on LrException catch (e) {
-      showSnack(context, tr(context, switch (e.reason) { 'advance' => 'blAdvanceTooHigh', 'gstin' => 'blBadGstin', 'eway' => 'blBadEway', _ => 'blNeedFields' }));
+      showSnack(context, tr(context, switch (e.reason) { 'advance' => 'blAdvanceTooHigh', 'gstin' => 'blBadGstin', 'eway' => 'blBadEway', 'phone' => 'blBadPhone', _ => 'blNeedFields' }));
       return;
     }
     setState(() => _saving = true);

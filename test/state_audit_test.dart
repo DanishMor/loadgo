@@ -29,6 +29,25 @@ void main() {
     expect(unguarded(), lessThanOrEqualTo(budget));
   });
 
+  // Task 21: a screen that lists something says what it means when the list is empty.
+  test('every file that lists a stream handles the empty case, apart from four reviewed ones', () {
+    const reviewed = {
+      'lib/driver/simple_home_screen.dart', // shows a balance, not a list
+      'lib/driver/vehicle_alerts_banner.dart', // a banner: nothing to show when empty
+      'lib/core/bilty/lr_send_screen.dart', // a short optional list under the buttons
+      'lib/core/widgets/evidence_cards.dart', // cards that hide themselves when empty
+    };
+    final bad = <String>[];
+    for (final f in Directory('lib').listSync(recursive: true).whereType<File>()) {
+      if (!f.path.endsWith('.dart')) continue;
+      final s = f.readAsStringSync();
+      if (!RegExp(r'LiveStream<List|StreamBuilder<List').hasMatch(s)) continue;
+      if (RegExp(r'EmptyState|isEmpty|emptyText|isNotEmpty').hasMatch(s)) continue;
+      if (!reviewed.contains(f.path)) bad.add(f.path);
+    }
+    expect(bad, isEmpty, reason: 'add an EmptyState: $bad');
+  });
+
   testWidgets('LiveStream: spinner, then data; error shows the friendly text with Retry', (tester) async {
     var attempts = 0;
     await tester.pumpWidget(LanguageScope(

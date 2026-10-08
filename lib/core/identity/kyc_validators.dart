@@ -3,6 +3,10 @@
 
 final _dl = RegExp(r'^[A-Z]{2}[0-9]{2}[0-9]{4}[0-9]{7}$');
 final _vehicle = RegExp(r'^[A-Z]{2}[0-9]{1,2}[A-Z]{0,3}[0-9]{4}$');
+// Bharat series: 22BH1234AA (year, BH, four digits, two letters).
+final _vehicleBh = RegExp(r'^[0-9]{2}BH[0-9]{4}[A-Z]{2}$');
+final _mobile = RegExp(r'^[6-9][0-9]{9}$');
+final _pincode = RegExp(r'^[1-9][0-9]{5}$');
 final _pan = RegExp(r'^[A-Z]{5}[0-9]{4}[A-Z]$');
 final _last4 = RegExp(r'^[0-9]{4}$');
 
@@ -13,7 +17,26 @@ String normaliseDocNumber(String s) => s.toUpperCase().replaceAll(RegExp(r'[^A-Z
 bool isValidDlNumber(String s) => _dl.hasMatch(normaliseDocNumber(s));
 
 /// Registration plate such as MH12AB1234 or DL1CAB1234.
-bool isValidVehicleNumber(String s) => _vehicle.hasMatch(normaliseDocNumber(s));
+bool isValidVehicleNumber(String s) {
+  final n = normaliseDocNumber(s);
+  return _vehicle.hasMatch(n) || _vehicleBh.hasMatch(n);
+}
+
+/// Indian mobile number: ten digits starting 6-9, with an optional +91, 91 or 0 in front.
+bool isValidIndianMobile(String s) {
+  var d = s.replaceAll(RegExp(r'[\s-]'), '');
+  if (d.startsWith('+91')) {
+    d = d.substring(3);
+  } else if (d.length == 12 && d.startsWith('91')) {
+    d = d.substring(2);
+  } else if (d.length == 11 && d.startsWith('0')) {
+    d = d.substring(1);
+  }
+  return _mobile.hasMatch(d);
+}
+
+/// Six-digit PIN code that does not start with 0.
+bool isValidPincode(String s) => _pincode.hasMatch(s.trim());
 
 bool isValidPan(String s) => _pan.hasMatch(normaliseDocNumber(s));
 

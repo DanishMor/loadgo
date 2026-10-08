@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../constants/logistics.dart';
 import '../enterprise/validators.dart';
+import '../identity/kyc_validators.dart';
 import '../models/app_notification.dart';
 import '../models/booking.dart';
 import '../services/audit_service.dart';
@@ -72,6 +73,9 @@ class LrDraft {
     if (freightPaise < 0 || advancePaise < 0 || advancePaise > freightPaise) throw LrException('advance');
     for (final g in [consignorGstin, consigneeGstin]) {
       if (g.trim().isNotEmpty && !isValidGstinFormat(g)) throw LrException('gstin');
+    }
+    for (final p in [consignorPhone, consigneePhone]) {
+      if (p.trim().isNotEmpty && !isValidIndianMobile(p)) throw LrException('phone');
     }
     if (ewayBillNo.trim().isNotEmpty && !RegExp(r'^\d{12}$').hasMatch(ewayBillNo.trim())) throw LrException('eway');
   }
