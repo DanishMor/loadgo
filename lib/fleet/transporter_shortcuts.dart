@@ -46,7 +46,12 @@ class _TransporterShortcutsState extends State<TransporterShortcuts> {
       return;
     }
     await for (final own in VehicleService.watchMine()) {
-      final attached = await TransporterService.watchAttached().first;
+      var attached = const <Vehicle>[];
+      try {
+        attached = await TransporterService.watchAttached().first.timeout(const Duration(seconds: 8));
+      } catch (_) {
+        // Offline or slow: the reminders for the own vehicles still show.
+      }
       yield {for (final v in [...own, ...attached]) v.id: v}.values.toList();
     }
   }

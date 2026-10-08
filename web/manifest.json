@@ -1,11 +1,11 @@
 {
-    "name": "transport_app",
-    "short_name": "transport_app",
+    "name": "LoadGo - Truck & Cargo Booking",
+    "short_name": "LoadGo",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "Book trucks and move cargo across India. Customers, drivers and transporters chat and call inside the app.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

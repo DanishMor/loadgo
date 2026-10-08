@@ -22,6 +22,7 @@ String _endText(BuildContext context, CallEnd? e) => switch (e) {
       CallEnd.micDenied => tr(context, 'pcMicDenied'),
       CallEnd.unsupported => tr(context, 'pcCallUnsupported'),
       CallEnd.failed => tr(context, 'pcCallFailed'),
+      CallEnd.tooMany => tr(context, 'pcTooMany'),
       CallEnd.blocked => trf(context, 'pcBlockedBanner', {'until': '…'}),
       _ => tr(context, 'pcCallEnded'),
     };
@@ -214,7 +215,11 @@ class _IncomingCallHostState extends State<IncomingCallHost> {
   @override
   void initState() {
     super.initState();
-    _sub = (widget.calls ?? CallSignaling.watchIncoming()).listen(_onCalls, onError: (_) {});
+    try {
+      _sub = (widget.calls ?? CallSignaling.watchIncoming()).listen(_onCalls, onError: (_) {});
+    } catch (_) {
+      // No backend yet (a screen shown on its own, a test): nothing can ring.
+    }
   }
 
   @override

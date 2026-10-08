@@ -1,3 +1,4 @@
+import 'favourite_routes_screen.dart';
 import '../core/assistant/sahayak_screen.dart';
 import '../core/search/global_search_screen.dart';
 import '../core/network/network_screen.dart';
@@ -414,8 +415,34 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                   )),
                 ),
                 const SizedBox(width: 12),
-                const Spacer(),
+                _tile(
+                  Icons.bar_chart_rounded,
+                  tr(context, 'myAnalytics'),
+                  onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const DriverAnalyticsScreen())),
+                ),
               ],
+            ),
+            const SizedBox(height: 12),
+            ValueListenableBuilder<Features>(
+              valueListenable: FeaturesService.notifier,
+              builder: (context, f, _) => Row(
+                children: [
+                  _tile(
+                    Icons.alt_route_rounded,
+                    tr(context, 'favouriteRoutes'),
+                    onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const FavouriteRoutesScreen())),
+                  ),
+                  const SizedBox(width: 12),
+                  if (f.isOn(FeatureKey.driverNetwork))
+                    _tile(
+                      Icons.groups_2_outlined,
+                      tr(context, 'netTitle'),
+                      onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const NetworkScreen())),
+                    )
+                  else
+                    const Expanded(child: SizedBox.shrink()),
+                ],
+              ),
             ),
           ],
         ),

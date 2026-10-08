@@ -1217,7 +1217,8 @@ service cloud.firestore {
     // Driver delivers: matched -> closed, together with booking -> delivered.
     function driverClose() {
       return resource.data.status == 'matched'
-          && resource.data.driverId == request.auth.uid
+          && (resource.data.driverId == request.auth.uid
+              || get(docPath('bookings', resource.data.bookingId)).data.get('assignedDriverId', '') == request.auth.uid)
           && request.resource.data.status == 'closed'
           && changedKeys().hasOnly(['status', 'closedAt'])
           && getAfter(docPath('bookings', resource.data.bookingId)).data.status == 'delivered';
@@ -1272,7 +1273,7 @@ service cloud.firestore {
     // up by one inside a window, restarts at 1 when the hour is over (the
     // window start is the server time), and never passes the limit.
     function rateLimitFor(kind) {
-      return kind == 'load' ? 30 : (kind == 'offer' ? 60 : 120);
+      return kind == 'load' ? 30 : (kind == 'offer' ? 60 : (kind == 'call' ? 20 : 120));
     }
 
     function validRateCounter(id) {
@@ -1289,8 +1290,8 @@ service cloud.firestore {
     }
 
     match /rate_limits/{counterId} {
-      allow read: if signedIn() && counterId.matches(request.auth.uid + '_(load|offer|message)');
-      allow create, update: if signedIn() && counterId.matches(request.auth.uid + '_(load|offer|message)') && validRateCounter(counterId);
+      allow read: if signedIn() && counterId.matches(request.auth.uid + '_(load|offer|message|call)');
+      allow create, update: if signedIn() && counterId.matches(request.auth.uid + '_(load|offer|message|call)') && validRateCounter(counterId);
       allow delete: if false;
     }
 
@@ -2165,7 +2166,8 @@ service cloud.firestore {
           && request.resource.data.createdAt == request.time
           && request.resource.data.updatedAt == request.time
           && callBookingOk(request.resource.data)
-          && chatAllowed(request.auth.uid);
+          && chatAllowed(request.auth.uid)
+          && rateBumped('call', callId);
       allow update: if signedIn()
           && request.auth.uid in [resource.data.callerId, resource.data.calleeId]
           && request.resource.data.updatedAt == request.time
@@ -3076,8 +3078,8 @@ service cloud.firestore {
           && n.message is string && n.message.size() <= 200
           && n.read == false
           && n.userId != request.auth.uid
-          && request.auth.uid in [b.driverId, b.customerId]
-          && n.userId in [b.driverId, b.customerId];
+          && request.auth.uid in [b.driverId, b.customerId, b.get('assignedDriverId', '')]
+          && n.userId in [b.driverId, b.customerId, b.get('assignedDriverId', '')];
     }
 
     match /notifications/{notificationId} {

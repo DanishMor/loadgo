@@ -1,3 +1,4 @@
+import '../app_info.dart';
 import 'dart:typed_data';
 
 import 'package:pdf/pdf.dart';
@@ -17,7 +18,7 @@ String _date(DateTime? d) => d == null ? '-' : '${d.day.toString().padLeft(2, '0
 /// A4 GST invoice as PDF bytes. The built-in PDF font has no Indian scripts,
 /// so the document is in English with "Rs" for the rupee sign.
 Future<Uint8List> buildInvoicePdf(TripInvoice inv, Booking b) async {
-  final doc = pw.Document(title: inv.number, author: 'LoadGo');
+  final doc = pw.Document(title: inv.number, author: AppInfo.name);
   pw.Widget row(String k, String v) => pw.Padding(
         padding: const pw.EdgeInsets.symmetric(vertical: 2),
         child: pw.Row(crossAxisAlignment: pw.CrossAxisAlignment.start, children: [
@@ -34,7 +35,7 @@ Future<Uint8List> buildInvoicePdf(TripInvoice inv, Booking b) async {
         pw.Text('TAX INVOICE', style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold)),
         pw.Text(inv.number, style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
       ]),
-      pw.Text('Issued via LoadGo on ${_date(inv.issuedAt)}', style: const pw.TextStyle(color: PdfColors.grey700)),
+      pw.Text('Issued via ${AppInfo.name} on ${_date(inv.issuedAt)}', style: const pw.TextStyle(color: PdfColors.grey700)),
       pw.Divider(),
       row('Seller (transporter)', inv.sellerName),
       if (inv.sellerGstin.isNotEmpty) row('Seller GSTIN', inv.sellerGstin),
@@ -60,7 +61,7 @@ Future<Uint8List> buildInvoicePdf(TripInvoice inv, Booking b) async {
         pw.Text(_rupees(inv.totalPaise), style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold)),
       ]),
       pw.SizedBox(height: 18),
-      pw.Text('Record generated in the LoadGo app. The e-way bill details are recorded only and are not filed on the GST portal.',
+      pw.Text('Record generated in the ${AppInfo.name} app. The e-way bill details are recorded only and are not filed on the GST portal.',
           style: const pw.TextStyle(fontSize: 9, color: PdfColors.grey700)),
     ]),
   ));

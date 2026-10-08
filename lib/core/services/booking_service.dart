@@ -231,17 +231,21 @@ class BookingService {
       final snap = await tx.get(ref);
       if (!snap.exists) throw StateError('Booking not found');
       final booking = Booking.fromDoc(snap);
-      if (booking.driverId != uid) throw StateError('Only the assigned driver can update this booking');
+      // The booking holder, or the member driver a transporter assigned (Task 67).
+      if (booking.driverId != uid && booking.assignedDriverId != uid) throw StateError('Only the assigned driver can update this booking');
+      final holder = booking.driverId == uid;
       final next = booking.nextStatus;
       if (next == null) throw StateError('Booking already delivered');
       final otpOk = otp != null && RegExp(r'^\d{6}$').hasMatch(otp);
       if (next == BookingStatus.pickedUp && (!otpOk || pickup == null)) throw OtpRequiredException();
       if (next == BookingStatus.delivered && (!otpOk || delivery == null)) throw OtpRequiredException();
-      final freeVehicle = next == BookingStatus.delivered ? await _freeVehicleLater(tx, booking.vehicleId) : () {};
+      // An assigned driver does not own the vehicle: the transporter frees it
+      // (TransporterService.releaseFinished) when the trip is delivered.
+      final freeVehicle = next == BookingStatus.delivered && holder ? await _freeVehicleLater(tx, booking.vehicleId) : () {};
 
       // Starting an advance booking is the moment the vehicle becomes busy.
       void Function()? markBusy;
-      if (booking.status == BookingStatus.accepted && booking.scheduledAt != null) {
+      if (holder && booking.status == BookingStatus.accepted && booking.scheduledAt != null) {
         final vref = Backend.db.collection('vehicles').doc(booking.vehicleId);
         final vsnap = await tx.get(vref);
         if (vsnap.exists) {
@@ -290,7 +294,7 @@ class BookingService {
     final snap = await ref.get();
     if (!snap.exists) throw StateError('Booking not found');
     final booking = Booking.fromDoc(snap);
-    if (booking.driverId != uid || !(booking.isInTransit || booking.status == BookingStatus.driverArriving)) return;
+    if (booking.runningDriverId != uid || !(booking.isInTransit || booking.status == BookingStatus.driverArriving)) return;
     await ref.update({
       'lastKnownLocation': GeoPoint(lat, lng),
       'locationUpdatedAt': FieldValue.serverTimestamp(),

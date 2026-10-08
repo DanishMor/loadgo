@@ -1,3 +1,4 @@
+import '../app_info.dart';
 /// A canned support reply an admin can drop into a ticket answer.
 class ReplyTemplate {
   final String id;
@@ -29,7 +30,7 @@ class ReplyTemplate {
 
   /// Used while the config document does not exist.
   static const defaults = [
-    ReplyTemplate(id: 'looking', title: 'Looking into it', text: 'Thank you for contacting LoadGo. We are looking into this and will update you soon.'),
+    ReplyTemplate(id: 'looking', title: 'Looking into it', text: 'Thank you for contacting ${AppInfo.name}. We are looking into this and will update you soon.'),
     ReplyTemplate(id: 'booking_id', title: 'Need booking details', text: 'Please share the booking details (pickup, drop and date) so that we can check this quickly.'),
     ReplyTemplate(id: 'fixed', title: 'Issue fixed', text: 'This has been fixed from our side. Please check and let us know if you still face the problem.'),
     ReplyTemplate(id: 'closing', title: 'Closing the ticket', text: 'We are closing this ticket. You can open a new one any time if you need more help.'),

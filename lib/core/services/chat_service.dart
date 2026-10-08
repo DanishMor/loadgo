@@ -47,8 +47,7 @@ class ChatService {
       Backend.db.collection('users').doc(owner).collection('blocked').doc(other);
 
   /// The other person in [booking] for the signed-in user.
-  static String otherParty(Booking booking) =>
-      booking.driverId == Backend.uid ? booking.customerId : booking.driverId;
+  static String otherParty(Booking booking) => booking.customerId == Backend.uid ? booking.runningDriverId : booking.customerId;
 
   /// Oldest first, most recent [pageSize] messages.
   static Stream<List<ChatMessage>> watch(String bookingId) => _messages(bookingId)

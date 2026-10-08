@@ -84,8 +84,8 @@ const as = (uid) => {
 // existing suites keep testing what they test; the rate-limit suite below uses
 // the raw functions. The counter is seeded as an expired window, so a bump is
 // always "first in a new hour".
-const COUNTED_PATH = /^(loads|offers)\/[^/]+$|^(bookings|driver_links|driver_groups)\/[^/]+\/messages\/[^/]+$/;
-const kindOf = (path) => (path.startsWith('loads/') ? 'load' : path.startsWith('offers/') ? 'offer' : 'message');
+const COUNTED_PATH = /^(loads|offers|calls)\/[^/]+$|^(bookings|driver_links|driver_groups)\/[^/]+\/messages\/[^/]+$/;
+const kindOf = (path) => (path.startsWith('loads/') ? 'load' : path.startsWith('offers/') ? 'offer' : path.startsWith('calls/') ? 'call' : 'message');
 const expiredCounter = (uid, kind) =>
   env.withSecurityRulesDisabled((ctx) =>
     rawSetDoc(doc(ctx.firestore(), 'rate_limits', `${uid}_${kind}`), { count: 1, windowStart: Timestamp.fromMillis(Date.now() - 7200000), last: 'seed' }));
@@ -1507,6 +1507,40 @@ describe('transporter (Task 67)', () => {
     await assertSucceeds(addDoc(collection(as('driver1'), 'bookings', 'B1', 'messages'), { senderId: 'driver1', text: 'Namaste', flagged: false, createdAt: serverTimestamp() }));
   });
 
+  test('the assigned driver runs the whole trip including delivery with the customer\'s OTP; the load closes', async () => {
+    await seedBookingHeld();
+    await seed(async (db) => {
+      await updateDoc(doc(db, 'bookings', 'B1'), { assignedDriverId: 'driver1', assignedDriverName: 'Ramesh', assignedVehicleId: 'tv1', assignedVehicleNumber: 'MH12AB1234', status: 'unloading' });
+      await setDoc(doc(db, 'bookings', 'B1', 'secrets', 'otp'), { pickupOtp: '482913', deliveryOtp: '771204' });
+    });
+    const d = as('driver1');
+    const close = (db, extra) => {
+      const b = writeBatch(db);
+      b.update(doc(db, 'bookings', 'B1'), { status: 'delivered', 'timeline.delivered': serverTimestamp(), updatedAt: serverTimestamp(), ...extra });
+      b.update(doc(db, 'loads', 'L1'), { status: 'closed', closedAt: serverTimestamp() });
+      b.set(doc(db, 'notifications', 'n1'), { userId: 'customer1', type: 'status_changed', message: 'A -> B', relatedId: 'B1', status: 'delivered', read: false, createdAt: serverTimestamp() });
+      return b.commit();
+    };
+    const proof = { receiverName: 'Anil', receiverPhone: '+919811111111', damageNote: '' };
+    await assertFails(close(as('driver2'), { deliveryOtp: '771204', deliveryProof: proof }), 'not on this trip');
+    await assertFails(close(d, { deliveryOtp: '000000', deliveryProof: proof }), 'wrong OTP');
+    await assertSucceeds(close(d, { deliveryOtp: '771204', deliveryProof: proof }));
+    // The transporter then frees the vehicle (it is theirs).
+    await assertSucceeds(updateDoc(doc(as('tr1'), 'vehicles', 'tv1'), { availability: 'available' }));
+  });
+
+  test('the assigned driver cannot touch money, papers or cancel; the holder still can', async () => {
+    await seedBookingHeld();
+    await seed((db) => updateDoc(doc(db, 'bookings', 'B1'), { assignedDriverId: 'driver1', assignedDriverName: 'Ramesh', assignedVehicleId: 'tv1', assignedVehicleNumber: 'MH12AB1234' }));
+    const d = as('driver1');
+    await assertFails(updateDoc(doc(d, 'bookings', 'B1'), { ewayBillNo: '123456789012', updatedAt: serverTimestamp() }));
+    await assertFails(updateDoc(doc(d, 'bookings', 'B1'), { paymentStatus: 'driver_confirmed', paymentConfirmedAt: serverTimestamp(), updatedAt: serverTimestamp() }));
+    await assertFails(updateDoc(doc(d, 'bookings', 'B1'), { advancePaise: 1000, updatedAt: serverTimestamp() }));
+    await assertFails(updateDoc(doc(d, 'bookings', 'B1'), { driverId: 'driver1' }));
+    await assertFails(updateDoc(doc(d, 'bookings', 'B1'), { vehicleId: 'dv1' }));
+    await assertSucceeds(updateDoc(doc(as('tr1'), 'bookings', 'B1'), { ewayBillNo: '123456789012', updatedAt: serverTimestamp() }));
+  });
+
   test('the books: only the transporter, only for their own booking, integer paise', async () => {
     await seedBookingHeld();
     const line = (over = {}) => ({ ownerId: 'tr1', bookingId: 'B1', partyId: 'customer1', partyName: 'Acme', revenuePaise: 2400000, driverPayPaise: 1800000, otherCostPaise: 100000, receivedPaise: 0, updatedAt: serverTimestamp(), ...over });
@@ -2679,6 +2713,22 @@ describe('private chat and call (Task 68)', () => {
       await ring(as('customer1'), 'c3');
       await assertFails(updateDoc(doc(as('driver1'), 'calls', 'c3'), { status: 'cancelled', updatedAt: serverTimestamp() }), 'only the caller cancels');
       await assertSucceeds(updateDoc(doc(as('customer1'), 'calls', 'c3'), { status: 'cancelled', updatedAt: serverTimestamp() }));
+    });
+
+    test('at most 20 calls an hour per person; a call needs its bump', async () => {
+      await seedBooking('in_transit');
+      const ringRaw = (id, bump) => {
+        const db = as('customer1');
+        const b = rawWriteBatch(db);
+        b.set(doc(db, 'calls', id), call());
+        if (bump) b.set(doc(db, 'rate_limits', 'customer1_call'), bump);
+        return b.commit();
+      };
+      await assertFails(ringRaw('c1', null), 'no bump');
+      await assertSucceeds(ringRaw('c1', { count: 1, windowStart: serverTimestamp(), last: 'c1' }));
+      await seed((db) => rawSetDoc(doc(db, 'rate_limits', 'customer1_call'), { count: 20, windowStart: Timestamp.fromMillis(Date.now() - 600000), last: 'x' }));
+      const start = (await getDoc(doc(as('customer1'), 'rate_limits', 'customer1_call'))).data().windowStart;
+      await assertFails(ringRaw('c2', { count: 21, windowStart: start, last: 'c2' }), 'the 21st call');
     });
 
     test('network candidates: only the two people, only while the call is live, small', async () => {

@@ -20,8 +20,10 @@ class WebRtcCallProvider implements CallProvider {
   RTCPeerConnection? _pc;
   MediaStream? _local;
   RTCVideoRenderer? _remoteAudio;
-  final _candidates = StreamController<CallCandidate>.broadcast();
-  final _connected = StreamController<bool>.broadcast();
+  // Single-subscription controllers keep what happens before the call controller
+  // starts listening (the first network candidates arrive right after the offer).
+  final _candidates = StreamController<CallCandidate>();
+  final _connected = StreamController<bool>();
   bool _closed = false;
 
   @override
@@ -112,7 +114,8 @@ class WebRtcCallProvider implements CallProvider {
       await _pc?.close();
       await _remoteAudio?.dispose();
     } catch (_) {}
-    await _candidates.close();
-    await _connected.close();
+    // Not awaited: a single-subscription controller with no listener never finishes closing.
+    unawaited(_candidates.close());
+    unawaited(_connected.close());
   }
 }

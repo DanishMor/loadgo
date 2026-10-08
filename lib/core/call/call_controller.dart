@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import '../models/booking.dart';
 import '../services/backend.dart';
 import '../services/comm_guard.dart';
+import '../services/rate_limit_service.dart';
 import 'call_models.dart';
 import 'call_provider.dart';
 import 'call_signaling.dart';
@@ -12,7 +13,7 @@ import 'call_signaling.dart';
 enum CallPhase { idle, preparing, ringing, incoming, connecting, connected, ended, failed }
 
 /// Why a call ended, for the message on the call screen.
-enum CallEnd { hungUp, noAnswer, declined, cancelled, remoteEnded, failed, micDenied, blocked, unsupported }
+enum CallEnd { hungUp, noAnswer, declined, cancelled, remoteEnded, failed, micDenied, blocked, unsupported, tooMany }
 
 /// One call, from either side. Drives the [CallProvider] (media) and
 /// [CallSignaling] (Firestore) and tells the screen what to show.
@@ -34,6 +35,8 @@ class CallController extends ChangeNotifier {
   bool _remoteSet = false;
   final _pending = <CallCandidate>[];
   bool _disposed = false;
+  bool _finishing = false;
+  bool _endingHere = false;
 
   bool get isActive => const [CallPhase.preparing, CallPhase.ringing, CallPhase.incoming, CallPhase.connecting, CallPhase.connected].contains(phase);
 
@@ -69,6 +72,7 @@ class CallController extends ChangeNotifier {
       _set(CallPhase.ringing);
       _ring = Timer(ringTimeout, () async {
         if (phase != CallPhase.ringing) return;
+        _endingHere = true;
         await _safe(() => CallSignaling.cancel(id));
         await _finish(CallEnd.noAnswer);
       });
@@ -76,6 +80,8 @@ class CallController extends ChangeNotifier {
       await _finish(CallEnd.blocked);
     } on MicDeniedException {
       await _finish(CallEnd.micDenied);
+    } on RateLimitException {
+      await _finish(CallEnd.tooMany);
     } catch (_) {
       await _finish(CallEnd.failed);
     }
@@ -120,10 +126,12 @@ class CallController extends ChangeNotifier {
   /// Ends the call from this side (cancel while ringing, end once connected).
   Future<void> hangUp() async {
     final id = callId;
+    final ringing = phase == CallPhase.ringing;
+    _endingHere = true; // the document change we cause ourselves is not "the other side hung up"
     if (id != null) {
-      await _safe(() => phase == CallPhase.ringing ? CallSignaling.cancel(id) : CallSignaling.end(id));
+      await _safe(() => ringing ? CallSignaling.cancel(id) : CallSignaling.end(id));
     }
-    await _finish(phase == CallPhase.ringing ? CallEnd.cancelled : CallEnd.hungUp);
+    await _finish(ringing ? CallEnd.cancelled : CallEnd.hungUp);
   }
 
   Future<void> toggleMute() async {
@@ -156,7 +164,7 @@ class CallController extends ChangeNotifier {
       }
     }));
     _subs.add(CallSignaling.watch(id).listen((doc) async {
-      if (doc == null || !isActive) return;
+      if (doc == null || !isActive || _endingHere) return;
       if (caller && doc.status == CallStatus.accepted && !_remoteSet && doc.answerSdp != null) {
         _ring?.cancel();
         try {
@@ -179,12 +187,14 @@ class CallController extends ChangeNotifier {
   }
 
   Future<void> _finish(CallEnd why) async {
-    if (phase == CallPhase.ended || phase == CallPhase.failed) return;
+    if (_finishing || phase == CallPhase.ended || phase == CallPhase.failed) return;
+    _finishing = true;
     _ring?.cancel();
-    for (final s in _subs) {
+    final subs = List.of(_subs);
+    _subs.clear();
+    for (final s in subs) {
       await s.cancel();
     }
-    _subs.clear();
     await _safe(provider.close);
     _set(why == CallEnd.failed || why == CallEnd.micDenied || why == CallEnd.unsupported ? CallPhase.failed : CallPhase.ended, end: why);
   }
@@ -209,10 +219,14 @@ class CallController extends ChangeNotifier {
 
   /// The signed-in person's display name for the call document (never a phone number).
   static Future<String> myDisplayName() async {
-    final uid = Backend.uid;
-    if (uid == null) return '';
-    final u = (await Backend.db.collection('users').doc(uid).get()).data() ?? const {};
-    final name = (u['companyName'] ?? u['driverName'] ?? u['name'] ?? '') as String;
-    return name.length > 60 ? name.substring(0, 60) : name;
+    try {
+      final uid = Backend.uid;
+      if (uid == null) return '';
+      final u = (await Backend.db.collection('users').doc(uid).get()).data() ?? const {};
+      final name = '${u['companyName'] ?? u['driverName'] ?? u['name'] ?? ''}';
+      return name.length > 60 ? name.substring(0, 60) : name;
+    } catch (_) {
+      return ''; // offline: the call still rings, the other side just sees no name
+    }
   }
 }

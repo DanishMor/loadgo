@@ -1,3 +1,4 @@
+import '../core/services/backend.dart';
 import 'package:flutter/material.dart';
 
 import '../core/claims/claim_screens.dart';
@@ -42,7 +43,16 @@ class DriverTripScreen extends StatelessWidget {
     return BookingDetailScaffold(
       bookingId: bookingId,
       title: tr(context, 'tripDetails'),
-      builder: (context, booking) => ListView(
+      builder: (context, booking) => _tripBody(context, booking),
+    );
+  }
+
+  /// A driver a transporter assigned (not the booking holder) moves the trip
+  /// and talks to the customer; money, papers and cancelling stay with the
+  /// transporter who holds the booking.
+  Widget _tripBody(BuildContext context, Booking booking) {
+    final holder = booking.driverId == Backend.uid;
+    return ListView(
         // Extra bottom space keeps the action button clear of floating snackbars.
         padding: const EdgeInsets.fromLTRB(20, 10, 20, 100),
         children: [
@@ -76,42 +86,43 @@ class DriverTripScreen extends StatelessWidget {
             ],
             LocationSharingCard(booking: booking),
           ],
-          const SizedBox(height: 14),
-          DetentionCard(booking: booking, isDriver: true),
-          const SizedBox(height: 14),
-          DriverEvidenceCard(booking: booking),
-          const SizedBox(height: 14),
-          HandoverCard(booking: booking),
-          EwayStatusLine(booking: booking),
-          const SizedBox(height: 14),
-          CargoDocsCard(booking: booking),
-          const SizedBox(height: 14),
-          PaymentCard(booking: booking),
-          if (booking.status == BookingStatus.delivered) ...[const SizedBox(height: 14), PaymentTimelineCard(booking: booking)],
+          if (holder) ...[
+            const SizedBox(height: 14),
+            DetentionCard(booking: booking, isDriver: true),
+            const SizedBox(height: 14),
+            DriverEvidenceCard(booking: booking),
+            const SizedBox(height: 14),
+            HandoverCard(booking: booking),
+            EwayStatusLine(booking: booking),
+            const SizedBox(height: 14),
+            CargoDocsCard(booking: booking),
+            const SizedBox(height: 14),
+            PaymentCard(booking: booking),
+            if (booking.status == BookingStatus.delivered) ...[const SizedBox(height: 14), PaymentTimelineCard(booking: booking)],
+          ],
           const SizedBox(height: 14),
           TripEtaCard(booking: booking),
           const SizedBox(height: 8),
-          ClaimCard(booking: booking),
+          if (holder) ClaimCard(booking: booking),
           const SizedBox(height: 8),
           BookingTimeline(booking: booking),
           const SizedBox(height: 12),
           TripDocumentButtons(booking: booking),
           const SizedBox(height: 20),
-          if (booking.status == BookingStatus.inTransit || booking.status == BookingStatus.unloading || booking.status == BookingStatus.delivered) ...[
+          if (holder && (booking.status == BookingStatus.inTransit || booking.status == BookingStatus.unloading || booking.status == BookingStatus.delivered)) ...[
             ReturnLoadsSection(booking: booking, onAccepted: (id) => openDriverTrip(context, id)),
             const SizedBox(height: 14),
           ],
           _NextStatusButton(booking: booking),
-          if (booking.canDriverCancel) ...[
+          if (holder && booking.canDriverCancel) ...[
             const SizedBox(height: 10),
             _CancelBookingButton(booking: booking),
           ],
-          if (booking.status == BookingStatus.delivered) ...[
+          if (holder && booking.status == BookingStatus.delivered) ...[
             const SizedBox(height: 14),
             RatingPrompt(booking: booking, titleKey: 'rateCustomer'),
           ],
         ],
-      ),
     );
   }
 }

@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'backend.dart';
 
-/// The user hit the hourly limit for [kind] ('load', 'offer' or 'message').
+/// The user hit the hourly limit for [kind] ('load', 'offer', 'message' or 'call').
 class RateLimitException implements Exception {
   final String kind;
   final int minutesLeft;
@@ -43,9 +43,10 @@ class RateLimit {
   static const loadKind = 'load';
   static const offerKind = 'offer';
   static const messageKind = 'message';
+  static const callKind = 'call';
 
   /// Per user per hour.
-  static const limits = {loadKind: 30, offerKind: 60, messageKind: 120};
+  static const limits = {loadKind: 30, offerKind: 60, messageKind: 120, callKind: 20};
 
   static const window = Duration(hours: 1);
 

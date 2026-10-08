@@ -164,7 +164,8 @@ void main() {
       expect(t, contains('LoadGo trip of Ramesh: Pune -> Delhi'));
       expect(t, contains('Status: in transit'));
       expect(t, contains('Vehicle: MH12AB1234'));
-      expect(t, contains('Driver: Ramesh, +919800000001'));
+      expect(t, contains('Driver: Ramesh'));
+      expect(t, isNot(contains('+919800000001')), reason: 'phone numbers stay private');
       expect(t, contains('https://maps.google.com/?q=21.1458,79.0882'));
       expect(t, contains('Booking ID: b1'));
     });

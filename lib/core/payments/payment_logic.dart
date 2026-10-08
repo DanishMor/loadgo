@@ -1,3 +1,4 @@
+import '../app_info.dart';
 /// UPI payment link (`upi://pay`) for [amountPaise] to [upiId] (P0-06, PAY1).
 /// Opens the customer's own UPI app, which does the payment; LoadGo only
 /// records that the customer says they paid. [ref] is the booking id.
@@ -6,7 +7,7 @@ Uri upiPayUri({required String upiId, required String payeeName, required int am
   final rupees = '${amountPaise ~/ 100}.${(amountPaise % 100).toString().padLeft(2, '0')}';
   return Uri(scheme: 'upi', host: 'pay', queryParameters: {
     'pa': upiId.trim(),
-    'pn': payeeName.trim().isEmpty ? 'LoadGo driver' : payeeName.trim(),
+    'pn': payeeName.trim().isEmpty ? '${AppInfo.name} driver' : payeeName.trim(),
     'am': rupees,
     'cu': 'INR',
     'tn': note.length > 40 ? note.substring(0, 40) : note,

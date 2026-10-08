@@ -1,3 +1,4 @@
+import '../app_info.dart';
 import 'package:flutter/material.dart';
 
 import '../constants/logistics.dart';
@@ -64,7 +65,7 @@ class InvoiceScreen extends StatelessWidget {
                           children: [
                             const Icon(Icons.local_shipping_rounded, color: AppColors.primary),
                             const SizedBox(width: 8),
-                            const Text('LoadGo',
+                            Text(AppInfo.name,
                                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.primary)),
                             const Spacer(),
                             Text(invoiceNumber(b), style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.body)),

@@ -1,3 +1,4 @@
+import 'core/app_info.dart';
 import 'dart:ui' show PlatformDispatcher;
 
 import 'package:firebase_auth/firebase_auth.dart';
@@ -76,7 +77,7 @@ class LoadGoApp extends StatelessWidget {
       child: ValueListenableBuilder<ThemeMode>(
         valueListenable: ThemeStore.mode,
         builder: (context, mode, _) => MaterialApp(
-        title: 'LoadGo',
+        title: AppInfo.name,
         debugShowCheckedModeBanner: false,
         builder: (context, child) {
           final isDark = Theme.of(context).brightness == Brightness.dark;

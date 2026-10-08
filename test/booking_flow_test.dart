@@ -153,7 +153,8 @@ void main() {
     await tester.pumpWidget(MaterialApp(home: BookingTrackingScreen(bookingId: id)));
     await settle(tester);
     expect(find.text('Delivered'), findsWidgets);
-    expect(find.text('Ramesh • +919800000000'), findsOneWidget);
+    expect(find.text('Ramesh • +919800000000'), findsNothing, reason: 'phone numbers stay private');
+    expect(find.text('Ramesh'), findsWidgets);
     expect(find.text('Mark Delivered'), findsNothing);
   });
 

@@ -79,6 +79,10 @@ class _AdminFeaturesScreenState extends State<AdminFeaturesScreen> {
                         color: _f.isOn(spec.key) ? AppColors.success : AppColors.muted,
                       ),
                     ]),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 2),
+                      child: Text(tr(context, 'featHelp_${spec.key}'), key: ValueKey('featHelp_${spec.key}'), style: TextStyle(fontSize: 12, color: AppColors.muted)),
+                    ),
                     const SizedBox(height: 6),
                     SegmentedButton<int>(
                       key: ValueKey('featMode_${spec.key}'),

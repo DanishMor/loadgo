@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../app_info.dart';
 import '../services/language_store.dart';
 import 'core_strings.dart';
 import 'strings.dart';
@@ -84,13 +85,19 @@ class LanguageScope extends InheritedNotifier<ValueNotifier<AppLanguage>> {
 class T {
   /// Every UI string: the original table plus the per-feature tables in
   /// *_strings.dart files (12-item lists in [AppLanguage] order).
+  ///
+  /// The app name is written `{app}` in the tables and filled in here from
+  /// `AppInfo` (core/app_info.dart), per language; the tagline comes from
+  /// there too. Renaming the app never touches a translation.
   static final Map<String, Map<AppLanguage, String>> data = {
-    ...coreStrings,
+    for (final e in coreStrings.entries)
+      e.key: {for (final l in e.value.entries) l.key: AppInfo.fill(l.value, l.key.index)},
     for (final e in extraStrings.entries)
       e.key: {
         for (var i = 0; i < AppLanguage.values.length && i < e.value.length; i++)
-          AppLanguage.values[i]: e.value[i],
+          AppLanguage.values[i]: AppInfo.fill(e.value[i], i),
       },
+    'tagline': {for (var i = 0; i < AppLanguage.values.length; i++) AppLanguage.values[i]: AppInfo.taglines[i]},
   };
 
   static String get(String key, AppLanguage language) {

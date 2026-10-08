@@ -149,6 +149,9 @@ void main() {
     for (final s in Features.registry) {
       expect(featureStrings.containsKey('feat_${s.key}'), isTrue, reason: s.key);
     }
+    for (final s in Features.registry) {
+      expect(featureStrings.containsKey('featHelp_${s.key}'), isTrue, reason: 'one line of meaning for ${s.key}');
+    }
     for (final e in featureStrings.entries) {
       expect(e.value.length, 12, reason: e.key);
       expect(e.value.every((x) => x.trim().isNotEmpty), isTrue, reason: e.key);

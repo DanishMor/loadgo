@@ -1,3 +1,4 @@
+import '../app_info.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
@@ -31,7 +32,7 @@ class LoadShareButton extends StatelessWidget {
     switch (choice) {
       case 'system':
         try {
-          await SharePlus.instance.share(ShareParams(text: _text, subject: 'LoadGo'));
+          await SharePlus.instance.share(ShareParams(text: _text, subject: AppInfo.name));
         } catch (_) {
           if (context.mounted) showSnack(context, tr(context, 'cannotOpenLink'));
         }

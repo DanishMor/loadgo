@@ -1,3 +1,4 @@
+import '../core/app_info.dart';
 import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
@@ -104,8 +105,8 @@ class _SplashScreenState extends State<SplashScreen> {
                 child: const Icon(Icons.local_shipping_rounded, size: 70, color: Color(0xFF1565C0)),
               ),
               const SizedBox(height: 28),
-              const Text(
-                'LoadGo',
+              Text(
+                AppInfo.name,
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 42,

@@ -48,6 +48,17 @@ class _TransporterTripsScreenState extends State<TransporterTripsScreen> {
     return {for (final v in [...own, ...attached]) v.id: v}.values.toList();
   }
 
+  String _released = '';
+
+  /// Free the vehicles of finished company trips (once per change).
+  void _release(List<Booking> bookings) {
+    if (widget.bookings != null) return;
+    final sig = [for (final b in bookings) if (b.isCompanyBooking) '${b.id}:${b.status}'].join(',');
+    if (sig == _released) return;
+    _released = sig;
+    TransporterService.releaseFinished(bookings);
+  }
+
   Future<void> _confirm(Offer o) async {
     try {
       await OfferService.confirm(o);
@@ -222,6 +233,7 @@ class _TransporterTripsScreenState extends State<TransporterTripsScreen> {
         stream: () => _offers,
         compact: true,
         builder: (context, offers) {
+          WidgetsBinding.instance.addPostFrameCallback((_) => _release(bookings));
           final bids = _bids(context, offers);
           if (bookings.isEmpty && bids is SizedBox) return EmptyState(icon: Icons.route_outlined, title: tr(context, 'trpNoTrips'));
           return ListView(padding: const EdgeInsets.fromLTRB(16, 4, 16, 24), children: [

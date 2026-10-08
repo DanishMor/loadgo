@@ -1,3 +1,4 @@
+import '../app_info.dart';
 import '../geo/trip_watcher.dart';
 import '../models/booking.dart';
 import '../pricing/cities.dart';
@@ -74,7 +75,7 @@ const arrivingAlertKm = 25.0;
 /// in English on purpose, like the other share texts: the contact may not use
 /// the same language, and there is no deep link yet.
 String tripSummaryText(Booking b, {String? who, String? link}) => [
-      'LoadGo trip${who == null || who.isEmpty ? '' : ' of $who'}: ${b.route.join(' -> ')}',
+      '${AppInfo.name} trip${who == null || who.isEmpty ? '' : ' of $who'}: ${b.route.join(' -> ')}',
       'Status: ${b.status.replaceAll('_', ' ')}',
       '${b.cargoType}, ${b.weight} T',
       if (b.vehicleNumber.isNotEmpty) 'Vehicle: ${b.vehicleNumber} (${b.vehicleType})',

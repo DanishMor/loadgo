@@ -102,6 +102,32 @@ class TransporterService {
     await batch.commit();
   }
 
+  /// A driver a transporter assigned cannot change the vehicle (it is not
+  /// theirs), so when a company trip is delivered or cancelled the
+  /// transporter's app sets its vehicle available again. Vehicles still used
+  /// by another running company trip stay busy. Returns how many were freed.
+  static Future<int> releaseFinished(Iterable<Booking> bookings) async {
+    final uid = Backend.requireUid();
+    final company = [for (final b in bookings) if (b.isCompanyBooking) b];
+    String vehicleOf(Booking b) => b.assignedVehicleId ?? b.vehicleId;
+    final stillBusy = {for (final b in company) if (b.isActive) vehicleOf(b)};
+    final candidates = {for (final b in company) if (!b.isActive) vehicleOf(b)}.difference(stillBusy);
+    var freed = 0;
+    for (final id in candidates) {
+      if (id.isEmpty) continue;
+      try {
+        final ref = _db.collection('vehicles').doc(id);
+        final v = Vehicle.fromDoc(await ref.get());
+        if (v.id.isEmpty || v.availability != VehicleAvailability.onTrip || (v.ownerId != uid && v.attachedTo != uid)) continue;
+        await ref.update({'availability': VehicleAvailability.available, 'updatedAt': FieldValue.serverTimestamp()});
+        freed++;
+      } catch (_) {
+        // Not allowed (a member left) or offline: tried again next time.
+      }
+    }
+    return freed;
+  }
+
   /// Bookings the assigned driver runs for a transporter.
   static Stream<List<Booking>> watchAssignedToMe() {
     final uid = Backend.uid;

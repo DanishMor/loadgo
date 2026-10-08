@@ -1,4 +1,5 @@
 
+import '../core/app_info.dart';
 import '../core/features/features.dart';
 import '../core/widgets/feature_gate.dart';
 import 'package:flutter/material.dart';
@@ -38,8 +39,8 @@ class RoleSelectionScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 20),
-              const Text(
-                'LoadGo',
+              Text(
+                AppInfo.name,
                 style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Color(0xFF1565C0)),
               ),
               const SizedBox(height: 12),

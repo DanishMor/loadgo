@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../services/backend.dart';
+import '../services/rate_limit_service.dart';
 import 'call_models.dart';
 
 /// The Firestore side of an in-app call (free WebRTC signalling): the offer,
@@ -23,7 +24,10 @@ class CallSignaling {
   }) async {
     final uid = Backend.requireUid();
     final ref = _calls.doc();
-    await ref.set({
+    // At most 20 calls an hour per person (a ring cannot be used to pester someone).
+    final rate = await RateLimit.prepare(RateLimit.callKind, docId: ref.id);
+    final batch = Backend.db.batch();
+    batch.set(ref, {
       'bookingId': bookingId,
       'callerId': uid,
       'calleeId': calleeId,
@@ -34,6 +38,8 @@ class CallSignaling {
       'createdAt': FieldValue.serverTimestamp(),
       'updatedAt': FieldValue.serverTimestamp(),
     });
+    rate.addToBatch(batch);
+    await batch.commit();
     return ref.id;
   }
 

@@ -423,6 +423,10 @@ class _CustomerHomeContent extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 28),
+            Text(tr(context, 'moreForYou'), style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.title)),
+            const SizedBox(height: 14),
+            const _MoreForYou(),
+            const SizedBox(height: 28),
             Text(tr(context, 'services'), style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.title)),
             const SizedBox(height: 14),
             SizedBox(
@@ -479,6 +483,39 @@ class _CustomerHomeContent extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+// ============================================================
+// MORE FOR YOU: the useful screens that used to sit only in Profile
+// ============================================================
+
+class _MoreForYou extends StatelessWidget {
+  const _MoreForYou();
+
+  Widget _chip(BuildContext context, String id, IconData icon, String titleKey, Widget Function(BuildContext) screen) => ActionChip(
+        key: ValueKey('homeMore_$id'),
+        avatar: Icon(icon, size: 20, color: const Color(0xFF1565C0)),
+        label: Text(tr(context, titleKey), style: const TextStyle(fontWeight: FontWeight.w700)),
+        onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: screen)),
+      );
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: 10,
+      runSpacing: 10,
+      children: [
+        _chip(context, 'history', Icons.history_rounded, 'ehHistoryTitle', (c) => TripHistoryScreen(bookings: BookingService.watchForCustomer, onOpen: (id) => openBookingTracking(c, id))),
+        _chip(context, 'templates', Icons.bookmarks_outlined, 'templatesTitle', (_) => const TemplatesScreen()),
+        _chip(context, 'transactions', Icons.account_balance_wallet_outlined, 'txnTitle', (_) => const TxnHistoryScreen(isDriver: false)),
+        _chip(context, 'spending', Icons.savings_outlined, 'ehSpendTitle', (_) => const SpendingScreen()),
+        _chip(context, 'drivers', Icons.favorite_border_rounded, 'favouriteDrivers', (_) => const MyDriversScreen()),
+        _chip(context, 'analytics', Icons.bar_chart_rounded, 'myAnalytics', (_) => const CustomerAnalyticsScreen()),
+        OffersGate(test: (s) => s.any, child: _chip(context, 'offers', Icons.local_offer_outlined, 'offersAndCredits', (_) => const OffersScreen())),
+        FeatureGate(featureKey: FeatureKey.businessTools, child: _chip(context, 'business', Icons.business_center_outlined, 'businessTools', (_) => const BusinessHubScreen())),
+      ],
     );
   }
 }
