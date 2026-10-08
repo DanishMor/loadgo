@@ -594,6 +594,7 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
                     const SizedBox(height: 18),
                   ]),
                 ),
+                _StepHeader(1, 'wizRoute'),
                 FieldLabel(tr(context, 'pickupLocation')),
                 PlaceField(
                   controller: _pickupCtrl,
@@ -618,6 +619,7 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
                 ),
                 _addStopButton(_extraDrops, 'addDropStop', 'addDropStop'),
                 const SizedBox(height: 18),
+                _StepHeader(2, 'wizGoods'),
                 FieldLabel(tr(context, 'cargoType')),
                 DropdownButtonFormField<String>(
                   isExpanded: true,
@@ -701,6 +703,7 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
                 FieldLabel(tr(context, 'helpersLabel')),
                 HelpersStepper(value: _helpers, onChanged: (n) => setState(() => _helpers = n)),
                 const SizedBox(height: 18),
+                _StepHeader(3, 'wizPrice'),
                 FieldLabel(tr(context, 'fareEstimate')),
                 _estimateCard(),
                 const SizedBox(height: 12),
@@ -910,6 +913,32 @@ class _TemplateNameDialogState extends State<_TemplateNameDialog> {
         TextButton(onPressed: () => Navigator.pop(context), child: Text(tr(context, 'cancel'))),
         FilledButton(key: const ValueKey('templateNameOk'), onPressed: () => Navigator.pop(context, _name.text), child: Text(tr(context, 'save'))),
       ],
+    );
+  }
+}
+
+
+/// "Step 2 of 3" and what the step is about, so the long form reads as three short steps (MASTER-5 Task 31).
+class _StepHeader extends StatelessWidget {
+  final int step;
+  final String titleKey;
+  const _StepHeader(this.step, this.titleKey);
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      key: ValueKey('postStep$step'),
+      padding: const EdgeInsets.only(top: 6, bottom: 12),
+      child: Row(children: [
+        CircleAvatar(radius: 14, backgroundColor: AppColors.primary, child: Text('$step', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 13))),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(trf(context, 'wizStepOf', {'n': step}), style: TextStyle(fontSize: 12, color: AppColors.muted)),
+            Text(tr(context, titleKey), style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.title)),
+          ]),
+        ),
+      ]),
     );
   }
 }

@@ -2,6 +2,7 @@ import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:transport_app/core/constants/logistics.dart';
+import 'package:transport_app/core/l10n/l10n.dart';
 import 'package:transport_app/core/services/backend.dart';
 import 'package:transport_app/core/services/load_service.dart';
 import 'package:transport_app/core/widgets/common.dart';
@@ -50,6 +51,16 @@ void main() {
     final mine = await LoadService.watchMine().first;
     expect(mine.map((l) => l.pickup), ['Pune']);
     expect(mine.single.budget, isNull);
+  });
+
+  testWidgets('MASTER-5 Task 31: the form reads as three numbered steps', (tester) async {
+    await tester.pumpWidget(LanguageScope(notifier: languageNotifier, child: const MaterialApp(home: PostLoadScreen())));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('postStep1')), findsOneWidget);
+    expect(find.text('Step 1 of 3'), findsOneWidget);
+    await tester.scrollUntilVisible(find.byKey(const ValueKey('postStep3')), 300, scrollable: find.byType(Scrollable).first);
+    expect(find.text('Step 3 of 3'), findsOneWidget);
+    expect(find.byKey(const ValueKey('postStep2')), findsOneWidget);
   });
 
   testWidgets('post load form validates and the load shows in My Loads', (tester) async {
