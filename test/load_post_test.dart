@@ -63,6 +63,36 @@ void main() {
     expect(find.byKey(const ValueKey('postStep2')), findsOneWidget);
   });
 
+  testWidgets('MASTER-5 Task 19: leaving with something typed asks first; an untouched form just closes', (tester) async {
+    final nav = GlobalKey<NavigatorState>();
+    await tester.pumpWidget(LanguageScope(notifier: languageNotifier, child: MaterialApp(navigatorKey: nav, home: const Scaffold(body: Text('home')))));
+    nav.currentState!.push<void>(MaterialPageRoute(builder: (_) => const PostLoadScreen()));
+    await tester.pumpAndSettle();
+    expect(find.byType(PostLoadScreen), findsOneWidget);
+
+    // nothing typed: back closes at once
+    await nav.currentState!.maybePop();
+    await tester.pumpAndSettle();
+    expect(find.byType(PostLoadScreen), findsNothing);
+
+    // something typed: back asks; Keep editing stays, Leave closes
+    nav.currentState!.push<void>(MaterialPageRoute(builder: (_) => const PostLoadScreen()));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField).first, 'Delhi');
+    await tester.pump();
+    await nav.currentState!.maybePop();
+    await tester.pumpAndSettle();
+    expect(find.text('Leave without posting?'), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('keepEditing')));
+    await tester.pumpAndSettle();
+    expect(find.byType(PostLoadScreen), findsOneWidget);
+    await nav.currentState!.maybePop();
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('discardLoad')));
+    await tester.pumpAndSettle();
+    expect(find.byType(PostLoadScreen), findsNothing);
+  });
+
   testWidgets('post load form validates and the load shows in My Loads', (tester) async {
     // Push the form on top of a page, like the real app does, so pop() works.
     final nav = GlobalKey<NavigatorState>();

@@ -52,6 +52,7 @@ import 'a11y_strings.dart';
 import 'tour_strings.dart';
 import 'notif_group_strings.dart';
 import 'wizard_strings.dart';
+import 'discard_strings.dart';
 import 'faq_role_strings.dart';
 import 'announcement_strings.dart';
 import 'pilot_funnel_strings.dart';
@@ -121,6 +122,7 @@ const List<Map<String, List<String>>> stringTables = [
   tourStrings,
   notifGroupStrings,
   wizardStrings,
+  discardStrings,
   faqRoleStrings,
   announcementStrings,
   pilotFunnelStrings,

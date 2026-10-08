@@ -125,6 +125,35 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
     super.dispose();
   }
 
+  /// What was typed when the screen opened; leaving with something else typed asks first.
+  List<String> _initial = const [];
+
+  List<String> _typedNow() => [_pickupCtrl.text.trim(), _dropCtrl.text.trim(), _weightCtrl.text.trim(), _notesCtrl.text.trim(), _budgetCtrl.text.trim()];
+
+  bool get _dirty {
+    if (_saving) return false;
+    final now = _typedNow();
+    for (var i = 0; i < now.length; i++) {
+      if (i >= _initial.length || _initial[i] != now[i]) return true;
+    }
+    return false;
+  }
+
+  Future<void> _confirmLeave() async {
+    final leave = await showDialog<bool>(
+      context: context,
+      builder: (c) => AlertDialog(
+        title: Text(tr(c, 'discardTitle')),
+        content: Text(tr(c, 'discardBody')),
+        actions: [
+          TextButton(key: const ValueKey('keepEditing'), onPressed: () => Navigator.pop(c, false), child: Text(tr(c, 'keepEditing'))),
+          FilledButton(key: const ValueKey('discardLoad'), onPressed: () => Navigator.pop(c, true), child: Text(tr(c, 'discard'))),
+        ],
+      ),
+    );
+    if (leave == true && mounted) Navigator.of(context).pop();
+  }
+
   TextEditingController _stopCtrl([String text = '']) => TextEditingController(text: text)..addListener(_requote);
 
   void _prefill(Load l) {
@@ -226,6 +255,7 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
       final due = DateUtils.dateOnly(widget.dueDate!);
       _pickupDate = due.isBefore(today) ? today : due;
     }
+    _initial = _typedNow();
     BusinessService.postingBusinessId().then((id) {
       if (mounted && id != null) setState(() => _businessId = id);
       if (id != null) {
@@ -572,7 +602,12 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return PopScope(
+      canPop: !_dirty,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _confirmLeave();
+      },
+      child: Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: AppColors.background,
@@ -878,6 +913,7 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
             ),
           ),
         ),
+      ),
       ),
     );
   }

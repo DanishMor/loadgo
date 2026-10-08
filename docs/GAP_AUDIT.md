@@ -174,6 +174,7 @@ Method: the eight angles again, against the whole app instead of only the newest
 | G11.30 | Opening Admin > Config > Support with no document started from the vehicle-types text | FREE (bug) | 40 |
 | G11.31 | Release build signing still uses the debug key; `flutter build apk` needs the Android SDK | manual (owner) | docs/PLAY_STORE_CHECKLIST.md, docs/BLOCKED.md |
 | G11.32 | Counters and audit lines are still written by the client; a modified app could skip them | needs Cloud Functions | docs/SECURITY_REVIEW.md |
+| G11.34 | Leaving Post Load with text typed (back button, swipe) lost the whole form without asking | FREE | 19 (Leave without posting? / Keep editing) |
 | G11.33 | Per-user lists (bookings, offers, tickets, notifications ...) are still read without a limit; paging each needs a composite index | not a gap yet (a real account passes 300 documents), plan in docs/COST_WATCH.md | - |
 
 ### Round 5, second look
@@ -184,8 +185,8 @@ After the tasks were done the angles were read again (customer, driver, transpor
 - Round 1: 60 gaps found, of which 55 FREE (closed by Tasks 41-57) and 5 PAID (G3.7, G3.8, G4.12, G5.7, G7.7; in docs/PAID_UPGRADE_PLAN.md).
 - Round 2: 5 more gaps: 3 FREE closed by Tasks 58 and 59 (G9.1-G9.3), 1 manual for the owner (G9.4), 1 cosmetic left (G9.5).
 - Round 4 (MASTER-3): 18 more gaps: 15 FREE closed by Tasks 69 and 70 (G10.1-G10.14 and G10.18), 3 paid, device-test or Cloud-Functions items recorded elsewhere (G10.15-G10.17).
-- Round 5 (MASTER-5): 33 more: 30 FREE closed (G11.1-G11.30), 1 manual for the owner (G11.31), 1 needing Cloud Functions (G11.32), 1 not yet needed (G11.33).
-- Total: 116 gaps, 103 FREE closed, 9 PAID or needing Functions, 2 manual, 1 cosmetic left open, 1 not yet needed.
+- Round 5 (MASTER-5): 34 more: 31 FREE closed (G11.1-G11.30 and G11.34), 1 manual for the owner (G11.31), 1 needing Cloud Functions (G11.32), 1 not yet needed (G11.33).
+- Total: 117 gaps, 104 FREE closed, 9 PAID or needing Functions, 2 manual, 1 cosmetic left open, 1 not yet needed.
 
 Free gaps: 0 (every FREE gap is closed; G9.5 is cosmetic and recorded above)
 Open bugs: 0 (free)
