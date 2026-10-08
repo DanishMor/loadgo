@@ -126,7 +126,7 @@ void main() {
       uid = 'tr1';
       await InspectionService.respond(b, lr, 'drvA', approve: true);
       final g = (await db.collection('lrs').doc(lr.id).collection('inspection_grants').doc('drvA').get()).data()!;
-      expect((g['expiresAt'] as Timestamp).toDate(), clock.add(const Duration(hours: 2)));
+      expect((g['expiresAt'] as Timestamp).toDate(), clock.add(const Duration(hours: 2)).subtract(InspectionService.clockMargin));
       expect(g['kind'], 'approved');
       expect(g['ownerId'], 'tr1');
       expect(g['verifyToken'], matches(RegExp(r'^[0-9a-f]{32}$')));
@@ -167,7 +167,7 @@ void main() {
       await expectLater(InspectionService.allowFor(b, lr, 73), throwsA(isA<InspectionException>()));
       final g = await InspectionService.allowFor(b, lr, 24);
       expect(g.kind, 'preapproved');
-      expect(g.expiresAt, clock.add(const Duration(hours: 24)));
+      expect(g.expiresAt, clock.add(const Duration(hours: 24)).subtract(InspectionService.clockMargin));
       final stored = (await db.collection('lrs').doc(lr.id).collection('inspection_grants').doc('drvA').get()).data()!;
       expect(stored['kind'], 'preapproved');
       final a = (await db.collection('audit_events').where('type', isEqualTo: 'inspection_approve').get()).docs.single.data();
@@ -206,7 +206,7 @@ void main() {
       });
 
       final end = await tester.runAsync(() => InspectionService.saveCopy(bundle, grant: grant, driverName: 'Suresh', language: AppLanguage.hindi));
-      expect(end, clock.add(const Duration(hours: 2)));
+      expect(end, clock.add(const Duration(hours: 2)).subtract(InspectionService.clockMargin));
       final cache = InspectionCache();
       var saved = await tester.runAsync(() => cache.get(lr.id, clock));
       expect(String.fromCharCodes(saved!.bytes.take(5)), '%PDF-');

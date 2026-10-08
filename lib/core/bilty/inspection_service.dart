@@ -76,6 +76,12 @@ class InspectionService {
   static DateTime Function() now = ServerClock.now;
 
   static const approvalDuration = Duration(hours: 2);
+
+  /// The rules accept a grant that ends at most 2 hours (or N hours, for an
+  /// advance one) after the SERVER time of the write. A phone clock even a few
+  /// seconds ahead would make the roadside approval fail, so the grant is
+  /// written this much shorter (MASTER-5 Task 20).
+  static const clockMargin = Duration(seconds: 30);
   static const maxAdvance = Duration(hours: 72);
 
   /// How long a copy saved because of mode `show` stays on the phone.
@@ -125,7 +131,7 @@ class InspectionService {
     final uid = Backend.requireUid();
     if (lr.issuerId != uid) throw InspectionException('not_allowed');
     final batch = _db.batch();
-    final end = now().add(approvalDuration);
+    final end = now().add(approvalDuration - clockMargin);
     if (approve) {
       final token = await LrService.verifyToken(b, lr);
       batch.set(_grant(lr.id, driverId), _grantMap(uid, driverId, 'approved', end, token));
@@ -149,7 +155,7 @@ class InspectionService {
     if (hours < 1 || hours > maxAdvance.inHours) throw InspectionException('hours');
     final driver = tripDriver(b);
     if (driver == null || driver == uid) throw InspectionException('no_driver');
-    final end = now().add(Duration(hours: hours));
+    final end = now().add(Duration(hours: hours) - clockMargin);
     final token = await LrService.verifyToken(b, lr);
     final batch = _db.batch();
     batch.set(_grant(lr.id, driver), _grantMap(uid, driver, 'preapproved', end, token));
