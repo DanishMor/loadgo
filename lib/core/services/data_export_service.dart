@@ -42,6 +42,15 @@ class DataExportService {
     out['vehicles'] = _rows(await db.collection('vehicles').where('ownerId', isEqualTo: uid).get());
     out['ratingsReceived'] = _rows(await db.collection('ratings').where('ratedId', isEqualTo: uid).get());
     out['notifications'] = _rows(await db.collection('notifications').where('userId', isEqualTo: uid).get());
+    // Transporter, private chat and call records (Tasks 67 and 68).
+    out['bookingsAsAssignedDriver'] = _rows(await db.collection('bookings').where('assignedDriverId', isEqualTo: uid).get());
+    out['bookingsAsTransporter'] = _rows(await db.collection('bookings').where('fleetOwnerId', isEqualTo: uid).get());
+    out['transporterBooks'] = _rows(await db.collection('transporter_accounts').where('ownerId', isEqualTo: uid).get());
+    out['fleetMembers'] = _rows(await db.collection('fleet_members').where('ownerId', isEqualTo: uid).get());
+    out['fleetMemberships'] = _rows(await db.collection('fleet_members').where('driverId', isEqualTo: uid).get());
+    out['chatViolations'] = _rows(await db.collection('violations').where('userId', isEqualTo: uid).get());
+    out['callsMade'] = _rows(await db.collection('calls').where('callerId', isEqualTo: uid).get());
+    out['callsReceived'] = _rows(await db.collection('calls').where('calleeId', isEqualTo: uid).get());
     return out;
   }
 

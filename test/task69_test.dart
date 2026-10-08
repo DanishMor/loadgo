@@ -5,6 +5,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:transport_app/core/constants/logistics.dart';
 import 'package:transport_app/core/documents/payment_card.dart';
 import 'package:transport_app/core/l10n/l10n.dart';
+import 'package:transport_app/core/app_info.dart';
+import 'package:transport_app/core/assistant/assistant_engine.dart';
 import 'package:transport_app/core/call/call_controller.dart';
 import 'package:transport_app/core/call/call_models.dart';
 import 'package:transport_app/core/call/call_provider.dart';
@@ -14,12 +16,15 @@ import 'package:transport_app/core/models/load.dart';
 import 'package:transport_app/core/models/offer.dart';
 import 'package:transport_app/core/models/vehicle.dart';
 import 'package:transport_app/core/services/backend.dart';
+import 'package:transport_app/core/settings/help_screen.dart';
 import 'package:transport_app/core/services/booking_service.dart';
 import 'package:transport_app/core/services/chat_service.dart';
 import 'package:transport_app/core/services/comm_guard.dart';
 import 'package:transport_app/core/services/load_service.dart';
 import 'package:transport_app/core/services/offer_service.dart';
 import 'package:transport_app/core/services/transporter_service.dart';
+import 'package:transport_app/core/transporter/transporter_logic.dart';
+import 'package:transport_app/fleet/transporter_loads_screen.dart';
 import 'package:transport_app/customer/customer_home_screen.dart';
 import 'package:transport_app/driver/driver_trip_screen.dart';
 
@@ -146,6 +151,92 @@ void main() {
       await tester.pumpWidget(LanguageScope(notifier: languageNotifier, child: MaterialApp(home: DriverTripScreen(bookingId: bid))));
       await settle(tester);
       expect(find.byType(PaymentCard), findsOneWidget, reason: 'the holder keeps the money part');
+    });
+  });
+
+  group('loads that fit the transporter (LoadFit)', () {
+    Load load(String id, String from, String to, {String type = '14ft'}) =>
+        Load(id: id, shipperId: 'c', pickup: from, drop: to, cargoType: 'x', weight: 2, vehicleType: type, budget: null, pickupDate: null, notes: '', status: 'open');
+    const profile = TransporterProfile(officeCity: 'Indore', routes: ['Indore - Pune', 'Delhi to Jaipur', 'Mumbai → Surat'], vehicleTypes: ['20ft']);
+
+    test('route ends are read from dashes, "to" and arrows', () {
+      expect(LoadFit.routeEnds('Indore - Pune'), ('indore', 'pune'));
+      expect(LoadFit.routeEnds('Delhi to Jaipur'), ('delhi', 'jaipur'));
+      expect(LoadFit.routeEnds('Mumbai → Surat'), ('mumbai', 'surat'));
+      expect(LoadFit.routeEnds('Indore'), isNull);
+      expect(LoadFit.routeEnds(''), isNull);
+    });
+
+    test('a load matches a route either way round, by city name inside the address', () {
+      expect(LoadFit.onRoute(load('1', 'Indore, Madhya Pradesh', 'Pune, Maharashtra'), 'Indore - Pune'), isTrue);
+      expect(LoadFit.onRoute(load('2', 'Pune', 'Indore'), 'Indore - Pune'), isTrue, reason: 'a return load');
+      expect(LoadFit.onRoute(load('3', 'Indore', 'Nagpur'), 'Indore - Pune'), isFalse);
+      expect(LoadFit.onRoute(load('4', 'Delhi', 'Jaipur'), 'Indore - Pune'), isFalse);
+    });
+
+    test('rank: route first, then vehicle type, then the office city; ties keep their order', () {
+      final loads = [
+        load('plain', 'Chennai', 'Madurai'),
+        load('type', 'Chennai', 'Madurai', type: '20ft'),
+        load('route', 'Delhi', 'Jaipur'),
+        load('office', 'Indore', 'Nagpur'),
+        load('plain2', 'Kochi', 'Madurai'),
+      ];
+      final ranked = LoadFit.rank(loads, profile);
+      expect([for (final f in ranked) f.load.id], ['route', 'type', 'office', 'plain', 'plain2']);
+      expect(ranked.first.route, isTrue);
+      expect(ranked[1].vehicleType, isTrue);
+      expect(ranked[2].nearOffice, isTrue);
+    });
+
+    test('an empty profile keeps the list as it is', () {
+      final loads = [load('a', 'A', 'B'), load('b', 'C', 'D')];
+      expect([for (final f in LoadFit.rank(loads, const TransporterProfile())) f.load.id], ['a', 'b']);
+    });
+
+    testWidgets('the loads tab marks loads on my routes and can show only those', (tester) async {
+      await tester.pumpWidget(LanguageScope(
+        notifier: languageNotifier,
+        child: MaterialApp(
+          home: Scaffold(
+            body: TransporterLoadsScreen(
+              profile: () async => profile,
+              loads: Stream.value([load('other', 'Chennai', 'Madurai'), load('mine', 'Delhi', 'Jaipur')]),
+            ),
+          ),
+        ),
+      ));
+      await settle(tester);
+      expect(find.byKey(const ValueKey('fitRoute_mine')), findsOneWidget);
+      expect(find.byKey(const ValueKey('fitRoute_other')), findsNothing);
+      final order = tester.getTopLeft(find.byKey(const ValueKey('trpLoad_mine'))).dy < tester.getTopLeft(find.byKey(const ValueKey('trpLoad_other'))).dy;
+      expect(order, isTrue, reason: 'the load on my route is listed first');
+      await tester.tap(find.byKey(const ValueKey('trpOnlyMine')));
+      await settle(tester);
+      expect(find.byKey(const ValueKey('trpLoad_mine')), findsOneWidget);
+      expect(find.byKey(const ValueKey('trpLoad_other')), findsNothing);
+    });
+  });
+
+  group('Sahayak and Help explain the private numbers', () {
+    test('questions about numbers, WhatsApp and blocked messages get the contact answer', () {
+      const engine = RuleEngine();
+      for (final q in ['why can i not see driver number', 'phone number kyun nahi dikhta', 'my message blocked', 'driver ka number chahiye', 'call driver kaise', 'strike kya hai', 'फोन नंबर क्यों नहीं दिखता', 'whatsapp number do']) {
+        expect(engine.reply(q, role: 'customer').intent, AssistantIntent.contactFaq, reason: q);
+      }
+      expect(engine.reply('how to pay', role: 'customer').intent, AssistantIntent.paymentFaq, reason: 'payment questions still go to payment');
+      expect(engine.reply('what is otp', role: 'driver').intent, AssistantIntent.otpFaq);
+      expect(T.get('asContact', AppLanguage.english), contains(AppInfo.name));
+    });
+
+    testWidgets('Help lists the new questions', (tester) async {
+      await tester.pumpWidget(LanguageScope(notifier: languageNotifier, child: const MaterialApp(home: HelpScreen())));
+      await settle(tester);
+      for (var i = 9; i <= HelpScreen.faqCount; i++) {
+        await tester.scrollUntilVisible(find.byKey(ValueKey('faq$i')), 200, scrollable: find.byType(Scrollable).first);
+        expect(find.byKey(ValueKey('faq$i')), findsOneWidget);
+      }
+      expect(HelpScreen.faqCount, 11);
     });
   });
 

@@ -4,12 +4,13 @@ One app for now; Admin is a role-gated part of it (not a separate app). Code is 
 Customer and Driver apps can be published separately later (see docs/SPLIT_PLAN.md).
 `test/structure_test.dart` enforces the import rules below and fails the build when they are broken.
 
-- `lib/core/`     shared: models, services, l10n, pricing, matching, analytics, enterprise helpers, theme, widgets, chat, documents, notifications, profile
+- `lib/core/`     shared: models, services, l10n, pricing, matching, analytics, enterprise helpers, theme, widgets, chat, documents, notifications, profile; also `core/transporter/` (pure transporter rules), `core/comm/` (contact filter, strike ladder) and `core/call/` (in-app voice call: `CallProvider` interface, WebRTC, signalling, screens)
+- `lib/core/app_info.dart` the one place that names the app (see docs/NAMING.md)
 - `lib/auth/`     splash, role selection, login, OTP, profile setup, driver pending, start resolvers
 - `lib/customer/` customer-only screens
 - `lib/driver/`   driver-only screens
 - `lib/admin/`    admin-only screens
-- `lib/fleet/`    fleet-owner-only screens (dashboard, vehicles, drivers)
+- `lib/fleet/`    transporter-only screens (dashboard, loads and bids, trips and assigning, fleet, books, company profile)
 - `lib/main.dart` app shell only (`main()` and `LoadGoApp`); no feature code, and nothing imports it
 
 Import rules

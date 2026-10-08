@@ -16,6 +16,9 @@ enum AssistantIntent {
   otpFaq,
   bidFaq,
   paymentFaq,
+
+  /// Phone numbers are private: chat and call inside the app (Task 68).
+  contactFaq,
   cancelFaq,
   supportTicket,
   unknown,
@@ -88,6 +91,7 @@ class RuleEngine implements AssistantEngine {
     AssistantIntent.cancelFaq,
     AssistantIntent.otpFaq,
     AssistantIntent.paymentFaq,
+    AssistantIntent.contactFaq,
     AssistantIntent.bidFaq,
     AssistantIntent.myBooking,
     AssistantIntent.postLoad,
@@ -133,6 +137,12 @@ class RuleEngine implements AssistantEngine {
       'payment', 'pay', 'paid', 'upi', 'cash', 'money', 'paisa', 'paise', 'wallet', 'invoice', 'bill', 'payout', 'withdraw', 'commission',
       'भुगतान', 'पेमेंट', 'पैसा', 'पैसे', 'वॉलेट', 'बिल', 'कमीशन',
       'ಪಾವತಿ', 'ಹಣ', 'பணம்', 'கட்டணம்', 'చెల్లింపు', 'డబ్బు', 'पेमेंट', 'ચુકવણી', 'પૈસા', 'পেমেন্ট', 'টাকা', 'ਭੁਗਤਾਨ', 'ਪੈਸੇ', 'ادائیگی', 'پیسے',
+    ],
+    AssistantIntent.contactFaq: [
+      'phone number', 'mobile number', 'contact number', 'driver number', 'customer number', 'driver ka number', 'customer ka number', 'number dikhta', 'number kyun', 'number nahi dikh', 'whatsapp', 'call driver',
+      'call the driver', 'call customer', 'how to call', 'call kaise', 'message blocked', 'blocked message', 'chat blocked', 'chat band', 'strike', 'strikes', 'warning', 'suspended chat',
+      'फोन नंबर', 'मोबाइल नंबर', 'नंबर क्यों', 'नंबर नहीं दिख', 'व्हाट्सएप', 'कॉल कैसे', 'ड्राइवर का नंबर', 'चैट बंद', 'स्ट्राइक', 'चेतावनी',
+      'ಫೋನ್ ಸಂಖ್ಯೆ', 'தொலைபேசி எண்', 'ఫోన్ నంబర్', 'फोन नंबर', 'ફોન નંબર', 'ফোন নম্বর', 'ਫ਼ੋਨ ਨੰਬਰ', 'فون نمبر',
     ],
     AssistantIntent.cancelFaq: [
       'cancel', 'cancelled', 'canceled', 'cancellation', 'refund', 'radd', 'band karo', 'nahi chahiye',
@@ -302,6 +312,8 @@ class RuleEngine implements AssistantEngine {
         return AssistantReply(intent: intent, textKey: 'asBid', confidence: confidence);
       case AssistantIntent.paymentFaq:
         return AssistantReply(intent: intent, textKey: 'asPayment', confidence: confidence);
+      case AssistantIntent.contactFaq:
+        return AssistantReply(intent: intent, textKey: 'asContact', confidence: confidence);
       case AssistantIntent.cancelFaq:
         return AssistantReply(intent: intent, textKey: 'asCancel', confidence: confidence);
       case AssistantIntent.supportTicket:

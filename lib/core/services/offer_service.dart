@@ -4,6 +4,7 @@ import '../models/load.dart';
 import '../pricing/offer_bounds.dart';
 import '../models/offer.dart';
 import '../models/vehicle.dart';
+import 'analytics_events.dart';
 import 'backend.dart';
 import 'rate_limit_service.dart';
 import 'risk_service.dart';
@@ -59,6 +60,7 @@ class OfferService {
         'updatedAt': FieldValue.serverTimestamp(),
       });
     });
+    if (asCompany) AnalyticsEvents.log(AnalyticsEvents.companyBid);
     return ref.id;
   }
 

@@ -13,6 +13,13 @@ class AnalyticsEvents {
   static const offerSent = 'offer_sent';
   static const bookingDone = 'booking_done';
 
+  // Transporter and private chat / call (Tasks 67 and 68). Codes only: no names, numbers or texts.
+  static const companyBid = 'company_bid';
+  static const tripAssigned = 'trip_assigned';
+  static const contactBlocked = 'contact_blocked';
+  static const callStarted = 'call_started';
+  static const callConnected = 'call_connected';
+
   static final RegExp _name = RegExp(r'^[a-z][a-z0-9_]{0,39}$');
 
   /// Analytics rules: letter first, then letters, digits or `_`, max 40.

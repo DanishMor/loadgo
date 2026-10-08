@@ -35,6 +35,14 @@ Everything the app could do on the free stack (Flutter + Firebase Auth + Firesto
 - [ ] Decide when to split the app into Customer and Driver apps: see `docs/SPLIT_PLAN.md`.
 - [ ] Commission % and cancellation charges are config values; set the real numbers in Admin > Pricing.
 
+## MASTER-3 (Transporter, private chat and call, naming)
+- [ ] **Rules changed, NOT deployed**: `firebase deploy --only firestore:rules`. Indexes did not change (all new queries use single fields or equality merges), hosting pages were regenerated (`hosting/*.html`): `firebase deploy --only hosting` when you want the new Terms and Privacy online.
+- [ ] Build an APK on a machine with the Android SDK (`flutter build apk --debug`); test one real call between two phones on different networks (WebRTC with STUN only; a strict network may need a TURN server, `// LATER(paid)`).
+- [ ] On iOS: run `pod install` after `flutter pub get` (flutter_webrtc); the microphone sentence is in `Info.plist` (`dart run tool/apply_app_info.dart` writes it).
+- [ ] Approve transporters in Admin > Driver verification so the "Verified transporter" badge appears; read docs/TRANSPORTER.md and docs/PRIVATE_COMM.md.
+- [ ] Decide the app name: docs/NAMING.md says what to change (one file) and what you must do by hand (store listing, icons, domain).
+- [ ] Review the new Terms and Privacy text (chat and call review by admins, strikes) with a lawyer.
+
 ## Pilot add-on
 - [ ] `firebase deploy --only firestore:rules` once more for the `trip_shares` rules, and `--only hosting` for `/trip/**` and `/load/**` (the earlier rules and indexes are already live).
 - [ ] Read docs/ADDON_PILOT.md, docs/LAUNCH_RISKS.md and docs/COST_WATCH.md; set a billing budget alert; check the current Firebase Auth SMS quota.

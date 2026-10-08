@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { after, afterEach, before, beforeEach, describe as realDescribe, test } from 'node:test';
 import { assertFails, assertSucceeds, initializeTestEnvironment } from '@firebase/rules-unit-testing';
-import { GeoPoint, Timestamp, addDoc as rawAddDoc, deleteField, doc, getDoc, getDocs, collection, query, where, setDoc as rawSetDoc, updateDoc, deleteDoc, writeBatch as rawWriteBatch, serverTimestamp, increment, terminate } from 'firebase/firestore';
+import { GeoPoint, Timestamp, addDoc as rawAddDoc, deleteField, doc, getDoc, getDocs, collection, query, where, orderBy, limit, setDoc as rawSetDoc, updateDoc, deleteDoc, writeBatch as rawWriteBatch, serverTimestamp, increment, terminate } from 'firebase/firestore';
 
 let env;
 
@@ -1586,7 +1586,9 @@ describe('transporter (Task 67)', () => {
     await assertSucceeds(updateDoc(ref(as('tr1')), { receivedPaise: 500000, updatedAt: serverTimestamp() }));
     await assertFails(updateDoc(ref(as('tr1')), { ownerId: 'x', updatedAt: serverTimestamp() }));
     await assertFails(updateDoc(ref(as('tr1')), { bookingId: 'B2', updatedAt: serverTimestamp() }));
-    await assertFails(deleteDoc(ref(as('tr1'))));
+    await assertFails(deleteDoc(ref(as('customer1'))));
+    await assertFails(deleteDoc(ref(as('tr2'))));
+    await assertSucceeds(deleteDoc(ref(as('tr1'))), 'the owner may delete their books');
   });
 
   test('a transporter posts a load with the "posted by transporter" tag; others cannot use it', async () => {
@@ -2774,6 +2776,27 @@ describe('private chat and call (Task 68)', () => {
       await assertSucceeds(getDocs(col(as('driver1'))));
       await seed((db) => updateDoc(doc(db, 'calls', 'c1'), { status: 'ended' }));
       await assertFails(addDoc(col(as('customer1')), cand('customer1')), 'call is over');
+    });
+
+    test('the queries of "Download my data" are allowed for the owner', async () => {
+      await seedBooking('in_transit');
+      await seed(async (db) => {
+        await setDoc(doc(db, 'calls', 'c1'), { ...call(), createdAt: Timestamp.now(), updatedAt: Timestamp.now() });
+        await setDoc(doc(db, 'violations', 'customer1_1'), { userId: 'customer1', bookingId: 'L1', kind: 'phone', excerpt: 'x', createdAt: Timestamp.now() });
+        await setDoc(doc(db, 'bookings', 'A1'), { ...bookingFor('L1'), assignedDriverId: 'driver1', fleetOwnerId: 'driver1' });
+      });
+      const c = as('customer1');
+      await assertSucceeds(getDocs(query(collection(c, 'calls'), where('callerId', '==', 'customer1'))));
+      await assertSucceeds(getDocs(query(collection(as('driver1'), 'calls'), where('calleeId', '==', 'driver1'))));
+      await assertSucceeds(getDocs(query(collection(c, 'violations'), where('userId', '==', 'customer1'))));
+      await assertSucceeds(getDocs(query(collection(as('driver1'), 'bookings'), where('assignedDriverId', '==', 'driver1'))));
+      await assertSucceeds(getDocs(query(collection(as('driver1'), 'fleet_members'), where('driverId', '==', 'driver1'))));
+      // The incoming-call listener and the admin lists.
+      await assertSucceeds(getDocs(query(collection(as('driver1'), 'calls'), where('calleeId', '==', 'driver1'), where('status', '==', 'ringing'))));
+      await assertSucceeds(getDocs(query(collection(asAdmin(), 'violations'), orderBy('createdAt', 'desc'), limit(100))));
+      await assertSucceeds(getDocs(query(collection(as('driver1'), 'bookings'), where('fleetOwnerId', '==', 'driver1'))));
+      await assertFails(getDocs(query(collection(c, 'calls'), where('callerId', '==', 'driver1'))), 'not someone else\'s');
+      await assertFails(getDocs(collection(c, 'violations')), 'not the whole list');
     });
 
     test('admins read call metadata; other people do not', async () => {

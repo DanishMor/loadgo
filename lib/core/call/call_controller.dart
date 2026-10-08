@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 
 import '../models/app_notification.dart';
 import '../models/booking.dart';
+import '../services/analytics_events.dart';
 import '../services/backend.dart';
 import '../services/comm_guard.dart';
 import '../services/notification_service.dart';
@@ -70,6 +71,7 @@ class CallController extends ChangeNotifier {
         offerSdp: offer,
       );
       callId = id;
+      AnalyticsEvents.log(AnalyticsEvents.callStarted);
       _wire(id, caller: true);
       _set(CallPhase.ringing);
       _ring = Timer(ringTimeout, () async {
@@ -161,6 +163,7 @@ class CallController extends ChangeNotifier {
     _subs.add(provider.connected.listen((ok) {
       if (ok && isActive) {
         _ring?.cancel();
+        if (phase != CallPhase.connected) AnalyticsEvents.log(AnalyticsEvents.callConnected);
         _set(CallPhase.connected);
       } else if (!ok && isActive) {
         _finish(CallEnd.failed);

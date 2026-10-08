@@ -10,6 +10,7 @@ import '../core/services/load_service.dart';
 import '../core/services/offer_service.dart';
 import '../core/services/rate_limit_service.dart';
 import '../core/services/vehicle_service.dart';
+import '../core/transporter/transporter_logic.dart';
 import '../core/services/transporter_service.dart';
 import '../core/widgets/common.dart';
 import '../core/widgets/live_stream.dart';
@@ -22,8 +23,9 @@ class TransporterLoadsScreen extends StatefulWidget {
   /// Injectable for tests.
   final Stream<List<Load>>? loads;
   final Future<List<Vehicle>> Function()? vehicles;
+  final Future<TransporterProfile> Function()? profile;
 
-  const TransporterLoadsScreen({super.key, this.loads, this.vehicles});
+  const TransporterLoadsScreen({super.key, this.loads, this.vehicles, this.profile});
 
   @override
   State<TransporterLoadsScreen> createState() => _TransporterLoadsScreenState();
@@ -32,6 +34,23 @@ class TransporterLoadsScreen extends StatefulWidget {
 class _TransporterLoadsScreenState extends State<TransporterLoadsScreen> {
   late final Stream<List<Load>> _loads = (widget.loads ?? LoadService.watchOpen()).asBroadcastStream();
   String? _busyId;
+  bool _onlyMine = false;
+  TransporterProfile _profile = const TransporterProfile();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfile();
+  }
+
+  Future<void> _loadProfile() async {
+    try {
+      final p = await (widget.profile ?? TransporterService.loadProfile)();
+      if (mounted) setState(() => _profile = p);
+    } catch (_) {
+      // Offline: the list simply stays in its normal order.
+    }
+  }
 
   /// Own active vehicles plus the ones members attached.
   Future<List<Vehicle>> _myVehicles() async {
@@ -102,11 +121,27 @@ class _TransporterLoadsScreenState extends State<TransporterLoadsScreen> {
             ),
       body: LiveStream<List<Load>>(
         stream: () => _loads,
-        builder: (context, loads) {
-          if (loads.isEmpty) return EmptyState(icon: Icons.inventory_2_outlined, title: tr(context, 'trpNoLoads'));
+        builder: (context, all) {
+          if (all.isEmpty) return EmptyState(icon: Icons.inventory_2_outlined, title: tr(context, 'trpNoLoads'));
+          final hasRoutes = _profile.routes.isNotEmpty;
+          final ranked = LoadFit.rank(all, _profile);
+          final shown = _onlyMine && hasRoutes ? [for (final f in ranked) if (f.route) f] : ranked;
           return ListView(padding: const EdgeInsets.fromLTRB(16, 4, 16, 90), children: [
-            for (final l in loads)
-              Padding(
+            if (hasRoutes)
+              Align(
+                alignment: AlignmentDirectional.centerStart,
+                child: FilterChip(
+                  key: const ValueKey('trpOnlyMine'),
+                  label: Text(tr(context, 'trpOnlyMyRoutes')),
+                  selected: _onlyMine,
+                  onSelected: (v) => setState(() => _onlyMine = v),
+                ),
+              ),
+            if (shown.isEmpty) Padding(padding: const EdgeInsets.all(24), child: Text(tr(context, 'trpNoLoads'), textAlign: TextAlign.center)),
+            for (final fit in shown)
+              Builder(builder: (context) {
+                final l = fit.load;
+                return Padding(
                 padding: const EdgeInsets.only(bottom: 8),
                 child: AppCard(
                   key: ValueKey('trpLoad_${l.id}'),
@@ -115,8 +150,15 @@ class _TransporterLoadsScreenState extends State<TransporterLoadsScreen> {
                     const SizedBox(height: 2),
                     Text('${l.cargoType} • ${formatNum(l.weight)} T • ${vehicleTypeLabel(context, l.vehicleType)}', style: TextStyle(color: AppColors.muted)),
                     if (l.estimate != null) Text(formatPaise(l.estimate!.total), style: const TextStyle(fontWeight: FontWeight.w800, color: AppColors.primary)),
-                    if (l.postedByTransporter)
-                      Padding(padding: const EdgeInsets.only(top: 4), child: StatusChip(label: tr(context, 'trpPostedBy'), color: AppColors.primary)),
+                    if (l.postedByTransporter || fit.route || fit.vehicleType)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Wrap(spacing: 6, runSpacing: 4, children: [
+                          if (l.postedByTransporter) StatusChip(label: tr(context, 'trpPostedBy'), color: AppColors.primary),
+                          if (fit.route) StatusChip(key: ValueKey('fitRoute_${l.id}'), label: tr(context, 'trpFitRoute'), color: AppColors.success),
+                          if (fit.vehicleType) StatusChip(label: tr(context, 'trpFitType'), color: AppColors.success),
+                        ]),
+                      ),
                     const SizedBox(height: 8),
                     SizedBox(
                       height: 44,
@@ -129,7 +171,8 @@ class _TransporterLoadsScreenState extends State<TransporterLoadsScreen> {
                     ),
                   ]),
                 ),
-              ),
+              );
+              }),
           ]);
         },
       ),

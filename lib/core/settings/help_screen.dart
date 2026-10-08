@@ -11,7 +11,7 @@ import 'onboarding_screen.dart';
 
 /// FAQ plus links to the policies and the app tour.
 class HelpScreen extends StatelessWidget {
-  static const faqCount = 8;
+  static const faqCount = 11;
 
   /// Expands this question (1..[faqCount]) when the screen opens, e.g. from search.
   final int? openFaq;

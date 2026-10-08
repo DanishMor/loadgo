@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../comm/chat_strikes.dart';
 import '../comm/contact_filter.dart';
+import 'analytics_events.dart';
 import 'backend.dart';
 
 /// Chat and calls are off for this person until [until].
@@ -105,6 +106,7 @@ class CommGuard {
         'updatedAt': FieldValue.serverTimestamp(),
       });
       await batch.commit();
+      AnalyticsEvents.log(AnalyticsEvents.contactBlocked, params: {'kind': kind.name, 'strikes': strikes});
       return ViolationOutcome(kind: kind, strikes: strikes, blockedUntil: until, review: review);
     } catch (_) {
       return ViolationOutcome(kind: kind, strikes: before.strikes, recorded: false);

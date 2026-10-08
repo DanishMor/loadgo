@@ -45,7 +45,8 @@ class AccountDeletionService {
   static Future<int> activeTripCount() async {
     final uid = Backend.requireUid();
     final ids = <String>{};
-    for (final field in ['customerId', 'driverId']) {
+    // A transporter's company trips and the trips a driver was assigned count too.
+    for (final field in ['customerId', 'driverId', 'assignedDriverId', 'fleetOwnerId']) {
       final snap = await Backend.db.collection('bookings').where(field, isEqualTo: uid).get();
       for (final d in snap.docs) {
         final s = d.data()['status'];
@@ -108,6 +109,8 @@ class AccountDeletionService {
       refs.addAll((await userRef.collection(sub).get()).docs.map((d) => d.reference));
     }
     refs.addAll((await db.collection('notifications').where('userId', isEqualTo: uid).get()).docs.map((d) => d.reference));
+    // A transporter's private books (Task 67). Violations and call records stay as safety evidence (docs/DATA_RETENTION.md).
+    refs.addAll((await db.collection('transporter_accounts').where('ownerId', isEqualTo: uid).get()).docs.map((d) => d.reference));
 
     // Open loads only (the rules refuse deleting a matched one; there are none
     // left that matter because active trips were checked above).

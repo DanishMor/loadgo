@@ -13,6 +13,11 @@ Written 2026-10-04 for the free stack (Auth + Firestore). It states what LoadGo 
 | Audit events, risk signals, fraud cases | `audit_events`, `risk_signals`, `fraud_cases` | 3 years | Admin clean-up |
 | Support tickets, SOS, reports | `tickets`, `sos_alerts`, `reports` | 3 years | Admin clean-up |
 | Notifications | `notifications` | Until the user deletes them | Account deletion |
+| Chat violations (`violations/{uid}_{seq}`: kind, up to 120 characters of the stopped text, time) and the strike fields on `users` (`chatStrikes`, `chatSeq`, `chatStrikeAt`, `chatBlockedUntil`, `chatReview`) | `violations`, `users` | 3 years (safety evidence; one strike comes off after 30 clean days, the record stays) | Admin clean-up; strike fields go with the profile on account deletion |
+| In-app call records (who, when, how it ended; no audio, no phone number) | `calls`, `calls/*/candidates` | 1 year | Admin clean-up (`TODO(functions)`: scheduled delete) |
+| Admin views of a phone number or a chat | `audit_events` (`contact_view`, `chat_view`), `chat_reviews` | 3 years | Admin clean-up |
+| Transporter books (what a party pays, what a driver is owed; private to the transporter) | `transporter_accounts` | While the account exists | The owner, or account deletion (done in the app) |
+| Fleet membership, attached vehicle | `fleet_members`, `vehicles.attachedTo` | While active | Either side ends it; the driver can detach a vehicle any time |
 | Promo redemptions, credits ledger, referrals | `promos/*/slots`, `users/{uid}/credits`, `referrals` | 3 years | Account deletion (credits lines are cleared) |
 
 Rules:

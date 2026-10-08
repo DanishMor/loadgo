@@ -18,7 +18,6 @@ import 'package:transport_app/core/models/vehicle.dart';
 import 'package:transport_app/core/services/backend.dart';
 import 'package:transport_app/core/theme/app_theme.dart';
 import 'package:transport_app/core/transporter/transporter_logic.dart';
-import 'package:transport_app/core/widgets/common.dart';
 import 'package:transport_app/driver/assigned_trips_card.dart';
 import 'package:transport_app/fleet/fleet_dashboard.dart';
 import 'package:transport_app/fleet/transporter_books_screen.dart';

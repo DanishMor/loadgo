@@ -760,7 +760,8 @@ service cloud.firestore {
           && resource.data.ownerId == request.auth.uid
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['partyName', 'revenuePaise', 'driverPayPaise', 'otherCostPaise', 'receivedPaise', 'updatedAt'])
           && accountLineOk(request.resource.data);
-      allow delete: if false;
+      // The owner may delete their own books (account deletion).
+      allow delete: if signedIn() && resource.data.ownerId == request.auth.uid;
     }
 
     // vehicle_expenses/{id}: fuel, toll, repair and service lines the vehicle's
@@ -2154,7 +2155,8 @@ service cloud.firestore {
     }
 
     match /calls/{callId} {
-      allow read: if signedIn() && (request.auth.uid in [resource.data.callerId, resource.data.calleeId]
+      // (not `uid in [a, b]`: a list query on one field would hit an undefined element)
+      allow read: if signedIn() && (resource.data.callerId == request.auth.uid || resource.data.calleeId == request.auth.uid
           || adminIn(['super', 'support', 'ops']));
       allow create: if signedIn()
           && request.resource.data.keys().hasOnly(['bookingId', 'callerId', 'calleeId', 'callerName', 'vehicleNumber', 'status', 'offer', 'createdAt', 'updatedAt'])

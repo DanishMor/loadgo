@@ -6,6 +6,7 @@ import '../models/fleet.dart';
 import '../models/vehicle.dart';
 import '../transporter/transporter_logic.dart';
 import '../models/app_notification.dart';
+import 'analytics_events.dart';
 import 'audit_service.dart';
 import 'notification_service.dart';
 import 'backend.dart';
@@ -106,6 +107,7 @@ class TransporterService {
           userId: driver.driverId, type: NotificationType.tripAssigned, message: '${booking.pickup} → ${booking.drop}', relatedId: booking.id);
     }
     await batch.commit();
+    AnalyticsEvents.log(AnalyticsEvents.tripAssigned, params: {'reassign': booking.assignedDriverId != null ? 1 : 0});
   }
 
   /// A driver a transporter assigned cannot change the vehicle (it is not

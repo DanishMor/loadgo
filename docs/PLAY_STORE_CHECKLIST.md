@@ -39,9 +39,9 @@ Status key: [x] done in the repo, [ ] needs you (account, keys, decisions).
 No background location, no contacts, no SMS, no storage permission.
 
 ## Data safety form (answers)
-- Data collected: Personal info (name, phone number, e-mail, address, user ids), Financial info (payment records only, no card data), Location (approximate and precise), Messages (in-app chat), Photos: none yet, Audio: not stored, App activity and diagnostics (crash logs, performance), Device or other ids (fraud checks).
+- Data collected: Personal info (name, phone number, e-mail, address, user ids), Financial info (payment records only, no card data), Location (approximate and precise), Messages (in-app chat and call records: who called whom, when and how it ended), Photos: none yet, Audio: used live for in-app calls and not recorded or stored, App activity and diagnostics (crash logs, performance), Device or other ids (fraud checks).
 - Purpose: app functionality, account management, fraud prevention, analytics, communications.
-- Shared with third parties: no sale; Google Firebase acts as processor. The other party of a booking sees trip details.
+- Shared with third parties: no sale; Google Firebase acts as processor. The other party of a booking sees trip details (name, rating, vehicle number, verified badge). Phone numbers are not shown between customers, drivers and transporters. Call audio goes directly between the two phones (WebRTC; Google's public STUN servers see the network addresses needed to connect).
 - Encrypted in transit: yes (HTTPS). Users can request deletion: yes (in app and the web page). Data you collect is optional: location and microphone are optional.
 - Government ID: licence number, PAN and last 4 Aadhaar digits are collected from drivers and fleet owners; mark "Personal info / Other" and explain they are format-checked, not verified.
 

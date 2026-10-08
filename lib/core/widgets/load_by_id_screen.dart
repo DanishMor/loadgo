@@ -27,7 +27,7 @@ class LoadByIdScreen extends StatelessWidget {
         stream: stream ?? () => LoadService.watchById(loadId),
         builder: (context, load) {
           if (load == null) {
-            return EmptyState(key: const ValueKey('loadGone'), icon: Icons.inventory_2_outlined, title: tr(context, 'gsLoadGone'));
+            return EmptyState(key: const ValueKey('loadGone'), icon: Icons.inventory_2_outlined, title: tr(context, 'gsLoadUnavailable'));
           }
           return ListView(padding: const EdgeInsets.all(20), children: [
             LoadCard(key: ValueKey('sharedLoad_${load.id}'), load: load, showStatus: true, action: load.isOpen ? action?.call(load) : null),

@@ -3,6 +3,7 @@ import '../enterprise/validators.dart';
 import '../identity/kyc_validators.dart';
 import '../models/booking.dart';
 import '../models/fleet.dart';
+import '../models/load.dart';
 import '../models/vehicle.dart';
 import '../trip/trip_eta.dart';
 
@@ -275,5 +276,51 @@ class TransporterBooks {
       parties.fold(0, (s, p) => s + p.duePaise),
       parties,
     );
+  }
+}
+
+/// How well an open load fits a transporter's profile (routes, vehicle types,
+/// office city). Used to list the loads that fit first and to filter.
+class LoadFit {
+  final Load load;
+  final bool route;
+  final bool vehicleType;
+  final bool nearOffice;
+
+  const LoadFit(this.load, {this.route = false, this.vehicleType = false, this.nearOffice = false});
+
+  int get score => (route ? 4 : 0) + (vehicleType ? 2 : 0) + (nearOffice ? 1 : 0);
+
+  static String _norm(String s) => s.toLowerCase().replaceAll(RegExp(r'[^a-z0-9\u0900-\u0dff\u0600-\u06ff ]'), ' ').replaceAll(RegExp(r'\s+'), ' ').trim();
+
+  /// "Indore - Pune", "Delhi to Jaipur", "Mumbai → Surat" -> the two ends.
+  static (String, String)? routeEnds(String route) {
+    final parts = route.split(RegExp(r'\s*(?:-|–|—|→|=>|>|\bto\b)\s*', caseSensitive: false)).map(_norm).where((p) => p.isNotEmpty).toList();
+    return parts.length >= 2 ? (parts.first, parts.last) : null;
+  }
+
+  static bool _same(String place, String city) => city.isNotEmpty && (place.contains(city) || (city.contains(place) && place.length >= 3));
+
+  /// True when the load runs between the two ends of [route], either way round
+  /// (a return load counts).
+  static bool onRoute(Load l, String route) {
+    final ends = routeEnds(route);
+    if (ends == null) return false;
+    final a = _norm(l.pickup), b = _norm(l.drop);
+    return (_same(a, ends.$1) && _same(b, ends.$2)) || (_same(a, ends.$2) && _same(b, ends.$1));
+  }
+
+  static LoadFit of(Load l, TransporterProfile p) => LoadFit(
+        l,
+        route: p.routes.any((r) => onRoute(l, r)),
+        vehicleType: p.vehicleTypes.any((t) => t.trim().toLowerCase() == l.vehicleType.trim().toLowerCase()),
+        nearOffice: p.officeCity.trim().length >= 2 && _same(_norm(l.pickup), _norm(p.officeCity)),
+      );
+
+  /// Best fit first; loads with the same fit keep their order.
+  static List<LoadFit> rank(Iterable<Load> loads, TransporterProfile p) {
+    final list = [for (final l in loads) of(l, p)];
+    final indexed = [for (var i = 0; i < list.length; i++) (i, list[i])]..sort((a, b) => b.$2.score != a.$2.score ? b.$2.score.compareTo(a.$2.score) : a.$1.compareTo(b.$1));
+    return [for (final e in indexed) e.$2];
   }
 }
