@@ -285,7 +285,7 @@ void main() {
       expect(d['appVersion'], '1.0.0+1');
       expect(d.containsKey('userId'), isFalse);
       expect(d['createdAt'], isNotNull);
-      expect(d.keys.toSet(), {'message', 'screen', 'kind', 'appVersion', 'createdAt'});
+      expect(d.keys.toSet(), {'message', 'screen', 'kind', 'appVersion', 'createdAt', 'expireAt'});
     });
 
     test('off in debug, signed out, or sampled out: nothing is written', () async {
