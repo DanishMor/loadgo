@@ -111,8 +111,13 @@ class ContactFilter {
 
   // ---- scanning ----
 
+  /// A chat message is at most 500 characters, but a pasted wall of text must
+  /// not freeze the phone: some patterns grow with the square of the length,
+  /// so only the first and the last 3,000 characters are looked at.
+  static String _clip(String s) => s.length <= 6000 ? s : '${s.substring(0, 3000)} ${s.substring(s.length - 3000)}';
+
   static ContactKind? _scan(String raw) {
-    final t = normalise(raw);
+    final t = _clip(normalise(raw));
     if (t.trim().isEmpty) return null;
     if (_upi.hasMatch(t)) return ContactKind.upi;
     if (_numberChain(t.replaceAll(_date, ' ').replaceAll(_time, ' '))) return ContactKind.phone;
