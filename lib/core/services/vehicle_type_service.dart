@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 
 import '../models/vehicle_type.dart';
 import 'backend.dart';
+import 'audit_service.dart';
 
 /// Vehicle types from `config/vehicle_types` (`{types: [...]}`), falling
 /// back to [defaultVehicleTypes]. Only admins can write the config (rules).
@@ -45,10 +46,12 @@ class VehicleTypeService {
   }
 
   /// Admin only (enforced by rules).
-  static Future<void> save(List<VehicleTypeInfo> types) => Backend.db
-      .collection('config')
-      .doc('vehicle_types')
-      .set({'types': [for (final t in types) t.toMap()]});
+  static Future<void> save(List<VehicleTypeInfo> types) {
+    final batch = Backend.db.batch();
+    batch.set(Backend.db.collection('config').doc('vehicle_types'), {'types': [for (final t in types) t.toMap()]});
+    AuditService.inBatch(batch, AuditType.configChange, targetId: 'vehicle_types', data: {'doc': 'vehicle_types', 'changedKeys': const ['types']});
+    return batch.commit();
+  }
 
   @visibleForTesting
   static void reset() => notifier.value = defaultVehicleTypes;

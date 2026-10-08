@@ -5,6 +5,7 @@ import '../pricing/fare_calculator.dart';
 import '../pricing/pricing_config.dart';
 import '../pricing/surge.dart';
 import 'backend.dart';
+import 'audit_service.dart';
 import 'vehicle_type_service.dart';
 
 /// Where a fare estimate's distance came from.
@@ -33,7 +34,12 @@ class PricingService {
   }
 
   /// Admin only (enforced by rules).
-  static Future<void> save(PricingConfig c) => Backend.db.collection('config').doc('pricing').set(c.toMap());
+  static Future<void> save(PricingConfig c) {
+    final batch = Backend.db.batch();
+    batch.set(Backend.db.collection('config').doc('pricing'), c.toMap());
+    AuditService.inBatch(batch, AuditType.configChange, targetId: 'pricing', data: {'doc': 'pricing', 'changedKeys': const ['pricing']});
+    return batch.commit();
+  }
 
   /// Estimated road km between the cities named in [from] and [to], or null
   /// when either place is not in the offline table.

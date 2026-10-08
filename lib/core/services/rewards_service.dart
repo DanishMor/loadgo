@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../offers/promo.dart';
 import 'backend.dart';
+import 'audit_service.dart';
 
 enum ReferralProblem { unknownCode, ownCode, alreadyReferred, tooLate }
 
@@ -199,24 +200,34 @@ class RewardsService {
   static Future<void> savePromo(Promo p) async {
     final ref = _promos.doc(p.code);
     final isNew = !(await ref.get()).exists;
-    await ref.set({
+    final batch = _db.batch();
+    batch.set(ref, {
       ...p.toMap(),
       if (isNew) 'createdAt': FieldValue.serverTimestamp(),
       'updatedAt': FieldValue.serverTimestamp(),
     }, SetOptions(merge: true));
+    AuditService.inBatch(batch, AuditType.userAction, targetId: p.code, data: {'action': isNew ? 'promo_create' : 'promo_update'});
+    await batch.commit();
   }
 
   /// Positive = grant, negative = take back. A record only.
   static Future<void> grantCredits(String uid, int paise, {String note = ''}) {
     if (paise == 0) throw ArgumentError.value(paise, 'paise');
-    return _user(uid).collection('credits').add({
+    final batch = _db.batch();
+    batch.set(_user(uid).collection('credits').doc(), {
       'amountPaise': paise,
       'kind': paise > 0 ? 'admin_grant' : 'admin_deduct',
       if (note.trim().isNotEmpty) 'note': note.trim(),
       'createdAt': FieldValue.serverTimestamp(),
     });
+    AuditService.inBatch(batch, AuditType.userAction, targetId: uid, data: {'action': 'credits', 'amountPaise': paise});
+    return batch.commit();
   }
 
-  static Future<void> setReferralBonus(int paise) =>
-      _db.collection('config').doc('offers').set({'referralBonusPaise': paise}, SetOptions(merge: true));
+  static Future<void> setReferralBonus(int paise) {
+    final batch = _db.batch();
+    batch.set(_db.collection('config').doc('offers'), {'referralBonusPaise': paise}, SetOptions(merge: true));
+    AuditService.inBatch(batch, AuditType.configChange, targetId: 'offers', data: {'doc': 'offers', 'changedKeys': ['referralBonusPaise']});
+    return batch.commit();
+  }
 }

@@ -5,6 +5,7 @@ import '../models/app_notification.dart';
 import '../models/booking.dart';
 import '../models/rating.dart';
 import 'backend.dart';
+import 'audit_service.dart';
 import 'notification_service.dart';
 
 class AlreadyRatedException implements Exception {
@@ -128,6 +129,9 @@ class RatingService {
 
   static Future<void> resolveFlag(String id, String status) {
     if (status != RatingFlag.reviewed && status != RatingFlag.dismissed) throw ArgumentError.value(status, 'status');
-    return _flags.doc(id).update({'status': status, 'handledBy': Backend.requireUid(), 'handledAt': FieldValue.serverTimestamp()});
+    final batch = Backend.db.batch();
+    batch.update(_flags.doc(id), {'status': status, 'handledBy': Backend.requireUid(), 'handledAt': FieldValue.serverTimestamp()});
+    AuditService.inBatch(batch, AuditType.userAction, targetId: id, data: {'action': 'rating_flag', 'status': status});
+    return batch.commit();
   }
 }

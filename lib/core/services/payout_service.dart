@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../models/payout.dart';
 import 'backend.dart';
+import 'audit_service.dart';
 import 'booking_service.dart';
 import 'payment_service.dart';
 import 'risk_service.dart';
@@ -67,10 +68,13 @@ class PayoutService {
   /// Admin: after paying outside the app, or turning the request down.
   static Future<void> setStatus(String id, String status) {
     assert(status == Payout.paid || status == Payout.rejected);
-    return _col.doc(id).update({
+    final batch = Backend.db.batch();
+    batch.update(_col.doc(id), {
       'status': status,
       'handledBy': Backend.requireUid(),
       'handledAt': FieldValue.serverTimestamp(),
     });
+    AuditService.inBatch(batch, AuditType.userAction, targetId: id, data: {'action': 'payout', 'status': status});
+    return batch.commit();
   }
 }

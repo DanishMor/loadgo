@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 
 import '../offers/offers_switch.dart';
 import 'backend.dart';
+import 'audit_service.dart';
 import 'ttl_cache.dart';
 
 /// Reads and writes the `config/offers` switches (default all OFF).
@@ -27,7 +28,10 @@ class OffersSwitchService {
 
   /// Super admin only (rules). Merges so the referral bonus stays.
   static Future<void> save(OffersSwitch s) async {
-    await Backend.db.collection('config').doc('offers').set(s.toMap(), SetOptions(merge: true));
+    final batch = Backend.db.batch();
+    batch.set(Backend.db.collection('config').doc('offers'), s.toMap(), SetOptions(merge: true));
+    AuditService.inBatch(batch, AuditType.configChange, targetId: 'offers', data: {'doc': 'offers', 'changedKeys': s.toMap().keys.toList()});
+    await batch.commit();
     notifier.value = s;
   }
 

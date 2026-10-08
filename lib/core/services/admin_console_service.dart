@@ -121,6 +121,16 @@ class AdminConsoleService {
         .any((v) => v is String && v.toLowerCase().contains(q));
   }
 
+  /// One admin write plus its `user_action` audit event in the same batch
+  /// (MASTER-5 Task 5): every admin change is traceable. [what] names the
+  /// action, [targetId] the document it touched; [extra] holds small values.
+  static Future<void> _audited(String what, String targetId, DocumentReference<Map<String, dynamic>> ref, Map<String, Object?> change, Map<String, Object?> extra) {
+    final batch = _db.batch();
+    batch.update(ref, change);
+    AuditService.inBatch(batch, AuditType.userAction, targetId: targetId, data: {'action': what, 'collection': ref.parent.id, ...extra});
+    return batch.commit();
+  }
+
   // ---- vehicles ----
 
   static Stream<List<QueryDocumentSnapshot<Map<String, dynamic>>>> watchVehicles() =>
@@ -129,28 +139,28 @@ class AdminConsoleService {
   /// Suspend or lift a suspension (admin only per rules).
   static Future<void> setVehicleAvailability(String vehicleId, String availability) {
     assert(VehicleAvailability.all.contains(availability));
-    return _db.collection('vehicles').doc(vehicleId).update({
+    return _audited('vehicle_availability', vehicleId, _db.collection('vehicles').doc(vehicleId), {
       'availability': availability,
       'updatedAt': FieldValue.serverTimestamp(),
-    });
+    }, {'availability': availability});
   }
 
   /// Lets a vehicle with expired papers work for [days] days: sets the
   /// override and lifts the document suspension (admin only per rules).
   static Future<void> overrideVehicleDocs(String vehicleId, {int days = 7}) {
-    return _db.collection('vehicles').doc(vehicleId).update({
+    return _audited('vehicle_doc_override', vehicleId, _db.collection('vehicles').doc(vehicleId), {
       'availability': VehicleAvailability.available,
       'docOverrideUntil': Timestamp.fromDate(DateTime.now().add(Duration(days: days))),
       'updatedAt': FieldValue.serverTimestamp(),
-    });
+    }, {'days': days});
   }
 
   /// Lets a driver with an expired licence accept loads for [days] days.
   static Future<void> overrideLicence(String userId, {int days = 7}) {
-    return _db.collection('users').doc(userId).update({
+    return _audited('licence_override', userId, _db.collection('users').doc(userId), {
       'docOverrideUntil': Timestamp.fromDate(DateTime.now().add(Duration(days: days))),
       'updatedAt': FieldValue.serverTimestamp(),
-    });
+    }, {'days': days});
   }
 
   // ---- loads / bookings ----
@@ -221,35 +231,35 @@ class AdminConsoleService {
 
   static Future<void> setSosStatus(String id, String status, {String note = ''}) {
     assert(const ['open', 'acknowledged', 'resolved'].contains(status));
-    return _db.collection('sos_alerts').doc(id).update({
+    return _audited('sos_status', id, _db.collection('sos_alerts').doc(id), {
       'status': status,
       'handledBy': Backend.requireUid(),
       'handledAt': FieldValue.serverTimestamp(),
       if (note.trim().isNotEmpty) 'adminNote': note.trim(),
-    });
+    }, {'status': status});
   }
 
   static Stream<List<QueryDocumentSnapshot<Map<String, dynamic>>>> watchReports() =>
       _db.collection('reports').limit(listLimit).snapshots().map((s) => s.docs);
 
-  static Future<void> resolveReport(String id, {String note = ''}) => _db.collection('reports').doc(id).update({
+  static Future<void> resolveReport(String id, {String note = ''}) => _audited('report_resolve', id, _db.collection('reports').doc(id), {
         'status': 'resolved',
         'resolvedAt': FieldValue.serverTimestamp(),
         'resolvedBy': Backend.requireUid(),
         if (note.trim().isNotEmpty) 'adminNote': note.trim(),
-      });
+      }, const {});
 
   // ---- tickets ----
 
   static Stream<List<QueryDocumentSnapshot<Map<String, dynamic>>>> watchTickets() =>
       _db.collection('tickets').limit(listLimit).snapshots().map((s) => s.docs);
 
-  static Future<void> updateTicket(String id, {String? status, String? priority}) => _db.collection('tickets').doc(id).update({
+  static Future<void> updateTicket(String id, {String? status, String? priority}) => _audited('ticket_update', id, _db.collection('tickets').doc(id), {
         'status': ?status,
         'priority': ?priority,
         'assignedTo': Backend.requireUid(),
         'updatedAt': FieldValue.serverTimestamp(),
-      });
+      }, {'status': ?status, 'priority': ?priority});
 
   // ---- deletion requests ----
 
@@ -258,11 +268,11 @@ class AdminConsoleService {
 
   static Future<void> setDeletionStatus(String userId, String status) {
     assert(const ['pending', 'done', 'rejected'].contains(status));
-    return _db.collection('deletion_requests').doc(userId).update({
+    return _audited('deletion_status', userId, _db.collection('deletion_requests').doc(userId), {
       'status': status,
       'handledBy': Backend.requireUid(),
       'handledAt': FieldValue.serverTimestamp(),
-    });
+    }, {'status': status});
   }
 
   // ---- config ----
