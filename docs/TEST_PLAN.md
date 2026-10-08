@@ -14,6 +14,10 @@ Tick every line on a real Android phone before a release. Test in English and on
 - [ ] After delivery: pay (UPI link / cash mark), rate (3 category rows), tip, invoice PDF, raise a claim.
 - [ ] Spending screen, trip history filters, CSV share, global search, Sahayak questions.
 - [ ] Settings: language, theme, notification switches, consents, delete account (blocked with an active trip).
+- [ ] First launch of each role (customer, driver, transporter): the three-step "how it works" card shows once on Home and "Got it" removes it for good; an announcement from Admin > Config shows above it and closing it keeps it closed until the notice id changes (an urgent one cannot be closed).
+- [ ] Notifications are grouped Today / Yesterday / Earlier; Mark all read is greyed out when nothing is unread.
+- [ ] Post Load shows Step 1 of 3 (route), Step 2 (goods), Step 3 (price); cancelling an open load says there is no charge.
+- [ ] Urdu or Kashmiri: the whole app is right to left (back arrow on the right, rows mirrored).
 
 ## Driver
 - [ ] Login as driver; role lock (a customer number is refused), KYC documents, location consent, pending verification screen.
@@ -22,6 +26,8 @@ Tick every line on a real Android phone before a release. Test in English and on
 - [ ] Make an offer (Simple Mode stepper and mic), accept a load, confirm a selected offer.
 - [ ] Trip: arriving banner, pickup OTP + proof, in transit, drop OTP + proof, navigate buttons, SOS, breakdown.
 - [ ] Wallet, earnings today / 7 days, payout request, tips, incentives, plan request.
+- [ ] Wallet > Earnings statement: this month, last month, this financial year, all time; share as CSV (opens in a spreadsheet, the commission is negative) and as PDF (totals match the wallet).
+- [ ] Help centre shows the driver questions (showing the LR at a checkpoint, earnings and the statement) and not the customer or transporter ones.
 - [ ] Empty truck post, driver network (nearby, connections, groups).
 - [ ] Simple Mode: four big buttons, money screen.
 
@@ -46,6 +52,8 @@ Tick every line on a real Android phone before a release. Test in English and on
 ## Fleet owner
 - [ ] Login through the fleet door, profile (PAN), invite a driver by phone, driver accepts.
 - [ ] Add vehicle, assign driver, dashboard figures, expenses, analytics.
+- [ ] Books: Export all parties (CSV) and the share icon on a party (CSV, PDF with trips, received, due).
+- [ ] Help centre shows the transporter questions (assign a vehicle and driver, party statements, bilty, inspection mode).
 
 ## Business account (customer with company)
 - [ ] Invite a booker, role change, approval limit (load waits for approval), statements by cost centre.
@@ -55,10 +63,13 @@ Tick every line on a real Android phone before a release. Test in English and on
 - [ ] Verification queue, users (suspend, ban, restore, bulk hold with reason), CSV exports masked.
 - [ ] Tickets with reply templates, SOS, reports, claims, fraud cases, payouts, feedback, assistant questions.
 - [ ] Config JSON editors, offers switches, app control (force update, maintenance).
+- [ ] Config > Announcement banner: write text, level, last day and roles; it appears on the right homes within 15 minutes (or after the next sign-in); Support settings with no document start empty, not with vehicle types.
+- [ ] Every list (tickets, SOS, reports, audit ...): search, save a filter, Show 50 more, Export CSV (no phone numbers or free text in the file); Pilot funnel counts and names the biggest drop; Disputes show "What the trip records show"; Rating flags: Hide comment keeps the stars; the audit log has an event for each admin change.
 - [ ] System health counts and sampled errors; Demo data create / remove (release build blocked without `config/app.allowDemo`).
 
 ## Release checks
-- [ ] `flutter analyze` 0 issues, `flutter test` green, `cd firestore_rules_test && npm test` green.
+- [ ] `flutter analyze` 0 issues, `flutter test` green, `cd firestore_rules_test && npm test` green (storage, the generated matrix, the four rules slices).
+- [ ] Rules and hosting deployed by the owner (hosting now also carries the security headers); in the Firebase console add a TTL policy on `expireAt` for `app_errors`, `assistant_unknown` and `calls` (docs/DATA_RETENTION.md).
 - [ ] Demo data removed from the live project (count 0).
 - [ ] Rules and indexes deployed by the owner (see docs/MANUAL_TODO.md).
 
