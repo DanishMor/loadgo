@@ -31,7 +31,12 @@ class _AdminInvitesScreenState extends State<AdminInvitesScreen> {
   bool _inviteOnly = false;
   final _cities = TextEditingController();
 
-  void _refresh() => setState(() => _data = (widget.load ?? InviteService.list)());
+  void _refresh() {
+    final next = (widget.load ?? InviteService.list)();
+    setState(() {
+      _data = next;
+    });
+  }
 
   @override
   void initState() {

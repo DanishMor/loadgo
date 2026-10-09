@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../analytics/unit_economics.dart';
+import 'server_clock.dart';
+import '../admin/pilot_control.dart';
 import '../admin/pilot_funnel.dart';
 import '../matching/supply_demand.dart';
 import '../models/ledger_entry.dart';
@@ -381,6 +383,36 @@ class AdminConsoleService {
                 status: '${d.data()['status'] ?? ''}',
               ),
           ],
+        );
+      });
+
+  /// Today's pilot picture: counts (cheap aggregate reads) plus up to 300 open
+  /// loads to find the unfilled ones. About 10 reads per press.
+  static Future<PilotControl> pilotControl() => withRetry(() async {
+        final now = ServerClock.now();
+        final openLoads = await _db.collection('loads').where('status', isEqualTo: LoadStatus.open).limit(PilotControl.sampleLimit).get();
+        final r = await Future.wait([
+          _count(_db.collection('users').where('createdAt', isGreaterThanOrEqualTo: Timestamp.fromDate(PilotControl.dayStart(now)))),
+          _count(_db.collection('driver_presence').where('mode', isEqualTo: 'nearby').where('sharedUntil', isGreaterThan: Timestamp.fromDate(now))),
+          _count(_db.collection('bookings').where('status', whereIn: [
+            BookingStatus.accepted,
+            BookingStatus.driverArriving,
+            BookingStatus.loading,
+            BookingStatus.pickedUp,
+            BookingStatus.inTransit,
+            BookingStatus.unloading,
+          ])),
+          _count(_db.collection('sos_alerts').where('status', isEqualTo: 'open')),
+          _count(_db.collection('tickets').where('status', whereIn: ['open', 'in_progress'])),
+        ]);
+        return PilotControl(
+          signupsToday: r[0],
+          driversSharing: r[1],
+          openLoads: openLoads.docs.length,
+          unfilledLoads: PilotControl.unfilled([for (final d in openLoads.docs) (d.data()['createdAt'] as Timestamp?)?.toDate()], now),
+          runningTrips: r[2],
+          openSos: r[3],
+          openTickets: r[4],
         );
       });
 

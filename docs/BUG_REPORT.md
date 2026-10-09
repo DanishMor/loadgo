@@ -69,3 +69,9 @@ Method, three rounds. **Round 1**: not a line-by-line read of every file; each c
 
 ## Could not be checked here
 * `flutter build apk --debug` (no Android SDK, docs/BLOCKED.md); a real phone: OTP SMS, camera, GPS, calls on two networks, push, the PDF look on paper and in Tamil / Urdu (the PDF library does not shape every joined form).
+
+## MASTER-6 (2026-10-09)
+
+| ID | File | What was wrong | Fix | Severity |
+|---|---|---|---|---|
+| M6-B1 | lib/admin/admin_pilot_funnel_screen.dart, lib/fleet/transporter_shortcuts.dart | `setState(() => _x = someFuture)` returns the Future from the closure: Flutter asserts in debug builds and the refresh did not rebuild in tests | block body `setState(() { _x = ...; })` | Low (release builds ignore the assertion) |

@@ -63,7 +63,11 @@ class _TransporterShortcutsState extends State<TransporterShortcuts> {
 
   Future<void> _open(Widget screen) async {
     await Navigator.of(context).push(MaterialPageRoute(builder: (_) => screen));
-    if (mounted) setState(() => _profile = _loadProfile());
+    if (mounted) {
+      setState(() {
+        _profile = _loadProfile();
+      });
+    }
   }
 
   String _when(BuildContext context, DocReminder r) {

@@ -20,7 +20,12 @@ class AdminPilotFunnelScreen extends StatefulWidget {
 class _AdminPilotFunnelScreenState extends State<AdminPilotFunnelScreen> {
   late Future<PilotFunnel> _data = (widget.load ?? AdminConsoleService.pilotFunnel)();
 
-  void _refresh() => setState(() => _data = (widget.load ?? AdminConsoleService.pilotFunnel)());
+  void _refresh() {
+    final next = (widget.load ?? AdminConsoleService.pilotFunnel)();
+    setState(() {
+      _data = next;
+    });
+  }
 
   Widget _section(BuildContext context, String id, String titleKey, List<FunnelStep> steps) {
     final top = steps.isEmpty ? 0 : steps.first.count;

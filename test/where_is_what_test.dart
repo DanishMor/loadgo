@@ -51,6 +51,7 @@ void main() {
       'adminPilotFunnel': 'Pilot funnel',
       'adminInvites': 'Invite codes',
       'adminWaitlist': 'Waitlist',
+      'adminPilotControl': 'Pilot control room',
       'flaggedUsers': 'Flagged users',
       'adminDeletionRequests': 'Deletion requests',
       'adminAudit': 'Audit log',
