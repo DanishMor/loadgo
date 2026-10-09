@@ -1,3 +1,5 @@
+import 'driver_trip_screen.dart';
+import '../core/payments/wallet_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -18,7 +20,9 @@ import '../core/widgets/live_stream.dart';
 /// and the ledger lines (trip earnings and platform commission). Records
 /// only: LoadGo pays requests by hand for now. LATER(paid): bank payouts.
 class WalletScreen extends StatefulWidget {
-  const WalletScreen({super.key});
+  /// Opens a trip (the waiting card); defaults to the driver trip screen.
+  final void Function(BuildContext, String bookingId)? onOpenTrip;
+  const WalletScreen({super.key, this.onOpenTrip});
 
   @override
   State<WalletScreen> createState() => _WalletScreenState();
@@ -174,10 +178,13 @@ class _WalletScreenState extends State<WalletScreen> {
                           trailing: StatusChip(label: tr(context, 'payout_${p.status}'), color: _statusColor(p.status)),
                         ),
                     ],
+                    WalletWaitingCard(bookings: bookings, onOpen: widget.onOpenTrip ?? (c, id) => openDriverTrip(c, id)),
                     const SizedBox(height: 12),
                     if (entries.isEmpty) Text(tr(context, 'noLedger'), style: TextStyle(color: AppColors.muted)),
                     for (final e in entries)
                       ListTile(
+                        key: ValueKey('ledger_${e.id}'),
+                        onTap: () => showLedgerLine(context, e, entries),
                         contentPadding: EdgeInsets.zero,
                         leading: Icon(
                           e.amountPaise >= 0 ? Icons.arrow_downward_rounded : Icons.arrow_upward_rounded,

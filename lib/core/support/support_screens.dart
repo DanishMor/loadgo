@@ -163,7 +163,11 @@ class NewTicketScreen extends StatefulWidget {
 
   /// A company ticket (BIZ15): the owner's uid.
   final String? businessId;
-  const NewTicketScreen({super.key, this.bookingId, this.category, this.businessId});
+
+  /// Words to start the form with (a question about a wallet line).
+  final String? initialSubject;
+  final String? initialDescription;
+  const NewTicketScreen({super.key, this.bookingId, this.category, this.businessId, this.initialSubject, this.initialDescription});
 
   @override
   State<NewTicketScreen> createState() => _NewTicketScreenState();
@@ -171,8 +175,8 @@ class NewTicketScreen extends StatefulWidget {
 
 class _NewTicketScreenState extends State<NewTicketScreen> {
   final _form = GlobalKey<FormState>();
-  final _subject = TextEditingController();
-  final _desc = TextEditingController();
+  late final _subject = TextEditingController(text: widget.initialSubject);
+  late final _desc = TextEditingController(text: widget.initialDescription);
   late String _category = widget.category ?? TicketCategory.bookingIssue;
   String _priority = TicketPriority.normal;
   late String? _bookingId = widget.bookingId;
