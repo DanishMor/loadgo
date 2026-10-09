@@ -127,9 +127,9 @@ class _AdminInvitesScreenState extends State<AdminInvitesScreen> {
             ]),
             TextField(key: const ValueKey('invRoute'), controller: _route, maxLength: 60, decoration: InputDecoration(labelText: tr(context, 'invRoute'))),
             Row(children: [
-              Expanded(child: DropdownButtonFormField<int>(key: const ValueKey('invUses'), initialValue: _uses, decoration: InputDecoration(labelText: tr(context, 'invUses')), items: [for (final n in const [1, 5, 10, 25, 50, 100]) DropdownMenuItem(value: n, child: Text('$n'))], onChanged: (v) => setState(() => _uses = v ?? 5))),
+              Expanded(child: DropdownButtonFormField<int>(isExpanded: true, key: const ValueKey('invUses'), initialValue: _uses, decoration: InputDecoration(labelText: tr(context, 'invUses')), items: [for (final n in const [1, 5, 10, 25, 50, 100]) DropdownMenuItem(value: n, child: Text('$n'))], onChanged: (v) => setState(() => _uses = v ?? 5))),
               const SizedBox(width: 12),
-              Expanded(child: DropdownButtonFormField<int>(key: const ValueKey('invDays'), initialValue: _days, decoration: InputDecoration(labelText: tr(context, 'invDays')), items: [for (final n in const [7, 14, 30, 90]) DropdownMenuItem(value: n, child: Text('$n'))], onChanged: (v) => setState(() => _days = v ?? 30))),
+              Expanded(child: DropdownButtonFormField<int>(isExpanded: true, key: const ValueKey('invDays'), initialValue: _days, decoration: InputDecoration(labelText: tr(context, 'invDays')), items: [for (final n in const [7, 14, 30, 90]) DropdownMenuItem(value: n, child: Text('$n'))], onChanged: (v) => setState(() => _days = v ?? 30))),
             ]),
             const SizedBox(height: 8),
             FilledButton(key: const ValueKey('invMakeGo'), onPressed: _busy ? null : _make, child: Text(tr(context, 'invMake'))),
