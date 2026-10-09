@@ -1,3 +1,4 @@
+import '../trip/delay_reason.dart';
 import 'package:flutter/material.dart';
 
 import '../constants/logistics.dart';
@@ -22,6 +23,16 @@ int? bookingRouteKm(Booking b) => PricingService.estimateRouteKm([b.pickup, ...b
 /// Estimated arrival (on the road), estimated trip time (before pickup),
 /// a late warning, or the time the finished trip took. Hidden when the places
 /// are not in the offline table.
+String _whyText(BuildContext context, DelayWhy w) => switch (w.reason) {
+      DelayReason.breakdown => tr(context, 'dlyBreakdown'),
+      DelayReason.vehicleChanged => tr(context, 'dlyVehicleChanged'),
+      DelayReason.loadingWait => trf(context, 'dlyLoadingWait', {'m': w.minutes}),
+      DelayReason.unloadingWait => trf(context, 'dlyUnloadingWait', {'m': w.minutes}),
+      DelayReason.noSignal => trf(context, 'dlyNoSignal', {'m': w.minutes}),
+      DelayReason.nightRest => tr(context, 'dlyNight'),
+      DelayReason.slowRoad => tr(context, 'dlySlow'),
+    };
+
 class TripEtaCard extends StatelessWidget {
   final Booking booking;
   final DateTime Function()? clock;
@@ -37,6 +48,7 @@ class TripEtaCard extends StatelessWidget {
     final took = TripEta.roadTime(b);
     final String line;
     var late = false;
+    DelayWhy? why;
     if (took != null) {
       line = trf(context, 'etaTookTotal', {'time': durationText(context, took)});
     } else {
@@ -44,6 +56,7 @@ class TripEtaCard extends StatelessWidget {
       if (eta != null) {
         final delay = TripEta.delayMinutes(b, eta, now);
         late = delay != null;
+        if (late) why = DelayReasons.of(b, now);
         line = late
             ? trf(context, 'etaDelayed', {'time': durationText(context, Duration(minutes: delay))})
             : '${tr(context, 'etaTitle')}: ${formatDateTime(eta)}';
@@ -61,6 +74,7 @@ class TripEtaCard extends StatelessWidget {
           const SizedBox(width: 10),
           Expanded(child: Text(line, key: const ValueKey('tripEtaLine'), style: TextStyle(fontWeight: FontWeight.w800, color: late ? AppColors.warning : AppColors.title))),
         ]),
+        if (late && why != null) Padding(padding: const EdgeInsets.only(top: 6), child: Text(_whyText(context, why), key: const ValueKey('tripDelayWhy'))),
         if (took == null) Padding(padding: const EdgeInsets.only(top: 6), child: Text(tr(context, 'etaNote'), style: TextStyle(fontSize: 12, color: AppColors.faint))),
       ]),
     );

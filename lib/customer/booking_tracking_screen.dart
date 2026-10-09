@@ -47,6 +47,7 @@ class BookingTrackingScreen extends StatelessWidget {
             const SizedBox(height: 8),
             TripOtpCard(key: ValueKey('otp_${booking.id}'), booking: booking),
             ShareTripButton(booking: booking),
+            ShareTrackingLinkButton(booking: booking),
           ],
           const SizedBox(height: 8),
           Align(alignment: Alignment.centerLeft, child: RatingBadge(userId: booking.driverId)),
