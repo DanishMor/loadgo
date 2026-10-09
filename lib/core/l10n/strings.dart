@@ -70,6 +70,7 @@ import 'config_editor_strings.dart';
 import 'admin_alerts_strings.dart';
 import 'draft_strings.dart';
 import 'smart_defaults_strings.dart';
+import 'fare_explain_strings.dart';
 import 'admin_list_strings.dart';
 import 'statement_strings.dart';
 import 'evidence_timeline_strings.dart';
@@ -154,6 +155,7 @@ const List<Map<String, List<String>>> stringTables = [
   adminAlertsStrings,
   draftStrings,
   smartDefaultsStrings,
+  fareExplainStrings,
   adminListStrings,
   statementStrings,
   evidenceTimelineStrings,
