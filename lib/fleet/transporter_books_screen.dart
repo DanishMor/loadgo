@@ -139,7 +139,7 @@ class TransporterBooksScreen extends StatelessWidget {
                         key: ValueKey('partyStatement_${p.partyId}'),
                         tooltip: tr(context, 'trpPartyStatement'),
                         icon: const Icon(Icons.ios_share_rounded),
-                        onPressed: () => showPartyStatementSheet(context, PartyStatement.of(books, p.partyId)!),
+                        onPressed: () => showPartyStatementSheet(context, PartyStatement.of(books, p.partyId)!, books: books),
                       ),
                     ]),
                   ),
@@ -152,27 +152,68 @@ class TransporterBooksScreen extends StatelessWidget {
   }
 }
 
-/// Share one party's statement as CSV or PDF.
-Future<void> showPartyStatementSheet(BuildContext context, PartyStatement statement) {
+/// Share one party's statement as CSV or PDF. With [books] the statement can
+/// be cut to one month, and a month-by-month CSV is offered (MASTER-6 Task 30).
+Future<void> showPartyStatementSheet(BuildContext context, PartyStatement statement, {TransporterBooks? books}) {
   return showModalBottomSheet<void>(
     context: context,
     showDragHandle: true,
-    builder: (c) => SafeArea(
-      child: Padding(
+    isScrollControlled: true,
+    builder: (c) => _PartyStatementSheet(statement: statement, books: books),
+  );
+}
+
+class _PartyStatementSheet extends StatefulWidget {
+  final PartyStatement statement;
+  final TransporterBooks? books;
+  const _PartyStatementSheet({required this.statement, this.books});
+
+  @override
+  State<_PartyStatementSheet> createState() => _PartyStatementSheetState();
+}
+
+class _PartyStatementSheetState extends State<_PartyStatementSheet> {
+  String? _month;
+
+  PartyStatement get _shown => _month == null || widget.books == null ? widget.statement : (PartyStatement.of(widget.books!, widget.statement.party.partyId, month: _month) ?? widget.statement);
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context;
+    final st = _shown;
+    final months = widget.books == null ? const <String>[] : PartyStatement.monthsOf(widget.books!, widget.statement.party.partyId);
+    return SafeArea(
+      child: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
         child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(trf(c, 'trpPartyStatementFor', {'party': statement.party.partyName.isEmpty ? statement.party.partyId : statement.party.partyName}), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+          Text(trf(c, 'trpPartyStatementFor', {'party': st.party.partyName.isEmpty ? st.party.partyId : st.party.partyName}), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+          if (months.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Wrap(spacing: 6, runSpacing: 4, children: [
+              ChoiceChip(key: const ValueKey('stmtMonthAll'), label: Text(tr(c, 'stmtAllMonths')), selected: _month == null, onSelected: (_) => setState(() => _month = null)),
+              for (final m in months.take(12)) ChoiceChip(key: ValueKey('stmtMonth_$m'), label: Text(m), selected: _month == m, onSelected: (_) => setState(() => _month = m)),
+            ]),
+          ],
           const SizedBox(height: 12),
-          FilledButton.icon(key: const ValueKey('partyCsv'), onPressed: () => shareCsv(statement.toCsv(), 'Statement'), icon: const Icon(Icons.table_chart_outlined), label: Text(tr(c, 'stmtCsv'))),
+          FilledButton.icon(key: const ValueKey('partyCsv'), onPressed: () => shareCsv(st.toCsv(), 'Statement'), icon: const Icon(Icons.table_chart_outlined), label: Text(tr(c, 'stmtCsv'))),
           const SizedBox(height: 8),
           OutlinedButton.icon(
             key: const ValueKey('partyPdf'),
-            onPressed: () async => Printing.sharePdf(bytes: await statement.toPdf(), filename: 'statement.pdf'),
+            onPressed: () async => Printing.sharePdf(bytes: await st.toPdf(), filename: 'statement${st.month == null ? '' : '-${st.month}'}.pdf'),
             icon: const Icon(Icons.picture_as_pdf_outlined),
             label: Text(tr(c, 'stmtPdf')),
           ),
+          if (months.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            OutlinedButton.icon(
+              key: const ValueKey('partyMonthlyCsv'),
+              onPressed: () => shareCsv(PartyStatement.monthlyCsv(widget.books!, widget.statement.party.partyId), 'Statement by month'),
+              icon: const Icon(Icons.calendar_month_outlined),
+              label: Text(tr(c, 'stmtMonthlyCsv')),
+            ),
+          ],
         ]),
       ),
-    ),
-  );
+    );
+  }
 }

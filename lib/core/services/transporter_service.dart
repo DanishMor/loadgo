@@ -190,7 +190,7 @@ class TransporterService {
     if ((await ref.get()).exists) {
       await ref.update(lines);
     } else {
-      await ref.set({'ownerId': uid, 'bookingId': booking.id, 'partyId': booking.customerId, ...lines});
+      await ref.set({'ownerId': uid, 'bookingId': booking.id, 'partyId': booking.customerId, 'createdAt': FieldValue.serverTimestamp(), ...lines});
     }
   }
 }

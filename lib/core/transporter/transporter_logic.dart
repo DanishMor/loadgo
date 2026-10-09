@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart' show Timestamp;
 import '../constants/logistics.dart';
 import '../enterprise/validators.dart';
 import '../identity/kyc_validators.dart';
@@ -213,6 +214,9 @@ class TripAccount {
   /// What the party has already paid.
   final int receivedPaise;
 
+  /// When the line was made (older lines: when it was last saved); sets its month.
+  final DateTime? at;
+
   const TripAccount({
     required this.bookingId,
     required this.partyId,
@@ -221,7 +225,11 @@ class TripAccount {
     this.driverPayPaise = 0,
     this.otherCostPaise = 0,
     this.receivedPaise = 0,
+    this.at,
   });
+
+  /// `2026-10` for the month of [at], or '' when unknown.
+  String get month => at == null ? '' : '${at!.year}-${at!.month.toString().padLeft(2, '0')}';
 
   int get marginPaise => revenuePaise - driverPayPaise - otherCostPaise;
 
@@ -236,6 +244,7 @@ class TripAccount {
         driverPayPaise: (d['driverPayPaise'] as num?)?.round() ?? 0,
         otherCostPaise: (d['otherCostPaise'] as num?)?.round() ?? 0,
         receivedPaise: (d['receivedPaise'] as num?)?.round() ?? 0,
+        at: ((d['createdAt'] ?? d['updatedAt']) as Timestamp?)?.toDate(),
       );
 
   /// Whole rupees typed by a person -> paise; null for junk or out of range.

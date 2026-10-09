@@ -5711,3 +5711,22 @@ describe('driver rejection reason and resubmit (M6-21)', () => {
     await assertFails(updateDoc(doc(as('driver1'), 'users', 'driver1'), { verificationStatus: 'pending', verified: false }));
   });
 });
+
+describe('books lines have a creation time (M6-30)', () => {
+  const LINE = (over = {}) => ({ ownerId: 'tr1', bookingId: 'b1', partyId: 'c1', partyName: 'Acme', revenuePaise: 100000, driverPayPaise: 0, otherCostPaise: 0, receivedPaise: 0, updatedAt: serverTimestamp(), ...over });
+  const seedBooking = () => seed((db) => rawSetDoc(doc(db, 'bookings', 'b1'), { fleetOwnerId: 'tr1', customerId: 'c1', status: 'delivered', driverId: 'tr1', loadId: 'l1' }));
+
+  test('a new line may carry createdAt equal to the server time; a made-up time is refused', async () => {
+    await seedBooking();
+    await assertSucceeds(rawSetDoc(doc(as('tr1'), 'transporter_accounts', 'b1'), LINE({ createdAt: serverTimestamp() })));
+    await seed((db) => rawSetDoc(doc(db, 'bookings', 'b2'), { fleetOwnerId: 'tr1', customerId: 'c1', status: 'delivered', driverId: 'tr1', loadId: 'l2' }));
+    await assertFails(rawSetDoc(doc(as('tr1'), 'transporter_accounts', 'b2'), LINE({ bookingId: 'b2', createdAt: Timestamp.fromMillis(Date.now() - 90 * 86400000) })));
+  });
+
+  test('an old line without createdAt still works, and an update cannot change createdAt', async () => {
+    await seedBooking();
+    await assertSucceeds(rawSetDoc(doc(as('tr1'), 'transporter_accounts', 'b1'), LINE()));
+    await assertSucceeds(updateDoc(doc(as('tr1'), 'transporter_accounts', 'b1'), { receivedPaise: 5000, updatedAt: serverTimestamp() }));
+    await assertFails(updateDoc(doc(as('tr1'), 'transporter_accounts', 'b1'), { createdAt: serverTimestamp(), updatedAt: serverTimestamp() }));
+  });
+});

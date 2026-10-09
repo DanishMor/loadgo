@@ -765,7 +765,8 @@ service cloud.firestore {
     match /transporter_accounts/{bookingId} {
       allow read: if signedIn() && resource.data.ownerId == request.auth.uid;
       allow create: if signedIn()
-          && request.resource.data.keys().hasOnly(['ownerId', 'bookingId', 'partyId', 'partyName', 'revenuePaise', 'driverPayPaise', 'otherCostPaise', 'receivedPaise', 'updatedAt'])
+          && request.resource.data.keys().hasOnly(['ownerId', 'bookingId', 'partyId', 'partyName', 'revenuePaise', 'driverPayPaise', 'otherCostPaise', 'receivedPaise', 'createdAt', 'updatedAt'])
+          && (!('createdAt' in request.resource.data) || request.resource.data.createdAt == request.time)
           && request.resource.data.ownerId == request.auth.uid
           && request.resource.data.bookingId == bookingId
           && get(docPath('bookings', bookingId)).data.get('fleetOwnerId', '') == request.auth.uid
