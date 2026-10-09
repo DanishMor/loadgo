@@ -8,6 +8,7 @@ import '../models/booking.dart';
 import '../services/backend.dart';
 import '../services/booking_service.dart';
 import '../services/user_service.dart';
+import '../widgets/logistics_labels.dart';
 import '../widgets/common.dart';
 import 'inspection_service.dart';
 import 'lr_model.dart';
@@ -43,6 +44,14 @@ class InspectionRequestsList extends StatelessWidget {
               padding: const EdgeInsets.only(top: 8),
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Text(trf(context, 'inRequestBody', {'name': r.driverName.isEmpty ? booking.assignedDriverName : r.driverName}), key: ValueKey('inReq_${r.driverId}')),
+                // What the owner is deciding about: the trip, and what the driver would see.
+                Text(
+                  trf(context, 'inCtxLine', {'lr': lr.lrNo, 'route': booking.route.join(' → '), 'vehicle': booking.vehicleNumber.isEmpty ? '-' : booking.vehicleNumber, 'status': bookingStatusLabel(context, booking.status)}),
+                  key: ValueKey('inCtx_${r.driverId}'),
+                  style: TextStyle(color: AppColors.muted, fontSize: 13),
+                ),
+                if (r.requestedAt != null) Text(trf(context, 'inCtxAsked', {'t': _hm(r.requestedAt!)}), style: TextStyle(color: AppColors.muted, fontSize: 13)),
+                Text(tr(context, 'inCtxSees'), key: ValueKey('inSees_${r.driverId}'), style: TextStyle(color: AppColors.faint, fontSize: 12)),
                 const SizedBox(height: 6),
                 Wrap(spacing: 8, runSpacing: 6, children: [
                   FilledButton(key: ValueKey('inApprove_${r.driverId}'), onPressed: () => _answer(context, r, true), child: Text(tr(context, 'inApprove'))),
@@ -51,6 +60,38 @@ class InspectionRequestsList extends StatelessWidget {
               ]),
             ),
         ]);
+      },
+    );
+  }
+}
+
+/// The last events of inspection mode on this LR: asked, approved, refused,
+/// allowed in advance, ended (MASTER-6 Task 32).
+class InspectionHistory extends StatelessWidget {
+  final LrPublic lr;
+  final Stream<List<InspectionLogEntry>>? log;
+  const InspectionHistory({super.key, required this.lr, this.log});
+
+  String _day(DateTime d) => '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')} ${_hm(d)}';
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<List<InspectionLogEntry>>(
+      stream: log ?? InspectionService.watchLog(lr.id),
+      builder: (context, snap) {
+        final list = snap.data ?? const [];
+        if (list.isEmpty) return const SizedBox.shrink();
+        return Padding(
+          padding: const EdgeInsets.only(top: 10),
+          child: Column(key: const ValueKey('inHistory'), crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(tr(context, 'inHistory'), style: const TextStyle(fontWeight: FontWeight.w700)),
+            for (final e in list)
+              Padding(
+                padding: const EdgeInsets.only(top: 3),
+                child: Text('${e.at == null ? '' : '${_day(e.at!)} · '}${trf(context, 'inLog_${e.kind}', {'h': e.hours ?? 0})}', key: ValueKey('inLog_${e.id}'), style: TextStyle(color: AppColors.muted, fontSize: 13)),
+              ),
+          ]),
+        );
       },
     );
   }
@@ -74,6 +115,7 @@ class InspectionOwnerPanel extends StatelessWidget {
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Text(tr(context, 'inRequestsTitle'), style: const TextStyle(fontWeight: FontWeight.w700)),
         InspectionRequestsList(booking: booking, lr: lr),
+        InspectionHistory(lr: lr),
         if (canGrant) ...[
           const SizedBox(height: 8),
           Wrap(spacing: 8, runSpacing: 8, crossAxisAlignment: WrapCrossAlignment.center, children: [

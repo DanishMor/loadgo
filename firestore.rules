@@ -2288,6 +2288,25 @@ service cloud.firestore {
         allow delete: if signedIn() && get(docPath('lrs', lrId)).data.issuerId == request.auth.uid;
       }
 
+      // Inspection log (MASTER-6 Task 32): who asked, who allowed or refused and
+      // when, for the owner's grant history. Append only. The issuer writes the
+      // answers, the trip driver writes "requested".
+      match /inspection_log/{entryId} {
+        allow read: if signedIn() && (resource.data.driverId == request.auth.uid || get(docPath('lrs', lrId)).data.issuerId == request.auth.uid);
+        allow create: if signedIn()
+            && request.resource.data.keys().hasOnly(['kind', 'driverId', 'by', 'hours', 'createdAt'])
+            && request.resource.data.by == request.auth.uid
+            && request.resource.data.driverId is string && request.resource.data.driverId.size() >= 1 && request.resource.data.driverId.size() <= 60
+            && request.resource.data.createdAt == request.time
+            && (!('hours' in request.resource.data) || (request.resource.data.hours is int && request.resource.data.hours >= 1 && request.resource.data.hours <= 72))
+            && ((request.resource.data.kind in ['approved', 'denied', 'revoked', 'allowed']
+                 && get(docPath('lrs', lrId)).data.issuerId == request.auth.uid)
+                || (request.resource.data.kind == 'requested'
+                    && request.resource.data.driverId == request.auth.uid
+                    && lrTripDriver(get(docPath('bookings', get(docPath('lrs', lrId)).data.bookingId)).data)));
+        allow update, delete: if false;
+      }
+
       match /inspection_requests/{driverId} {
         allow read: if signedIn() && (driverId == request.auth.uid || lrPrivateReader(get(docPath('lrs', lrId)).data));
         allow create: if signedIn()

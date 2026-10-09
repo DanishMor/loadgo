@@ -5754,3 +5754,40 @@ describe('LR register lists (M6-31)', () => {
     await assertFails(getDoc(doc(as('d1'), 'lrs', 'tr1_2026_1_v1', 'private', 'details')));
   });
 });
+
+describe('inspection log (M6-32)', () => {
+  const LOG = (by, over = {}) => ({ kind: 'approved', driverId: 'drvA', by, createdAt: serverTimestamp(), ...over });
+  beforeEach(async () => {
+    await seed(async (db) => {
+      await setDoc(doc(db, 'bookings', 'B1'), { customerId: 'c1', driverId: 'tr1', fleetOwnerId: 'tr1', assignedDriverId: 'drvA', status: 'in_transit', loadId: 'L1' });
+      await setDoc(doc(db, 'lrs', 'tr1_2026_1_v1'), { bookingId: 'B1', issuerId: 'tr1', issuerRole: 'transporter', customerId: 'c1', fleetOwnerId: 'tr1', lrNo: 'TR-2026-000001', seq: 1, year: 2026, version: 1, status: 'issued', pickup: 'A', drop: 'B', goods: 'x', complianceMode: 'inspection_on_request', createdAt: Timestamp.now() });
+    });
+  });
+  const col = (db) => collection(db, 'lrs', 'tr1_2026_1_v1', 'inspection_log');
+
+  test('the issuer writes answers; the trip driver writes "requested" for themselves; nobody else writes', async () => {
+    await assertSucceeds(addDoc(col(as('tr1')), LOG('tr1')));
+    await assertSucceeds(addDoc(col(as('tr1')), LOG('tr1', { kind: 'allowed', hours: 24 })));
+    await assertSucceeds(addDoc(col(as('tr1')), LOG('tr1', { kind: 'revoked' })));
+    await assertFails(addDoc(col(as('tr1')), LOG('tr1', { hours: 99 })));
+    await assertFails(addDoc(col(as('tr1')), LOG('tr1', { kind: 'granted' })));
+    await assertSucceeds(addDoc(col(as('drvA')), LOG('drvA', { kind: 'requested' })));
+    await assertFails(addDoc(col(as('drvA')), LOG('drvA', { kind: 'approved' }))); // a driver cannot approve themselves
+    await assertFails(addDoc(col(as('drvA')), LOG('drvA', { kind: 'requested', driverId: 'someoneElse' })));
+    await assertFails(addDoc(col(as('x1')), LOG('x1', { kind: 'requested', driverId: 'x1' })));
+    await assertFails(addDoc(col(as('tr1')), LOG('drvA')));
+  });
+
+  test('the issuer reads all lines, the driver only their own, others nothing; no edits or deletes', async () => {
+    await seed(async (db) => {
+      await setDoc(doc(db, 'lrs', 'tr1_2026_1_v1', 'inspection_log', 'e1'), { kind: 'requested', driverId: 'drvA', by: 'drvA', createdAt: Timestamp.now() });
+      await setDoc(doc(db, 'lrs', 'tr1_2026_1_v1', 'inspection_log', 'e2'), { kind: 'requested', driverId: 'drvB', by: 'drvB', createdAt: Timestamp.now() });
+    });
+    await assertSucceeds(getDocs(col(as('tr1'))));
+    await assertSucceeds(getDocs(query(col(as('drvA')), where('driverId', '==', 'drvA'))));
+    await assertFails(getDocs(col(as('drvA'))));
+    await assertFails(getDocs(query(col(as('x1')), where('driverId', '==', 'drvA'))));
+    await assertFails(updateDoc(doc(as('tr1'), 'lrs', 'tr1_2026_1_v1', 'inspection_log', 'e1'), { kind: 'approved' }));
+    await assertFails(deleteDoc(doc(as('tr1'), 'lrs', 'tr1_2026_1_v1', 'inspection_log', 'e1')));
+  });
+});

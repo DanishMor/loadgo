@@ -36,6 +36,26 @@ class InspectionGrant {
       );
 }
 
+/// One line of the inspection history of an LR (`lrs/{id}/inspection_log`).
+class InspectionLogEntry {
+  final String id;
+
+  /// requested, approved, denied, allowed (in advance) or revoked.
+  final String kind;
+  final String driverId;
+  final int? hours;
+  final DateTime? at;
+  const InspectionLogEntry({required this.id, required this.kind, required this.driverId, this.hours, this.at});
+
+  factory InspectionLogEntry.fromMap(String id, Map<String, dynamic> d) => InspectionLogEntry(
+        id: id,
+        kind: d['kind'] as String? ?? '',
+        driverId: d['driverId'] as String? ?? '',
+        hours: (d['hours'] as num?)?.toInt(),
+        at: (d['createdAt'] as Timestamp?)?.toDate(),
+      );
+}
+
 /// `lrs/{id}/inspection_requests/{driverId}`.
 class InspectionRequest {
   final String driverId;
@@ -101,6 +121,14 @@ class InspectionService {
   static Stream<InspectionRequest?> watchRequest(String lrId, String driverId) =>
       _req(lrId, driverId).snapshots().map((s) => s.exists ? InspectionRequest.fromDoc(s.id, s.data()!) : null);
 
+  static CollectionReference<Map<String, dynamic>> _log(String lrId) => _db.collection('lrs').doc(lrId).collection('inspection_log');
+
+  static void _logEntry(WriteBatch batch, String lrId, String kind, String driverId, {int? hours}) =>
+      batch.set(_log(lrId).doc(), {'kind': kind, 'driverId': driverId, 'by': Backend.requireUid(), 'hours': ?hours, 'createdAt': FieldValue.serverTimestamp()});
+
+  /// The last [limit] events of this LR's inspection mode (newest first).
+  static Stream<List<InspectionLogEntry>> watchLog(String lrId, {int limit = 15}) => _log(lrId).orderBy('createdAt', descending: true).limit(limit).snapshots().map((s) => [for (final d in s.docs) InspectionLogEntry.fromMap(d.id, d.data())]);
+
   static Stream<List<InspectionRequest>> watchPending(String lrId) =>
       _db.collection('lrs').doc(lrId).collection('inspection_requests').where('status', isEqualTo: 'pending').snapshots().map((s) => [for (final d in s.docs) InspectionRequest.fromDoc(d.id, d.data())]);
 
@@ -119,6 +147,7 @@ class InspectionService {
     } else {
       batch.set(ref, data);
     }
+    _logEntry(batch, lr.id, 'requested', uid);
     AuditService.inBatch(batch, AuditType.inspectionRequest, bookingId: lr.bookingId, targetId: lr.issuerId, data: {'lrId': lr.id, 'lrNo': lr.lrNo});
     NotificationService.addInBatch(batch,
         userId: lr.issuerId, type: NotificationType.inspectionRequest, message: '${driverName.isEmpty ? b.assignedDriverName : driverName}: ${lr.lrNo}', relatedId: lr.bookingId);
@@ -137,6 +166,7 @@ class InspectionService {
       batch.set(_grant(lr.id, driverId), _grantMap(uid, driverId, 'approved', end, token));
     }
     batch.update(_req(lr.id, driverId), {'status': approve ? 'approved' : 'denied', 'decidedAt': FieldValue.serverTimestamp()});
+    _logEntry(batch, lr.id, approve ? 'approved' : 'denied', driverId, hours: approve ? approvalDuration.inHours : null);
     AuditService.inBatch(batch, approve ? AuditType.inspectionApprove : AuditType.inspectionDeny,
         bookingId: lr.bookingId, targetId: driverId, data: {'lrId': lr.id, 'lrNo': lr.lrNo, if (approve) 'expiresAt': end.toIso8601String()});
     NotificationService.addInBatch(batch,
@@ -159,6 +189,7 @@ class InspectionService {
     final token = await LrService.verifyToken(b, lr);
     final batch = _db.batch();
     batch.set(_grant(lr.id, driver), _grantMap(uid, driver, 'preapproved', end, token));
+    _logEntry(batch, lr.id, 'allowed', driver, hours: hours);
     AuditService.inBatch(batch, AuditType.inspectionApprove,
         bookingId: lr.bookingId, targetId: driver, data: {'lrId': lr.id, 'lrNo': lr.lrNo, 'advance': true, 'hours': hours, 'expiresAt': end.toIso8601String()});
     NotificationService.addInBatch(batch, userId: driver, type: NotificationType.inspectionApproved, message: lr.lrNo, relatedId: lr.bookingId);
@@ -172,6 +203,7 @@ class InspectionService {
     if (lr.issuerId != uid) throw InspectionException('not_allowed');
     final batch = _db.batch();
     batch.delete(_grant(lr.id, driverId));
+    _logEntry(batch, lr.id, 'revoked', driverId);
     AuditService.inBatch(batch, AuditType.inspectionDeny, bookingId: lr.bookingId, targetId: driverId, data: {'lrId': lr.id, 'revoked': true});
     await batch.commit();
   }
