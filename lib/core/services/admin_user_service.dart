@@ -27,13 +27,27 @@ class UserAction {
   static const bulkHold = 'bulk_hold';
   static const bulkUnhold = 'bulk_unhold';
   static const bulkStatus = 'bulk_status';
+  static const bulkUndo = 'bulk_undo';
 }
 
 /// What a bulk change did.
 class BulkResult {
   final int changed;
   final int skipped;
-  const BulkResult(this.changed, this.skipped);
+
+  /// What each changed person had before and was given, so the change can be
+  /// undone within [AdminUserService.undoWindow].
+  final List<BulkUndoItem> undo;
+  const BulkResult(this.changed, this.skipped, [this.undo = const []]);
+}
+
+class BulkUndoItem {
+  final String uid;
+  final String prevTier;
+  final String prevReason;
+  final String setTier;
+  final String setReason;
+  const BulkUndoItem({required this.uid, required this.prevTier, required this.prevReason, required this.setTier, required this.setReason});
 }
 
 class ReviewKind {
@@ -114,15 +128,48 @@ class AdminUserService {
         if (e.key != me && e.value != RiskTier.banned && e.value != tier && (action != UserAction.bulkUnhold || e.value == RiskTier.restricted)) e.key: e.value,
     };
     final uids = targets.keys.toList();
+    final undo = <BulkUndoItem>[];
     for (var i = 0; i < uids.length; i += 100) {
+      final part = uids.skip(i).take(100).toList();
+      final before = await Future.wait([for (final uid in part) _user(uid).get()]);
       final batch = Backend.db.batch();
-      for (final uid in uids.skip(i).take(100)) {
+      for (var k = 0; k < part.length; k++) {
+        final uid = part[k];
+        undo.add(BulkUndoItem(uid: uid, prevTier: targets[uid]!, prevReason: '${before[k].data()?['riskReason'] ?? ''}', setTier: tier, setReason: r));
         batch.update(_user(uid), {'riskTier': tier, 'riskReason': r, 'riskUpdatedAt': FieldValue.serverTimestamp()});
         AuditService.inBatch(batch, AuditType.userAction, targetId: uid, data: {'action': action, 'reason': r, 'from': targets[uid], 'to': tier, 'bulk': true});
       }
       await batch.commit();
     }
-    return BulkResult(uids.length, current.length - uids.length);
+    return BulkResult(uids.length, current.length - uids.length, undo);
+  }
+
+  /// How long the "Undo" stays on screen after a bulk change.
+  static const undoWindow = Duration(seconds: 30);
+
+  /// Puts back what [result] changed, for the people who still have exactly
+  /// what the bulk change set (someone changed them since: left alone).
+  /// Returns how many were put back. One `bulk_undo` audit row per person.
+  static Future<int> undoBulk(BulkResult result) async {
+    var back = 0;
+    final items = result.undo;
+    for (var i = 0; i < items.length; i += 100) {
+      final part = items.skip(i).take(100).toList();
+      final now = await Future.wait([for (final it in part) _user(it.uid).get()]);
+      final batch = Backend.db.batch();
+      var inBatch = 0;
+      for (var k = 0; k < part.length; k++) {
+        final it = part[k];
+        final d = now[k].data();
+        if (d == null || (d['riskTier'] ?? RiskTier.normal) != it.setTier || '${d['riskReason'] ?? ''}' != it.setReason) continue;
+        batch.update(_user(it.uid), {'riskTier': it.prevTier, 'riskReason': it.prevReason, 'riskUpdatedAt': FieldValue.serverTimestamp()});
+        AuditService.inBatch(batch, AuditType.userAction, targetId: it.uid, data: {'action': UserAction.bulkUndo, 'from': it.setTier, 'to': it.prevTier, 'bulk': true});
+        inBatch++;
+      }
+      if (inBatch > 0) await batch.commit();
+      back += inBatch;
+    }
+    return back;
   }
 
   /// Sends a driver back to "pending": they cannot take loads until an admin

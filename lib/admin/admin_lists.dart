@@ -255,7 +255,26 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
     try {
       final r = await AdminUserService.bulkSetTier(current, tier, action: action, reason: ask.reason);
       if (!mounted) return;
-      showSnack(context, trf(context, 'bulkDone', {'n': r.changed, 'm': r.skipped}));
+      final messenger = ScaffoldMessenger.of(context);
+      final undone = tr(context, 'bulkUndone');
+      messenger.hideCurrentSnackBar();
+      messenger.showSnackBar(SnackBar(
+        duration: AdminUserService.undoWindow,
+        content: Text(trf(context, 'bulkDone', {'n': r.changed, 'm': r.skipped})),
+        action: r.undo.isEmpty
+            ? null
+            : SnackBarAction(
+                label: tr(context, 'bulkUndo'),
+                onPressed: () async {
+                  final n = await AdminUserService.undoBulk(r);
+                  if (mounted) {
+                    messenger.hideCurrentSnackBar();
+                    messenger.showSnackBar(SnackBar(content: Text('$undone: $n')));
+                    setState(() => _users = AdminConsoleService.users());
+                  }
+                },
+              ),
+      ));
       setState(() {
         _selected.clear();
         _users = AdminConsoleService.users();

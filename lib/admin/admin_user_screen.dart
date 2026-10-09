@@ -113,6 +113,13 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
     await _run(() => AdminUserService.addNote(widget.uid, text));
   }
 
+  /// The translated action, or the plain action name for one without words.
+  String _actionLabel(String action) {
+    final key = 'auAction_$action';
+    final t = tr(context, key);
+    return t == key ? action.replaceAll('_', ' ') : t;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -187,7 +194,7 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
                           key: ValueKey('hist_${e.action}'),
                           contentPadding: EdgeInsets.zero,
                           dense: true,
-                          title: Text(tr(context, 'auAction_${e.action}')),
+                          title: Text(_actionLabel(e.action)),
                           subtitle: Text([if (e.reason.isNotEmpty) e.reason, e.actorId, if (e.at != null) formatDateTime(e.at!)].join(' · ')),
                         ),
                     ]),
