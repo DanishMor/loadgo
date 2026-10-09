@@ -1,3 +1,4 @@
+import '../onboarding/driver_onboarding.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'audit_service.dart';
@@ -60,8 +61,11 @@ class AdminService {
         .map((s) => s.docs.map(DriverVerification.fromDoc).toList()..sort((a, b) => a.name.compareTo(b.name)));
   }
 
-  static Future<void> setStatus(String uid, String status) {
+  static Future<void> setStatus(String uid, String status, {String? reason, String note = ''}) {
     assert(const [pending, approved, rejected].contains(status));
+    assert(reason == null || (status == rejected && RejectReason.all.contains(reason)));
+    final n = note.trim();
+    assert(n.length <= RejectReason.maxNote);
     final batch = Backend.db.batch();
     batch.update(Backend.db.collection('users').doc(uid), {
       'verificationStatus': status,
@@ -72,10 +76,12 @@ class AdminService {
         'by': Backend.requireUid(),
         'status': status,
         'at': FieldValue.serverTimestamp(),
+        'reason': ?reason,
+        if (reason != null && n.isNotEmpty) 'note': n,
       },
       'updatedAt': FieldValue.serverTimestamp(),
     });
-    AuditService.inBatch(batch, AuditType.verification, targetId: uid, data: {'status': status});
+    AuditService.inBatch(batch, AuditType.verification, targetId: uid, data: {'status': status, 'reason': ?reason});
     return batch.commit();
   }
 }

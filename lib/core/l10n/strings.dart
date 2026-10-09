@@ -74,6 +74,7 @@ import 'fare_explain_strings.dart';
 import 'delay_strings.dart';
 import 'address_book_strings.dart';
 import 'delivered_strings.dart';
+import 'onboarding_strings.dart';
 import 'admin_list_strings.dart';
 import 'statement_strings.dart';
 import 'evidence_timeline_strings.dart';
@@ -162,6 +163,7 @@ const List<Map<String, List<String>>> stringTables = [
   delayStrings,
   addressBookStrings,
   deliveredStrings,
+  onboardingStrings,
   adminListStrings,
   statementStrings,
   evidenceTimelineStrings,

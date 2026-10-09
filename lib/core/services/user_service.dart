@@ -174,7 +174,10 @@ class UserService {
   static Future<void> saveDriverKyc(DriverKyc kyc) async {
     final uid = Backend.requireUid();
     final ref = _db.collection('users').doc(uid);
-    final before = ((await ref.get()).data()?['driverKyc'] as Map?) ?? const {};
+    final snap = await ref.get();
+    final before = (snap.data()?['driverKyc'] as Map?) ?? const {};
+    // New documents after a rejection send the driver back to review (Task 21).
+    final resubmit = snap.data()?['verificationStatus'] == 'rejected';
 
     // First save and later edits go the same way: the new numbers are
     // claimed and the ones they replace are released in one batch.
@@ -201,6 +204,7 @@ class UserService {
         'kycComplete': true,
         'identityHashes': hashes,
         if (before.isNotEmpty) 'kycEditedAt': FieldValue.serverTimestamp(),
+        if (resubmit) ...{'verificationStatus': 'pending', 'verified': false},
         'updatedAt': FieldValue.serverTimestamp(),
       },
       SetOptions(merge: true),

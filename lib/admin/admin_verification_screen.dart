@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../core/l10n/l10n.dart';
+import '../core/onboarding/driver_onboarding.dart';
 import '../core/services/admin_service.dart';
 import '../core/widgets/admin_phone.dart';
 import '../core/widgets/common.dart';
@@ -28,8 +29,16 @@ class _AdminVerificationScreenState extends State<AdminVerificationScreen> {
   };
 
   Future<void> _set(DriverVerification d, String status) async {
+    String? reason;
+    var note = '';
+    if (status == AdminService.rejected) {
+      final r = await showDialog<({String reason, String note})>(context: context, builder: (_) => const _RejectDialog());
+      if (r == null || !mounted) return;
+      reason = r.reason;
+      note = r.note;
+    }
     try {
-      await AdminService.setStatus(d.uid, status);
+      await AdminService.setStatus(d.uid, status, reason: reason, note: note);
       if (mounted) showSnack(context, tr(context, 'statusUpdated'));
     } catch (_) {
       if (mounted) showSnack(context, tr(context, 'somethingWrong'));
@@ -173,6 +182,55 @@ class _DriverCardState extends State<_DriverCard> {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Asks why a driver is not approved: a reason and an optional short note the
+/// driver will see (MASTER-6 Task 21).
+class _RejectDialog extends StatefulWidget {
+  const _RejectDialog();
+
+  @override
+  State<_RejectDialog> createState() => _RejectDialogState();
+}
+
+class _RejectDialogState extends State<_RejectDialog> {
+  String _reason = RejectReason.docsUnclear;
+  final _note = TextEditingController();
+
+  @override
+  void dispose() {
+    _note.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text(tr(context, 'rejectWhy')),
+      content: SingleChildScrollView(
+        child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+          for (final r in RejectReason.all)
+            InkWell(
+              key: ValueKey('reject_$r'),
+              onTap: () => setState(() => _reason = r),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Row(children: [
+                  Icon(_reason == r ? Icons.radio_button_checked_rounded : Icons.radio_button_off_rounded, color: AppColors.primary),
+                  const SizedBox(width: 10),
+                  Expanded(child: Text(tr(context, RejectReason.labelKey(r)))),
+                ]),
+              ),
+            ),
+          TextField(key: const ValueKey('rejectNote'), controller: _note, maxLength: RejectReason.maxNote, decoration: InputDecoration(labelText: tr(context, 'rejectNoteHint'))),
+        ]),
+      ),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(context), child: Text(tr(context, 'cancel'))),
+        FilledButton(key: const ValueKey('rejectConfirm'), onPressed: () => Navigator.pop(context, (reason: _reason, note: _note.text)), child: Text(tr(context, 'reject'))),
+      ],
     );
   }
 }

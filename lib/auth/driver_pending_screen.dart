@@ -4,6 +4,7 @@ import '../core/services/user_service.dart';
 import '../core/l10n/l10n.dart';
 import '../driver/driver_home_screen.dart';
 import 'start_resolvers.dart';
+import 'driver_onboarding_card.dart';
 import 'role_selection_screen.dart';
 import '../core/widgets/common.dart';
 
@@ -83,6 +84,8 @@ class _DriverPendingScreenState extends State<DriverPendingScreen> {
                         Text(tr(context, 'pendingTitle'), textAlign: TextAlign.center, style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: AppColors.title)),
                         const SizedBox(height: 10),
                         Text(tr(context, 'pendingSub'), textAlign: TextAlign.center, style: TextStyle(fontSize: 15, height: 1.5, color: AppColors.muted)),
+                        const SizedBox(height: 20),
+                        DriverOnboardingCard(onResubmitted: _checkStatus),
                         ],
                       ),
                     ),

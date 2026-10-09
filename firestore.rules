@@ -68,7 +68,14 @@ service cloud.firestore {
       return adminIn(['super', 'verifier'])
           && changedKeys().hasOnly(['verified', 'verificationStatus', 'verificationMeta', 'updatedAt'])
           && (!('verificationMeta' in request.resource.data)
-              || (request.resource.data.verificationMeta.keys().hasOnly(['source', 'by', 'status', 'at'])
+              || (request.resource.data.verificationMeta.keys().hasOnly(['source', 'by', 'status', 'at', 'reason', 'note'])
+                  && (!('reason' in request.resource.data.verificationMeta)
+                      || (request.resource.data.verificationMeta.status == 'rejected'
+                          && request.resource.data.verificationMeta.reason in ['docs_unclear', 'name_mismatch', 'licence_expired', 'rc_mismatch', 'other']))
+                  && (!('note' in request.resource.data.verificationMeta)
+                      || ('reason' in request.resource.data.verificationMeta
+                          && request.resource.data.verificationMeta.note is string
+                          && request.resource.data.verificationMeta.note.size() <= 120))
                   && request.resource.data.verificationMeta.source == 'manual_review'
                   && request.resource.data.verificationMeta.by == request.auth.uid
                   && request.resource.data.verificationMeta.status == request.resource.data.verificationStatus
@@ -373,7 +380,11 @@ service cloud.firestore {
           && ownerRiskFieldsUntouched() && chatFieldsOk()
           && (!changedKeys().hasAny(['verified', 'verificationStatus'])
               || (resource.data.get('verificationStatus', null) == null
-                  && verificationInitOk(request.resource.data))));
+                  && verificationInitOk(request.resource.data))
+              // New documents after a rejection put the driver back in review (MASTER-6 Task 21).
+              || (resource.data.get('verificationStatus', null) == 'rejected'
+                  && request.resource.data.verificationStatus == 'pending'
+                  && request.resource.data.verified == false)));
       // Account deletion from the app. Restricted, suspended and banned
       // accounts go through support so a ban cannot be dodged.
       // TODO(functions): do the whole deletion with the Admin SDK.

@@ -5671,3 +5671,43 @@ describe('address book billing and favourite kinds (M6-19)', () => {
     await assertFails(rawSetDoc(doc(as('c1'), 'users', 'c1', 'favourite_drivers', 'o3'), F({ kind: 'admin' })));
   });
 });
+
+describe('driver rejection reason and resubmit (M6-21)', () => {
+  const staff = (uid) => env.authenticatedContext(uid).firestore();
+  const meta = (status, extra = {}) => ({ source: 'manual_review', by: 'ver1', status, at: serverTimestamp(), ...extra });
+  const decide = (db, status, extra) => updateDoc(doc(db, 'users', 'driver1'), { verified: status === 'approved', verificationStatus: status, verificationMeta: meta(status, extra), updatedAt: serverTimestamp() });
+
+  beforeEach(async () => {
+    await seed(async (db) => {
+      await setDoc(doc(db, 'admins', 'ver1'), { role: 'verifier' });
+      await setDoc(doc(db, 'users', 'driver1'), { role: 'driver', selectedRole: 'driver', verificationStatus: 'pending', verified: false });
+    });
+  });
+
+  test('a rejection may carry one of the five reasons and a short note; nothing else', async () => {
+    await assertSucceeds(decide(staff('ver1'), 'rejected', { reason: 'licence_expired', note: 'Expired in 2023' }));
+    await assertSucceeds(decide(staff('ver1'), 'rejected', { reason: 'other' }));
+    await assertFails(decide(staff('ver1'), 'rejected', { reason: 'because' }));
+    await assertFails(decide(staff('ver1'), 'rejected', { reason: 'other', note: 'x'.repeat(121) }));
+    await assertFails(decide(staff('ver1'), 'rejected', { note: 'a note without a reason' }));
+    await assertFails(decide(staff('ver1'), 'approved', { reason: 'other' })); // a reason belongs to a rejection
+    await assertFails(decide(staff('ver1'), 'rejected', { reason: 'other', extra: 1 }));
+    await assertSucceeds(decide(staff('ver1'), 'approved'));
+  });
+
+  test('after a rejection the driver may send documents again, which puts them back to pending', async () => {
+    await seed((db) => updateDoc(doc(db, 'users', 'driver1'), { verificationStatus: 'rejected', verified: false }));
+    const KYC = { dlNumber: 'MH1220190001234', dlExpiry: Timestamp.fromMillis(Date.now() + 5 * 365 * 86400000), rcNumber: 'MH12AB1234', aadhaarLast4: '1234', pan: 'ABCDE1234F' };
+    await assertSucceeds(updateDoc(doc(as('driver1'), 'users', 'driver1'), { driverKyc: KYC, kycComplete: true, kycEditedAt: serverTimestamp(), verificationStatus: 'pending', verified: false, updatedAt: serverTimestamp() }));
+  });
+
+  test('a driver cannot approve themselves or leave pending any other way', async () => {
+    await seed((db) => updateDoc(doc(db, 'users', 'driver1'), { verificationStatus: 'rejected', verified: false }));
+    await assertFails(updateDoc(doc(as('driver1'), 'users', 'driver1'), { verificationStatus: 'approved', verified: true }));
+    await assertFails(updateDoc(doc(as('driver1'), 'users', 'driver1'), { verificationStatus: 'pending', verified: true }));
+    await seed((db) => updateDoc(doc(db, 'users', 'driver1'), { verificationStatus: 'pending', verified: false }));
+    await assertFails(updateDoc(doc(as('driver1'), 'users', 'driver1'), { verificationStatus: 'approved', verified: true }));
+    await seed((db) => updateDoc(doc(db, 'users', 'driver1'), { verificationStatus: 'approved', verified: true }));
+    await assertFails(updateDoc(doc(as('driver1'), 'users', 'driver1'), { verificationStatus: 'pending', verified: false }));
+  });
+});
