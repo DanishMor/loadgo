@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../analytics/unit_economics.dart';
 import 'server_clock.dart';
+import '../admin/admin_alerts.dart';
 import '../admin/admin_search.dart';
 import '../admin/config_schema.dart';
 import '../admin/dispatch.dart';
@@ -648,6 +649,36 @@ class AdminConsoleService {
     final name = '${m['driverName'] ?? m['name'] ?? ''}';
     return AdminHit(kind: AdminLookup.name, id: id, title: name.isEmpty ? id : name, subtitle: '${m['role'] ?? ''}', uid: id);
   }
+
+  /// Counts for the alerts center: aggregate reads, the newest 200 risk signals
+  /// and up to 300 vehicles (for papers running out in the next 14 days).
+  static Future<List<AdminAlert>> alerts({String? role}) => withRetry(() async {
+        final now = ServerClock.now();
+        final r = await Future.wait([
+          _count(_db.collection('sos_alerts').where('status', isEqualTo: 'open')),
+          _count(_db.collection('fraud_cases').where('status', whereIn: ['open', 'investigating'])),
+          _count(_db.collection('users').where('chatStrikes', isGreaterThanOrEqualTo: AdminAlerts.strikeAlertFrom)),
+          _count(_db.collection('users').where('riskTier', whereIn: ['restricted', 'suspended'])),
+          _count(_db.collection('deletion_requests').where('status', isEqualTo: 'pending')),
+        ]);
+        final signals = await _db.collection('risk_signals').orderBy('createdAt', descending: true).limit(200).get();
+        final vehicles = await _db.collection('vehicles').limit(300).get();
+        final expiries = <DateTime>[
+          for (final d in vehicles.docs)
+            for (final e in Vehicle.fromDoc(d).docs.values)
+              if (e.expiry != null) e.expiry!,
+        ];
+        return AdminAlerts.build(
+          role: role ?? await staffRole(),
+          openSos: r[0],
+          openFraudCases: r[1],
+          strikeUsers: r[2],
+          heldUsers: r[3],
+          pendingDeletions: r[4],
+          unreviewedSignals: signals.docs.where((d) => d.data()['reviewed'] != true).length,
+          docs: AdminAlerts.busiestExpiryDay(expiries, now),
+        );
+      });
 
   static Future<HealthCounts> health() => withRetry(_health);
 

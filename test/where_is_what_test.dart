@@ -57,6 +57,7 @@ void main() {
       'adminSurveys': 'Use-again survey',
       'adminPayAging': 'Payment aging',
       'adminSearch': 'Search everything',
+      'adminAlerts': 'Alerts',
       'adminPilotControl': 'Pilot control room',
       'flaggedUsers': 'Flagged users',
       'adminDeletionRequests': 'Deletion requests',
