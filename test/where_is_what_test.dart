@@ -53,6 +53,7 @@ void main() {
       'adminWaitlist': 'Waitlist',
       'adminDispatch': 'Manual dispatch',
       'adminPilotReport': 'Pilot report',
+      'adminCohorts': 'Pilot cohorts',
       'adminPilotControl': 'Pilot control room',
       'flaggedUsers': 'Flagged users',
       'adminDeletionRequests': 'Deletion requests',

@@ -6,6 +6,7 @@ import '../analytics/unit_economics.dart';
 import 'server_clock.dart';
 import '../admin/dispatch.dart';
 import '../admin/pilot_control.dart';
+import '../admin/pilot_cohorts.dart';
 import '../admin/pilot_report.dart';
 import '../admin/pilot_funnel.dart';
 import '../matching/supply_demand.dart';
@@ -502,6 +503,23 @@ class AdminConsoleService {
           cancelled: bookings.docs.where((d) => d.data()['status'] == BookingStatus.cancelled).length,
           sos: r[2],
           tickets: r[3],
+        );
+      });
+
+  /// Weekly load cohorts from the newest 500 loads, 1,000 offers and 1,000
+  /// bookings (about 2,500 reads, once per press).
+  static Future<List<CohortRow>> pilotCohorts() => withRetry(() async {
+        Future<QuerySnapshot<Map<String, dynamic>>> newest(String c, int n) => _db.collection(c).orderBy('createdAt', descending: true).limit(n).get();
+        final r = await Future.wait([newest('loads', 500), newest('offers', 1000), newest('bookings', 1000)]);
+        DateTime? at(Object? v) => v is Timestamp ? v.toDate() : null;
+        return PilotCohorts.compute(
+          [for (final d in r[0].docs) if (at(d.data()['createdAt']) != null) CohortLoad(d.id, '${d.data()['shipperId'] ?? ''}', at(d.data()['createdAt'])!)],
+          [for (final d in r[1].docs) if (at(d.data()['createdAt']) != null) CohortOffer('${d.data()['loadId'] ?? ''}', at(d.data()['createdAt'])!)],
+          [
+            for (final d in r[2].docs)
+              if (at(d.data()['createdAt']) != null)
+                CohortBooking('${d.data()['loadId'] ?? ''}', at(d.data()['createdAt'])!, '${d.data()['status'] ?? ''}', (d.data()['cancellation'] is Map ? (d.data()['cancellation'] as Map)['reason'] : null) as String?),
+          ],
         );
       });
 

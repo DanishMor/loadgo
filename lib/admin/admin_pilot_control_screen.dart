@@ -52,27 +52,27 @@ class _AdminPilotControlScreenState extends State<AdminPilotControlScreen> {
         future: _data,
         builder: (context, snap) {
           if (snap.hasError) return ErrorState(error: snap.error, onRetry: _refresh);
-          final c = snap.data;
-          if (c == null) return const Center(child: CircularProgressIndicator());
+          final pc = snap.data;
+          if (pc == null) return const Center(child: CircularProgressIndicator());
           return ListView(padding: const EdgeInsets.all(16), children: [
             AppCard(
               key: const ValueKey('pcBanner'),
-              child: Text(tr(context, c.needsAttention ? 'pcAttention' : 'pcAllQuiet'), style: TextStyle(fontWeight: FontWeight.w800, color: c.needsAttention ? AppColors.warning : AppColors.success)),
+              child: Text(tr(context, pc.needsAttention ? 'pcAttention' : 'pcAllQuiet'), style: TextStyle(fontWeight: FontWeight.w800, color: pc.needsAttention ? AppColors.warning : AppColors.success)),
             ),
             const SizedBox(height: 8),
-            _tile('sos', 'pcOpenSos', c.openSos, Icons.sos_rounded, alert: true),
+            _tile('sos', 'pcOpenSos', pc.openSos, Icons.sos_rounded, alert: true),
             const SizedBox(height: 8),
-            _tile('unfilled', 'pcUnfilled', c.unfilledLoads, Icons.hourglass_empty_rounded, alert: true),
+            _tile('unfilled', 'pcUnfilled', pc.unfilledLoads, Icons.hourglass_empty_rounded, alert: true),
             const SizedBox(height: 8),
-            _tile('open', 'pcOpenLoads', c.openLoads, Icons.inventory_2_outlined),
+            _tile('open', 'pcOpenLoads', pc.openLoads, Icons.inventory_2_outlined),
             const SizedBox(height: 8),
-            _tile('trips', 'pcRunningTrips', c.runningTrips, Icons.local_shipping_outlined),
+            _tile('trips', 'pcRunningTrips', pc.runningTrips, Icons.local_shipping_outlined),
             const SizedBox(height: 8),
-            _tile('drivers', 'pcDriversSharing', c.driversSharing, Icons.my_location_rounded),
+            _tile('drivers', 'pcDriversSharing', pc.driversSharing, Icons.my_location_rounded),
             const SizedBox(height: 8),
-            _tile('signups', 'pcSignupsToday', c.signupsToday, Icons.person_add_alt_1_outlined),
+            _tile('signups', 'pcSignupsToday', pc.signupsToday, Icons.person_add_alt_1_outlined),
             const SizedBox(height: 8),
-            _tile('tickets', 'pcOpenTickets', c.openTickets, Icons.support_agent_rounded),
+            _tile('tickets', 'pcOpenTickets', pc.openTickets, Icons.support_agent_rounded),
             const SizedBox(height: 8),
             Text(tr(context, 'pcNote'), style: TextStyle(color: AppColors.faint, fontSize: 12)),
           ]);
