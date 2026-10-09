@@ -130,6 +130,7 @@ Admin Panel: **Profile > Admin** (only for accounts in `admins/{uid}`). The pane
 | Health | app health | super, ops |
 | Supply and demand, Unit economics | numbers | super (supply and demand also ops) |
 | Pilot control room | today's sign-ups, drivers sharing location, open / unfilled loads, running trips, open SOS and tickets | super, ops, support |
+| Strike appeals | a person's reason for asking us to look at a chat strike again; take one strike off (and lift the suspension if the lower count no longer needs it) or keep it, with a note | super, support, ops |
 | Alerts | what needs a person now, most urgent first, only what your role can work on: open SOS, fraud cases, unreviewed risk signals, people with 3+ chat strikes, papers running out together, holds, deletion requests | all staff |
 | Search everything | one box for a name, phone, vehicle number (verifiers, ops, support, super), booking id or LR number; phones are matched but never shown | all staff |
 | Payment aging | delivered trips whose payment record is not done, by age (who is slow: customer or driver) with a Remind button, one per 6 hours | super, ops, support |

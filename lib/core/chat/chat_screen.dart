@@ -14,6 +14,7 @@ import '../comm/chat_strikes.dart';
 import '../services/comm_guard.dart';
 import '../services/server_clock.dart';
 import 'chat_helpers.dart';
+import 'strike_appeal_screen.dart';
 
 /// "Chat" button with an unread badge for a booking (both roles).
 class BookingChatButton extends StatelessWidget {
@@ -220,12 +221,14 @@ class _ChatScreenState extends State<ChatScreen> {
               return PopupMenuButton<String>(
                 key: const ValueKey('chatMenu'),
                 onSelected: (v) async {
+                  if (v == 'appeal') await Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const StrikeAppealScreen()));
                   if (v == 'report') await _report();
                   if (v == 'block') await ChatService.block(_other);
                   if (v == 'unblock') await ChatService.unblock(_other);
                 },
                 itemBuilder: (c) => [
                   PopupMenuItem(value: 'report', child: Text(tr(c, 'reportUser'))),
+                  PopupMenuItem(key: const ValueKey('chatAppeal'), value: 'appeal', child: Text(tr(c, 'apTitle'))),
                   PopupMenuItem(value: blocked ? 'unblock' : 'block', child: Text(tr(c, blocked ? 'unblockUser' : 'blockUser'))),
                 ],
               );

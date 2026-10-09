@@ -5813,3 +5813,51 @@ describe('chat read marks are visible to both parties (M6-33)', () => {
     await assertFails(rawSetDoc(doc(as('x1'), 'bookings', 'B1', 'chat_reads', 'x1'), { lastReadAt: serverTimestamp() }));
   });
 });
+
+describe('strike appeals (M6-34)', () => {
+  const APPEAL = (over = {}) => ({ userId: 'u1', violationId: 'u1_1', text: 'It was my order number, not a phone', status: 'pending', createdAt: serverTimestamp(), ...over });
+  beforeEach(async () => {
+    await seed(async (db) => {
+      await setDoc(doc(db, 'admins', 'sup1'), { role: 'support' });
+      await setDoc(doc(db, 'admins', 'ver1'), { role: 'verifier' });
+      await setDoc(doc(db, 'violations', 'u1_1'), { userId: 'u1', bookingId: 'b1', kind: 'phone', excerpt: 'call', createdAt: Timestamp.now() });
+      await setDoc(doc(db, 'violations', 'u1_0'), { userId: 'u1', bookingId: 'b1', kind: 'phone', excerpt: 'old', createdAt: Timestamp.fromMillis(Date.now() - 20 * 86400000) });
+      await setDoc(doc(db, 'violations', 'u2_1'), { userId: 'u2', bookingId: 'b2', kind: 'phone', excerpt: 'other', createdAt: Timestamp.now() });
+    });
+  });
+
+  test('a person appeals their own recent strike once, with 10 to 300 characters', async () => {
+    await assertSucceeds(rawSetDoc(doc(as('u1'), 'strike_appeals', 'u1_1'), APPEAL()));
+    await assertFails(rawSetDoc(doc(as('u1'), 'strike_appeals', 'u1_1'), APPEAL({ text: 'again, a second time' }))); // exists: a create is refused
+    await assertFails(rawSetDoc(doc(as('u1'), 'strike_appeals', 'u1_0'), APPEAL({ violationId: 'u1_0' }))); // older than 14 days
+    await assertFails(rawSetDoc(doc(as('u1'), 'strike_appeals', 'u2_1'), APPEAL({ violationId: 'u2_1' }))); // somebody else's strike
+    await assertFails(rawSetDoc(doc(as('u2'), 'strike_appeals', 'u1_1'), APPEAL({ userId: 'u2' })));
+  });
+
+  test('bad shapes are refused', async () => {
+    await assertFails(rawSetDoc(doc(as('u1'), 'strike_appeals', 'u1_1'), APPEAL({ text: 'short' })));
+    await assertFails(rawSetDoc(doc(as('u1'), 'strike_appeals', 'u1_1'), APPEAL({ text: 'x'.repeat(301) })));
+    await assertFails(rawSetDoc(doc(as('u1'), 'strike_appeals', 'u1_1'), APPEAL({ status: 'granted' })));
+    await assertFails(rawSetDoc(doc(as('u1'), 'strike_appeals', 'u1_1'), APPEAL({ extra: 1 })));
+  });
+
+  test('support and ops decide once with their own id; a verifier, the person and strangers cannot', async () => {
+    await seed((db) => setDoc(doc(db, 'strike_appeals', 'u1_1'), { userId: 'u1', violationId: 'u1_1', text: 'It was my order number', status: 'pending', createdAt: Timestamp.now() }));
+    const decide = (db, status = 'granted', extra = {}) => updateDoc(doc(db, 'strike_appeals', 'u1_1'), { status, handledBy: db.__uid, handledAt: serverTimestamp(), ...extra });
+    const staff = (uid) => { const d = env.authenticatedContext(uid).firestore(); d.__uid = uid; return d; };
+    await assertFails(decide(staff('ver1')));
+    await assertFails(decide(as('u1')));
+    await assertFails(decide(staff('sup1'), 'pending'));
+    await assertFails(decide(staff('sup1'), 'granted', { text: 'edited' }));
+    await assertSucceeds(decide(staff('sup1'), 'granted', { note: 'Checked' }));
+    await assertFails(decide(staff('sup1'), 'rejected')); // only a pending appeal can be decided
+  });
+
+  test('the person reads their own appeal; others do not; admins do', async () => {
+    await seed((db) => setDoc(doc(db, 'strike_appeals', 'u1_1'), { userId: 'u1', violationId: 'u1_1', text: 'It was my order number', status: 'pending', createdAt: Timestamp.now() }));
+    await assertSucceeds(getDoc(doc(as('u1'), 'strike_appeals', 'u1_1')));
+    await assertSucceeds(getDocs(query(collection(as('u1'), 'strike_appeals'), where('userId', '==', 'u1'))));
+    await assertFails(getDoc(doc(as('u2'), 'strike_appeals', 'u1_1')));
+    await assertSucceeds(getDoc(doc(asAdmin(), 'strike_appeals', 'u1_1')));
+  });
+});

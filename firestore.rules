@@ -2442,6 +2442,30 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
+    // strike_appeals/{violationId} (MASTER-6 Task 34): the person asks an admin to look at
+    // one strike again, once, within 14 days; an admin grants (the app then takes one
+    // strike off) or rejects it with a short note.
+    match /strike_appeals/{violationId} {
+      allow read: if signedIn() && (resource.data.userId == request.auth.uid || adminIn(['super', 'support', 'ops']));
+      allow create: if signedIn()
+          && request.resource.data.keys().hasOnly(['userId', 'violationId', 'text', 'status', 'createdAt'])
+          && request.resource.data.userId == request.auth.uid
+          && request.resource.data.violationId == violationId
+          && get(docPath('violations', violationId)).data.userId == request.auth.uid
+          && request.time < get(docPath('violations', violationId)).data.createdAt + duration.value(14, 'd')
+          && request.resource.data.text is string && request.resource.data.text.size() >= 10 && request.resource.data.text.size() <= 300
+          && request.resource.data.status == 'pending'
+          && request.resource.data.createdAt == request.time;
+      allow update: if adminIn(['super', 'support', 'ops'])
+          && resource.data.status == 'pending'
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'handledBy', 'handledAt', 'note'])
+          && request.resource.data.status in ['granted', 'rejected']
+          && request.resource.data.handledBy == request.auth.uid
+          && request.resource.data.handledAt == request.time
+          && (!('note' in request.resource.data) || (request.resource.data.note is string && request.resource.data.note.size() <= 200));
+      allow delete: if false;
+    }
+
     // chat_reviews/{bookingId}: an admin opens one chat for review. Needs a
     // report (reportId) or a dispute ticket (ticketId) about the same booking.
     match /chat_reviews/{bookingId} {

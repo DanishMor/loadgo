@@ -53,3 +53,23 @@ class ChatStatus {
     );
   }
 }
+
+/// What a granted appeal does to a person's standing (MASTER-6 Task 34): one
+/// strike off. The suspension is lifted when the lower count no longer calls
+/// for one, and the review flag when it no longer calls for a review.
+class AppealOutcome {
+  final int strikes;
+  final bool liftBlock;
+  final bool clearReview;
+  const AppealOutcome(this.strikes, {required this.liftBlock, required this.clearReview});
+
+  static AppealOutcome grant(int strikesNow) {
+    final s = strikesNow > 0 ? strikesNow - 1 : 0;
+    return AppealOutcome(s, liftBlock: ChatLadder.blockFor(s) == null, clearReview: !ChatLadder.needsReview(s));
+  }
+
+  /// A person may appeal a strike for this many days after it was given.
+  static const windowDays = 14;
+
+  static bool open(DateTime violationAt, DateTime now) => now.isBefore(violationAt.add(const Duration(days: windowDays)));
+}

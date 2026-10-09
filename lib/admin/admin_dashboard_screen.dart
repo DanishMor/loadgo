@@ -24,6 +24,7 @@ import 'admin_surveys_screen.dart';
 import 'admin_payment_aging_screen.dart';
 import 'admin_search_screen.dart';
 import 'admin_alerts_screen.dart';
+import 'admin_appeals_screen.dart';
 import 'admin_supply_demand_screen.dart';
 import 'admin_health_screen.dart';
 import 'admin_templates_screen.dart';
@@ -84,6 +85,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       ('adminTemplates', 'adminTemplates', Icons.quickreply_outlined, const AdminTemplatesScreen()),
       ('adminSupplyDemand', 'adminSupplyDemand', Icons.balance_rounded, const AdminSupplyDemandScreen()),
       ('adminPilotControl', 'adminPilotControl', Icons.dashboard_customize_outlined, const AdminPilotControlScreen()),
+      ('adminAppeals', 'adminAppeals', Icons.gavel_outlined, const AdminAppealsScreen()),
       ('adminAlerts', 'adminAlerts', Icons.notifications_active_outlined, const AdminAlertsScreen()),
       ('adminSearch', 'adminSearch', Icons.search_rounded, const AdminSearchScreen()),
       ('adminPayAging', 'adminPayAging', Icons.hourglass_bottom_rounded, const AdminPaymentAgingScreen()),
