@@ -57,6 +57,7 @@ Future<void> main() async {
     ConnectivityService.start(),
     ThemeStore.load(),
     SimpleMode.load(),
+    LowEndMode.load(),
   ]);
   applyLanguageName(results[0] as String?);
   // Register for push whenever a user is signed in (also after app restarts).
@@ -102,7 +103,9 @@ class LoadGoApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return LanguageScope(
       notifier: languageNotifier,
-      child: ValueListenableBuilder<ThemeMode>(
+      child: ValueListenableBuilder<bool>(
+        valueListenable: LowEndMode.notifier,
+        builder: (context, lowEnd, _) => ValueListenableBuilder<ThemeMode>(
         valueListenable: ThemeStore.mode,
         builder: (context, mode, _) => MaterialApp(
         navigatorKey: appNavigatorKey,
@@ -118,7 +121,7 @@ class LoadGoApp extends StatelessWidget {
           }
           final mq = MediaQuery.of(context);
           return MediaQuery(
-            data: mq.copyWith(textScaler: mq.textScaler.clamp(maxScaleFactor: maxTextScale)),
+            data: mq.copyWith(textScaler: mq.textScaler.clamp(maxScaleFactor: maxTextScale), disableAnimations: lowEnd || mq.disableAnimations),
             // Urdu and Kashmiri read right to left (MASTER-5 Task 24).
             child: Directionality(
               textDirection: LanguageScope.of(context).textDirection,
@@ -131,12 +134,13 @@ class LoadGoApp extends StatelessWidget {
             ),
           );
         },
-        theme: AppTheme.build(Brightness.light),
-        darkTheme: AppTheme.build(Brightness.dark),
+        theme: AppTheme.build(Brightness.light, lowEnd: lowEnd),
+        darkTheme: AppTheme.build(Brightness.dark, lowEnd: lowEnd),
         themeMode: mode,
         // The launch link is read by DeepLinks, not by the navigator.
         initialRoute: '/',
         home: const SplashScreen(),
+        ),
         ),
       ),
     );

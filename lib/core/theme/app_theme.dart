@@ -49,7 +49,7 @@ class AppTheme {
 
   static const seed = Color(0xFF1565C0);
 
-  static ThemeData build(Brightness brightness) {
+  static ThemeData build(Brightness brightness, {bool lowEnd = false}) {
     final dark = brightness == Brightness.dark;
     final p = dark ? AppPalette.dark : AppPalette.light;
     final scheme = ColorScheme.fromSeed(seedColor: seed, brightness: brightness);
@@ -57,6 +57,9 @@ class AppTheme {
         OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: c, width: w));
     return ThemeData(
       useMaterial3: true,
+      // Low-end device mode: no page slide, no ink ripple (MASTER-6 Task 40).
+      pageTransitionsTheme: lowEnd ? const PageTransitionsTheme(builders: {TargetPlatform.android: _NoTransitions(), TargetPlatform.iOS: _NoTransitions()}) : null,
+      splashFactory: lowEnd ? NoSplash.splashFactory : null,
       fontFamily: 'Roboto',
       brightness: brightness,
       colorScheme: scheme,
@@ -76,6 +79,37 @@ class AppTheme {
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       ),
     );
+  }
+}
+
+class _NoTransitions extends PageTransitionsBuilder {
+  const _NoTransitions();
+  @override
+  Widget buildTransitions<T>(PageRoute<T> route, BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation, Widget child) => child;
+}
+
+/// Low-end device mode (MASTER-6 Task 40): fewer animations so an old phone
+/// feels quicker. Off by default, kept on the device.
+class LowEndMode {
+  LowEndMode._();
+
+  static const _key = 'low_end_mode';
+  static final ValueNotifier<bool> notifier = ValueNotifier(false);
+  static bool get isOn => notifier.value;
+
+  static Future<void> load() async {
+    try {
+      notifier.value = (await SharedPreferences.getInstance()).getBool(_key) ?? false;
+    } catch (_) {
+      notifier.value = false;
+    }
+  }
+
+  static Future<void> set(bool on) async {
+    notifier.value = on;
+    try {
+      await (await SharedPreferences.getInstance()).setBool(_key, on);
+    } catch (_) {}
   }
 }
 
@@ -102,8 +136,9 @@ class ThemeStore {
 }
 
 /// Largest text scale the layouts are built for; bigger system settings are
-/// clamped so rows and buttons do not break (accessibility keeps up to 1.6x).
-const double maxTextScale = 1.6;
+/// clamped so rows and buttons do not break (accessibility keeps up to 2.0x;
+/// test/theme_layout_test.dart checks the main screens at 2.0x on a 360x640 phone).
+const double maxTextScale = 2.0;
 
 /// Marks every mounted widget dirty (used once after the light/dark switch).
 void repaintAll() {

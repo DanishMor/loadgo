@@ -186,12 +186,20 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           ),
           ValueListenableBuilder<bool>(
             valueListenable: _hasUnread,
-            builder: (context, unread, _) => TextButton(
-              key: const ValueKey('notifMarkAll'),
-              // Nothing unread: nothing to mark.
-              onPressed: unread ? () => NotificationService.markAllRead(_latest).ignore() : null,
-              child: Text(tr(context, 'markAllRead')),
-            ),
+            builder: (context, unread, _) => MediaQuery.textScalerOf(context).scale(14) / 14 > 1.5
+                // Big text: an icon, so the bar does not overflow (MASTER-6 Task 40).
+                ? IconButton(
+                    key: const ValueKey('notifMarkAll'),
+                    tooltip: tr(context, 'markAllRead'),
+                    icon: const Icon(Icons.done_all_rounded),
+                    onPressed: unread ? () => NotificationService.markAllRead(_latest).ignore() : null,
+                  )
+                : TextButton(
+                    key: const ValueKey('notifMarkAll'),
+                    // Nothing unread: nothing to mark.
+                    onPressed: unread ? () => NotificationService.markAllRead(_latest).ignore() : null,
+                    child: Text(tr(context, 'markAllRead')),
+                  ),
           ),
         ],
       ),

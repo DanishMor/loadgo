@@ -116,7 +116,7 @@ void main() {
 
   for (final dark in [false, true]) {
     for (final e in screens.entries) {
-      testWidgets('${e.key} fits 360x640 at 1.6x text (${dark ? 'dark' : 'light'})', (tester) async {
+      testWidgets('${e.key} fits 360x640 at 2.0x text (${dark ? 'dark' : 'light'})', (tester) async {
         tester.view.physicalSize = const Size(360, 640);
         tester.view.devicePixelRatio = 1;
         addTearDown(tester.view.reset);
@@ -132,7 +132,7 @@ void main() {
           darkTheme: AppTheme.build(Brightness.dark),
           themeMode: dark ? ThemeMode.dark : ThemeMode.light,
           builder: (context, child) => MediaQuery(
-            data: MediaQuery.of(context).copyWith(textScaler: const TextScaler.linear(1.6)),
+            data: MediaQuery.of(context).copyWith(textScaler: const TextScaler.linear(2.0)),
             child: child!,
           ),
           home: e.value(),

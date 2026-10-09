@@ -146,6 +146,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   onTap: _pickTheme,
                 ),
               ),
+              ValueListenableBuilder<bool>(
+                valueListenable: LowEndMode.notifier,
+                builder: (context, on, _) => SwitchListTile(
+                  key: const ValueKey('settingsLowEnd'),
+                  secondary: const Icon(Icons.speed_rounded),
+                  title: Text(tr(context, 'lowEndTitle')),
+                  subtitle: Text(tr(context, 'lowEndHint')),
+                  value: on,
+                  onChanged: LowEndMode.set,
+                ),
+              ),
               _header('notificationPrefs'),
               _switch('prefBookings', 'prefBookingUpdates', p.bookingUpdates, (v) => _setPrefs(p.copyWith(bookingUpdates: v))),
               _switch('prefRatings', 'prefRatings', p.ratings, (v) => _setPrefs(p.copyWith(ratings: v))),

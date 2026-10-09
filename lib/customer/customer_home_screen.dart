@@ -438,7 +438,8 @@ class _CustomerHomeContent extends StatelessWidget {
             Text(tr(context, 'services'), style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.title)),
             const SizedBox(height: 14),
             SizedBox(
-              height: 128,
+              // Grows with the text size so big text is not cut off (MASTER-6 Task 40).
+              height: 128 * (MediaQuery.textScalerOf(context).scale(14) / 14).clamp(1.0, 2.0),
               child: ListView(
                 scrollDirection: Axis.horizontal,
                 children: [
@@ -587,7 +588,7 @@ class _ServiceCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 145,
+      width: 145 * (MediaQuery.textScalerOf(context).scale(14) / 14).clamp(1.0, 1.5),
       margin: const EdgeInsets.only(right: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -600,9 +601,9 @@ class _ServiceCard extends StatelessWidget {
         children: [
           Icon(icon, color: const Color(0xFF1565C0), size: 32),
           const Spacer(),
-          Text(title, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: AppColors.title)),
+          Text(title, maxLines: 2, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: AppColors.title)),
           const SizedBox(height: 3),
-          Text(subtitle, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 11, color: AppColors.muted)),
+          Text(subtitle, maxLines: 2, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 11, color: AppColors.muted)),
         ],
       ),
     );
