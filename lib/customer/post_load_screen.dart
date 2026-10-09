@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import '../core/drafts/load_draft.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -108,6 +111,7 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
 
   @override
   void dispose() {
+    _draftTimer?.cancel();
     _pickupCtrl.dispose();
     _dropCtrl.dispose();
     _weightCtrl.dispose();
@@ -129,6 +133,54 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
   /// What was typed when the screen opened; leaving with something else typed asks first.
   List<String> _initial = const [];
 
+  // ---- draft (Task 15): kept on this phone, saved a moment after typing stops ----
+  LoadDraft? _draft;
+  Timer? _draftTimer;
+
+  LoadDraft _draftNow() => LoadDraft(
+        pickup: _pickupCtrl.text,
+        drop: _dropCtrl.text,
+        cargoType: _cargoType,
+        weight: _weightCtrl.text,
+        vehicleType: _vehicleType,
+        budget: _budgetCtrl.text,
+        notes: _notesCtrl.text,
+        pickupDate: _pickupDate == null ? '' : DateUtils.dateOnly(_pickupDate!).toIso8601String().substring(0, 10),
+        savedAt: DateTime.now(),
+      );
+
+  void _scheduleDraft() {
+    // While the banner waits for a decision, typing must not overwrite the saved draft.
+    if (_saving || _draftLocked || _draft != null) return;
+    _draftTimer?.cancel();
+    _draftTimer = Timer(const Duration(milliseconds: 1500), () => LoadDraftStore.save(_draftNow()));
+  }
+
+  /// Set once the load is posted or the draft was deleted on purpose, so a late timer cannot bring it back.
+  bool _draftLocked = false;
+
+  void _applyDraft(LoadDraft d) {
+    setState(() {
+      _pickupCtrl.text = d.pickup;
+      _dropCtrl.text = d.drop;
+      _weightCtrl.text = d.weight;
+      _budgetCtrl.text = d.budget;
+      _notesCtrl.text = d.notes;
+      if (cargoTypes.contains(d.cargoType)) _cargoType = d.cargoType;
+      if (d.vehicleType.isNotEmpty) _vehicleType = d.vehicleType;
+      final day = d.pickupDay;
+      if (day != null && !day.isBefore(DateUtils.dateOnly(DateTime.now()))) _pickupDate = day;
+      _draft = null;
+    });
+  }
+
+  Future<void> _deleteDraft() async {
+    _draftLocked = true;
+    _draftTimer?.cancel();
+    await LoadDraftStore.clear();
+    if (mounted) setState(() => _draft = null);
+  }
+
   List<String> _typedNow() => [_pickupCtrl.text.trim(), _dropCtrl.text.trim(), _weightCtrl.text.trim(), _notesCtrl.text.trim(), _budgetCtrl.text.trim()];
 
   bool get _dirty {
@@ -141,18 +193,31 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
   }
 
   Future<void> _confirmLeave() async {
-    final leave = await showDialog<bool>(
+    final leave = await showDialog<String>(
       context: context,
       builder: (c) => AlertDialog(
         title: Text(tr(c, 'discardTitle')),
         content: Text(tr(c, 'discardBody')),
         actions: [
-          TextButton(key: const ValueKey('keepEditing'), onPressed: () => Navigator.pop(c, false), child: Text(tr(c, 'keepEditing'))),
-          FilledButton(key: const ValueKey('discardLoad'), onPressed: () => Navigator.pop(c, true), child: Text(tr(c, 'discard'))),
+          TextButton(key: const ValueKey('keepEditing'), onPressed: () => Navigator.pop(c, null), child: Text(tr(c, 'keepEditing'))),
+          TextButton(key: const ValueKey('saveDraftLeave'), onPressed: () => Navigator.pop(c, 'save'), child: Text(tr(c, 'draftSave'))),
+          FilledButton(key: const ValueKey('discardLoad'), onPressed: () => Navigator.pop(c, 'discard'), child: Text(tr(c, 'discard'))),
         ],
       ),
     );
-    if (leave == true && mounted) Navigator.of(context).pop();
+    if (leave == null || !mounted) return;
+    _draftTimer?.cancel();
+    final messenger = ScaffoldMessenger.of(context);
+    final saved = tr(context, 'draftSaved');
+    // The draft is written in the background so leaving never waits for the disk.
+    if (leave == 'save') {
+      unawaited(LoadDraftStore.save(_draftNow()));
+      messenger.showSnackBar(SnackBar(content: Text(saved)));
+    } else {
+      _draftLocked = true;
+      unawaited(LoadDraftStore.clear());
+    }
+    if (mounted) Navigator.of(context).pop();
   }
 
   TextEditingController _stopCtrl([String text = '']) => TextEditingController(text: text)..addListener(_requote);
@@ -257,6 +322,17 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
       _pickupDate = due.isBefore(today) ? today : due;
     }
     _initial = _typedNow();
+    final plainOpen = widget.repostFrom == null && widget.initialPickup == null && widget.initialDrop == null && widget.initialWeight == null && widget.initialVehicleType == null && widget.dueDate == null;
+    if (plainOpen) {
+      LoadDraftStore.load().then((d) {
+        if (mounted && d != null) setState(() => _draft = d);
+      });
+    }
+    if (plainOpen) {
+      for (final c in [_pickupCtrl, _dropCtrl, _weightCtrl, _budgetCtrl, _notesCtrl]) {
+        c.addListener(_scheduleDraft);
+      }
+    }
     BusinessService.postingBusinessId().then((id) {
       if (mounted && id != null) setState(() => _businessId = id);
       if (id != null) {
@@ -580,6 +656,9 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
       await _afterPosted();
       if (!mounted) return;
       showSnack(context, tr(context, waits ? 'bizSentForApproval' : 'loadPosted'));
+      _draftLocked = true;
+      _draftTimer?.cancel();
+      unawaited(LoadDraftStore.clear());
       Navigator.of(context).pop(true);
     } on PromoException catch (e) {
       if (!mounted) return;
@@ -638,6 +717,22 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
                     const SizedBox(height: 18),
                   ]),
                 ),
+                if (_draft != null)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 14),
+                    child: AppCard(
+                      key: const ValueKey('draftBanner'),
+                      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                        Text(tr(context, 'draftTitle'), style: const TextStyle(fontWeight: FontWeight.w800)),
+                        Text('${_draft!.pickup.trim().isEmpty ? '...' : _draft!.pickup} → ${_draft!.drop.trim().isEmpty ? '...' : _draft!.drop}', style: TextStyle(color: AppColors.muted)),
+                        const SizedBox(height: 6),
+                        Wrap(spacing: 8, children: [
+                          FilledButton(key: const ValueKey('draftResume'), onPressed: () => _applyDraft(_draft!), child: Text(tr(context, 'draftResume'))),
+                          TextButton(key: const ValueKey('draftDelete'), onPressed: _deleteDraft, child: Text(tr(context, 'draftDelete'))),
+                        ]),
+                      ]),
+                    ),
+                  ),
                 _StepHeader(1, 'wizRoute'),
                 FieldLabel(tr(context, 'pickupLocation')),
                 PlaceField(
