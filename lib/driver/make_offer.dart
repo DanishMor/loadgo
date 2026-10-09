@@ -11,6 +11,8 @@ import '../core/services/pricing_service.dart';
 import '../core/settings/simple_mode.dart';
 import 'simple_bid.dart';
 import '../core/services/vehicle_service.dart';
+import '../core/pricing/bid_assistant.dart';
+import '../core/widgets/bid_assistant_panel.dart';
 import '../core/widgets/common.dart';
 import '../core/widgets/logistics_labels.dart';
 import '../core/widgets/trip_cost_widgets.dart';
@@ -53,6 +55,18 @@ class _MakeOfferButtonState extends State<MakeOfferButton> {
     return (context, paise) => BidMarginPanel(cost: base, bidPaise: paise);
   }
 
+  /// The suggested range for this load (null without a fare estimate).
+  Widget Function(BuildContext, void Function(int))? _assist(Vehicle vehicle) {
+    final l = widget.load;
+    final km = l.estimate?.distanceKm ?? PricingService.estimateRouteKm(l.route);
+    final running = (km == null || km <= 0)
+        ? 0
+        : tripCostFor(farePaise: l.estimate?.total ?? 0, km: km, vehicleType: vehicle.type, from: l.pickup, to: l.drop).runningCost;
+    final s = BidAssistant.suggest(estimateTotal: l.estimate?.total, runningCost: running, budgetPaise: l.budget == null ? null : (l.budget! * 100).round());
+    if (s == null) return null;
+    return (context, setPrice) => BidAssistantPanel(suggestion: s, onPick: setPrice);
+  }
+
   Future<void> _offer() async {
     setState(() => _busy = true);
     try {
@@ -73,6 +87,7 @@ class _MakeOfferButtonState extends State<MakeOfferButton> {
               initialPaise: widget.load.estimate?.total,
               footer: _costFooter(vehicle),
               voice: true,
+              assist: _assist(vehicle),
             );
       if (price == null || !mounted) return;
       await OfferService.send(load: widget.load, vehicle: vehicle, pricePaise: price);

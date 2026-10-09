@@ -77,6 +77,7 @@ import 'delivered_strings.dart';
 import 'onboarding_strings.dart';
 import 'driver_today_strings.dart';
 import 'sync_strings.dart';
+import 'bid_assistant_strings.dart';
 import 'admin_list_strings.dart';
 import 'statement_strings.dart';
 import 'evidence_timeline_strings.dart';
@@ -168,6 +169,7 @@ const List<Map<String, List<String>>> stringTables = [
   onboardingStrings,
   driverTodayStrings,
   syncStrings,
+  bidAssistantStrings,
   adminListStrings,
   statementStrings,
   evidenceTimelineStrings,

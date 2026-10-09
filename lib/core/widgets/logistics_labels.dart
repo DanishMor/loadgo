@@ -87,10 +87,10 @@ Color offerStatusColor(String status) => switch (status) {
 /// Asks for a whole-rupee price; returns paise, or null when cancelled.
 /// [footer] is rebuilt as the driver types (e.g. a toll, fuel and margin panel).
 Future<int?> askPricePaise(BuildContext context,
-        {required String title, required String label, int? initialPaise, String? note, Widget Function(BuildContext, int? paise)? footer, bool voice = false}) =>
+        {required String title, required String label, int? initialPaise, String? note, Widget Function(BuildContext, int? paise)? footer, bool voice = false, Widget Function(BuildContext, void Function(int paise) setPrice)? assist}) =>
     showDialog<int>(
       context: context,
-      builder: (_) => _PriceDialog(title: title, label: label, initialPaise: initialPaise, note: note, footer: footer, voice: voice),
+      builder: (_) => _PriceDialog(title: title, label: label, initialPaise: initialPaise, note: note, footer: footer, voice: voice, assist: assist),
     );
 
 class _PriceDialog extends StatefulWidget {
@@ -103,7 +103,10 @@ class _PriceDialog extends StatefulWidget {
   /// Adds a mic button that reads a spoken amount (Hindi, Hinglish, English).
   final bool voice;
 
-  const _PriceDialog({required this.title, required this.label, this.initialPaise, this.note, this.footer, this.voice = false});
+  /// Buttons that fill the price field (the bid assistant).
+  final Widget Function(BuildContext, void Function(int paise) setPrice)? assist;
+
+  const _PriceDialog({required this.title, required this.label, this.initialPaise, this.note, this.footer, this.voice = false, this.assist});
 
   @override
   State<_PriceDialog> createState() => _PriceDialogState();
@@ -154,6 +157,10 @@ class _PriceDialogState extends State<_PriceDialog> {
                 return (n == null || n <= 0 || n > 1000000) ? tr(context, 'invalidNumber') : null;
               },
             ),
+            if (widget.assist case final assist?) ...[
+              const SizedBox(height: 8),
+              assist(context, (paise) => _ctrl.text = '${paise ~/ 100}'),
+            ],
             if (widget.note != null) ...[
               const SizedBox(height: 8),
               Text(widget.note!, style: TextStyle(color: AppColors.muted, fontSize: 12)),
