@@ -5584,3 +5584,46 @@ describe('payment nudges (M6-8)', () => {
     await assertSucceeds(deleteDoc(doc(as('c1'), 'payment_nudges', 'b1_customer')));
   });
 });
+
+describe('finance staff role (M6-9)', () => {
+  const staff = (uid) => env.authenticatedContext(uid).firestore();
+  const asStaff = (uid) => { const d = staff(uid); d.__uid = uid; return d; };
+
+  beforeEach(async () => {
+    await seed(async (db) => {
+      for (const [uid, role] of [['fin1', 'finance'], ['sup1', 'support'], ['ops1', 'ops'], ['ver1', 'verifier']]) await setDoc(doc(db, 'admins', uid), { role });
+      await setDoc(doc(db, 'payouts', 'p1'), { driverId: 'd1', amountPaise: 50000, status: 'requested', createdAt: Timestamp.now() });
+      await setDoc(doc(db, 'incentive_claims', 'i1_d1'), { incentiveId: 'i1', driverId: 'd1', bonusPaise: 1000, status: 'claimed', createdAt: Timestamp.now() });
+      await setDoc(doc(db, 'deletion_requests', 'u9'), { userId: 'u9', status: 'pending', reason: '', createdAt: Timestamp.now() });
+    });
+  });
+
+  const pay = (db) => updateDoc(doc(db, 'payouts', 'p1'), { status: 'paid', handledBy: db.__uid, handledAt: serverTimestamp() });
+
+  test('payouts: finance and super mark them; support, ops and verifier cannot', async () => {
+    for (const u of ['sup1', 'ops1', 'ver1']) await assertFails(pay(asStaff(u)));
+    await assertSucceeds(pay(asStaff('fin1')));
+    await seed((db) => setDoc(doc(db, 'payouts', 'p1'), { driverId: 'd1', amountPaise: 50000, status: 'requested', createdAt: Timestamp.now() }));
+    const sup = asAdmin();
+    sup.__uid = 'admin1';
+    await assertSucceeds(pay(sup));
+  });
+
+  test('incentive claims: finance and super mark them paid; others cannot', async () => {
+    const paid = (db) => updateDoc(doc(db, 'incentive_claims', 'i1_d1'), { status: 'paid', paidAt: serverTimestamp() });
+    for (const u of ['sup1', 'ops1', 'ver1']) await assertFails(paid(staff(u)));
+    await assertSucceeds(paid(staff('fin1')));
+  });
+
+  test('finance does not get the other staff powers', async () => {
+    await assertFails(updateDoc(doc(staff('fin1'), 'deletion_requests', 'u9'), { status: 'done', handledBy: 'fin1', handledAt: serverTimestamp() }));
+    await assertSucceeds(updateDoc(doc(staff('sup1'), 'deletion_requests', 'u9'), { status: 'done', handledBy: 'sup1', handledAt: serverTimestamp() }));
+    await assertFails(setDoc(doc(staff('fin1'), 'config', 'pricing'), { platformFeePercent: 7 }));
+    await assertFails(setDoc(doc(staff('fin1'), 'invite_codes', 'ABCD2345'), { role: 'any', route: '', maxUses: 1, uses: 0, expiresAt: Timestamp.fromMillis(Date.now() + 86400000), active: true, createdBy: 'fin1', createdAt: serverTimestamp() }));
+  });
+
+  test('finance can read what the panel lists', async () => {
+    await assertSucceeds(getDoc(doc(staff('fin1'), 'payouts', 'p1')));
+    await assertSucceeds(getDoc(doc(staff('fin1'), 'users', 'u9')));
+  });
+});

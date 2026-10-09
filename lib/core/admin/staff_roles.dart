@@ -7,7 +7,8 @@ class StaffRole {
   static const support = 'support';
   static const verifier = 'verifier';
   static const ops = 'ops';
-  static const all = [superAdmin, support, verifier, ops];
+  static const finance = 'finance';
+  static const all = [superAdmin, support, verifier, ops, finance];
 
   static String normalise(Object? v) => all.contains(v) ? v as String : superAdmin;
 }
@@ -35,10 +36,10 @@ const Map<String, List<String>> staffAreas = {
   'adminTemplates': [StaffRole.superAdmin],
   'adminDemo': [StaffRole.superAdmin],
   'adminFeatures': [StaffRole.superAdmin],
-  'adminUnitEconomics': [StaffRole.superAdmin],
+  'adminUnitEconomics': [StaffRole.superAdmin, StaffRole.finance],
   'adminSupplyDemand': [StaffRole.superAdmin, StaffRole.ops],
   'adminPilotControl': [StaffRole.superAdmin, StaffRole.ops, StaffRole.support],
-  'adminPayAging': [StaffRole.superAdmin, StaffRole.ops, StaffRole.support],
+  'adminPayAging': [StaffRole.superAdmin, StaffRole.ops, StaffRole.support, StaffRole.finance],
   'adminSurveys': [StaffRole.superAdmin, StaffRole.ops],
   'adminCohorts': [StaffRole.superAdmin, StaffRole.ops],
   'adminPilotReport': [StaffRole.superAdmin, StaffRole.ops],
@@ -50,8 +51,8 @@ const Map<String, List<String>> staffAreas = {
   'flaggedUsers': [StaffRole.superAdmin, StaffRole.ops],
   'adminDeletionRequests': [StaffRole.superAdmin, StaffRole.support],
   'adminAudit': [StaffRole.superAdmin, StaffRole.ops],
-  'adminDriverRewards': [StaffRole.superAdmin],
-  'adminPayouts': [StaffRole.superAdmin],
+  'adminDriverRewards': [StaffRole.superAdmin, StaffRole.finance],
+  'adminPayouts': [StaffRole.superAdmin, StaffRole.finance],
   'adminOffers': [StaffRole.superAdmin],
   'adminConfig': [StaffRole.superAdmin],
 };

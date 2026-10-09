@@ -987,8 +987,8 @@ service cloud.firestore {
           && request.resource.data.role == getAfter(docPath('users', request.auth.uid)).data.get('role', request.resource.data.role)
           && hash.matches('^[0-9a-f]{64}$')
           && identityHashAfter(request.resource.data.type) == hash;
-      allow update: if isAdmin();
-      allow delete: if isAdmin()
+      allow update: if adminIn(['super', 'verifier', 'ops']);
+      allow delete: if adminIn(['super', 'verifier', 'ops'])
           || (signedIn() && resource.data.uid == request.auth.uid
               && !existsAfter(docPath('users', request.auth.uid)))
           || (signedIn() && resource.data.uid == request.auth.uid
@@ -2667,7 +2667,7 @@ service cloud.firestore {
           && getAfter(docPath('ratings', ratingId)).data.stars == request.resource.data.stars
           && getAfter(docPath('ratings', ratingId)).data.ratedId == request.resource.data.ratedId
           && getAfter(docPath('ratings', ratingId)).data.bookingId == request.resource.data.bookingId;
-      allow update: if isAdmin()
+      allow update: if adminIn(['super', 'support', 'ops'])
           && changedKeys().hasOnly(['status', 'handledBy', 'handledAt'])
           && request.resource.data.status in ['reviewed', 'dismissed']
           && request.resource.data.handledBy == request.auth.uid
@@ -2723,7 +2723,7 @@ service cloud.firestore {
           && request.resource.data.status == 'pending'
           && request.resource.data.userId == uid
           && request.resource.data.createdAt == request.time;
-      allow update: if isAdmin()
+      allow update: if adminIn(['super', 'support'])
           && changedKeys().hasOnly(['status', 'handledBy', 'handledAt'])
           && request.resource.data.status in ['pending', 'done', 'rejected'];
       allow delete: if false;
@@ -2768,7 +2768,7 @@ service cloud.firestore {
           && request.resource.data.uid == request.auth.uid
           && request.resource.data.type in ['new_device', 'phone_change', 'high_value', 'random_check', 'gps_mismatch', 'many_devices']
           && request.resource.data.createdAt == request.time;
-      allow update: if isAdmin() && changedKeys().hasOnly(['reviewed', 'reviewedBy', 'reviewedAt']);
+      allow update: if adminIn(['super', 'ops', 'verifier']) && changedKeys().hasOnly(['reviewed', 'reviewedBy', 'reviewedAt']);
       allow delete: if false;
     }
 
@@ -2795,7 +2795,7 @@ service cloud.firestore {
 
       match /notes/{noteId} {
         allow read: if isAdmin();
-        allow create: if isAdmin()
+        allow create: if adminIn(['super', 'ops'])
             && request.resource.data.keys().hasOnly(['by', 'text', 'createdAt'])
             && request.resource.data.by == request.auth.uid
             && request.resource.data.text is string && request.resource.data.text.size() >= 1 && request.resource.data.text.size() <= 1000
@@ -3072,7 +3072,7 @@ service cloud.firestore {
           && request.resource.data.amountPaise >= 100 && request.resource.data.amountPaise <= 100000000
           && request.resource.data.createdAt == request.time
           && canTransact(request.auth.uid);
-      allow update: if isAdmin()
+      allow update: if adminIn(['super', 'finance'])
           && resource.data.status == 'requested'
           && changedKeys().hasOnly(['status', 'handledBy', 'handledAt'])
           && request.resource.data.status in ['paid', 'rejected']
@@ -3136,7 +3136,7 @@ service cloud.firestore {
           && request.time >= get(docPath('incentives', request.resource.data.incentiveId)).data.startsAt
           && request.time <= get(docPath('incentives', request.resource.data.incentiveId)).data.startsAt
               + duration.value(get(docPath('incentives', request.resource.data.incentiveId)).data.windowDays + 7, 'd');
-      allow update: if isAdmin()
+      allow update: if adminIn(['super', 'finance'])
           && changedKeys().hasOnly(['status', 'paidAt'])
           && resource.data.status == 'claimed'
           && request.resource.data.status == 'paid';
@@ -3161,7 +3161,7 @@ service cloud.firestore {
               && request.resource.data.plan == 'pro'
               && request.resource.data.status == 'pending'
               && request.resource.data.createdAt == request.time)
-          || (isAdmin() && changedKeys().hasOnly(['status', 'answeredAt'])
+          || (adminIn(['super']) && changedKeys().hasOnly(['status', 'answeredAt'])
               && request.resource.data.status in ['approved', 'rejected']);
       allow delete: if false;
     }
@@ -3324,7 +3324,7 @@ service cloud.firestore {
                   && ((isUser(userId) && lineId == 'referral_in')
                       || (lineId == 'referral_from_' + request.auth.uid
                           && getAfter(docPath('referrals', request.auth.uid)).data.referrerUid == userId)))
-              || (isAdmin() && request.resource.data.kind in ['admin_grant', 'admin_deduct']
+              || (adminIn(['super']) && request.resource.data.kind in ['admin_grant', 'admin_deduct']
                   && request.resource.data.amountPaise != 0
                   && request.resource.data.amountPaise >= -100000000 && request.resource.data.amountPaise <= 100000000
                   && (!('note' in request.resource.data) || request.resource.data.note.size() <= 200)));
@@ -3486,7 +3486,7 @@ service cloud.firestore {
     // TODO(functions): send a push.
     match /payment_nudges/{id} {
       allow read: if isAdmin() || (signedIn() && resource.data.userId == request.auth.uid);
-      allow create: if adminIn(['super', 'ops', 'support'])
+      allow create: if adminIn(['super', 'ops', 'support', 'finance'])
           && request.resource.data.keys().hasOnly(['bookingId', 'userId', 'target', 'by', 'count', 'lastAt'])
           && request.resource.data.target in ['customer', 'driver']
           && request.resource.data.bookingId is string && request.resource.data.userId is string
@@ -3494,7 +3494,7 @@ service cloud.firestore {
           && request.resource.data.by == request.auth.uid
           && request.resource.data.count == 1
           && request.resource.data.lastAt == request.time;
-      allow update: if adminIn(['super', 'ops', 'support'])
+      allow update: if adminIn(['super', 'ops', 'support', 'finance'])
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['count', 'lastAt', 'by'])
           && request.resource.data.count == resource.data.count + 1
           && request.resource.data.by == request.auth.uid

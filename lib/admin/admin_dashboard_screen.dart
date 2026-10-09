@@ -42,6 +42,7 @@ String staffRoleKey(String role) => switch (role) {
       StaffRole.support => 'staffRoleSupport',
       StaffRole.verifier => 'staffRoleVerifier',
       StaffRole.ops => 'staffRoleOps',
+      StaffRole.finance => 'staffRoleFinance',
       _ => 'staffRoleSuper',
     };
 
