@@ -26,7 +26,7 @@ class TrustBadgesCard extends StatelessWidget {
         final list = snap.data;
         if (snap.hasError || list == null) return const SizedBox.shrink();
         final t = TrustBadges.compute(list, me);
-        if (t.finished == 0) return const SizedBox.shrink();
+        if (list.isEmpty || t.finished == 0) return const SizedBox.shrink();
         return AppCard(
           key: const ValueKey('trustCard'),
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [

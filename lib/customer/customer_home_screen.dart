@@ -566,7 +566,7 @@ class _QuickActionCard extends StatelessWidget {
             const SizedBox(height: 12),
             Text(title, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.title)),
             const SizedBox(height: 3),
-            Text(subtitle, maxLines: 2, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 11, color: AppColors.muted)),
+            Text(subtitle, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 11, color: AppColors.muted)),
           ],
         ),
       ),
@@ -601,9 +601,9 @@ class _ServiceCard extends StatelessWidget {
         children: [
           Icon(icon, color: const Color(0xFF1565C0), size: 32),
           const Spacer(),
-          Text(title, maxLines: 2, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: AppColors.title)),
+          Text(title, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: AppColors.title)),
           const SizedBox(height: 3),
-          Text(subtitle, maxLines: 2, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 11, color: AppColors.muted)),
+          Text(subtitle, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 11, color: AppColors.muted)),
         ],
       ),
     );
