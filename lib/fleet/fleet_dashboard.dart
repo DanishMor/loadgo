@@ -1,3 +1,6 @@
+import '../core/services/transporter_service.dart';
+import '../core/transporter/transporter_logic.dart';
+import 'transporter_board_card.dart';
 import 'package:flutter/material.dart';
 
 import '../core/l10n/l10n.dart';
@@ -21,12 +24,15 @@ class FleetDashboard extends StatefulWidget {
   final Stream<List<Booking>>? bookings;
   final Stream<List<FleetMember>>? members;
   final Stream<List<Load>>? openLoads;
+
+  /// The party books (for the money still owed); injectable for tests.
+  final Stream<List<TripAccount>>? accounts;
   final DateTime Function() now;
 
   /// Shown at the top of the scrolling page (the transporter shortcuts), also when there are no vehicles yet.
   final Widget? header;
 
-  const FleetDashboard({super.key, this.vehicles, this.bookings, this.members, this.openLoads, this.now = DateTime.now, this.header});
+  const FleetDashboard({super.key, this.vehicles, this.bookings, this.members, this.openLoads, this.accounts, this.now = DateTime.now, this.header});
 
   @override
   State<FleetDashboard> createState() => _FleetDashboardState();
@@ -37,6 +43,7 @@ class _FleetDashboardState extends State<FleetDashboard> {
   late final Stream<List<Booking>> _bookings = (widget.bookings ?? FleetService.watchFleetBookings()).asBroadcastStream();
   late final Stream<List<Load>> _loads = (widget.openLoads ?? LoadService.watchOpen()).asBroadcastStream();
   late final Stream<List<FleetMember>> _members = (widget.members ?? FleetService.watchMembers()).asBroadcastStream();
+  late final Stream<List<TripAccount>> _accounts = (widget.accounts ?? TransporterService.watchBooks()).asBroadcastStream();
 
   Widget _stat(String label, String value, {Key? key}) => Expanded(
         child: AppCard(
@@ -161,6 +168,11 @@ class _FleetDashboardState extends State<FleetDashboard> {
               Text(tr(context, 'fleetEarningsNote'), style: TextStyle(color: AppColors.faint, fontSize: 12)),
               _breakdowns(context, vehicles, bookings),
               _suggestions(context, vehicles),
+              const SizedBox(height: 14),
+              StreamBuilder<List<TripAccount>>(
+                stream: _accounts,
+                builder: (context, snap) => TransporterBoardCard(vehicles: vehicles, bookings: bookings, members: members, accounts: snap.data ?? const [], now: widget.now()),
+              ),
               const SizedBox(height: 14),
               Text(tr(context, 'fleetPerVehicle'), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
               const SizedBox(height: 8),
