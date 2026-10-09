@@ -4,12 +4,12 @@ Status key: [x] done in the repo, [ ] needs you (account, keys, decisions).
 
 ## App identity
 - [x] App label `LoadGo` (AndroidManifest). Package id is still the Flutter default: decide the final id BEFORE the first upload, it cannot change later.
-- [ ] App icon and feature graphic (512x512 icon, 1024x500 banner), 2-8 phone screenshots per language you list.
-- [ ] Short description (80 chars) and full description (4000 chars).
+- [ ] App icon and feature graphic (512x512 icon, 1024x500 banner), 2-8 phone screenshots per language you list (plan and caption ideas: docs/PLAY_LISTING.md).
+- [x] Short and full description drafts in English, Hindi and Hinglish: docs/PLAY_LISTING.md (owner reviews; a test keeps them within the store limits).
 - [ ] Category: Maps & Navigation or Business. Contact e-mail and phone for the listing.
 
 ## Signing and build
-- [ ] Create an upload key, `android/key.properties`, release signing config.
+- [x] Package id in one place and release signing from `android/key.properties`: steps in docs/ANDROID_RELEASE.md. [ ] You create the upload key and `key.properties`, and choose the final package id.
 - [ ] `flutter build appbundle --release`; test the release build on a phone (Crashlytics, Remote Config, maintenance screen).
 - [ ] Put the SHA-1 / SHA-256 of the signing key in the Firebase Console (needed for Google sign-in and App Check later).
 - [ ] Deploy `firestore.rules` and `firestore.indexes.json` (see docs/MANUAL_TODO.md).
@@ -45,7 +45,17 @@ No background location, no contacts, no SMS, no storage permission.
 - Encrypted in transit: yes (HTTPS). Users can request deletion: yes (in app and the web page). Data you collect is optional: location and microphone are optional.
 - Government ID: licence number, PAN and last 4 Aadhaar digits are collected from drivers and fleet owners; mark "Personal info / Other" and explain they are format-checked, not verified.
 
+## Data safety additions since the first draft (MASTER-6)
+- Invite codes and waitlist: a code you typed, and the route you asked for (from, to) with your user id; used to open the pilot area by area. Deleted with the account.
+- Trip survey ("would you use again?") and ratings: tied to the trip, shown to admin as counts.
+- Chat strikes and appeals: the cut-out kind of text (phone, UPI, app link) and your appeal text, used to enforce the no-number rule.
+- Crash breadcrumbs: the last 25 screen names before a crash, no names, numbers or typed text; error text is cleaned of phone, e-mail, ids and links before it is stored (90-day expiry).
+- Trust numbers (on-time, completion, repeat customers) are calculated on the phone from the person's own trips, not stored or shared.
+- Saved places: addresses and optional GST invoice details the person types, kept in their own account.
+- Still true: no ads, no sale of data, no card data, call audio is not recorded.
+
 ## Content rating and target
+Content rating notes for the questionnaire (IARC): no violence, no sexual content, no gambling, no drugs, no ads, no purchases in the app, no location sharing with strangers (location goes to the booking party only), users can talk to each other only inside a booking (private chat and call, no public posts); expect "Everyone" or "3+", target audience 18+. Say "yes" to user-to-user communication and "no" to sharing location publicly.
 - [ ] Complete the questionnaire (no ads, no user-generated public content, chat only between booking parties). Target audience 18+.
 - [ ] Declare "Financial features: none" (no payments are processed).
 - [ ] News / government / health declarations: not applicable.
