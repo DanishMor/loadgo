@@ -6,6 +6,7 @@ import '../analytics/unit_economics.dart';
 import 'server_clock.dart';
 import '../admin/dispatch.dart';
 import '../admin/pilot_control.dart';
+import '../admin/payment_aging.dart';
 import '../admin/pilot_cohorts.dart';
 import '../pilot/reuse_survey.dart';
 import '../admin/pilot_report.dart';
@@ -529,6 +530,36 @@ class AdminConsoleService {
         final snap = await _db.collection('trip_surveys').orderBy('createdAt', descending: true).limit(500).get();
         return SurveyStats.compute([for (final d in snap.docs) d.data()]);
       });
+
+  /// Delivered trips whose payment record is not confirmed yet (up to 500
+  /// delivered bookings read), oldest first.
+  static Future<List<AgingRow>> paymentAging({DateTime? now}) => withRetry(() async {
+        final snap = await _db.collection('bookings').where('status', isEqualTo: BookingStatus.delivered).limit(500).get();
+        return PaymentAging.compute([for (final d in snap.docs) (d.id, d.data())], now ?? ServerClock.now());
+      });
+
+  /// Reminds the person [row] waits on: one `payment_nudges` document per trip
+  /// and side (the person sees it on Home), counted, with an audit line. Record
+  /// only. TODO(functions): send a push as well.
+  static Future<void> nudgePayment(AgingRow row) async {
+    final ref = _db.collection('payment_nudges').doc(PaymentAging.nudgeId(row.bookingId, row.waitingOn));
+    final batch = _db.batch();
+    final old = await ref.get();
+    if (old.exists) {
+      batch.update(ref, {'count': ((old.data()!['count'] as num?) ?? 0).toInt() + 1, 'lastAt': FieldValue.serverTimestamp(), 'by': Backend.requireUid()});
+    } else {
+      batch.set(ref, {
+        'bookingId': row.bookingId,
+        'userId': row.userId,
+        'target': row.waitingOn,
+        'by': Backend.requireUid(),
+        'count': 1,
+        'lastAt': FieldValue.serverTimestamp(),
+      });
+    }
+    AuditService.inBatch(batch, AuditType.userAction, targetId: row.bookingId, bookingId: row.bookingId, data: {'action': 'payment_nudge', 'collection': 'payment_nudges', 'target': row.waitingOn});
+    await batch.commit();
+  }
 
   static Future<HealthCounts> health() => withRetry(_health);
 

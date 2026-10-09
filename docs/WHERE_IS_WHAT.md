@@ -130,6 +130,7 @@ Admin Panel: **Profile > Admin** (only for accounts in `admins/{uid}`). The pane
 | Health | app health | super, ops |
 | Supply and demand, Unit economics | numbers | super (supply and demand also ops) |
 | Pilot control room | today's sign-ups, drivers sharing location, open / unfilled loads, running trips, open SOS and tickets | super, ops, support |
+| Payment aging | delivered trips whose payment record is not done, by age (who is slow: customer or driver) with a Remind button, one per 6 hours | super, ops, support |
 | Use-again survey | share of customers and drivers who would use the app again after a delivered trip | super, ops |
 | Pilot cohorts | per week of posting: time to first bid and to a driver, customers who came back, cancel reasons; copy as CSV | super, ops |
 | Pilot report | today's or last 7 days' numbers as plain text to copy into WhatsApp | super, ops |

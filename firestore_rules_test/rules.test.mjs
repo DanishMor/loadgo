@@ -5554,3 +5554,33 @@ describe('trip surveys (M6-7)', () => {
     await assertSucceeds(deleteDoc(doc(as('c1'), 'trip_surveys', 'b1_c1')));
   });
 });
+
+describe('payment nudges (M6-8)', () => {
+  const N = (over = {}) => ({ bookingId: 'b1', userId: 'c1', target: 'customer', by: 'admin1', count: 1, lastAt: serverTimestamp(), ...over });
+  const seedNudge = (hoursAgo) => seed((db) => rawSetDoc(doc(db, 'payment_nudges', 'b1_customer'), N({ lastAt: Timestamp.fromMillis(Date.now() - hoursAgo * 3600000) })));
+
+  test('an admin creates one with the right id; others cannot', async () => {
+    await assertSucceeds(rawSetDoc(doc(asAdmin(), 'payment_nudges', 'b1_customer'), N()));
+    await assertFails(rawSetDoc(doc(asAdmin(), 'payment_nudges', 'b1_driver'), N()));
+    await assertFails(rawSetDoc(doc(asAdmin(), 'payment_nudges', 'b2_customer'), N({ count: 5 })));
+    await assertFails(rawSetDoc(doc(as('c1'), 'payment_nudges', 'b1_customer'), N({ by: 'c1' })));
+  });
+
+  test('a second nudge needs a six-hour gap and counts up by one', async () => {
+    await seedNudge(1);
+    await assertFails(updateDoc(doc(asAdmin(), 'payment_nudges', 'b1_customer'), { count: 2, lastAt: serverTimestamp(), by: 'admin1' }));
+    await seedNudge(7);
+    await assertFails(updateDoc(doc(asAdmin(), 'payment_nudges', 'b1_customer'), { count: 5, lastAt: serverTimestamp(), by: 'admin1' }));
+    await assertFails(updateDoc(doc(asAdmin(), 'payment_nudges', 'b1_customer'), { count: 2, lastAt: serverTimestamp(), by: 'admin1', userId: 'someone' }));
+    await assertSucceeds(updateDoc(doc(asAdmin(), 'payment_nudges', 'b1_customer'), { count: 2, lastAt: serverTimestamp(), by: 'admin1' }));
+  });
+
+  test('the person reads and clears their own; others cannot', async () => {
+    await seedNudge(1);
+    await assertSucceeds(getDoc(doc(as('c1'), 'payment_nudges', 'b1_customer')));
+    await assertSucceeds(getDocs(query(collection(as('c1'), 'payment_nudges'), where('userId', '==', 'c1'))));
+    await assertFails(getDoc(doc(as('d1'), 'payment_nudges', 'b1_customer')));
+    await assertFails(deleteDoc(doc(as('d1'), 'payment_nudges', 'b1_customer')));
+    await assertSucceeds(deleteDoc(doc(as('c1'), 'payment_nudges', 'b1_customer')));
+  });
+});

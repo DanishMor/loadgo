@@ -3480,6 +3480,29 @@ service cloud.firestore {
       allow delete: if signedIn() && resource.data.uid == request.auth.uid;
     }
 
+    // payment_nudges/{bookingId}_{customer|driver} (MASTER-6 Task 8): an admin
+    // reminds the party that is slow with a payment record. The person reads
+    // their own; a second nudge needs a six-hour gap.
+    // TODO(functions): send a push.
+    match /payment_nudges/{id} {
+      allow read: if isAdmin() || (signedIn() && resource.data.userId == request.auth.uid);
+      allow create: if adminIn(['super', 'ops', 'support'])
+          && request.resource.data.keys().hasOnly(['bookingId', 'userId', 'target', 'by', 'count', 'lastAt'])
+          && request.resource.data.target in ['customer', 'driver']
+          && request.resource.data.bookingId is string && request.resource.data.userId is string
+          && id == request.resource.data.bookingId + '_' + request.resource.data.target
+          && request.resource.data.by == request.auth.uid
+          && request.resource.data.count == 1
+          && request.resource.data.lastAt == request.time;
+      allow update: if adminIn(['super', 'ops', 'support'])
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['count', 'lastAt', 'by'])
+          && request.resource.data.count == resource.data.count + 1
+          && request.resource.data.by == request.auth.uid
+          && request.resource.data.lastAt == request.time
+          && request.time > resource.data.lastAt + duration.value(6, 'h');
+      allow delete: if signedIn() && resource.data.userId == request.auth.uid;
+    }
+
     match /config/{docId} {
       allow read: if signedIn();
       allow create, update: if adminIn(['super']) && validConfig(docId);

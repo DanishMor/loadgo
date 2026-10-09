@@ -55,6 +55,7 @@ void main() {
       'adminPilotReport': 'Pilot report',
       'adminCohorts': 'Pilot cohorts',
       'adminSurveys': 'Use-again survey',
+      'adminPayAging': 'Payment aging',
       'adminPilotControl': 'Pilot control room',
       'flaggedUsers': 'Flagged users',
       'adminDeletionRequests': 'Deletion requests',

@@ -63,6 +63,7 @@ import 'dispatch_strings.dart';
 import 'pilot_report_strings.dart';
 import 'pilot_cohort_strings.dart';
 import 'survey_strings.dart';
+import 'payment_aging_strings.dart';
 import 'admin_list_strings.dart';
 import 'statement_strings.dart';
 import 'evidence_timeline_strings.dart';
@@ -140,6 +141,7 @@ const List<Map<String, List<String>>> stringTables = [
   pilotReportStrings,
   pilotCohortStrings,
   surveyStrings,
+  paymentAgingStrings,
   adminListStrings,
   statementStrings,
   evidenceTimelineStrings,
