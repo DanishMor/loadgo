@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../analytics/unit_economics.dart';
 import 'server_clock.dart';
+import '../admin/admin_search.dart';
 import '../admin/dispatch.dart';
 import '../admin/pilot_control.dart';
 import '../admin/payment_aging.dart';
@@ -559,6 +560,63 @@ class AdminConsoleService {
     }
     AuditService.inBatch(batch, AuditType.userAction, targetId: row.bookingId, bookingId: row.bookingId, data: {'action': 'payment_nudge', 'collection': 'payment_nudges', 'target': row.waitingOn});
     await batch.commit();
+  }
+
+  /// Runs the lookups of [plan] (about one read each; names read up to 5 per
+  /// spelling). Phone numbers are matched but never shown in a result.
+  static Future<List<AdminHit>> search(AdminSearchPlan plan) => withRetry(() async {
+        final hits = <AdminHit>[];
+        String s(Object? v) => v == null ? '' : '$v';
+        for (final e in plan.lookups.entries) {
+          switch (e.key) {
+            case AdminLookup.booking:
+              final d = await _db.collection('bookings').doc(e.value).get();
+              if (d.exists) {
+                final m = d.data()!;
+                hits.add(AdminHit(kind: AdminLookup.booking, id: d.id, title: d.id, subtitle: '${s(m['pickup'])} → ${s(m['drop'])} · ${s(m['status'])}', bookingId: d.id));
+              }
+            case AdminLookup.lr:
+              final q = await _db.collection('lrs').where('lrNo', isEqualTo: e.value).limit(5).get();
+              for (final d in q.docs) {
+                final m = d.data();
+                hits.add(AdminHit(kind: AdminLookup.lr, id: d.id, title: s(m['lrNo']), subtitle: '${s(m['route'])} · ${s(m['status'])}', bookingId: s(m['bookingId'])));
+              }
+            case AdminLookup.vehicle:
+              final q = await _db.collection('vehicles').where('number', isEqualTo: e.value).limit(5).get();
+              for (final d in q.docs) {
+                final m = d.data();
+                hits.add(AdminHit(kind: AdminLookup.vehicle, id: d.id, title: s(m['number']), subtitle: '${s(m['type'])} · ${s(m['status'])}', uid: s(m['ownerId'])));
+              }
+            case AdminLookup.phone:
+              final q = await _db.collection('users').where('phone', isEqualTo: e.value).limit(5).get();
+              for (final d in q.docs) {
+                hits.add(_userHit(d.id, d.data()));
+              }
+            case AdminLookup.name:
+              final seen = <String>{};
+              for (final field in const ['name', 'driverName']) {
+                for (final v in AdminSearch.nameVariants(e.value)) {
+                  final q = await _db.collection('users').where(field, isGreaterThanOrEqualTo: v).where(field, isLessThan: '$v\uf8ff').limit(5).get();
+                  for (final d in q.docs) {
+                    if (seen.add(d.id)) hits.add(_userHit(d.id, d.data()));
+                  }
+                }
+              }
+          }
+        }
+        return hits;
+      });
+
+  /// A few plain fields of a booking for the search sheet (no phone numbers).
+  static Future<Map<String, dynamic>?> bookingSummary(String id) async {
+    final m = (await _db.collection('bookings').doc(id).get()).data();
+    if (m == null) return null;
+    return {for (final k in const ['pickup', 'drop', 'status', 'customerId', 'driverId']) k: m[k]};
+  }
+
+  static AdminHit _userHit(String id, Map<String, dynamic> m) {
+    final name = '${m['driverName'] ?? m['name'] ?? ''}';
+    return AdminHit(kind: AdminLookup.name, id: id, title: name.isEmpty ? id : name, subtitle: '${m['role'] ?? ''}', uid: id);
   }
 
   static Future<HealthCounts> health() => withRetry(_health);

@@ -22,6 +22,7 @@ import 'admin_pilot_report_screen.dart';
 import 'admin_cohorts_screen.dart';
 import 'admin_surveys_screen.dart';
 import 'admin_payment_aging_screen.dart';
+import 'admin_search_screen.dart';
 import 'admin_supply_demand_screen.dart';
 import 'admin_health_screen.dart';
 import 'admin_templates_screen.dart';
@@ -82,6 +83,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       ('adminTemplates', 'adminTemplates', Icons.quickreply_outlined, const AdminTemplatesScreen()),
       ('adminSupplyDemand', 'adminSupplyDemand', Icons.balance_rounded, const AdminSupplyDemandScreen()),
       ('adminPilotControl', 'adminPilotControl', Icons.dashboard_customize_outlined, const AdminPilotControlScreen()),
+      ('adminSearch', 'adminSearch', Icons.search_rounded, const AdminSearchScreen()),
       ('adminPayAging', 'adminPayAging', Icons.hourglass_bottom_rounded, const AdminPaymentAgingScreen()),
       ('adminSurveys', 'adminSurveys', Icons.thumbs_up_down_outlined, const AdminSurveysScreen()),
       ('adminCohorts', 'adminCohorts', Icons.query_stats_rounded, const AdminCohortsScreen()),
