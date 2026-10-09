@@ -50,6 +50,8 @@ class TransporterService {
     await ref.update({
       'companyName': p.company.trim(),
       'fleet': TransporterProfile(pan: pan, officeCity: p.officeCity, routes: p.routes, vehicleTypes: p.vehicleTypes, vehicleCount: p.vehicleCount).toFleetMap(),
+      // A corrected profile after a rejection goes back to review (Task 27).
+      if (before?['verificationStatus'] == 'rejected') ...{'verificationStatus': 'pending', 'verified': false},
       'updatedAt': FieldValue.serverTimestamp(),
     });
   }
@@ -57,10 +59,20 @@ class TransporterService {
   // ---- vehicles ----
 
   /// Vehicles members attached to this transporter.
+  ///
+  /// Only vehicles of drivers who are still active members count: when a driver
+  /// leaves or is removed the vehicle is no longer the transporter's to run
+  /// (the rules say so too), so it drops out of this list (MASTER-6 Task 27).
   static Stream<List<Vehicle>> watchAttached() {
     final uid = Backend.uid;
     if (uid == null) return Stream.value(const []);
-    return _db.collection('vehicles').where('attachedTo', isEqualTo: uid).snapshots().map((s) => s.docs.map(Vehicle.fromDoc).toList());
+    return _db.collection('vehicles').where('attachedTo', isEqualTo: uid).snapshots().asyncMap((s) async {
+      final vehicles = s.docs.map(Vehicle.fromDoc).toList();
+      if (vehicles.isEmpty) return vehicles;
+      final members = await _db.collection('fleet_members').where('ownerId', isEqualTo: uid).get();
+      final active = {for (final m in members.docs) if (m.data()['active'] != false) '${m.data()['driverId'] ?? ''}'};
+      return [for (final v in vehicles) if (active.contains(v.ownerId)) v];
+    });
   }
 
   /// The signed-in driver attaches [vehicleId] to [transporterId] (they must

@@ -158,7 +158,7 @@ class UserService {
         'identityHashes': hashes,
         'fleetProfileComplete': true,
         // The admin's earlier decision is never overwritten; a new account waits for review.
-        if (before == null || before['verificationStatus'] == null) ...{'verificationStatus': 'pending', 'verified': false},
+        if (before == null || before['verificationStatus'] == null || before['verificationStatus'] == 'rejected') ...{'verificationStatus': 'pending', 'verified': false},
         'updatedAt': FieldValue.serverTimestamp(),
       },
       SetOptions(merge: true),

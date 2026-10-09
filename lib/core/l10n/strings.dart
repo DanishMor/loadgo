@@ -80,6 +80,7 @@ import 'sync_strings.dart';
 import 'bid_assistant_strings.dart';
 import 'wallet_clarity_strings.dart';
 import 'safety_checks_strings.dart';
+import 'transporter_onboarding_strings.dart';
 import 'admin_list_strings.dart';
 import 'statement_strings.dart';
 import 'evidence_timeline_strings.dart';
@@ -174,6 +175,7 @@ const List<Map<String, List<String>>> stringTables = [
   bidAssistantStrings,
   walletClarityStrings,
   safetyChecksStrings,
+  transporterOnboardingStrings,
   adminListStrings,
   statementStrings,
   evidenceTimelineStrings,

@@ -8,6 +8,7 @@ import '../core/profile/profile_view.dart';
 import 'fleet_dashboard.dart';
 import 'transporter_fleet_screen.dart';
 import 'transporter_loads_screen.dart';
+import 'transporter_onboarding_card.dart';
 import 'transporter_shortcuts.dart';
 import 'transporter_trips_screen.dart';
 import '../core/widgets/common.dart';
@@ -28,7 +29,7 @@ class _FleetHomeScreenState extends State<FleetHomeScreen> {
   @override
   Widget build(BuildContext context) {
     final pages = <Widget>[
-      const FleetDashboard(header: Column(children: [AnnouncementBanner(role: 'fleet'), RoleTourCard(role: RoleTour.fleet), TransporterShortcuts()])),
+      const FleetDashboard(header: Column(children: [AnnouncementBanner(role: 'fleet'), TransporterOnboardingCard(), RoleTourCard(role: RoleTour.fleet), TransporterShortcuts()])),
       const TransporterLoadsScreen(),
       const TransporterTripsScreen(),
       const TransporterFleetScreen(),

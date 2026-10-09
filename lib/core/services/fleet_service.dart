@@ -154,6 +154,17 @@ class FleetService {
         ].where((m) => m.active).toList());
   }
 
-  static Future<void> leave(FleetMember m) =>
-      _db.collection('fleet_members').doc(m.id).update({'active': false, 'endedAt': FieldValue.serverTimestamp()});
+  /// The driver leaves a fleet; the vehicles they attached to that owner are detached too.
+  static Future<void> leave(FleetMember m) async {
+    final batch = _db.batch();
+    final uid = Backend.uid;
+    if (uid != null) {
+      final attached = await _db.collection('vehicles').where('ownerId', isEqualTo: uid).where('attachedTo', isEqualTo: m.ownerId).get();
+      for (final v in attached.docs) {
+        batch.update(v.reference, {'attachedTo': FieldValue.delete(), 'updatedAt': FieldValue.serverTimestamp()});
+      }
+    }
+    batch.update(_db.collection('fleet_members').doc(m.id), {'active': false, 'endedAt': FieldValue.serverTimestamp()});
+    await batch.commit();
+  }
 }
