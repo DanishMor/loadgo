@@ -1,3 +1,4 @@
+import '../core/drafts/smart_defaults.dart';
 import 'dart:async';
 
 import '../core/drafts/load_draft.dart';
@@ -136,6 +137,10 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
   // ---- draft (Task 15): kept on this phone, saved a moment after typing stops ----
   LoadDraft? _draft;
   Timer? _draftTimer;
+
+  // ---- smart defaults (Task 16) ----
+  LastRoute? _lastRoute;
+  List<GoodsPreset> _presets = const [];
 
   LoadDraft _draftNow() => LoadDraft(
         pickup: _pickupCtrl.text,
@@ -324,6 +329,12 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
     _initial = _typedNow();
     final plainOpen = widget.repostFrom == null && widget.initialPickup == null && widget.initialDrop == null && widget.initialWeight == null && widget.initialVehicleType == null && widget.dueDate == null;
     if (plainOpen) {
+      SmartDefaults.lastRoute().then((r) {
+        if (mounted && r != null) setState(() => _lastRoute = r);
+      });
+      SmartDefaults.presets().then((p) {
+        if (mounted) setState(() => _presets = p);
+      });
       LoadDraftStore.load().then((d) {
         if (mounted && d != null) setState(() => _draft = d);
       });
@@ -659,6 +670,8 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
       _draftLocked = true;
       _draftTimer?.cancel();
       unawaited(LoadDraftStore.clear());
+      final w = num.tryParse(_weightCtrl.text.trim());
+      if (w != null) unawaited(SmartDefaults.record(pickup: _pickupCtrl.text, drop: _dropCtrl.text, cargo: _cargoType, weight: w, vehicleType: _vehicleType));
       Navigator.of(context).pop(true);
     } on PromoException catch (e) {
       if (!mounted) return;
@@ -742,6 +755,19 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
                   trailing: _savedPlaceButton(_pickupCtrl),
                   validator: _requiredText,
                 ),
+                if (_lastRoute != null && _pickupCtrl.text.trim().isEmpty && _dropCtrl.text.trim().isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 6),
+                    child: ActionChip(
+                      key: const ValueKey('sdLastRoute'),
+                      avatar: const Icon(Icons.history_rounded, size: 18),
+                      label: Text(trf(context, 'sdLast', {'from': _lastRoute!.pickup, 'to': _lastRoute!.drop})),
+                      onPressed: () => setState(() {
+                        _pickupCtrl.text = _lastRoute!.pickup;
+                        _dropCtrl.text = _lastRoute!.drop;
+                      }),
+                    ),
+                  ),
                 for (final (i, c) in _extraPickups.indexed)
                   _stopField(c, trf(context, 'pickupStopN', {'n': i + 2}), _extraPickups, pickup: true),
                 _addStopButton(_extraPickups, 'addPickupStop', 'addPickupStop'),
@@ -759,6 +785,23 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
                 _addStopButton(_extraDrops, 'addDropStop', 'addDropStop'),
                 const SizedBox(height: 18),
                 _StepHeader(2, 'wizGoods'),
+                if (_presets.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Wrap(spacing: 8, runSpacing: 4, crossAxisAlignment: WrapCrossAlignment.center, children: [
+                      Text(tr(context, 'sdUsual'), style: TextStyle(color: AppColors.muted, fontSize: 12)),
+                      for (final (i, p) in _presets.indexed)
+                        ActionChip(
+                          key: ValueKey('sdPreset_$i'),
+                          label: Text('${p.cargo} · ${formatNum(p.weight)} t'),
+                          onPressed: () => setState(() {
+                            if (cargoTypes.contains(p.cargo)) _cargoType = p.cargo;
+                            _weightCtrl.text = formatNum(p.weight);
+                            if (VehicleTypeService.byId(p.vehicleType) != null) _vehicleType = p.vehicleType;
+                          }),
+                        ),
+                    ]),
+                  ),
                 FieldLabel(tr(context, 'cargoType')),
                 DropdownButtonFormField<String>(
                   isExpanded: true,
@@ -792,6 +835,25 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
                     _formKey.currentState?.validate();
                   },
                 ),
+                Builder(builder: (context) {
+                  final w = num.tryParse(_weightCtrl.text.trim());
+                  final s = SmartDefaults.suggestVehicle(w, VehicleTypeService.types);
+                  final current = VehicleTypeService.byId(_vehicleType);
+                  // Offer it when the chosen vehicle cannot carry the weight, or a smaller one would do.
+                  if (s == null || s.id == _vehicleType || (current != null && current.fits(w!) && current.maxTons <= s.maxTons)) return const SizedBox.shrink();
+                  return Padding(
+                    padding: const EdgeInsets.only(top: 6),
+                    child: ActionChip(
+                      key: const ValueKey('sdSuggestVehicle'),
+                      avatar: const Icon(Icons.lightbulb_outline_rounded, size: 18),
+                      label: Text(trf(context, 'sdSuggest', {'type': vehicleTypeLabel(context, s.id), 'w': formatNum(w!)})),
+                      onPressed: () {
+                        setState(() => _vehicleType = s.id);
+                        _formKey.currentState?.validate();
+                      },
+                    ),
+                  );
+                }),
                 MatchingVehiclesLine(vehicleType: _vehicleType, weight: num.tryParse(_weightCtrl.text.trim())),
                 SwitchListTile(
                   key: const ValueKey('fragileSwitch'),
