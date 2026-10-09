@@ -66,6 +66,7 @@ import 'survey_strings.dart';
 import 'payment_aging_strings.dart';
 import 'admin_search_strings.dart';
 import 'user_overview_strings.dart';
+import 'config_editor_strings.dart';
 import 'admin_list_strings.dart';
 import 'statement_strings.dart';
 import 'evidence_timeline_strings.dart';
@@ -146,6 +147,7 @@ const List<Map<String, List<String>>> stringTables = [
   paymentAgingStrings,
   adminSearchStrings,
   userOverviewStrings,
+  configEditorStrings,
   adminListStrings,
   statementStrings,
   evidenceTimelineStrings,

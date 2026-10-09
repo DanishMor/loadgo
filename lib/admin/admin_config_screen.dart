@@ -1,3 +1,4 @@
+import '../core/admin/config_schema.dart';
 import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -89,6 +90,9 @@ class _ConfigEditorScreenState extends State<ConfigEditorScreen> {
   final _text = TextEditingController();
   bool _loaded = false;
 
+  /// The version on screen when it was loaded (null: no saved document yet); the diff and the kind check use it.
+  Map<String, dynamic>? _saved;
+
   @override
   void initState() {
     super.initState();
@@ -110,6 +114,7 @@ class _ConfigEditorScreenState extends State<ConfigEditorScreen> {
 
   Future<void> _load() async {
     var data = await AdminConsoleService.readConfig(widget.docId);
+    if (data != null) _saved = (_plain(Map<String, dynamic>.of(data)..remove('updatedAt')) as Map).cast<String, dynamic>();
     // No document yet: start from what the app currently uses.
     data ??= switch (widget.docId) {
       'pricing' => PricingService.config.toMap(),
@@ -138,8 +143,57 @@ class _ConfigEditorScreenState extends State<ConfigEditorScreen> {
       showSnack(context, tr(context, 'adminConfigInvalid'));
       return;
     }
+    final issues = ConfigSchema.validate(widget.docId, parsed, before: _saved);
+    if (issues.isNotEmpty) {
+      await showDialog<void>(
+        context: context,
+        builder: (c) => AlertDialog(
+          title: Text(tr(c, 'cfgProblems')),
+          content: SingleChildScrollView(
+            key: const ValueKey('cfgIssues'),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              for (final i in issues.take(12)) Padding(padding: const EdgeInsets.only(bottom: 6), child: Text('${i.path.isEmpty ? '' : '${i.path}: '}${tr(c, i.messageKey)}')),
+              if (issues.length > 12) Text(trf(c, 'cfgMore', {'n': issues.length - 12})),
+            ]),
+          ),
+          actions: [TextButton(onPressed: () => Navigator.pop(c), child: Text(tr(c, 'wlGotIt')))],
+        ),
+      );
+      return;
+    }
+    final changes = ConfigSchema.diff(_saved, parsed);
+    if (changes.isEmpty) {
+      showSnack(context, tr(context, 'cfgNoChange'));
+      return;
+    }
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (c) => AlertDialog(
+        title: Text(trf(c, 'cfgReview', {'n': changes.length})),
+        content: SingleChildScrollView(
+          key: const ValueKey('cfgDiff'),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            for (final ch in changes.take(20))
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Text(ch.path, style: const TextStyle(fontWeight: FontWeight.w700)),
+                  Text('${ch.before ?? tr(c, 'cfgAdded')}  →  ${ch.after ?? tr(c, 'cfgRemoved')}', style: const TextStyle(fontFamily: 'monospace', fontSize: 12)),
+                ]),
+              ),
+            if (changes.length > 20) Text(trf(c, 'cfgMore', {'n': changes.length - 20})),
+          ]),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(c, false), child: Text(tr(c, 'cancel'))),
+          FilledButton(key: const ValueKey('cfgConfirm'), onPressed: () => Navigator.pop(c, true), child: Text(tr(c, 'cfgConfirm'))),
+        ],
+      ),
+    );
+    if (ok != true || !mounted) return;
     try {
       await AdminConsoleService.writeConfig(widget.docId, parsed);
+      _saved = (_plain(parsed) as Map).cast<String, dynamic>();
       if (widget.docId == 'pricing') await PricingService.refresh();
       if (widget.docId == 'vehicle_types') await VehicleTypeService.refresh();
       if (widget.docId == 'risk') await RiskConfigStore.refresh();
@@ -150,10 +204,41 @@ class _ConfigEditorScreenState extends State<ConfigEditorScreen> {
     }
   }
 
+  Future<void> _history() async {
+    final List<ConfigVersion> versions;
+    try {
+      versions = await AdminConsoleService.configHistory(widget.docId);
+    } catch (_) {
+      if (mounted) showSnack(context, tr(context, 'somethingWrong'));
+      return;
+    }
+    if (!mounted) return;
+    final picked = await showModalBottomSheet<ConfigVersion>(
+      context: context,
+      builder: (c) => SafeArea(
+        child: versions.isEmpty
+            ? Padding(padding: const EdgeInsets.all(24), child: Text(tr(c, 'cfgHistoryEmpty'), key: const ValueKey('cfgHistoryEmpty')))
+            : ListView(shrinkWrap: true, children: [
+                Padding(padding: const EdgeInsets.all(16), child: Text(tr(c, 'cfgHistory'), style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16))),
+                for (final v in versions)
+                  ListTile(
+                    key: ValueKey('cfgVersion_${v.id}'),
+                    title: Text(v.at == null ? v.id : formatDateTime(v.at!)),
+                    subtitle: Text('${v.by} · ${ConfigSchema.diff(_saved, v.data).length}'),
+                    onTap: () => Navigator.pop(c, v),
+                  ),
+              ]),
+      ),
+    );
+    if (picked == null || !mounted) return;
+    setState(() => _text.text = const JsonEncoder.withIndent('  ').convert(picked.data));
+    showSnack(context, tr(context, 'cfgLoaded'));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(tr(context, widget.titleKey))),
+      appBar: AppBar(title: Text(tr(context, widget.titleKey)), actions: [IconButton(key: const ValueKey('cfgHistoryButton'), tooltip: tr(context, 'cfgHistory'), icon: const Icon(Icons.history_rounded), onPressed: _loaded ? _history : null)]),
       body: !_loaded
           ? const Center(child: CircularProgressIndicator())
           : Padding(

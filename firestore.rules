@@ -3503,6 +3503,19 @@ service cloud.firestore {
       allow delete: if signedIn() && resource.data.userId == request.auth.uid;
     }
 
+    // config_history/{id} (MASTER-6 Task 13): the version of a config document
+    // that a save replaced, so a super admin can put it back. Append-only.
+    match /config_history/{id} {
+      allow read: if adminIn(['super']);
+      allow create: if adminIn(['super'])
+          && request.resource.data.keys().hasOnly(['docId', 'json', 'by', 'createdAt'])
+          && request.resource.data.docId is string && request.resource.data.docId.size() >= 1 && request.resource.data.docId.size() <= 40
+          && request.resource.data.json is string && request.resource.data.json.size() <= 30000
+          && request.resource.data.by == request.auth.uid
+          && request.resource.data.createdAt == request.time;
+      allow update, delete: if false;
+    }
+
     match /config/{docId} {
       allow read: if signedIn();
       allow create, update: if adminIn(['super']) && validConfig(docId);

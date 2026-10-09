@@ -1,10 +1,12 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../analytics/unit_economics.dart';
 import 'server_clock.dart';
 import '../admin/admin_search.dart';
+import '../admin/config_schema.dart';
 import '../admin/dispatch.dart';
 import '../admin/pilot_control.dart';
 import '../admin/payment_aging.dart';
@@ -305,7 +307,35 @@ class AdminConsoleService {
     final batch = _db.batch();
     batch.set(ref, {...data, 'updatedAt': FieldValue.serverTimestamp()});
     AuditService.inBatch(batch, AuditType.configChange, targetId: docId, data: {'doc': docId, 'changedKeys': changed});
+    // The version being replaced, so it can be put back (Task 13).
+    if (before.isNotEmpty) {
+      final json = jsonEncode(_plainConfig(Map<String, dynamic>.of(before)..remove('updatedAt')));
+      if (json.length <= ConfigHistory.maxJson) {
+        batch.set(_db.collection('config_history').doc(), {'docId': docId, 'json': json, 'by': Backend.requireUid(), 'createdAt': FieldValue.serverTimestamp()});
+      }
+    }
     await batch.commit();
+  }
+
+  static Object? _plainConfig(Object? v) => switch (v) {
+        Timestamp t => t.toDate().toIso8601String(),
+        Map m => {for (final e in m.entries) e.key.toString(): _plainConfig(e.value)},
+        List l => [for (final e in l) _plainConfig(e)],
+        _ => v,
+      };
+
+  /// The saved versions of `config/[docId]`, newest first (up to 10).
+  static Future<List<ConfigVersion>> configHistory(String docId) async {
+    final snap = await _db.collection('config_history').where('docId', isEqualTo: docId).orderBy('createdAt', descending: true).limit(10).get();
+    return [
+      for (final d in snap.docs)
+        ConfigVersion(
+          id: d.id,
+          by: '${d.data()['by'] ?? ''}',
+          at: (d.data()['createdAt'] as Timestamp?)?.toDate(),
+          data: (jsonDecode('${d.data()['json'] ?? '{}'}') as Map).cast<String, dynamic>(),
+        ),
+    ];
   }
 
   /// Waitlist entries (newest first).
@@ -657,4 +687,13 @@ class AdminConsoleService {
       deliveredFarePaise: sum,
     );
   }
+}
+
+/// One saved version of a config document (see [AdminConsoleService.configHistory]).
+class ConfigVersion {
+  final String id;
+  final String by;
+  final DateTime? at;
+  final Map<String, dynamic> data;
+  const ConfigVersion({required this.id, required this.by, required this.at, required this.data});
 }

@@ -5627,3 +5627,26 @@ describe('finance staff role (M6-9)', () => {
     await assertSucceeds(getDoc(doc(staff('fin1'), 'users', 'u9')));
   });
 });
+
+describe('config history (M6-13)', () => {
+  const H = (over = {}) => ({ docId: 'support', json: '{"phone":"1"}', by: 'admin1', createdAt: serverTimestamp(), ...over });
+
+  test('only a super admin writes a version, append-only, with a valid shape', async () => {
+    await seed((db) => setDoc(doc(db, 'admins', 'ops1'), { role: 'ops' }));
+    await assertSucceeds(addDoc(collection(asAdmin(), 'config_history'), H()));
+    await assertFails(addDoc(collection(env.authenticatedContext('ops1').firestore(), 'config_history'), H({ by: 'ops1' })));
+    await assertFails(addDoc(collection(as('u1'), 'config_history'), H({ by: 'u1' })));
+    await assertFails(addDoc(collection(asAdmin(), 'config_history'), H({ json: 'x'.repeat(30001) })));
+    await assertFails(addDoc(collection(asAdmin(), 'config_history'), H({ by: 'someone' })));
+    await assertFails(addDoc(collection(asAdmin(), 'config_history'), H({ extra: 1 })));
+  });
+
+  test('super reads them; nobody edits or deletes', async () => {
+    await seed((db) => setDoc(doc(db, 'config_history', 'h1'), H({ createdAt: Timestamp.now() })));
+    await assertSucceeds(getDoc(doc(asAdmin(), 'config_history', 'h1')));
+    await assertSucceeds(getDocs(query(collection(asAdmin(), 'config_history'), where('docId', '==', 'support'))));
+    await assertFails(getDoc(doc(as('u1'), 'config_history', 'h1')));
+    await assertFails(updateDoc(doc(asAdmin(), 'config_history', 'h1'), { json: '{}' }));
+    await assertFails(deleteDoc(doc(asAdmin(), 'config_history', 'h1')));
+  });
+});

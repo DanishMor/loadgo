@@ -150,6 +150,8 @@ void main() {
     await tester.enterText(find.byKey(const ValueKey('configJson')), '{"platformFeePercent": 7}');
     await tester.tap(find.byKey(const ValueKey('saveConfig')));
     await settle(tester);
+    await tester.tap(find.byKey(const ValueKey('cfgConfirm'))); // the diff preview
+    await settle(tester);
     expect((await db.collection('config').doc('pricing').get())['platformFeePercent'], 7);
     await tester.pump(const Duration(seconds: 8)); // let the "saved" snackbar go
     await tester.pumpAndSettle();
