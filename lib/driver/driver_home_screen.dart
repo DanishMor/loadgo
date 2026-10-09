@@ -1,5 +1,6 @@
 import '../core/widgets/sync_indicator.dart';
 import 'driver_today.dart';
+import '../core/trust/trust_badges_card.dart';
 import '../core/pilot/dispatch_card.dart';
 import '../core/pilot/payment_nudge_card.dart';
 import 'favourite_routes_screen.dart';
@@ -330,6 +331,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
               onPapers: _openVehicles,
               onLoads: () => _selectTab(_loadsTab),
             ),
+            TrustBadgesCard(bookings: _todayTrips),
             const AnnouncementBanner(role: 'driver'),
             const DispatchSuggestionsCard(),
             const PaymentNudgeCard(target: 'driver'),
