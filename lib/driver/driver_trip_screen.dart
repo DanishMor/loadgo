@@ -3,6 +3,7 @@ import '../core/services/backend.dart';
 import '../core/services/trip_action_queue.dart';
 import '../core/services/connectivity_service.dart';
 import '../core/widgets/sync_indicator.dart';
+import '../core/safety/trip_safety_checks_card.dart';
 import 'package:flutter/material.dart';
 
 import '../core/claims/claim_screens.dart';
@@ -76,6 +77,8 @@ class DriverTripScreen extends StatelessWidget {
             ),
             const SizedBox(height: 14),
             TripSafetyCard(booking: booking),
+            const SizedBox(height: 10),
+            TripSafetyChecksCard(booking: booking),
           ],
           if (booking.status == BookingStatus.driverArriving) ...[
             const SizedBox(height: 14),
