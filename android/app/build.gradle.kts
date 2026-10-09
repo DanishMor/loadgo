@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     // START: FlutterFire Configuration
@@ -16,7 +18,7 @@ val loadgoApplicationId = (project.findProperty("loadgo.applicationId") as Strin
 
 // Release signing comes from android/key.properties (never committed, see
 // docs/ANDROID_RELEASE.md). Without it a release build falls back to the debug key.
-val keystoreProps = java.util.Properties().apply {
+val keystoreProps = Properties().apply {
     val f = rootProject.file("key.properties")
     if (f.exists()) f.inputStream().use { load(it) }
 }

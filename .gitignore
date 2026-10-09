@@ -52,3 +52,9 @@ app.*.map.json
 android/key.properties
 *.jks
 *.keystore
+
+# Build output
+android/build/
+android/app/build/
+android/.gradle/
+*.hprof
