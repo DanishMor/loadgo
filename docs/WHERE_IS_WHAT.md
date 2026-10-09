@@ -129,6 +129,7 @@ Admin Panel: **Profile > Admin** (only for accounts in `admins/{uid}`). The pane
 | Sahayak, Feedback, Templates | assistant and reply templates | super, support |
 | Health | app health | super, ops |
 | Supply and demand, Unit economics | numbers | super (supply and demand also ops) |
+| Waitlist | people who asked to hear when a closed route opens (search, CSV) | super, ops |
 | Invite codes | pilot codes per role / route with uses and last day; let a phone number in without a code | super, ops |
 | Pilot funnel | where customers, drivers and transporters stop before a first delivery | super, ops |
 | Features | the flags above, with a line of meaning for each | super |

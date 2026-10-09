@@ -1,6 +1,7 @@
 import '../core/assistant/sahayak_screen.dart';
 import '../core/search/global_search_screen.dart';
 import '../core/services/backend.dart';
+import '../core/pilot/waitlist.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -287,6 +288,7 @@ class _CustomerHomeContent extends StatelessWidget {
             ),
             const SizedBox(height: 25),
             const AnnouncementBanner(role: 'customer'),
+            const WaitlistOpenCard(),
             const RoleTourCard(role: RoleTour.customer),
             Container(
               height: 54,

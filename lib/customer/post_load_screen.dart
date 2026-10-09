@@ -36,6 +36,7 @@ import '../core/models/repeat.dart';
 import '../core/services/recurring_service.dart';
 import '../core/services/repeat_service.dart';
 import '../core/services/rate_limit_service.dart';
+import '../core/pilot/waitlist.dart';
 
 /// Customer form to post a load. Pops with `true` once posted.
 /// [repostFrom] prefills everything except the pickup date.
@@ -498,6 +499,13 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
             : trf(context, 'scheduleTooFar', {'d': rules.maxDays}));
         return;
       }
+    }
+    final areas = await PilotAreas.refresh();
+    final closed = areas.firstClosed([_pickupCtrl.text, _dropCtrl.text]);
+    if (closed != null) {
+      if (!mounted) return;
+      await showNotServed(context, role: 'customer', closedCity: closed, from: _pickupCtrl.text, to: _dropCtrl.text.trim().isEmpty ? _pickupCtrl.text : _dropCtrl.text);
+      return;
     }
     setState(() => _saving = true);
     try {

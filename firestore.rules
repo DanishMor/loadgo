@@ -3419,6 +3419,23 @@ service cloud.firestore {
       allow delete: if adminIn(['super', 'ops']);
     }
 
+    // waitlist/{uid}_{from}_{to}: a person asks to hear when a closed route
+    // opens (MASTER-6 Task 2). The owner reads and deletes their entries;
+    // admins read them all. TODO(functions): notify on open.
+    match /waitlist/{entryId} {
+      allow read: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid);
+      allow create: if signedIn()
+          && entryId.matches(request.auth.uid + '_[a-z]{1,40}_[a-z]{1,40}')
+          && request.resource.data.keys().hasOnly(['uid', 'role', 'from', 'to', 'createdAt'])
+          && request.resource.data.uid == request.auth.uid
+          && request.resource.data.role in ['customer', 'driver', 'fleet']
+          && request.resource.data.from is string && request.resource.data.from.size() >= 2 && request.resource.data.from.size() <= 40
+          && request.resource.data.to is string && request.resource.data.to.size() >= 2 && request.resource.data.to.size() <= 40
+          && request.resource.data.createdAt == request.time;
+      allow update: if false;
+      allow delete: if signedIn() && resource.data.uid == request.auth.uid;
+    }
+
     match /config/{docId} {
       allow read: if signedIn();
       allow create, update: if adminIn(['super']) && validConfig(docId);

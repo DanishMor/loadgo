@@ -97,6 +97,9 @@ void main() {
   });
 
   testWidgets('admin screen lists codes with uses left and a switch', (tester) async {
+    tester.view.physicalSize = const Size(800, 3000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
     await tester.pumpWidget(LanguageScope(notifier: languageNotifier, child: MaterialApp(home: AdminInvitesScreen(load: () async => [const InviteCode(code: 'ABCD2345', role: 'driver', route: 'Delhi', maxUses: 5, uses: 2)]))));
     await settle(tester);
     expect(find.text('ABCD2345'), findsOneWidget);

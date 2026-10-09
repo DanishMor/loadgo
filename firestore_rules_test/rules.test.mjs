@@ -5477,3 +5477,27 @@ describe('pilot invite codes (M6-1)', () => {
     await assertFails(rawSetDoc(doc(as('u9'), 'pilot_whitelist', '919999900004'), { createdBy: 'u9', createdAt: serverTimestamp() }));
   });
 });
+
+describe('waitlist (M6-2)', () => {
+  const W = (uid, over = {}) => ({ uid, role: 'customer', from: 'Pune', to: 'Delhi', createdAt: serverTimestamp(), ...over });
+
+  test('a person joins for themselves only, with a valid shape', async () => {
+    await assertSucceeds(rawSetDoc(doc(as('u1'), 'waitlist', 'u1_pune_delhi'), W('u1')));
+    await assertFails(rawSetDoc(doc(as('u1'), 'waitlist', 'u2_pune_delhi'), W('u2')));
+    await assertFails(rawSetDoc(doc(as('u1'), 'waitlist', 'u1_pune_delhi'), W('u1', { role: 'admin' })));
+    await assertFails(rawSetDoc(doc(as('u1'), 'waitlist', 'u1_pune_delhi'), W('u1', { extra: 1 })));
+    await assertFails(rawSetDoc(doc(anon(), 'waitlist', 'u1_pune_delhi'), W('u1')));
+  });
+
+  test('owner and admins read; others cannot; only the owner deletes; no edits', async () => {
+    await seed((db) => rawSetDoc(doc(db, 'waitlist', 'u1_pune_delhi'), W('u1', { createdAt: Timestamp.now() })));
+    await assertSucceeds(getDoc(doc(as('u1'), 'waitlist', 'u1_pune_delhi')));
+    await assertSucceeds(getDoc(doc(asAdmin(), 'waitlist', 'u1_pune_delhi')));
+    await assertFails(getDoc(doc(as('u2'), 'waitlist', 'u1_pune_delhi')));
+    await assertSucceeds(getDocs(query(collection(as('u1'), 'waitlist'), where('uid', '==', 'u1'))));
+    await assertFails(getDocs(collection(as('u2'), 'waitlist')));
+    await assertFails(updateDoc(doc(as('u1'), 'waitlist', 'u1_pune_delhi'), { to: 'Agra' }));
+    await assertFails(deleteDoc(doc(as('u2'), 'waitlist', 'u1_pune_delhi')));
+    await assertSucceeds(deleteDoc(doc(as('u1'), 'waitlist', 'u1_pune_delhi')));
+  });
+});

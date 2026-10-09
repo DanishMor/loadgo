@@ -74,6 +74,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       ('adminHealth', 'adminHealth', Icons.monitor_heart_outlined, const AdminHealthScreen()),
       ('adminTemplates', 'adminTemplates', Icons.quickreply_outlined, const AdminTemplatesScreen()),
       ('adminSupplyDemand', 'adminSupplyDemand', Icons.balance_rounded, const AdminSupplyDemandScreen()),
+      ('adminWaitlist', 'adminWaitlist', Icons.hourglass_top_rounded, const AdminWaitlistScreen()),
       ('adminInvites', 'adminInvites', Icons.vpn_key_outlined, const AdminInvitesScreen()),
       ('adminPilotFunnel', 'adminPilotFunnel', Icons.filter_alt_outlined, const AdminPilotFunnelScreen()),
       ('adminUnitEconomics', 'adminUnitEconomics', Icons.calculate_outlined, const AdminUnitEconomicsScreen()),

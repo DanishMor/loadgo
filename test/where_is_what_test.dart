@@ -50,6 +50,7 @@ void main() {
       'adminSupplyDemand': 'Supply and demand',
       'adminPilotFunnel': 'Pilot funnel',
       'adminInvites': 'Invite codes',
+      'adminWaitlist': 'Waitlist',
       'flaggedUsers': 'Flagged users',
       'adminDeletionRequests': 'Deletion requests',
       'adminAudit': 'Audit log',

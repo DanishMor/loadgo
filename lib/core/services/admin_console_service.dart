@@ -300,6 +300,10 @@ class AdminConsoleService {
     await batch.commit();
   }
 
+  /// Waitlist entries (newest first).
+  static Stream<List<QueryDocumentSnapshot<Map<String, dynamic>>>> watchWaitlist() =>
+      _db.collection('waitlist').orderBy('createdAt', descending: true).limit(listLimit).snapshots().map((x) => x.docs);
+
   /// The latest audit events (admins only), newest first.
   static Stream<List<QueryDocumentSnapshot<Map<String, dynamic>>>> watchAudit({int limit = 100}) =>
       _db.collection('audit_events').orderBy('createdAt', descending: true).limit(limit).snapshots().map((s) => s.docs);

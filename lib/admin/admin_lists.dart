@@ -744,6 +744,29 @@ class AdminAuditScreen extends StatelessWidget {
   }
 }
 
+// ---- waitlist ----
+
+/// People who asked to hear when a closed route opens (MASTER-6 Task 2).
+class AdminWaitlistScreen extends StatelessWidget {
+  const AdminWaitlistScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return _LiveList(
+      titleKey: 'adminWaitlist',
+      stream: AdminConsoleService.watchWaitlist,
+      tile: (context, d) {
+        final w = d.data();
+        return ListTile(
+          key: ValueKey('waitlist_${d.id}'),
+          title: Text('${w['from']} → ${w['to']}'),
+          subtitle: Text('${w['role']} · ${_ts(w['createdAt'])}'),
+        );
+      },
+    );
+  }
+}
+
 // ---- deletion requests ----
 
 class AdminDeletionRequestsScreen extends StatelessWidget {
