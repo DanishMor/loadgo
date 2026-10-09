@@ -62,6 +62,18 @@
         "destination": "/terms.html"
       },
       {
+        "source": "/refund",
+        "destination": "/refund.html"
+      },
+      {
+        "source": "/driver-agreement",
+        "destination": "/driver-agreement.html"
+      },
+      {
+        "source": "/transporter-agreement",
+        "destination": "/transporter-agreement.html"
+      },
+      {
         "source": "/delete-account",
         "destination": "/delete-account.html"
       },
