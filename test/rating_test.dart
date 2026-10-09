@@ -76,7 +76,7 @@ void main() {
   });
 
   testWidgets('customer rates the driver from the tracking screen', (tester) async {
-    tester.view.physicalSize = const Size(800, 1800);
+    tester.view.physicalSize = const Size(800, 2600);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
     late Booking b;
