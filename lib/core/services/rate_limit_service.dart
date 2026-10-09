@@ -52,6 +52,30 @@ class RateLimit {
 
   static const window = Duration(hours: 1);
 
+  /// Actions of [kind] still allowed in the current hour for the signed-in
+  /// user (the full limit when the hour has not started).
+  static Future<int> remaining(String kind, {DateTime? now}) async {
+    final uid = Backend.uid;
+    if (uid == null) return limits[kind]!;
+    final data = (await Backend.db.collection('rate_limits').doc('${uid}_$kind').get()).data();
+    return _remainingFrom(kind, data, now ?? ServerClock.now());
+  }
+
+  /// The same, live: re-emits whenever the counter changes.
+  static Stream<int> watchRemaining(String kind, {DateTime? now}) {
+    final uid = Backend.uid;
+    if (uid == null) return Stream.value(limits[kind]!);
+    return Backend.db.collection('rate_limits').doc('${uid}_$kind').snapshots().map((s) => _remainingFrom(kind, s.data(), now ?? ServerClock.now()));
+  }
+
+  static int _remainingFrom(String kind, Map<String, dynamic>? data, DateTime t) {
+    final start = data?['windowStart'] as Timestamp?;
+    final active = start != null && start.toDate().add(window).isAfter(t);
+    final used = active ? (data!['count'] as num).toInt() : 0;
+    final left = limits[kind]! - used;
+    return left < 0 ? 0 : left;
+  }
+
   /// Reads the counter and returns what to write with the action, or throws
   /// [RateLimitException] when the hour's limit is used up.
   static Future<RateBump> prepare(

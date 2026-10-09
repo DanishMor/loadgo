@@ -13,6 +13,7 @@ import '../call/call_screens.dart';
 import '../comm/chat_strikes.dart';
 import '../services/comm_guard.dart';
 import '../services/server_clock.dart';
+import 'chat_helpers.dart';
 
 /// "Chat" button with an unread badge for a booking (both roles).
 class BookingChatButton extends StatelessWidget {
@@ -56,6 +57,8 @@ class _ChatScreenState extends State<ChatScreen> {
   late final Stream<List<ChatMessage>> _messages = ChatService.watch(widget.booking.id);
   late final String _other = ChatService.otherParty(widget.booking);
   late final Stream<bool> _blocked = ChatService.watchBlocked(_other);
+  late final Stream<DateTime?> _otherRead = ChatService.watchOtherRead(widget.booking).asBroadcastStream();
+  late final Stream<int> _left = RateLimit.watchRemaining(RateLimit.messageKind).asBroadcastStream();
   bool _sending = false;
 
   @override
@@ -69,6 +72,12 @@ class _ChatScreenState extends State<ChatScreen> {
   void dispose() {
     _ctrl.dispose();
     super.dispose();
+  }
+
+  /// Sends a ready-made line (Task 33); it goes through the same checks as typed text.
+  Future<void> _quick(String id) async {
+    _ctrl.text = tr(context, 'qr_$id');
+    await _send();
   }
 
   Future<void> _send() async {
@@ -133,7 +142,7 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-  Widget _bubble(ChatMessage m) {
+  Widget _bubble(ChatMessage m, DateTime? otherRead) {
     final mine = m.senderId == Backend.uid;
     return Align(
       alignment: mine ? Alignment.centerRight : Alignment.centerLeft,
@@ -168,8 +177,19 @@ class _ChatScreenState extends State<ChatScreen> {
                   ),
                 ),
               if (m.createdAt != null)
-                Text(formatDateTime(m.createdAt!),
-                    style: TextStyle(fontSize: 10, color: mine ? Colors.white60 : AppColors.faint)),
+                Row(mainAxisSize: MainAxisSize.min, children: [
+                  Text(formatDateTime(m.createdAt!), style: TextStyle(fontSize: 10, color: mine ? Colors.white60 : AppColors.faint)),
+                  if (mine) ...[
+                    const SizedBox(width: 4),
+                    Icon(
+                      ChatHelpers.isSeen(m, otherRead) ? Icons.done_all_rounded : Icons.done_rounded,
+                      key: ValueKey(ChatHelpers.isSeen(m, otherRead) ? 'seen_${m.id}' : 'sent_${m.id}'),
+                      size: 13,
+                      semanticLabel: tr(context, ChatHelpers.isSeen(m, otherRead) ? 'chatSeen' : 'chatSent'),
+                      color: ChatHelpers.isSeen(m, otherRead) ? Colors.lightBlueAccent : Colors.white60,
+                    ),
+                  ],
+                ]),
             ],
           ),
         ),
@@ -243,10 +263,13 @@ class _ChatScreenState extends State<ChatScreen> {
                   if (list.isEmpty) {
                     return EmptyState(icon: Icons.chat_bubble_outline_rounded, title: tr(context, 'noMessages'));
                   }
-                  return ListView(
-                    reverse: true,
-                    padding: const EdgeInsets.all(16),
-                    children: [for (final m in list.reversed) _bubble(m)],
+                  return StreamBuilder<DateTime?>(
+                    stream: _otherRead,
+                    builder: (context, read) => ListView(
+                      reverse: true,
+                      padding: const EdgeInsets.all(16),
+                      children: [for (final m in list.reversed) _bubble(m, read.data)],
+                    ),
                   );
                 },
               ),
@@ -262,7 +285,33 @@ class _ChatScreenState extends State<ChatScreen> {
                 }
                 return Padding(
                   padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
-                  child: Row(
+                  child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    SizedBox(
+                      height: 44,
+                      child: ListView(
+                        key: const ValueKey('quickReplies'),
+                        scrollDirection: Axis.horizontal,
+                        children: [
+                          for (final id in ChatHelpers.repliesFor(isDriver: Backend.uid != widget.booking.customerId))
+                            Padding(
+                              padding: const EdgeInsetsDirectional.only(end: 6),
+                              child: ActionChip(key: ValueKey('qr_$id'), label: Text(tr(context, 'qr_$id')), onPressed: _sending ? null : () => _quick(id)),
+                            ),
+                        ],
+                      ),
+                    ),
+                    StreamBuilder<int>(
+                      stream: _left,
+                      builder: (context, snap) {
+                        final n = snap.data;
+                        if (n == null || n > ChatHelpers.lowAt) return const SizedBox.shrink();
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 4),
+                          child: Text(trf(context, 'chatLeft', {'n': n}), key: const ValueKey('chatLeft'), style: TextStyle(fontSize: 12, color: n == 0 ? Colors.redAccent : AppColors.warning)),
+                        );
+                      },
+                    ),
+                    Row(
                     children: [
                       Expanded(
                         child: TextField(
@@ -283,6 +332,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       ),
                     ],
                   ),
+                  ]),
                 );
               },
             ),

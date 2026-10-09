@@ -5791,3 +5791,25 @@ describe('inspection log (M6-32)', () => {
     await assertFails(deleteDoc(doc(as('tr1'), 'lrs', 'tr1_2026_1_v1', 'inspection_log', 'e1')));
   });
 });
+
+describe('chat read marks are visible to both parties (M6-33)', () => {
+  beforeEach(async () => {
+    await seed(async (db) => {
+      await setDoc(doc(db, 'bookings', 'B1'), { customerId: 'c1', driverId: 'd1', status: 'accepted', loadId: 'L1' });
+      await setDoc(doc(db, 'bookings', 'B1', 'chat_reads', 'd1'), { lastReadAt: Timestamp.now() });
+    });
+  });
+
+  test('the customer reads the driver\'s mark (the Seen tick); a stranger does not', async () => {
+    await assertSucceeds(getDoc(doc(as('c1'), 'bookings', 'B1', 'chat_reads', 'd1')));
+    await assertSucceeds(getDoc(doc(as('d1'), 'bookings', 'B1', 'chat_reads', 'd1')));
+    await assertFails(getDoc(doc(as('x1'), 'bookings', 'B1', 'chat_reads', 'd1')));
+  });
+
+  test('only the owner of a mark writes it', async () => {
+    await assertSucceeds(rawSetDoc(doc(as('c1'), 'bookings', 'B1', 'chat_reads', 'c1'), { lastReadAt: serverTimestamp() }));
+    await assertFails(rawSetDoc(doc(as('c1'), 'bookings', 'B1', 'chat_reads', 'd1'), { lastReadAt: serverTimestamp() }));
+    await assertFails(rawSetDoc(doc(as('c1'), 'bookings', 'B1', 'chat_reads', 'c1'), { lastReadAt: serverTimestamp(), extra: 1 }));
+    await assertFails(rawSetDoc(doc(as('x1'), 'bookings', 'B1', 'chat_reads', 'x1'), { lastReadAt: serverTimestamp() }));
+  });
+});

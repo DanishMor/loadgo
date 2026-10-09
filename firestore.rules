@@ -1746,8 +1746,10 @@ service cloud.firestore {
       }
 
       // chat_reads/{uid}: when each party last read the chat (unread badge).
+      // MASTER-6 Task 33: both parties may read the mark (the "Seen" tick); only the owner writes it.
       match /chat_reads/{userId} {
-        allow read, write: if isUser(userId)
+        allow read: if signedIn() && isParty(get(docPath('bookings', bookingId)).data);
+        allow write: if isUser(userId)
             && isParty(get(docPath('bookings', bookingId)).data)
             && (request.resource == null || request.resource.data.keys().hasOnly(['lastReadAt']));
       }

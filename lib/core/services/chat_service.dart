@@ -201,6 +201,13 @@ class ChatService {
     return out.stream.distinct();
   }
 
+  /// When the other person last opened this chat (null until they did).
+  static Stream<DateTime?> watchOtherRead(Booking booking) {
+    final other = otherParty(booking);
+    if (Backend.uid == null || other.isEmpty) return Stream.value(null);
+    return _readMark(booking.id, other).snapshots().map((s) => (s.data()?['lastReadAt'] as Timestamp?)?.toDate());
+  }
+
   static Future<void> block(String otherUid) =>
       _block(Backend.requireUid(), otherUid).set({'createdAt': FieldValue.serverTimestamp()});
 
