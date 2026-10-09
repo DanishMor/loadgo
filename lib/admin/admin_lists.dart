@@ -271,7 +271,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                   if (mounted) {
                     messenger.hideCurrentSnackBar();
                     messenger.showSnackBar(SnackBar(content: Text('$undone: $n')));
-                    setState(() => _users = AdminConsoleService.users());
+                    setState(() { _users = AdminConsoleService.users(); });
                   }
                 },
               ),

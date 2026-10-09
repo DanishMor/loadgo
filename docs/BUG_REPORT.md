@@ -75,3 +75,4 @@ Method, three rounds. **Round 1**: not a line-by-line read of every file; each c
 | ID | File | What was wrong | Fix | Severity |
 |---|---|---|---|---|
 | M6-B1 | lib/admin/admin_pilot_funnel_screen.dart, lib/fleet/transporter_shortcuts.dart | `setState(() => _x = someFuture)` returns the Future from the closure: Flutter asserts in debug builds and the refresh did not rebuild in tests | block body `setState(() { _x = ...; })` | Low (release builds ignore the assertion) |
+| M6-B2 | lib/admin/admin_lists.dart, lib/auth/driver_onboarding_card.dart | same `setState(() => _x = future)` pattern as M6-B1 | block body; test/setstate_future_guard_test.dart guards it | Low |

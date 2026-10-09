@@ -26,7 +26,7 @@ class _DriverOnboardingCardState extends State<DriverOnboardingCard> {
   Future<void> _resubmit() async {
     final ok = await Navigator.of(context).push<bool>(MaterialPageRoute(builder: (_) => const DriverKycScreen(edit: true)));
     if (ok == true && mounted) {
-      setState(() => _user = UserService.getUser());
+      setState(() { _user = UserService.getUser(); });
       widget.onResubmitted?.call();
     }
   }
