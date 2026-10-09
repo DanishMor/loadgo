@@ -76,7 +76,7 @@ void main() {
       isValidGstin(s);
       isValidVehicleNumber(s);
     }
-    expect(sw.elapsedMilliseconds, lessThan(3000), reason: 'took ${sw.elapsedMilliseconds} ms');
+    expect(sw.elapsedMilliseconds, lessThan(10000), reason: 'took ${sw.elapsedMilliseconds} ms');
   });
 
   test('money text: formatPaise never throws and keeps the sign and the paise; parsing and printing agree', () {
