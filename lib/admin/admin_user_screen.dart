@@ -1,3 +1,4 @@
+import 'user_overview_card.dart';
 import '../core/widgets/admin_phone.dart';
 import 'package:flutter/material.dart';
 
@@ -141,6 +142,8 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
                 if (ProfileExtras.fromProfile(u).upiId.isNotEmpty) Text('UPI: ${maskUpiId(ProfileExtras.fromProfile(u).upiId)}', key: const ValueKey('maskedUpi'), style: TextStyle(color: AppColors.muted)),
               ]),
             ),
+            const SizedBox(height: 12),
+            UserOverviewCard(uid: widget.uid),
             const SizedBox(height: 12),
             Wrap(spacing: 8, runSpacing: 8, children: [
               if (standingOk || tier == RiskTier.restricted)

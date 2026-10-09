@@ -1,6 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import '../admin/user_overview.dart';
 import '../models/risk.dart';
+import '../models/vehicle.dart';
+import 'server_clock.dart';
 import 'audit_service.dart';
 import 'backend.dart';
 
@@ -199,6 +202,39 @@ class AdminUserService {
         list.sort((a, b) => (b.at ?? DateTime(3000)).compareTo(a.at ?? DateTime(3000)));
         return list;
       });
+
+  /// The 360 summary of [uid]: up to 50 trips as customer and 50 as driver,
+  /// 100 ratings, 50 tickets, 20 vehicles, 50 violations (count) and the
+  /// newest 15 audit events about the person. Once per open / refresh.
+  static Future<UserOverview> overview(String uid) async {
+    final db = Backend.db;
+    final now = ServerClock.now();
+    final r = await Future.wait([
+      _user(uid).get(),
+      db.collection('bookings').where('customerId', isEqualTo: uid).limit(50).get(),
+      db.collection('bookings').where('driverId', isEqualTo: uid).limit(50).get(),
+      db.collection('ratings').where('ratedId', isEqualTo: uid).limit(100).get(),
+      db.collection('tickets').where('userId', isEqualTo: uid).limit(50).get(),
+      db.collection('vehicles').where('ownerId', isEqualTo: uid).limit(20).get(),
+      db.collection('violations').where('userId', isEqualTo: uid).limit(50).get(),
+      db.collection('audit_events').where('targetId', isEqualTo: uid).limit(50).get(),
+    ]);
+    QuerySnapshot<Map<String, dynamic>> q(int i) => r[i] as QuerySnapshot<Map<String, dynamic>>;
+    final seen = <String>{};
+    final bookings = <Map<String, dynamic>>[
+      for (final d in [...q(1).docs, ...q(2).docs]) if (seen.add(d.id)) d.data(),
+    ];
+    return UserOverview.compute(
+      uid: uid,
+      user: (r[0] as DocumentSnapshot<Map<String, dynamic>>).data(),
+      bookings: bookings,
+      stars: [for (final d in q(3).docs) (d.data()['stars'] as num?)?.toInt() ?? 0],
+      violations: q(6).docs.length,
+      tickets: [for (final d in q(4).docs) d.data()],
+      vehicleHasExpiredPapers: [for (final d in q(5).docs) Vehicle.fromDoc(d).expiredDocs(now).isNotEmpty],
+      auditEvents: [for (final d in q(7).docs) d.data()],
+    );
+  }
 
   static Stream<Map<String, dynamic>?> watchUser(String uid) => _user(uid).snapshots().map((s) => s.data());
 }
