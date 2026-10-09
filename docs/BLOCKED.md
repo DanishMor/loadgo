@@ -25,3 +25,4 @@ Nothing moved into the free stack: every item above still needs a paid service, 
 | Masked-number calling | Paid telephony provider | Provider contract; plug into the `CallProvider` interface |
 | GST / PAN check of a transporter | Paid KYC API | Provider contract (the badge is an admin decision today) |
 - 2026-10-08 MASTER-5 Task 49: `flutter build apk --debug` again: "No Android SDK found". The web release build passes. Needs a machine with the Android SDK (owner).
+- M6-43: flutter build apk (release or debug) not possible here (no Android SDK); minify rules untested. Owner: build once on a PC with Android Studio and test on a phone.
