@@ -3459,6 +3459,27 @@ service cloud.firestore {
       allow delete: if adminIn(['super', 'ops']) || (signedIn() && resource.data.driverId == request.auth.uid);
     }
 
+    // trip_surveys/{bookingId}_{uid} (MASTER-6 Task 7): "would you use it
+    // again?" from each side of a delivered trip, once. The owner reads and
+    // deletes their answer; admins read all.
+    match /trip_surveys/{id} {
+      allow read: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid);
+      allow create: if signedIn()
+          && request.resource.data.keys().hasOnly(['bookingId', 'uid', 'role', 'answer', 'createdAt'])
+          && request.resource.data.uid == request.auth.uid
+          && request.resource.data.bookingId is string
+          && id == request.resource.data.bookingId + '_' + request.auth.uid
+          && request.resource.data.role in ['customer', 'driver']
+          && request.resource.data.answer in ['yes', 'maybe', 'no']
+          && request.resource.data.createdAt == request.time
+          && get(docPath('bookings', request.resource.data.bookingId)).data.status == 'delivered'
+          && (request.resource.data.role == 'customer'
+                ? get(docPath('bookings', request.resource.data.bookingId)).data.customerId == request.auth.uid
+                : request.auth.uid in [get(docPath('bookings', request.resource.data.bookingId)).data.get('driverId', ''), get(docPath('bookings', request.resource.data.bookingId)).data.get('fleetOwnerId', '')]);
+      allow update: if false;
+      allow delete: if signedIn() && resource.data.uid == request.auth.uid;
+    }
+
     match /config/{docId} {
       allow read: if signedIn();
       allow create, update: if adminIn(['super']) && validConfig(docId);

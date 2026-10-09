@@ -54,6 +54,7 @@ void main() {
       'adminDispatch': 'Manual dispatch',
       'adminPilotReport': 'Pilot report',
       'adminCohorts': 'Pilot cohorts',
+      'adminSurveys': 'Use-again survey',
       'adminPilotControl': 'Pilot control room',
       'flaggedUsers': 'Flagged users',
       'adminDeletionRequests': 'Deletion requests',

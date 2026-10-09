@@ -1,3 +1,4 @@
+import '../core/pilot/reuse_survey.dart';
 import 'package:flutter/material.dart';
 
 import '../core/constants/logistics.dart';
@@ -74,6 +75,8 @@ class BookingTrackingScreen extends StatelessWidget {
           if (booking.status == BookingStatus.delivered) ...[
             const SizedBox(height: 14),
             RatingPrompt(booking: booking, titleKey: 'rateDriver'),
+            const SizedBox(height: 8),
+            ReuseSurveyCard(booking: booking, role: 'customer'),
             const SizedBox(height: 8),
             TipCard(booking: booking),
           ],

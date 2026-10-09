@@ -7,6 +7,7 @@ import 'server_clock.dart';
 import '../admin/dispatch.dart';
 import '../admin/pilot_control.dart';
 import '../admin/pilot_cohorts.dart';
+import '../pilot/reuse_survey.dart';
 import '../admin/pilot_report.dart';
 import '../admin/pilot_funnel.dart';
 import '../matching/supply_demand.dart';
@@ -521,6 +522,12 @@ class AdminConsoleService {
                 CohortBooking('${d.data()['loadId'] ?? ''}', at(d.data()['createdAt'])!, '${d.data()['status'] ?? ''}', (d.data()['cancellation'] is Map ? (d.data()['cancellation'] as Map)['reason'] : null) as String?),
           ],
         );
+      });
+
+  /// "Would you use it again?" answers (newest 500).
+  static Future<SurveyStats> surveyStats() => withRetry(() async {
+        final snap = await _db.collection('trip_surveys').orderBy('createdAt', descending: true).limit(500).get();
+        return SurveyStats.compute([for (final d in snap.docs) d.data()]);
       });
 
   static Future<HealthCounts> health() => withRetry(_health);

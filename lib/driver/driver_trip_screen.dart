@@ -1,3 +1,4 @@
+import '../core/pilot/reuse_survey.dart';
 import '../core/services/backend.dart';
 import 'package:flutter/material.dart';
 
@@ -122,6 +123,8 @@ class DriverTripScreen extends StatelessWidget {
           if (holder && booking.status == BookingStatus.delivered) ...[
             const SizedBox(height: 14),
             RatingPrompt(booking: booking, titleKey: 'rateCustomer'),
+            const SizedBox(height: 8),
+            ReuseSurveyCard(booking: booking, role: 'driver'),
           ],
         ],
     );

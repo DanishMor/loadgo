@@ -5526,3 +5526,31 @@ describe('dispatch suggestions (M6-4)', () => {
     await assertSucceeds(deleteDoc(doc(as('d1'), 'dispatch_suggestions', 'L1_d1')));
   });
 });
+
+describe('trip surveys (M6-7)', () => {
+  const SV = (uid, role, over = {}) => ({ bookingId: 'b1', uid, role, answer: 'yes', createdAt: serverTimestamp(), ...over });
+  const seedBooking = (status = 'delivered') => seed((db) => rawSetDoc(doc(db, 'bookings', 'b1'), { customerId: 'c1', driverId: 'd1', fleetOwnerId: 'f1', status, loadId: 'l1' }));
+
+  test('each side answers once after delivery, for themselves', async () => {
+    await seedBooking();
+    await assertSucceeds(rawSetDoc(doc(as('c1'), 'trip_surveys', 'b1_c1'), SV('c1', 'customer')));
+    await assertSucceeds(rawSetDoc(doc(as('d1'), 'trip_surveys', 'b1_d1'), SV('d1', 'driver')));
+    await assertSucceeds(rawSetDoc(doc(as('f1'), 'trip_surveys', 'b1_f1'), SV('f1', 'driver')));
+    await assertFails(rawSetDoc(doc(as('x1'), 'trip_surveys', 'b1_x1'), SV('x1', 'customer')));
+    await assertFails(rawSetDoc(doc(as('c1'), 'trip_surveys', 'b1_d1'), SV('c1', 'customer')));
+    await assertFails(rawSetDoc(doc(as('c1'), 'trip_surveys', 'b1_c1'), SV('c1', 'driver')));
+    await assertFails(rawSetDoc(doc(as('d1'), 'trip_surveys', 'b1_d1'), SV('d1', 'driver', { answer: 'definitely' })));
+  });
+
+  test('not before delivery; no edits; owner and admin read, others not', async () => {
+    await seedBooking('in_transit');
+    await assertFails(rawSetDoc(doc(as('c1'), 'trip_surveys', 'b1_c1'), SV('c1', 'customer')));
+    await seedBooking();
+    await assertSucceeds(rawSetDoc(doc(as('c1'), 'trip_surveys', 'b1_c1'), SV('c1', 'customer')));
+    await assertFails(updateDoc(doc(as('c1'), 'trip_surveys', 'b1_c1'), { answer: 'no' }));
+    await assertSucceeds(getDoc(doc(as('c1'), 'trip_surveys', 'b1_c1')));
+    await assertSucceeds(getDoc(doc(asAdmin(), 'trip_surveys', 'b1_c1')));
+    await assertFails(getDoc(doc(as('d1'), 'trip_surveys', 'b1_c1')));
+    await assertSucceeds(deleteDoc(doc(as('c1'), 'trip_surveys', 'b1_c1')));
+  });
+});
