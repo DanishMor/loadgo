@@ -23,3 +23,6 @@ Import rules
 - Nothing imports `main.dart`. Shared things that used to live there are in `core/`.
 - Firestore field names (`customerId`, `shipperId`, `driverId`, ...) do not change.
 - Admin screens appear only when `admins/{uid}` exists; Firestore rules are the real gate.
+
+## Startup (MASTER-6 Task 38)
+Only Firebase init, Crashlytics, and four local reads (language, connectivity, theme, simple mode) run before the first frame. Everything that needs the network (app control / Remote Config, admin config documents, clock sync, push registration) starts after sign-in or in the background and never blocks `runApp`. Remote Config and `config/app` failing leave the app open (no maintenance, no forced update) with built-in defaults. `refreshAppConfig` loads each config document on its own with a 15 s limit; one failure does not stop the others and the next call retries (test/startup_config_test.dart).
