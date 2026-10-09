@@ -5412,3 +5412,68 @@ describe('bilty inspection mode (Task 71)', () => {
     await assertSucceeds(setDoc(doc(as('tr1'), 'notifications', 'n4'), note('lr_sent', 'drvA')));
   });
 });
+
+describe('pilot invite codes (M6-1)', () => {
+  const FUTURE = () => Timestamp.fromMillis(Date.now() + 86400000);
+  const CODE = (over = {}) => ({ role: 'any', route: 'Delhi-Jaipur', maxUses: 2, uses: 0, expiresAt: FUTURE(), active: true, createdBy: 'admin1', createdAt: serverTimestamp(), ...over });
+  const seedCode = (over = {}) => seed((db) => rawSetDoc(doc(db, 'invite_codes', 'ABCD2345'), CODE({ createdAt: Timestamp.now(), ...over })));
+  const redeem = (uid, code = 'ABCD2345', uses = 1) => {
+    const db = as(uid);
+    const b = rawWriteBatch(db);
+    b.update(doc(db, 'invite_codes', code), { uses });
+    b.set(doc(db, 'invite_redemptions', uid), { code, role: 'customer', createdAt: serverTimestamp() });
+    return b.commit();
+  };
+
+  test('admin makes a code with a valid shape; users cannot', async () => {
+    await assertSucceeds(rawSetDoc(doc(asAdmin(), 'invite_codes', 'ABCD2345'), CODE()));
+    await assertFails(rawSetDoc(doc(as('u1'), 'invite_codes', 'ABCD2346'), CODE({ createdBy: 'u1' })));
+    await assertFails(rawSetDoc(doc(asAdmin(), 'invite_codes', 'abcd2347'), CODE()));
+    await assertFails(rawSetDoc(doc(asAdmin(), 'invite_codes', 'ABCD2348'), CODE({ maxUses: 0 })));
+    await assertFails(rawSetDoc(doc(asAdmin(), 'invite_codes', 'ABCD2349'), CODE({ uses: 5 })));
+    await assertFails(rawSetDoc(doc(asAdmin(), 'invite_codes', 'ABCD234A'), CODE({ extra: 1 })));
+  });
+
+  test('one code can be read by id, only an admin lists', async () => {
+    await seedCode();
+    await assertSucceeds(getDoc(doc(as('u1'), 'invite_codes', 'ABCD2345')));
+    await assertFails(getDocs(collection(as('u1'), 'invite_codes')));
+    await assertSucceeds(getDocs(collection(asAdmin(), 'invite_codes')));
+    await assertFails(getDoc(doc(anon(), 'invite_codes', 'ABCD2345')));
+  });
+
+  test('a person redeems once with the counter raised by exactly one', async () => {
+    await seedCode();
+    await assertSucceeds(redeem('u1'));
+    await assertFails(redeem('u1')); // the redemption cannot be written twice
+    await assertFails(redeem('u2', 'ABCD2345', 5)); // not +1
+    await assertSucceeds(redeem('u3', 'ABCD2345', 2));
+    await assertFails(redeem('u4', 'ABCD2345', 3)); // above maxUses
+  });
+
+  test('an expired or switched-off code cannot be redeemed; the counter alone cannot move', async () => {
+    await seedCode({ expiresAt: Timestamp.fromMillis(Date.now() - 1000) });
+    await assertFails(redeem('u1'));
+    await seedCode({ active: false });
+    await assertFails(redeem('u1'));
+    await seedCode();
+    await assertFails(updateDoc(doc(as('u1'), 'invite_codes', 'ABCD2345'), { uses: 1 }));
+    await assertFails(updateDoc(doc(as('u1'), 'invite_codes', 'ABCD2345'), { maxUses: 999 }));
+    await assertSucceeds(updateDoc(doc(asAdmin(), 'invite_codes', 'ABCD2345'), { active: false }));
+    await assertFails(updateDoc(doc(asAdmin(), 'invite_codes', 'ABCD2345'), { maxUses: 999 }));
+  });
+
+  test('redemptions are private; the whitelist shows a person only their own number', async () => {
+    await seedCode();
+    await redeem('u1');
+    await assertSucceeds(getDoc(doc(as('u1'), 'invite_redemptions', 'u1')));
+    await assertFails(getDoc(doc(as('u2'), 'invite_redemptions', 'u1')));
+    await seed((db) => rawSetDoc(doc(db, 'pilot_whitelist', '919999900001'), { createdBy: 'admin1', createdAt: Timestamp.now() }));
+    const withPhone = (uid, phone) => env.authenticatedContext(uid, { phone_number: phone }).firestore();
+    await assertSucceeds(getDoc(doc(withPhone('u9', '+919999900001'), 'pilot_whitelist', '919999900001')));
+    await assertFails(getDoc(doc(withPhone('u8', '+919999900002'), 'pilot_whitelist', '919999900001')));
+    await assertFails(getDocs(collection(as('u9'), 'pilot_whitelist')));
+    await assertSucceeds(rawSetDoc(doc(asAdmin(), 'pilot_whitelist', '919999900003'), { createdBy: 'admin1', createdAt: serverTimestamp() }));
+    await assertFails(rawSetDoc(doc(as('u9'), 'pilot_whitelist', '919999900004'), { createdBy: 'u9', createdAt: serverTimestamp() }));
+  });
+});

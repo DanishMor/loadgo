@@ -56,6 +56,7 @@ import 'discard_strings.dart';
 import 'faq_role_strings.dart';
 import 'announcement_strings.dart';
 import 'pilot_funnel_strings.dart';
+import 'invite_strings.dart';
 import 'admin_list_strings.dart';
 import 'statement_strings.dart';
 import 'evidence_timeline_strings.dart';
@@ -126,6 +127,7 @@ const List<Map<String, List<String>>> stringTables = [
   faqRoleStrings,
   announcementStrings,
   pilotFunnelStrings,
+  inviteStrings,
   adminListStrings,
   statementStrings,
   evidenceTimelineStrings,

@@ -12,6 +12,7 @@ import 'driver_pending_screen.dart';
 import 'customer_profile_setup_screen.dart';
 import 'driver_profile_setup_screen.dart';
 import 'role_selection_screen.dart';
+import 'invite_gate_screen.dart';
 import '../customer/customer_home_screen.dart';
 import '../driver/driver_home_screen.dart';
 import '../fleet/fleet_home_screen.dart';
@@ -30,7 +31,7 @@ Future<Widget> resolveCustomerStart() async {
       await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
 
   if (!doc.exists) {
-    return CustomerProfileSetupScreen(phoneNumber: user.phoneNumber ?? '');
+    return withInviteGate('customer', () => CustomerProfileSetupScreen(phoneNumber: user.phoneNumber ?? ''));
   }
 
   final data = doc.data() ?? {};
@@ -59,6 +60,7 @@ Future<Widget> resolveDriverStart() async {
       data?['verificationStatus'] == 'approved';
 
   if (!roles.contains('driver') || !profileComplete) {
+    if (data == null) return withInviteGate('driver', () => const DriverProfileSetupScreen());
     return const DriverProfileSetupScreen();
   }
   // Router guard: Home and Loads stay closed until every document is in
@@ -80,6 +82,7 @@ Future<Widget> resolveDriverStart() async {
 /// Transporters: profile (name, company, PAN) first, then the fleet home.
 Future<Widget> resolveFleetStart() async {
   final data = await UserService.getUser();
-  if (data == null || data['fleetProfileComplete'] != true) return const FleetProfileSetupScreen();
+  if (data == null) return withInviteGate('fleet', () => const FleetProfileSetupScreen());
+  if (data['fleetProfileComplete'] != true) return const FleetProfileSetupScreen();
   return const FleetHomeScreen();
 }

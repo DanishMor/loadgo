@@ -3360,6 +3360,65 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
+    // Pilot invite codes (MASTER-6 Task 1). invite_codes/{code}: an admin makes
+    // a code (role, route label, uses, last day); any signed-in person can read
+    // one code by id but only an admin lists them. A person raises `uses` by
+    // exactly one together with their own invite_redemptions/{uid}.
+    // TODO(functions): the redemption belongs in a trigger; today the app only
+    // gates the sign-up screens, the rules keep the counter honest.
+    match /invite_codes/{code} {
+      allow get: if signedIn();
+      allow list: if isAdmin();
+      allow create: if adminIn(['super', 'ops'])
+          && code.matches('[A-Z2-9]{8}')
+          && request.resource.data.keys().hasOnly(['role', 'route', 'maxUses', 'uses', 'expiresAt', 'active', 'createdBy', 'createdAt'])
+          && request.resource.data.role in ['any', 'customer', 'driver', 'fleet']
+          && request.resource.data.route is string && request.resource.data.route.size() <= 60
+          && request.resource.data.maxUses is int && request.resource.data.maxUses >= 1 && request.resource.data.maxUses <= 1000
+          && request.resource.data.uses == 0
+          && request.resource.data.expiresAt is timestamp
+          && request.resource.data.active == true
+          && request.resource.data.createdBy == request.auth.uid
+          && request.resource.data.createdAt == request.time;
+      allow update: if (adminIn(['super', 'ops'])
+              && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['active']))
+          || (signedIn()
+              && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['uses'])
+              && resource.data.active == true
+              && request.resource.data.uses == resource.data.uses + 1
+              && request.resource.data.uses <= resource.data.maxUses
+              && resource.data.expiresAt > request.time
+              && existsAfter(docPath('invite_redemptions', request.auth.uid))
+              && getAfter(docPath('invite_redemptions', request.auth.uid)).data.code == code);
+      allow delete: if false;
+    }
+
+    match /invite_redemptions/{uid} {
+      allow read: if isUser(uid) || isAdmin();
+      allow create: if isUser(uid)
+          && request.resource.data.keys().hasOnly(['code', 'role', 'createdAt'])
+          && request.resource.data.code is string && request.resource.data.code.matches('[A-Z2-9]{8}')
+          && request.resource.data.role in ['customer', 'driver', 'fleet']
+          && request.resource.data.createdAt == request.time
+          && getAfter(docPath('invite_codes', request.resource.data.code)).data.uses
+              == get(docPath('invite_codes', request.resource.data.code)).data.uses + 1;
+      allow update, delete: if false;
+    }
+
+    // pilot_whitelist/{phoneDigits}: people let in without a code. A person can
+    // read only the entry of their own sign-in phone number.
+    match /pilot_whitelist/{digits} {
+      allow get: if signedIn() && digits == phoneDigits(request.auth.token.get('phone_number', ''));
+      allow list: if isAdmin();
+      allow create: if adminIn(['super', 'ops'])
+          && digits.matches('[0-9]{10,15}')
+          && request.resource.data.keys().hasOnly(['createdBy', 'createdAt'])
+          && request.resource.data.createdBy == request.auth.uid
+          && request.resource.data.createdAt == request.time;
+      allow update: if false;
+      allow delete: if adminIn(['super', 'ops']);
+    }
+
     match /config/{docId} {
       allow read: if signedIn();
       allow create, update: if adminIn(['super']) && validConfig(docId);
