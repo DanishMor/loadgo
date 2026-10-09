@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 
 import '../app_info.dart';
 import 'backend.dart';
+import 'breadcrumbs.dart';
 
 class AppError {
   final String id;
@@ -64,13 +65,7 @@ class ErrorLogService {
 
   /// Error text without e-mail addresses, links or numbers of 6+ digits
   /// (phones, ids), collapsed to one line and at most [maxLength] characters.
-  static String sanitize(String text, {int maxLength = 300}) {
-    var t = text.replaceAll(RegExp(r'\S+@\S+'), ' ');
-    t = t.replaceAll(RegExp(r'https?://\S+|www\.\S+', caseSensitive: false), ' ');
-    t = t.replaceAll(RegExp(r'\d{6,}'), '#');
-    t = t.replaceAll(RegExp(r'\s+'), ' ').trim();
-    return t.length > maxLength ? t.substring(0, maxLength).trim() : t;
-  }
+  static String sanitize(String text, {int maxLength = 300}) => Redactor.clean(text, maxLength: maxLength);
 
   /// The app file the error came from, as `driver/driver_trip_screen.dart`
   /// (first `package:transport_app/` frame of [stack]), else 'unknown'.
@@ -100,6 +95,7 @@ class ErrorLogService {
         'message': message,
         'screen': screenFromStack(stack),
         'kind': fatal ? 'flutter' : 'async',
+        if (Breadcrumbs.items.isNotEmpty) 'crumbs': Breadcrumbs.trail(),
         'appVersion': appVersion.length > 20 ? appVersion.substring(0, 20) : appVersion,
         'createdAt': FieldValue.serverTimestamp(),
         'expireAt': Timestamp.fromDate(DateTime.now().add(const Duration(days: 90))), // TTL policy, docs/DATA_RETENTION.md

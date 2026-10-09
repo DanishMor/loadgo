@@ -21,6 +21,7 @@ import 'core/services/device_service.dart';
 import 'core/services/connectivity_service.dart';
 import 'core/services/language_store.dart';
 import 'core/services/backend.dart';
+import 'core/services/breadcrumbs.dart';
 import 'core/services/push_service.dart';
 import 'core/services/session_watcher.dart';
 import 'core/settings/simple_mode.dart';
@@ -109,6 +110,7 @@ class LoadGoApp extends StatelessWidget {
         valueListenable: ThemeStore.mode,
         builder: (context, mode, _) => MaterialApp(
         navigatorKey: appNavigatorKey,
+        navigatorObservers: [BreadcrumbObserver()],
         title: AppInfo.name,
         debugShowCheckedModeBanner: false,
         builder: (context, child) {

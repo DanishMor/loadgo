@@ -2396,7 +2396,8 @@ service cloud.firestore {
     match /app_errors/{id} {
       allow read: if adminIn(['super', 'ops']);
       allow create: if signedIn()
-          && request.resource.data.keys().hasOnly(['message', 'screen', 'kind', 'appVersion', 'createdAt', 'expireAt'])
+          && request.resource.data.keys().hasOnly(['message', 'screen', 'kind', 'appVersion', 'createdAt', 'expireAt', 'crumbs'])
+          && (!('crumbs' in request.resource.data) || (request.resource.data.crumbs is string && request.resource.data.crumbs.size() <= 600))
           && expireOk(request.resource.data, 130)
           && request.resource.data.message is string
           && request.resource.data.message.size() >= 1 && request.resource.data.message.size() <= 300

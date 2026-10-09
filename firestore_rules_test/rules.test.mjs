@@ -274,6 +274,13 @@ describe('expireAt on short-lived logs (MASTER-5 Task 7)', () => {
     await assertFails(addDoc(collection(as('u1'), 'app_errors'), err({ expireAt: days(900) })));
     await assertFails(addDoc(collection(as('u1'), 'app_errors'), err({ expireAt: 'never' })));
   });
+  test('app_errors accept a short breadcrumb trail (M6-42), not a long or non-text one', async () => {
+    await assertSucceeds(addDoc(collection(as('u1'), 'app_errors'), err({ crumbs: 'open trip > back home' })));
+    await assertSucceeds(addDoc(collection(as('u1'), 'app_errors'), err({ crumbs: 'x'.repeat(600) })));
+    await assertFails(addDoc(collection(as('u1'), 'app_errors'), err({ crumbs: 'x'.repeat(601) })));
+    await assertFails(addDoc(collection(as('u1'), 'app_errors'), err({ crumbs: 5 })));
+    await assertFails(addDoc(collection(as('u1'), 'app_errors'), err({ other: 'x' })));
+  });
 });
 
 describe('role lock and identity index for every role (MASTER-5 Task 3)', () => {

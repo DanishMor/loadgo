@@ -1,6 +1,7 @@
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 
+import 'breadcrumbs.dart';
 import 'error_log_service.dart';
 
 /// Crash reporting (Crashlytics). Every call is a safe no-op when Firebase is
@@ -36,6 +37,7 @@ class CrashService {
     ErrorLogService.logSampled(error, stack, fatal: fatal);
     if (!_active) return;
     try {
+      FirebaseCrashlytics.instance.log(Breadcrumbs.trail());
       FirebaseCrashlytics.instance.recordError(error, stack, fatal: fatal);
     } catch (_) {}
   }
