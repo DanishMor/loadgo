@@ -65,3 +65,58 @@ Reviewed with rules tests written first (`transporter security (Phase 2)`, `priv
 ## MASTER-5 Task 2: hourly abuse limits (coverage)
 Counted per user per hour in `rate_limits/{uid}_{kind}` (bumped in the same batch, checked by the rules): load 30, offer 60, chat message 120, call 20, **ticket 10 (new)**.
 Not counted, and why: one-off or naturally unique documents (ratings = one per booking, invoices = one per booking, claims, deletion requests, `lr_series` counters, `identity_index`), documents that need a confirmed booking with the other party (OTP steps, signatures, cargo docs), and owner-only convenience data (saved places, templates). LR share links and violations are bounded by their parent LR / booking. A server-side counter for the rest is `// TODO(functions)`.
+
+## MASTER-6: threat model, client-only checks, pentest checklist (Task 47)
+
+### Who could attack, and what they want
+| Actor | Wants | Main doors | What stops them today |
+|---|---|---|---|
+| Curious or hostile customer | other people's numbers, free trips, a rival's loads | chat, call, share links, queries | numbers never stored on bookings, chat filter + rules `chatTextClean`, share links with end date and revoke, owner-only reads |
+| Dishonest driver or transporter | take the deal off-app, fake delivery, fake documents, many accounts | chat, OTP steps, KYC upload, sign-up | strikes and suspension, pickup/delivery OTP in rules, identity index, role lock, admin review |
+| Account farmer (pilot) | free credits, invite abuse, waitlist spam | invite codes, referral, waitlist | one redemption per person (id = code + uid), code use count and expiry in rules, waitlist id = uid + route, rate limits |
+| Modified app or script | skip client checks | any Firestore write | rules shape checks (below), but see "client-only checks" |
+| Malicious or mistaken staff | read or change too much | admin screens | role-named rules (`super`, `support`, `verifier`, `ops`, `finance`), audit log, undo window on bulk actions, staff never list other staff |
+| Someone with a lost phone | use an open session | the app | sign-out and "my devices" screen, session watcher, OTP login |
+
+### New collections reviewed in MASTER-6 (rules tests pin each one)
+| Collection | Read | Write | Notes |
+|---|---|---|---|
+| `invite_codes` | any signed-in person can `get` one code they already know (8 random characters from a 32-letter set, so guessing is impractical); only admins list | super, ops create/edit; the redeemer only adds 1 to `uses` inside the redeem batch | expiry, `active` and max uses are checked in rules; anyone holding a code can see its role/route/expiry |
+| `invite_redemptions` | the person, admin | create once per person (doc id is the user id), in the same batch that adds 1 to the code's `uses` | a person redeems one code once; the use count must go up by exactly 1 |
+| `pilot_whitelist` | a person reads only the entry of their own phone digits; admin lists | super, ops create | entries are phone digits (10 to 15), keep the list short and delete after the pilot |
+| `waitlist` | the person, admin | the person once per route (`uid_from_to`) | route text length capped |
+| `dispatch_suggestions` | the suggested driver, admin | super, ops create; id is load + driver so one per pair | the driver can only answer their own |
+| `trip_surveys` | admin; the answerer | answerer once per trip and side | counts only, no free text |
+| `payment_nudges` | the target person, admin | super, ops, support, finance; id is booking + side, so a nudge is counted, not repeated | no free text, only a count and time |
+| `config_history` | admin | admin, append-only | rollback copies; never deleted |
+| `strike_appeals` | the person, admin | the person once per strike within 14 days; support/ops decide once | text 10 to 300 characters |
+| `bookings/*/inspection_log` | the issuer reads all; the trip driver reads their own lines | append-only | no edit, no delete |
+| `app_errors.crumbs` | super, ops | any signed-in user appends (string up to 600) | breadcrumbs hold screen names only and are cleaned (`Redactor`) |
+
+### Checks that run only in the app (a modified app can skip them)
+Everything here needs a server (Cloud Functions, Blaze) before it can be trusted with real money or real abuse. Each is marked `TODO(functions)` in code.
+1. Chat contact filter and strike counting (rules refuse plain 10-digit numbers and `@`; spelled-out numbers and "call me" pass if the app is modified).
+2. Fare, commission, GST, cancel charge and payout amounts (rules check shape and limits, not the maths).
+3. Pickup/delivery OTP guess limit (an attacker with a valid session can keep guessing 6 digits).
+4. Invite code rules for "open sign-up when the switch is off": the gate is in the app; a modified app can still create a profile. Rules protect the codes, not the sign-up.
+5. Trust numbers on the driver's own screen are computed on the phone; showing them to others needs a server-written summary.
+6. Rate limits per hour are counted in the app and checked by rules only where a `rate_limits` document exists.
+7. Time: some windows use the phone clock (strike block end, drafts, appeals window); rules use `request.time` where it matters (appeals window, invites).
+8. KYC numbers, GSTIN, RC and insurance are format checked only.
+9. Account deletion is a request an admin carries out.
+10. Release build shrinking (R8) is untested here (no Android SDK).
+
+### Pentest checklist for the owner (or a hired tester)
+Do this on a test project, with test accounts, never on real users. Write each result in docs/BUG_REPORT.md.
+1. **Rules:** with the Firestore emulator or a second test project, run `firestore_rules_test` (`npm test`); then try, with a plain signed-in customer token, to read `users` of someone else, `admins`, `audit_events`, `app_errors`, `invite_codes`, `strike_appeals` of another person. All must be denied.
+2. **Role lock:** change `role` on your own profile through a REST call. Must be denied.
+3. **Booking tamper:** as a driver set `pickupOtpVerified: true` or a `delivered` step without the code. Must be denied.
+4. **Numbers:** send a chat message with a 10-digit number through the REST API (skip the app). Must be denied by rules; then send "nau aath saat..." (spelled digits): this passes today (known gap 1).
+5. **OTP guessing:** count how many wrong delivery codes are accepted before any block (known gap 3).
+6. **Invite:** redeem the same code twice, an expired code, a code at its max uses, someone else's whitelist. All must fail except the first valid one.
+7. **Share links:** open an LR link after it is revoked and after it ended. Must show "not available". Try changing the id in the link: must show nothing.
+8. **Admin roles:** sign in as `support` and try a payout (finance) and a verification decision (verifier). Must be denied.
+9. **Storage:** `storage.rules` tests (`npm test` runs them): upload a 6 MB image and a PDF as a normal user. Must be denied.
+10. **Hosting:** check headers of every page (`test/hosting_headers_test.dart` lists them): nosniff, frame deny, referrer policy; the legal pages carry the DRAFT mark until a lawyer signs off.
+11. **Secrets:** search the repo and the APK for keys and passwords (`git grep -nEi "apikey|secret|password" -- ':!*.md'`); the only values allowed are the public Firebase client config. `android/key.properties` and keystores must not be in git.
+12. **Dependencies:** run `flutter pub outdated` and `npm audit` in `firestore_rules_test` once a quarter and note the result.
