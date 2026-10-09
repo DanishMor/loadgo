@@ -8,6 +8,7 @@ import '../core/widgets/tip_card.dart';
 import '../core/widgets/detention_card.dart';
 import '../core/widgets/evidence_cards.dart';
 import 'cancel_scheduled_button.dart';
+import 'delivered_actions.dart';
 import 'driver_trust_row.dart';
 import '../core/widgets/booking_widgets.dart';
 import '../core/widgets/trip_eta_card.dart';
@@ -39,6 +40,7 @@ class BookingTrackingScreen extends StatelessWidget {
       builder: (context, booking) => ListView(
         padding: const EdgeInsets.fromLTRB(20, 10, 20, 30),
         children: [
+          DeliveredWatcher(booking: booking, child: const SizedBox.shrink()),
           LifecycleBar(stage: lifecycleOf(booking: booking)),
           const SizedBox(height: 10),
           BookingSummary(booking: booking, showDriver: true),
@@ -76,6 +78,8 @@ class BookingTrackingScreen extends StatelessWidget {
           if (booking.status == BookingStatus.delivered) ...[
             const SizedBox(height: 14),
             RatingPrompt(booking: booking, titleKey: 'rateDriver'),
+            const SizedBox(height: 8),
+            DeliveredActionsCard(booking: booking),
             const SizedBox(height: 8),
             ReuseSurveyCard(booking: booking, role: 'customer'),
             const SizedBox(height: 8),
