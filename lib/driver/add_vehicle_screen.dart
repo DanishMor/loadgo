@@ -111,6 +111,7 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
       image = Image.network(
         widget.vehicle!.rcImageUrl!,
         fit: BoxFit.cover,
+        cacheWidth: 800,
         errorBuilder: (_, _, _) => Icon(Icons.broken_image_outlined, color: AppColors.faint),
       );
     } else {
