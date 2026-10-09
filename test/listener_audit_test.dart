@@ -26,7 +26,7 @@ void main() {
   }
 
   test('the number of unbounded listeners does not grow', () {
-    const budget = 68;
+    const budget = 69; // M6: one more admin/pilot list (rows are few; see COST_WATCH.md)
     expect(unbounded(), lessThanOrEqualTo(budget), reason: 'add .limit(...) or document why in COST_WATCH.md and raise the budget');
   });
 

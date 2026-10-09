@@ -56,3 +56,4 @@ Policy pages and the trip page are tiny static files. The trip page makes one Fi
 - **Start (Task 14).** The four independent local reads at start (language, connectivity, theme, simple mode) now run together instead of one after another. Everything else (config, push, deep links) was already after the first frame or in the background.
 
 - **Server clock (MASTER-5 Task 20).** `DeviceService.syncClock` costs one write (the device's `lastSeenAt`) and one read at sign-in and at most every six hours of app use, so that the app knows when the phone's clock is wrong. At 1,000 daily users that is about 1,000-3,000 writes a day.
+- M6 (2026-10-09): budgets raised by 3 raw StreamBuilders (pilot cards) and 1 listener (admin pilot lists).
