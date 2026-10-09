@@ -1,3 +1,4 @@
+import '../enterprise/validators.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../models/saved_place.dart';
@@ -24,18 +25,28 @@ class SavedPlaceService {
     });
   }
 
-  static Future<String> add({required String label, required String name, required String address}) async {
+  static Future<String> add({required String label, required String name, required String address, String legalName = '', String gstin = ''}) async {
     final uid = Backend.requireUid();
+    final g = gstin.trim().toUpperCase();
+    if (g.isNotEmpty && !isValidGstinFormat(g)) throw InvalidGstinException();
     final existing = await _col(uid).count().get();
     if ((existing.count ?? 0) >= maxPlaces) throw TooManyPlacesException();
     final ref = await _col(uid).add({
       'label': label,
       'name': name.trim(),
       'address': address.trim(),
+      if (legalName.trim().isNotEmpty) 'legalName': legalName.trim(),
+      if (g.isNotEmpty) 'gstin': g,
       'createdAt': FieldValue.serverTimestamp(),
     });
     return ref.id;
   }
 
   static Future<void> delete(String id) => _col(Backend.requireUid()).doc(id).delete();
+}
+
+/// The GSTIN of a saved place is not in the 15-character format.
+class InvalidGstinException implements Exception {
+  @override
+  String toString() => 'InvalidGstinException';
 }

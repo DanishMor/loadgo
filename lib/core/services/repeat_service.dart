@@ -51,11 +51,12 @@ class RepeatService {
         ]..sort((a, b) => a.name.compareTo(b.name)));
   }
 
-  static Future<void> addFavourite({required String driverId, String name = '', String vehicleNumber = ''}) async {
+  static Future<void> addFavourite({required String driverId, String name = '', String vehicleNumber = '', bool transporter = false}) async {
     final batch = Backend.db.batch();
     batch.set(_me().collection('favourite_drivers').doc(driverId), {
       'name': name,
       'vehicleNumber': vehicleNumber,
+      if (transporter) 'kind': 'transporter',
       'createdAt': FieldValue.serverTimestamp(),
     });
     // A driver cannot be both a favourite and blocked.

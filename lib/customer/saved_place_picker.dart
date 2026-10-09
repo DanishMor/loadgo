@@ -1,5 +1,7 @@
+import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 
+import '../core/enterprise/validators.dart';
 import '../core/l10n/l10n.dart';
 import '../core/models/saved_place.dart';
 import '../core/services/saved_place_service.dart';
@@ -82,12 +84,22 @@ class _SavedPlacesSheetState extends State<_SavedPlacesSheet> {
                           contentPadding: EdgeInsets.zero,
                           leading: Icon(placeLabelIcon(p.label), color: AppColors.primary),
                           title: Text(p.name, style: const TextStyle(fontWeight: FontWeight.w700)),
-                          subtitle: Text('${placeLabelText(context, p.label)} • ${p.address}'),
+                          subtitle: Text('${placeLabelText(context, p.label)} • ${p.address}${p.hasBilling ? '\nGSTIN ${p.gstin}' : ''}'),
+                          isThreeLine: p.hasBilling,
                           onTap: () => Navigator.of(context).pop(p),
-                          trailing: IconButton(tooltip: tr(context, 'a11yDelete'), 
-                            icon: const Icon(Icons.delete_outline_rounded),
-                            onPressed: () => SavedPlaceService.delete(p.id),
-                          ),
+                          trailing: Row(mainAxisSize: MainAxisSize.min, children: [
+                            if (p.hasBilling)
+                              IconButton(
+                                key: ValueKey('copyBilling_${p.id}'),
+                                tooltip: tr(context, 'placeCopyBilling'),
+                                icon: const Icon(Icons.receipt_long_outlined),
+                                onPressed: () async {
+                                  await Clipboard.setData(ClipboardData(text: p.billingText()));
+                                  if (context.mounted) showSnack(context, tr(context, 'copied'));
+                                },
+                              ),
+                            IconButton(tooltip: tr(context, 'a11yDelete'), icon: const Icon(Icons.delete_outline_rounded), onPressed: () => SavedPlaceService.delete(p.id)),
+                          ]),
                         ),
                     ],
                   );
@@ -119,6 +131,8 @@ class _AddPlaceDialogState extends State<_AddPlaceDialog> {
   final _formKey = GlobalKey<FormState>();
   final _name = TextEditingController();
   final _address = TextEditingController();
+  final _legalName = TextEditingController();
+  final _gstin = TextEditingController();
   String _label = PlaceLabel.warehouse;
   bool _saving = false;
 
@@ -126,6 +140,8 @@ class _AddPlaceDialogState extends State<_AddPlaceDialog> {
   void dispose() {
     _name.dispose();
     _address.dispose();
+    _legalName.dispose();
+    _gstin.dispose();
     super.dispose();
   }
 
@@ -133,7 +149,7 @@ class _AddPlaceDialogState extends State<_AddPlaceDialog> {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _saving = true);
     try {
-      await SavedPlaceService.add(label: _label, name: _name.text, address: _address.text);
+      await SavedPlaceService.add(label: _label, name: _name.text, address: _address.text, legalName: _legalName.text, gstin: _gstin.text);
       if (mounted) Navigator.of(context).pop(true);
     } on TooManyPlacesException {
       if (!mounted) return;
@@ -181,6 +197,22 @@ class _AddPlaceDialogState extends State<_AddPlaceDialog> {
                 maxLines: 2,
                 decoration: InputDecoration(labelText: tr(context, 'placeAddress'), counterText: ''),
                 validator: (v) => (v == null || v.trim().length < 2) ? tr(context, 'fieldRequired') : null,
+              ),
+              const SizedBox(height: 10),
+              TextFormField(
+                key: const ValueKey('placeLegalName'),
+                controller: _legalName,
+                maxLength: 80,
+                decoration: InputDecoration(labelText: tr(context, 'placeLegalName'), counterText: ''),
+              ),
+              const SizedBox(height: 10),
+              TextFormField(
+                key: const ValueKey('placeGstin'),
+                controller: _gstin,
+                maxLength: 15,
+                textCapitalization: TextCapitalization.characters,
+                decoration: InputDecoration(labelText: tr(context, 'placeGstin'), counterText: ''),
+                validator: (v) => (v == null || v.trim().isEmpty || isValidGstinFormat(v)) ? null : tr(context, 'gstinInvalid'),
               ),
             ],
           ),

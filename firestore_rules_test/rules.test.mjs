@@ -5650,3 +5650,24 @@ describe('config history (M6-13)', () => {
     await assertFails(deleteDoc(doc(asAdmin(), 'config_history', 'h1')));
   });
 });
+
+describe('address book billing and favourite kinds (M6-19)', () => {
+  const PLACE = (over = {}) => ({ label: 'office', name: 'Head office', address: 'Andheri, Mumbai', legalName: 'Acme Pvt Ltd', gstin: '27ABCDE1234F1Z5', createdAt: serverTimestamp(), ...over });
+
+  test('a saved place may carry a legal name and a well-formed GSTIN', async () => {
+    await assertSucceeds(rawSetDoc(doc(as('c1'), 'users', 'c1', 'saved_places', 'p1'), PLACE()));
+    await assertSucceeds(rawSetDoc(doc(as('c1'), 'users', 'c1', 'saved_places', 'p2'), (({ legalName, gstin, ...rest }) => rest)(PLACE())));
+    await assertFails(rawSetDoc(doc(as('c1'), 'users', 'c1', 'saved_places', 'p3'), PLACE({ gstin: '27abcde1234f1z5' })));
+    await assertFails(rawSetDoc(doc(as('c1'), 'users', 'c1', 'saved_places', 'p4'), PLACE({ gstin: '123' })));
+    await assertFails(rawSetDoc(doc(as('c1'), 'users', 'c1', 'saved_places', 'p5'), PLACE({ legalName: 'x'.repeat(81) })));
+    await assertFails(rawSetDoc(doc(as('c1'), 'users', 'c1', 'saved_places', 'p6'), PLACE({ extra: 1 })));
+    await assertFails(rawSetDoc(doc(as('c2'), 'users', 'c1', 'saved_places', 'p7'), PLACE()));
+  });
+
+  test('a favourite is a driver or a transporter, nothing else', async () => {
+    const F = (over = {}) => ({ name: 'Acme', vehicleNumber: 'MH12AB1234', createdAt: serverTimestamp(), ...over });
+    await assertSucceeds(rawSetDoc(doc(as('c1'), 'users', 'c1', 'favourite_drivers', 'o1'), F({ kind: 'transporter' })));
+    await assertSucceeds(rawSetDoc(doc(as('c1'), 'users', 'c1', 'favourite_drivers', 'o2'), F()));
+    await assertFails(rawSetDoc(doc(as('c1'), 'users', 'c1', 'favourite_drivers', 'o3'), F({ kind: 'admin' })));
+  });
+});

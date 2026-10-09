@@ -42,7 +42,7 @@ class _MyDriversScreenState extends State<MyDriversScreen> {
                     child: ListTile(
                       key: ValueKey('fav_${f.driverId}'),
                       title: Text(f.name.isEmpty ? f.driverId : f.name),
-                      subtitle: Text(f.vehicleNumber),
+                      subtitle: Text([if (f.isTransporter) tr(context, 'favTransporterTag'), f.vehicleNumber].where((x) => x.isNotEmpty).join(' · ')),
                       onTap: () => Navigator.of(context)
                           .push(MaterialPageRoute<bool>(builder: (_) => PostLoadScreen(invitedDriverId: f.driverId))),
                       trailing: IconButton(

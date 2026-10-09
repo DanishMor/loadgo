@@ -12,8 +12,9 @@ class DriverTrustRow extends StatelessWidget {
   const DriverTrustRow({super.key, required this.booking});
 
   Future<void> _favourite(BuildContext context) async {
-    await RepeatService.addFavourite(driverId: booking.driverId, name: booking.driverName, vehicleNumber: booking.vehicleNumber);
-    if (context.mounted) showSnack(context, tr(context, 'driverFavourited'));
+    // A trip a transporter took with its own company is a favourite transporter (Task 19).
+    await RepeatService.addFavourite(driverId: booking.driverId, name: booking.driverName, vehicleNumber: booking.vehicleNumber, transporter: booking.isCompanyBooking);
+    if (context.mounted) showSnack(context, tr(context, booking.isCompanyBooking ? 'transporterFavourited' : 'driverFavourited'));
   }
 
   Future<void> _block(BuildContext context) async {
@@ -32,7 +33,7 @@ class DriverTrustRow extends StatelessWidget {
         key: const ValueKey('addFavourite'),
         onPressed: () => _favourite(context),
         icon: const Icon(Icons.favorite_border_rounded, size: 18),
-        label: Text(tr(context, 'addFavourite')),
+        label: Text(tr(context, booking.isCompanyBooking ? 'addFavouriteTransporter' : 'addFavourite')),
       ),
       TextButton.icon(
         key: const ValueKey('blockDriver'),

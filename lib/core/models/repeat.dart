@@ -94,10 +94,19 @@ class FavouriteDriver {
   final String name;
   final String vehicleNumber;
 
-  const FavouriteDriver({required this.driverId, this.name = '', this.vehicleNumber = ''});
+  /// `driver` or `transporter` (a company that took the trip with its own fleet).
+  final String kind;
 
-  factory FavouriteDriver.fromDoc(String id, Map<String, dynamic> d) =>
-      FavouriteDriver(driverId: id, name: d['name'] as String? ?? '', vehicleNumber: d['vehicleNumber'] as String? ?? '');
+  const FavouriteDriver({required this.driverId, this.name = '', this.vehicleNumber = '', this.kind = 'driver'});
+
+  bool get isTransporter => kind == 'transporter';
+
+  factory FavouriteDriver.fromDoc(String id, Map<String, dynamic> d) => FavouriteDriver(
+        driverId: id,
+        name: d['name'] as String? ?? '',
+        vehicleNumber: d['vehicleNumber'] as String? ?? '',
+        kind: d['kind'] == 'transporter' ? 'transporter' : 'driver',
+      );
 }
 
 /// `users/{uid}/blocked_drivers/{driverId}`: a driver this customer never
