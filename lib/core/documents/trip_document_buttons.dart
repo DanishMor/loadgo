@@ -26,7 +26,7 @@ class TripDocumentButtons extends StatelessWidget {
       runSpacing: 8,
       children: [
         BookingChatButton(booking: booking),
-        BookingCallButton(booking: booking),
+        BookingCallButton(booking: booking, onChat: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => ChatScreen(booking: booking)))),
         if (Backend.uid == booking.driverId && booking.assignedDriverId != null)
           BookingCallButton(booking: booking, preferDriver: true, label: tr(context, 'callDriver')),
         OutlinedButton.icon(

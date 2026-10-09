@@ -87,6 +87,7 @@ import 'lr_register_strings.dart';
 import 'inspection_polish_strings.dart';
 import 'chat_quick_strings.dart';
 import 'strike_appeal_strings.dart';
+import 'mic_test_strings.dart';
 import 'admin_list_strings.dart';
 import 'statement_strings.dart';
 import 'evidence_timeline_strings.dart';
@@ -188,6 +189,7 @@ const List<Map<String, List<String>>> stringTables = [
   inspectionPolishStrings,
   chatQuickStrings,
   strikeAppealStrings,
+  micTestStrings,
   adminListStrings,
   statementStrings,
   evidenceTimelineStrings,

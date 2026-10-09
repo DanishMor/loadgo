@@ -349,6 +349,24 @@ void main() {
       await ctrl.close();
     });
 
+    testWidgets('M6-35: when the mic is refused the screen offers chat and a mic test', (tester) async {
+      uid = 'customer1';
+      var chatOpened = false;
+      final c = CallController(FakeCallProvider(micDenied: true));
+      await tester.runAsync(() => c.start(booking: bk('in_transit'), calleeId: 'driver1', callerName: 'Anil', peer: 'Ramesh'));
+      await tester.pumpWidget(host(Builder(builder: (context) => Scaffold(body: TextButton(onPressed: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => CallScreen(controller: c, peer: 'Ramesh', onChat: () => chatOpened = true))), child: const Text('go'))))));
+      await tester.tap(find.text('go'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(find.byKey(const ValueKey('callTestMic')), findsOneWidget);
+      expect(find.byKey(const ValueKey('callFallbackChat')), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('callFallbackChat')));
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
+      expect(chatOpened, isTrue);
+      c.dispose();
+    });
+
     testWidgets('the call screen shows the state and the three buttons while a call is live', (tester) async {
       uid = 'customer1';
       final c = CallController(FakeCallProvider());

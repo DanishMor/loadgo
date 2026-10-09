@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
+import '../call/mic_test.dart';
 import 'account_deletion_screen.dart';
 import 'account_tools_screens.dart';
 import 'devices_screen.dart';
@@ -161,6 +162,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 title: Text(tr(context, 'myDevices')),
                 trailing: const Icon(Icons.chevron_right_rounded),
                 onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const DevicesScreen())),
+              ),
+              ListTile(
+                key: const ValueKey('settingsMicTest'),
+                leading: const Icon(Icons.mic_rounded),
+                title: Text(tr(context, 'mtTitle')),
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const MicTestScreen())),
               ),
               ListTile(
                 key: const ValueKey('settingsPhoneAlerts'),

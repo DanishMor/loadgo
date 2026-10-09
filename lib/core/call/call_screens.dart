@@ -12,6 +12,7 @@ import 'call_models.dart';
 import 'call_provider.dart';
 import 'call_signaling.dart';
 import 'call_webrtc.dart';
+import 'mic_test.dart';
 
 /// Builds the media side. Replaced in tests; the real one is WebRTC.
 CallProvider Function() callProviderFactory = WebRtcCallProvider.new;
@@ -34,7 +35,11 @@ class CallScreen extends StatefulWidget {
   final CallDoc? incoming;
   final String peer;
 
-  const CallScreen({super.key, required this.controller, this.incoming, this.peer = ''});
+  /// Opens the chat of the booking: offered when a call could not happen
+  /// (MASTER-6 Task 35).
+  final VoidCallback? onChat;
+
+  const CallScreen({super.key, required this.controller, this.incoming, this.peer = '', this.onChat});
 
   @override
   State<CallScreen> createState() => _CallScreenState();
@@ -69,7 +74,7 @@ class _CallScreenState extends State<CallScreen> {
   void _changed() {
     if (mounted) setState(() {});
     if ((c.phase == CallPhase.ended || c.phase == CallPhase.failed) && !_closing) {
-      final stay = c.phase == CallPhase.failed || c.endReason == CallEnd.noAnswer || c.endReason == CallEnd.declined;
+      final stay = c.phase == CallPhase.failed || (c.endReason != null && _needsHelp(c.endReason!));
       Future.delayed(stay ? const Duration(seconds: 3) : const Duration(milliseconds: 800), _close);
     }
   }
@@ -79,6 +84,11 @@ class _CallScreenState extends State<CallScreen> {
     _closing = true;
     Navigator.of(context).maybePop();
   }
+
+  /// The call did not happen: say what to do instead.
+  static bool _needsHelp(CallEnd e) => const [CallEnd.noAnswer, CallEnd.declined, CallEnd.failed, CallEnd.micDenied, CallEnd.unsupported, CallEnd.tooMany, CallEnd.blocked].contains(e);
+
+  bool get _didNotHappen => (c.phase == CallPhase.ended || c.phase == CallPhase.failed) && (c.phase == CallPhase.failed || (c.endReason != null && _needsHelp(c.endReason!)));
 
   String _status(BuildContext context) => switch (c.phase) {
         CallPhase.idle => trf(context, 'pcIncoming', {'name': widget.incoming?.callerName ?? widget.peer}),
@@ -135,8 +145,39 @@ class _CallScreenState extends State<CallScreen> {
                       _round(Icons.call_end_rounded, Colors.red, tr(context, 'pcEnd'), c.hangUp, key: const ValueKey('callEnd')),
                       _round(c.speaker ? Icons.volume_up_rounded : Icons.volume_down_rounded, Colors.white24, tr(context, 'pcSpeaker'), c.toggleSpeaker, key: const ValueKey('callSpeaker')),
                     ])
-                  else
+                  else ...[
+                    if (_didNotHappen && widget.onChat != null && c.endReason != CallEnd.blocked)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: FilledButton.icon(
+                          key: const ValueKey('callFallbackChat'),
+                          onPressed: () {
+                            _closing = true;
+                            Navigator.of(context).pop();
+                            widget.onChat!();
+                          },
+                          icon: const Icon(Icons.chat_bubble_outline_rounded),
+                          label: Text(tr(context, 'callFallbackChat')),
+                        ),
+                      ),
+                    if (_didNotHappen && (c.endReason == CallEnd.micDenied || c.endReason == CallEnd.failed))
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: OutlinedButton.icon(
+                          key: const ValueKey('callTestMic'),
+                          style: OutlinedButton.styleFrom(foregroundColor: Colors.white, side: const BorderSide(color: Colors.white54)),
+                          onPressed: () {
+                            _closing = true;
+                            final nav = Navigator.of(context);
+                            nav.pop();
+                            nav.push(MaterialPageRoute<void>(builder: (_) => const MicTestScreen()));
+                          },
+                          icon: const Icon(Icons.mic_rounded),
+                          label: Text(tr(context, 'callTestMic')),
+                        ),
+                      ),
                     FilledButton(onPressed: _close, child: Text(tr(context, 'pcDone'))),
+                  ],
                   const SizedBox(height: 24),
                 ]),
               ),
@@ -160,7 +201,7 @@ class _CallScreenState extends State<CallScreen> {
 
 /// Starts a call to the other person of [booking]: explains the microphone,
 /// then opens the call screen. Calls need a confirmed booking.
-Future<void> startBookingCall(BuildContext context, Booking booking, {bool preferDriver = false, String peer = ''}) async {
+Future<void> startBookingCall(BuildContext context, Booking booking, {bool preferDriver = false, String peer = '', VoidCallback? onChat}) async {
   final me = Backend.uid;
   if (me == null) return;
   if (!bookingAllowsCall(booking)) return showSnack(context, tr(context, 'pcCallOnlyConfirmed'));
@@ -173,7 +214,8 @@ Future<void> startBookingCall(BuildContext context, Booking booking, {bool prefe
   final name = await CallController.myDisplayName();
   if (!context.mounted) return;
   unawaited(controller.start(booking: booking, calleeId: callee, callerName: name, peer: peer));
-  await Navigator.of(context).push(MaterialPageRoute(fullscreenDialog: true, builder: (_) => CallScreen(controller: controller, peer: peer)));
+  final nav = Navigator.of(context);
+  await nav.push(MaterialPageRoute(fullscreenDialog: true, builder: (_) => CallScreen(controller: controller, peer: peer, onChat: onChat)));
   controller.dispose();
 }
 
@@ -183,8 +225,9 @@ class BookingCallButton extends StatelessWidget {
   final Booking booking;
   final bool preferDriver;
   final String label;
+  final VoidCallback? onChat;
 
-  const BookingCallButton({super.key, required this.booking, this.preferDriver = false, this.label = ''});
+  const BookingCallButton({super.key, required this.booking, this.preferDriver = false, this.label = '', this.onChat});
 
   @override
   Widget build(BuildContext context) {
@@ -192,7 +235,7 @@ class BookingCallButton extends StatelessWidget {
     if (me == null || !bookingAllowsCall(booking) || callTarget(booking, me, preferDriver: preferDriver) == null) return const SizedBox.shrink();
     return OutlinedButton.icon(
       key: ValueKey(preferDriver ? 'callDriverButton' : 'callButton'),
-      onPressed: () => startBookingCall(context, booking, preferDriver: preferDriver),
+      onPressed: () => startBookingCall(context, booking, preferDriver: preferDriver, onChat: onChat),
       icon: const Icon(Icons.call_rounded),
       label: Text(label.isEmpty ? tr(context, 'pcCall') : label),
     );
