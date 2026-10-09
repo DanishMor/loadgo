@@ -1,3 +1,4 @@
+import '../core/pilot/dispatch_card.dart';
 import 'favourite_routes_screen.dart';
 import '../core/assistant/sahayak_screen.dart';
 import '../core/search/global_search_screen.dart';
@@ -317,6 +318,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
               ),
             ),
             const AnnouncementBanner(role: 'driver'),
+            const DispatchSuggestionsCard(),
             const RoleTourCard(role: RoleTour.driver),
             const SimpleModePrompt(),
             _noVehiclePrompt(),

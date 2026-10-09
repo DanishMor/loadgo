@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../analytics/unit_economics.dart';
 import 'server_clock.dart';
+import '../admin/dispatch.dart';
 import '../admin/pilot_control.dart';
 import '../admin/pilot_funnel.dart';
 import '../matching/supply_demand.dart';
@@ -415,6 +416,70 @@ class AdminConsoleService {
           openTickets: r[4],
         );
       });
+
+  /// Open loads older than the unfilled threshold, oldest first (newest 300 open read).
+  static Future<List<Load>> unfilledLoads({DateTime? now}) => withRetry(() async {
+        final at = now ?? ServerClock.now();
+        final snap = await _db.collection('loads').where('status', isEqualTo: LoadStatus.open).limit(PilotControl.sampleLimit).get();
+        final loads = [
+          for (final d in snap.docs)
+            if (d.data()['createdAt'] is Timestamp && at.difference((d.data()['createdAt'] as Timestamp).toDate()).inMinutes >= PilotControl.unfilledAfterMinutes) Load.fromDoc(d),
+        ]..sort((a, b) => a.createdAt!.compareTo(b.createdAt!));
+        return loads;
+      });
+
+  /// The drivers to suggest for [load] with their names (reads up to 500 free
+  /// vehicles and 500 drivers).
+  static Future<List<({DispatchCandidate c, String name})>> dispatchCandidates(Load load, {int limit = 500}) => withRetry(() async {
+        final vehicles = await _db.collection('vehicles').where('availability', isEqualTo: VehicleAvailability.available).limit(limit).get();
+        final users = await _db.collection('users').where('role', isEqualTo: 'driver').limit(limit).get();
+        final byId = {for (final u in users.docs) u.id: u.data()};
+        final found = Dispatch.suggest(
+          load,
+          [for (final d in vehicles.docs) Vehicle.fromDoc(d)],
+          spotOf: (v) => UserService.lastLocationOf(byId[v.assignedDriverId ?? v.ownerId]),
+          now: ServerClock.now(),
+        );
+        return [for (final c in found) (c: c, name: '${byId[c.driverId]?['driverName'] ?? byId[c.driverId]?['name'] ?? ''}')];
+      });
+
+  /// Suggests [load] to a driver: one `dispatch_suggestions` document the
+  /// driver sees on their home, plus an audit line. It assigns nothing: the
+  /// driver still accepts through the normal flow (record only).
+  /// TODO(functions): notify the driver and assign on their consent.
+  static Future<void> suggestLoad(Load load, String driverId, {String note = ''}) {
+    assert(note.length <= Dispatch.maxNote);
+    final batch = _db.batch();
+    final id = Dispatch.suggestionId(load.id, driverId);
+    batch.set(_db.collection('dispatch_suggestions').doc(id), {
+      'loadId': load.id,
+      'driverId': driverId,
+      'pickup': load.pickup.length > 120 ? load.pickup.substring(0, 120) : load.pickup,
+      'drop': load.drop.length > 120 ? load.drop.substring(0, 120) : load.drop,
+      'weight': load.weight,
+      'vehicleType': load.vehicleType,
+      'note': note.trim(),
+      'by': Backend.requireUid(),
+      'status': 'suggested',
+      'createdAt': FieldValue.serverTimestamp(),
+    });
+    AuditService.inBatch(batch, AuditType.userAction, targetId: load.id, loadId: load.id, data: {'action': 'dispatch_suggest', 'collection': 'dispatch_suggestions', 'driverId': driverId});
+    return batch.commit();
+  }
+
+  /// A call-back note about the customer of [load] (kept with the user's admin notes).
+  static Future<void> callbackNote(Load load, String text) {
+    final t = text.trim();
+    assert(t.isNotEmpty && t.length <= 900);
+    final batch = _db.batch();
+    batch.set(_db.collection('users').doc(load.shipperId).collection('admin_notes').doc(), {
+      'by': Backend.requireUid(),
+      'text': 'Call-back (load ${load.id}): $t',
+      'createdAt': FieldValue.serverTimestamp(),
+    });
+    AuditService.inBatch(batch, AuditType.userAction, targetId: load.shipperId, loadId: load.id, data: {'action': 'callback_note', 'collection': 'admin_notes'});
+    return batch.commit();
+  }
 
   static Future<HealthCounts> health() => withRetry(_health);
 

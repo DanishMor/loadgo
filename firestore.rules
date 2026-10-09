@@ -3436,6 +3436,29 @@ service cloud.firestore {
       allow delete: if signedIn() && resource.data.uid == request.auth.uid;
     }
 
+    // dispatch_suggestions/{loadId}_{driverId} (MASTER-6 Task 4): an admin
+    // suggests an unfilled load to a driver. It assigns nothing; the driver
+    // reads their own and can only mark it seen or declined.
+    // TODO(functions): notify the driver.
+    match /dispatch_suggestions/{id} {
+      allow read: if isAdmin() || (signedIn() && resource.data.driverId == request.auth.uid);
+      allow create: if adminIn(['super', 'ops'])
+          && request.resource.data.keys().hasOnly(['loadId', 'driverId', 'pickup', 'drop', 'weight', 'vehicleType', 'note', 'by', 'status', 'createdAt'])
+          && request.resource.data.loadId is string && request.resource.data.driverId is string
+          && id == request.resource.data.loadId + '_' + request.resource.data.driverId
+          && request.resource.data.pickup is string && request.resource.data.pickup.size() <= 120
+          && request.resource.data.drop is string && request.resource.data.drop.size() <= 120
+          && request.resource.data.weight is number && request.resource.data.vehicleType is string && request.resource.data.vehicleType.size() <= 40
+          && request.resource.data.note is string && request.resource.data.note.size() <= 300
+          && request.resource.data.by == request.auth.uid
+          && request.resource.data.status == 'suggested'
+          && request.resource.data.createdAt == request.time;
+      allow update: if signedIn() && resource.data.driverId == request.auth.uid
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])
+          && request.resource.data.status in ['seen', 'declined'];
+      allow delete: if adminIn(['super', 'ops']) || (signedIn() && resource.data.driverId == request.auth.uid);
+    }
+
     match /config/{docId} {
       allow read: if signedIn();
       allow create, update: if adminIn(['super']) && validConfig(docId);

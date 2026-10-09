@@ -5501,3 +5501,28 @@ describe('waitlist (M6-2)', () => {
     await assertSucceeds(deleteDoc(doc(as('u1'), 'waitlist', 'u1_pune_delhi')));
   });
 });
+
+describe('dispatch suggestions (M6-4)', () => {
+  const S = (over = {}) => ({ loadId: 'L1', driverId: 'd1', pickup: 'Delhi', drop: 'Jaipur', weight: 3, vehicleType: 'Mini', note: 'Call first', by: 'admin1', status: 'suggested', createdAt: serverTimestamp(), ...over });
+  const seedS = () => seed((db) => rawSetDoc(doc(db, 'dispatch_suggestions', 'L1_d1'), S({ createdAt: Timestamp.now() })));
+
+  test('an admin suggests with the right id and shape; users cannot', async () => {
+    await assertSucceeds(rawSetDoc(doc(asAdmin(), 'dispatch_suggestions', 'L1_d1'), S()));
+    await assertFails(rawSetDoc(doc(asAdmin(), 'dispatch_suggestions', 'L1_d2'), S()));
+    await assertFails(rawSetDoc(doc(asAdmin(), 'dispatch_suggestions', 'L1_d1'), S({ status: 'accepted' })));
+    await assertFails(rawSetDoc(doc(asAdmin(), 'dispatch_suggestions', 'L1_d1'), S({ note: 'x'.repeat(301) })));
+    await assertFails(rawSetDoc(doc(as('d1'), 'dispatch_suggestions', 'L1_d1'), S({ by: 'd1' })));
+  });
+
+  test('the driver reads their own and may only mark seen or declined', async () => {
+    await seedS();
+    await assertSucceeds(getDoc(doc(as('d1'), 'dispatch_suggestions', 'L1_d1')));
+    await assertFails(getDoc(doc(as('d2'), 'dispatch_suggestions', 'L1_d1')));
+    await assertSucceeds(getDocs(query(collection(as('d1'), 'dispatch_suggestions'), where('driverId', '==', 'd1'))));
+    await assertFails(updateDoc(doc(as('d1'), 'dispatch_suggestions', 'L1_d1'), { status: 'accepted' }));
+    await assertFails(updateDoc(doc(as('d1'), 'dispatch_suggestions', 'L1_d1'), { note: 'mine' }));
+    await assertFails(updateDoc(doc(as('d2'), 'dispatch_suggestions', 'L1_d1'), { status: 'seen' }));
+    await assertSucceeds(updateDoc(doc(as('d1'), 'dispatch_suggestions', 'L1_d1'), { status: 'declined' }));
+    await assertSucceeds(deleteDoc(doc(as('d1'), 'dispatch_suggestions', 'L1_d1')));
+  });
+});
