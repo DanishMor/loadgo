@@ -1,3 +1,4 @@
+import '../core/errors/error_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -81,8 +82,8 @@ class _TransporterProfileScreenState extends State<TransporterProfileScreen> {
         showSnack(context, tr(context, 'trpSaved'));
         Navigator.of(context).pop();
       }
-    } catch (_) {
-      if (mounted) showSnack(context, tr(context, 'somethingWrong'));
+    } catch (error) {
+      if (mounted) showSnack(context, errorText(context, error));
     } finally {
       if (mounted) setState(() => _saving = false);
     }

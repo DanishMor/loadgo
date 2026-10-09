@@ -1,3 +1,4 @@
+import '../core/errors/error_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -33,8 +34,8 @@ class _BusinessStatementScreenState extends State<BusinessStatementScreen> {
     try {
       await BusinessService.saveStatement(s, ownerId: widget.ownerId);
       if (mounted) showSnack(context, tr(context, 'statementSaved'));
-    } catch (_) {
-      if (mounted) showSnack(context, tr(context, 'somethingWrong'));
+    } catch (error) {
+      if (mounted) showSnack(context, errorText(context, error));
     }
   }
 

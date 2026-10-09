@@ -1,3 +1,4 @@
+import '../core/errors/error_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -109,11 +110,11 @@ class _OffersSectionState extends State<OffersSection> {
           _checking = false;
         });
       }
-    } catch (_) {
+    } catch (error) {
       if (!mounted) return;
       setState(() {
         _checking = false;
-        _error = tr(context, 'somethingWrong');
+        _error = errorText(context, error);
       });
     }
     _emit();

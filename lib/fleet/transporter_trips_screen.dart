@@ -1,3 +1,4 @@
+import '../core/errors/error_text.dart';
 import 'package:flutter/material.dart';
 
 import '../core/constants/logistics.dart';
@@ -65,8 +66,8 @@ class _TransporterTripsScreenState extends State<TransporterTripsScreen> {
       if (mounted) showSnack(context, tr(context, 'trpJobConfirmed'));
     } on OfferStateException {
       if (mounted) showSnack(context, tr(context, 'offerChanged'));
-    } catch (_) {
-      if (mounted) showSnack(context, tr(context, 'somethingWrong'));
+    } catch (error) {
+      if (mounted) showSnack(context, errorText(context, error));
     }
   }
 
@@ -116,8 +117,8 @@ class _TransporterTripsScreenState extends State<TransporterTripsScreen> {
       if (mounted) showSnack(context, tr(context, 'trpAssigned'));
     } on AssignException catch (e) {
       if (mounted) showSnack(context, tr(context, 'trpErr_${e.reason}'));
-    } catch (_) {
-      if (mounted) showSnack(context, tr(context, 'somethingWrong'));
+    } catch (error) {
+      if (mounted) showSnack(context, errorText(context, error));
     }
   }
 

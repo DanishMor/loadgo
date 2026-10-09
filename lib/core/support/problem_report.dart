@@ -1,3 +1,4 @@
+import '../errors/error_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -117,10 +118,10 @@ class _ProblemSheetState extends State<_ProblemSheet> {
         setState(() => _busy = false);
         showSnack(context, trf(context, 'rateLimited', {'m': e.minutesLeft}));
       }
-    } catch (_) {
+    } catch (error) {
       if (mounted) {
         setState(() => _busy = false);
-        showSnack(context, tr(context, 'somethingWrong'));
+        showSnack(context, errorText(context, error));
       }
     }
   }

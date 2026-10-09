@@ -1,3 +1,4 @@
+import '../core/errors/error_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -133,10 +134,10 @@ class _NewShipmentScreenState extends State<NewShipmentScreen> {
       if (!mounted) return;
       setState(() => _busy = false);
       showSnack(context, tr(context, 'accountRestricted'));
-    } catch (_) {
+    } catch (error) {
       if (!mounted) return;
       setState(() => _busy = false);
-      showSnack(context, tr(context, 'somethingWrong'));
+      showSnack(context, errorText(context, error));
     }
   }
 

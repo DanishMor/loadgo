@@ -1,3 +1,4 @@
+import '../errors/error_text.dart';
 import 'package:flutter/material.dart';
 
 import '../l10n/l10n.dart';
@@ -30,8 +31,8 @@ class _AdminPhoneTextState extends State<AdminPhoneText> {
     try {
       await AuditService.record(AuditType.contactView, targetId: widget.uid, bookingId: widget.bookingId, data: {'fields': ['phone']});
       if (mounted) setState(() => _shown = true);
-    } catch (_) {
-      if (mounted) showSnack(context, tr(context, 'somethingWrong'));
+    } catch (error) {
+      if (mounted) showSnack(context, errorText(context, error));
     } finally {
       if (mounted) setState(() => _busy = false);
     }

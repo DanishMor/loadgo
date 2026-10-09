@@ -1,3 +1,4 @@
+import '../core/errors/error_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -57,8 +58,8 @@ class _AdminUnitEconomicsScreenState extends State<AdminUnitEconomicsScreen> {
       if (!mounted) return;
       showSnack(context, tr(context, 'featSaved'));
       _refresh();
-    } catch (_) {
-      if (mounted) showSnack(context, tr(context, 'somethingWrong'));
+    } catch (error) {
+      if (mounted) showSnack(context, errorText(context, error));
     } finally {
       if (mounted) setState(() => _saving = false);
     }

@@ -1,3 +1,4 @@
+import '../core/errors/error_text.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -107,11 +108,11 @@ class _DriverKycScreenState extends State<DriverKycScreen> {
       if (!mounted) return;
       setState(() => _saving = false);
       showDuplicateIdentity(context, e);
-    } catch (_) {
+    } catch (error) {
       if (!mounted) return;
       setState(() => _saving = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(tr(context, 'somethingWrong')), behavior: SnackBarBehavior.floating),
+        SnackBar(content: Text(errorText(context, error)), behavior: SnackBarBehavior.floating),
       );
     }
   }

@@ -1,3 +1,4 @@
+import '../core/errors/error_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:printing/printing.dart';
@@ -64,8 +65,8 @@ Future<void> editTripAccount(BuildContext context, Booking booking, {TripAccount
       receivedPaise: values[3]!,
     );
     if (context.mounted) showSnack(context, tr(context, 'trpSaved'));
-  } catch (_) {
-    if (context.mounted) showSnack(context, tr(context, 'somethingWrong'));
+  } catch (error) {
+    if (context.mounted) showSnack(context, errorText(context, error));
   }
 }
 

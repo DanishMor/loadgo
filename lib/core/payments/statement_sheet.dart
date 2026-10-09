@@ -1,3 +1,4 @@
+import '../errors/error_text.dart';
 import 'package:flutter/material.dart';
 import 'package:printing/printing.dart';
 
@@ -58,8 +59,8 @@ class _StatementSheetState extends State<StatementSheet> {
       } else {
         await shareCsv(s.toCsv(), 'Earnings statement');
       }
-    } catch (_) {
-      if (mounted) showSnack(context, tr(context, 'somethingWrong'));
+    } catch (error) {
+      if (mounted) showSnack(context, errorText(context, error));
     } finally {
       if (mounted) setState(() => _busy = false);
     }

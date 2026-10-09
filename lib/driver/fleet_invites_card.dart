@@ -1,3 +1,4 @@
+import '../core/errors/error_text.dart';
 import 'package:flutter/material.dart';
 
 import '../core/l10n/l10n.dart';
@@ -40,8 +41,8 @@ class _FleetInvitesCardState extends State<FleetInvitesCard> {
       if (mounted && accept) showSnack(context, tr(context, 'fleetJoined'));
     } on FleetException {
       if (mounted) showSnack(context, tr(context, 'fleetNeedDriverRole'));
-    } catch (_) {
-      if (mounted) showSnack(context, tr(context, 'somethingWrong'));
+    } catch (error) {
+      if (mounted) showSnack(context, errorText(context, error));
     }
   }
 
@@ -90,8 +91,8 @@ class _FleetInvitesCardState extends State<FleetInvitesCard> {
                             onChanged: (on) async {
                               try {
                                 await TransporterService.setAttached(v.id, on ? m.ownerId : null);
-                              } catch (_) {
-                                if (context.mounted) showSnack(context, tr(context, 'somethingWrong'));
+                              } catch (error) {
+                                if (context.mounted) showSnack(context, errorText(context, error));
                               }
                             },
                           ),

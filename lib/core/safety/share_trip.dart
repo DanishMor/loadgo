@@ -1,3 +1,4 @@
+import '../errors/error_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
@@ -89,8 +90,8 @@ class ShareTrackingLinkButton extends StatelessWidget {
       } else {
         await SharePlus.instance.share(ShareParams(text: text));
       }
-    } catch (_) {
-      if (context.mounted) showSnack(context, tr(context, 'somethingWrong'));
+    } catch (error) {
+      if (context.mounted) showSnack(context, errorText(context, error));
     }
   }
 

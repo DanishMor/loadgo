@@ -1,3 +1,4 @@
+import '../core/errors/error_text.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 
@@ -155,10 +156,10 @@ class _AddPlaceDialogState extends State<_AddPlaceDialog> {
       if (!mounted) return;
       setState(() => _saving = false);
       showSnack(context, tr(context, 'tooManyPlaces'));
-    } catch (_) {
+    } catch (error) {
       if (!mounted) return;
       setState(() => _saving = false);
-      showSnack(context, tr(context, 'somethingWrong'));
+      showSnack(context, errorText(context, error));
     }
   }
 

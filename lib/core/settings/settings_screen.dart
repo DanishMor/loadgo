@@ -1,3 +1,4 @@
+import '../errors/error_text.dart';
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../call/mic_test.dart';
@@ -55,13 +56,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
         _prefs = prefs;
         _consents = consents;
       });
-    } catch (_) {
+    } catch (error) {
       if (!mounted) return;
       setState(() {
         _prefs = const NotificationPrefs();
         _consents = const Consents();
       });
-      showSnack(context, tr(context, 'somethingWrong'));
+      showSnack(context, errorText(context, error));
     }
   }
 
@@ -69,8 +70,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     try {
       await write();
       if (mounted) showSnack(context, tr(context, 'settingsSaved'));
-    } catch (_) {
-      if (mounted) showSnack(context, tr(context, 'somethingWrong'));
+    } catch (error) {
+      if (mounted) showSnack(context, errorText(context, error));
       _load();
     }
   }

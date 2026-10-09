@@ -1,3 +1,4 @@
+import '../core/errors/error_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -37,8 +38,8 @@ class _FavouriteRoutesScreenState extends State<FavouriteRoutesScreen> {
         _pickup.clear();
         _drop.clear();
       }
-    } catch (_) {
-      if (mounted) showSnack(context, tr(context, 'somethingWrong'));
+    } catch (error) {
+      if (mounted) showSnack(context, errorText(context, error));
     }
   }
 

@@ -1,3 +1,4 @@
+import '../core/errors/error_text.dart';
 import '../core/admin/config_schema.dart';
 import 'dart:convert';
 
@@ -199,8 +200,8 @@ class _ConfigEditorScreenState extends State<ConfigEditorScreen> {
       if (widget.docId == 'risk') await RiskConfigStore.refresh();
       if (widget.docId == 'announcement') await AnnouncementService.refresh(force: true);
       if (mounted) showSnack(context, tr(context, 'adminConfigSaved'));
-    } catch (_) {
-      if (mounted) showSnack(context, tr(context, 'somethingWrong'));
+    } catch (error) {
+      if (mounted) showSnack(context, errorText(context, error));
     }
   }
 
@@ -208,8 +209,8 @@ class _ConfigEditorScreenState extends State<ConfigEditorScreen> {
     final List<ConfigVersion> versions;
     try {
       versions = await AdminConsoleService.configHistory(widget.docId);
-    } catch (_) {
-      if (mounted) showSnack(context, tr(context, 'somethingWrong'));
+    } catch (error) {
+      if (mounted) showSnack(context, errorText(context, error));
       return;
     }
     if (!mounted) return;

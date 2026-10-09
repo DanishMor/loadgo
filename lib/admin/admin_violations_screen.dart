@@ -1,3 +1,4 @@
+import '../core/errors/error_text.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
@@ -27,8 +28,8 @@ class _AdminViolationsScreenState extends State<AdminViolationsScreen> {
     try {
       await action();
       if (mounted) setState(() => _reload++);
-    } catch (_) {
-      if (mounted) showSnack(context, tr(context, 'somethingWrong'));
+    } catch (error) {
+      if (mounted) showSnack(context, errorText(context, error));
     }
   }
 

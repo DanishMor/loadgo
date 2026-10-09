@@ -1,3 +1,4 @@
+import '../core/errors/error_text.dart';
 import 'package:flutter/material.dart';
 
 import '../core/l10n/l10n.dart';
@@ -27,8 +28,8 @@ class _AdminChatReviewScreenState extends State<AdminChatReviewScreen> {
     try {
       final phones = await CommAdminService.revealPhones(widget.parties, bookingId: widget.bookingId);
       if (mounted) setState(() => _phones = phones);
-    } catch (_) {
-      if (mounted) showSnack(context, tr(context, 'somethingWrong'));
+    } catch (error) {
+      if (mounted) showSnack(context, errorText(context, error));
     }
   }
 

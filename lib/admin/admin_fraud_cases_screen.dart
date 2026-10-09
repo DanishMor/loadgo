@@ -1,3 +1,4 @@
+import '../core/errors/error_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -49,8 +50,8 @@ class _AdminFraudCasesScreenState extends State<AdminFraudCasesScreen> {
     try {
       final id = await FraudCaseService.open(userId: u, summary: s);
       if (mounted) Navigator.of(context).push(MaterialPageRoute(builder: (_) => FraudCaseScreen(caseId: id)));
-    } catch (_) {
-      if (mounted) showSnack(context, tr(context, 'somethingWrong'));
+    } catch (error) {
+      if (mounted) showSnack(context, errorText(context, error));
     }
   }
 
@@ -129,8 +130,8 @@ class _FraudCaseScreenState extends State<FraudCaseScreen> {
   Future<void> _run(Future<void> Function() f) async {
     try {
       await f();
-    } catch (_) {
-      if (mounted) showSnack(context, tr(context, 'somethingWrong'));
+    } catch (error) {
+      if (mounted) showSnack(context, errorText(context, error));
     }
   }
 

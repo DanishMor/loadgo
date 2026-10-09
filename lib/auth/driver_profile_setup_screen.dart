@@ -1,3 +1,4 @@
+import '../core/errors/error_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -49,11 +50,11 @@ class _DriverProfileSetupScreenState extends State<DriverProfileSetupScreen> {
         MaterialPageRoute(builder: (_) => next),
         (route) => false,
       );
-    } catch (_) {
+    } catch (error) {
       if (!mounted) return;
       setState(() => _saving = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(tr(context, 'somethingWrong')), behavior: SnackBarBehavior.floating),
+        SnackBar(content: Text(errorText(context, error)), behavior: SnackBarBehavior.floating),
       );
     }
   }

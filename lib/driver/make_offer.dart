@@ -1,3 +1,4 @@
+import '../core/errors/error_text.dart';
 import '../core/models/risk.dart';
 import 'package:flutter/material.dart';
 import '../core/services/rate_limit_service.dart';
@@ -102,8 +103,8 @@ class _MakeOfferButtonState extends State<MakeOfferButton> {
       if (mounted) showSnack(context, tr(context, 'offerExists'));
     } on OfferStateException {
       if (mounted) showSnack(context, tr(context, 'loadUnavailable'));
-    } catch (_) {
-      if (mounted) showRetrySnack(context, tr(context, 'somethingWrong'), _offer);
+    } catch (error) {
+      if (mounted) showRetrySnack(context, errorText(context, error), _offer);
     } finally {
       if (mounted) setState(() => _busy = false);
     }

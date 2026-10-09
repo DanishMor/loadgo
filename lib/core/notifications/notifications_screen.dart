@@ -1,3 +1,4 @@
+import '../errors/error_text.dart';
 import 'package:flutter/material.dart';
 
 import '../bilty/inspection_widgets.dart';
@@ -437,8 +438,8 @@ class _NotifSettingsSheetState extends State<_NotifSettingsSheet> {
     SettingsService.prefs.value = next; // takes effect at once
     try {
       await SettingsService.savePrefs(next);
-    } catch (_) {
-      if (mounted) showSnack(context, tr(context, 'somethingWrong'));
+    } catch (error) {
+      if (mounted) showSnack(context, errorText(context, error));
     }
   }
 

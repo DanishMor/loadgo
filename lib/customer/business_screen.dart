@@ -1,3 +1,4 @@
+import '../core/errors/error_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -68,8 +69,8 @@ class _BusinessScreenState extends State<BusinessScreen> {
     try {
       await EnterpriseService.saveBusiness(BusinessProfile(legalName: _name.text, gstin: _gstin.text, address: _address.text));
       if (mounted) showSnack(context, tr(context, 'businessSaved'));
-    } catch (_) {
-      if (mounted) showSnack(context, tr(context, 'somethingWrong'));
+    } catch (error) {
+      if (mounted) showSnack(context, errorText(context, error));
     }
   }
 
@@ -79,8 +80,8 @@ class _BusinessScreenState extends State<BusinessScreen> {
     try {
       final ok = await EnterpriseService.addBranch(type: result.type, name: result.name, address: result.address, city: result.city);
       if (mounted && !ok) showSnack(context, tr(context, 'branchesFull'));
-    } catch (_) {
-      if (mounted) showSnack(context, tr(context, 'somethingWrong'));
+    } catch (error) {
+      if (mounted) showSnack(context, errorText(context, error));
     }
   }
 

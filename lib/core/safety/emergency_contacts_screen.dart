@@ -1,3 +1,4 @@
+import '../errors/error_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -45,8 +46,8 @@ class _EmergencyContactsScreenState extends State<EmergencyContactsScreen> {
       if (!mounted) return;
       setState(() => _contacts = list);
       showSnack(context, tr(context, 'contactsSaved'));
-    } catch (_) {
-      if (mounted) showSnack(context, tr(context, 'somethingWrong'));
+    } catch (error) {
+      if (mounted) showSnack(context, errorText(context, error));
     } finally {
       if (mounted) setState(() => _saving = false);
     }

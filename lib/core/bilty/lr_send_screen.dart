@@ -1,3 +1,4 @@
+import '../errors/error_text.dart';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -41,8 +42,8 @@ class _LrSendScreenState extends State<LrSendScreen> {
       await job();
     } on LrException catch (e) {
       if (mounted) showSnack(context, tr(context, e.reason == 'no_driver' ? 'blNoDriver' : 'somethingWrong'));
-    } catch (_) {
-      if (mounted) showSnack(context, tr(context, 'somethingWrong'));
+    } catch (error) {
+      if (mounted) showSnack(context, errorText(context, error));
     } finally {
       if (mounted) setState(() => _busy = false);
     }

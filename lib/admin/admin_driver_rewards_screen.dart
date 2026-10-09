@@ -1,3 +1,4 @@
+import '../core/errors/error_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -112,10 +113,10 @@ class _IncentiveEditScreenState extends State<IncentiveEditScreen> {
         startsAt: DateTime.now(),
       ));
       if (mounted) Navigator.of(context).pop();
-    } catch (_) {
+    } catch (error) {
       if (!mounted) return;
       setState(() => _saving = false);
-      showSnack(context, tr(context, 'somethingWrong'));
+      showSnack(context, errorText(context, error));
     }
   }
 
@@ -196,8 +197,8 @@ class _PlansTabState extends State<_PlansTab> {
     try {
       await DriverExtrasService.setPlan(driverId, plan, days: int.tryParse(_days.text.trim()));
       if (mounted) showSnack(context, tr(context, 'settingsSaved'));
-    } catch (_) {
-      if (mounted) showSnack(context, tr(context, 'somethingWrong'));
+    } catch (error) {
+      if (mounted) showSnack(context, errorText(context, error));
     }
   }
 

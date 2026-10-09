@@ -1,3 +1,4 @@
+import '../errors/error_text.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -224,10 +225,10 @@ class _NewTicketScreenState extends State<NewTicketScreen> {
       if (!mounted) return;
       setState(() => _saving = false);
       showSnack(context, trf(context, 'rateLimited', {'m': e.minutesLeft}));
-    } catch (_) {
+    } catch (error) {
       if (!mounted) return;
       setState(() => _saving = false);
-      showSnack(context, tr(context, 'somethingWrong'));
+      showSnack(context, errorText(context, error));
     }
   }
 
@@ -377,8 +378,8 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
     try {
       await action();
       if (mounted && done != null) showSnack(context, tr(context, done));
-    } catch (_) {
-      if (mounted) showSnack(context, tr(context, 'somethingWrong'));
+    } catch (error) {
+      if (mounted) showSnack(context, errorText(context, error));
     } finally {
       if (mounted) setState(() => _busy = false);
     }

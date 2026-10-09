@@ -1,3 +1,4 @@
+import '../errors/error_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -72,8 +73,8 @@ class _VehicleExpensesScreenState extends State<VehicleExpensesScreen> {
     if (paise == null || paise < 1 || paise > VehicleExpense.maxPaise) return showSnack(context, tr(context, 'exInvalid'));
     try {
       await ExpenseService.add(vehicleId: widget.vehicleId, kind: kind, amountPaise: paise, note: note.text, date: DateTime.now());
-    } catch (_) {
-      if (mounted) showSnack(context, tr(context, 'somethingWrong'));
+    } catch (error) {
+      if (mounted) showSnack(context, errorText(context, error));
     }
   }
 

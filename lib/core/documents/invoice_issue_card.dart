@@ -1,3 +1,4 @@
+import '../errors/error_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -63,7 +64,7 @@ class _InvoiceIssueCardState extends State<InvoiceIssueCard> {
           'gstin' => tr(context, 'gstinInvalid'),
           'eway' => tr(context, 'invoiceBadEway'),
           'no_amount' => tr(context, 'invoiceNoAmount'),
-          _ => tr(context, 'somethingWrong'),
+          _ => errorText(context, e),
         });
       }
     } finally {

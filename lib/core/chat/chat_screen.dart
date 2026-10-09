@@ -1,3 +1,4 @@
+import '../errors/error_text.dart';
 import 'package:flutter/material.dart';
 import '../widgets/live_stream.dart';
 import '../services/rate_limit_service.dart';
@@ -101,8 +102,8 @@ class _ChatScreenState extends State<ChatScreen> {
       if (mounted) showSnack(context, trf(context, 'rateLimited', {'m': e.minutesLeft}));
     } on ChatSendException catch (e) {
       if (mounted) showSnack(context, tr(context, switch (e.reason) { 'blocked' => 'cannotSendBlocked', 'repeat' => 'chatRepeat', _ => 'somethingWrong' }));
-    } catch (_) {
-      if (mounted) showRetrySnack(context, tr(context, 'somethingWrong'), _send);
+    } catch (error) {
+      if (mounted) showRetrySnack(context, errorText(context, error), _send);
     } finally {
       if (mounted) setState(() => _sending = false);
     }
@@ -138,8 +139,8 @@ class _ChatScreenState extends State<ChatScreen> {
     try {
       await ChatService.report(widget.booking, reason: result.$1, details: result.$2, messageId: messageId);
       if (mounted) showSnack(context, tr(context, 'reportSent'));
-    } catch (_) {
-      if (mounted) showSnack(context, tr(context, 'somethingWrong'));
+    } catch (error) {
+      if (mounted) showSnack(context, errorText(context, error));
     }
   }
 

@@ -1,3 +1,4 @@
+import '../errors/error_text.dart';
 import 'package:flutter/material.dart';
 
 import '../l10n/l10n.dart';
@@ -36,8 +37,8 @@ class _StrikeAppealScreenState extends State<StrikeAppealScreen> {
       _refresh();
     } on AppealException catch (e) {
       if (mounted) showSnack(context, tr(context, switch (e.reason) { 'text' => 'apTextShort', 'closed' => 'apClosed', _ => 'apExists' }));
-    } catch (_) {
-      if (mounted) showSnack(context, tr(context, 'somethingWrong'));
+    } catch (error) {
+      if (mounted) showSnack(context, errorText(context, error));
     }
   }
 

@@ -1,3 +1,4 @@
+import '../core/errors/error_text.dart';
 import 'package:flutter/material.dart';
 
 import '../core/l10n/l10n.dart';
@@ -48,8 +49,8 @@ class _TripSafetyCardState extends State<TripSafetyCard> {
     try {
       await SafetyService.sendSos(booking: widget.booking);
       contacts = SafetyService.contactsFrom(await UserService.getUser());
-    } catch (_) {
-      if (mounted) showSnack(context, tr(context, 'somethingWrong'));
+    } catch (error) {
+      if (mounted) showSnack(context, errorText(context, error));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -97,8 +98,8 @@ class _TripSafetyCardState extends State<TripSafetyCard> {
       }
       await BookingService.replaceVehicle(widget.booking, pick, old: old);
       if (mounted) showSnack(context, tr(context, 'vehicleSwitched'));
-    } catch (_) {
-      if (mounted) showSnack(context, tr(context, 'somethingWrong'));
+    } catch (error) {
+      if (mounted) showSnack(context, errorText(context, error));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -111,8 +112,8 @@ class _TripSafetyCardState extends State<TripSafetyCard> {
     try {
       await SafetyService.reportBreakdown(widget.booking, note: result.$1, needReplacement: result.$2);
       if (mounted) showSnack(context, tr(context, 'breakdownReported'));
-    } catch (_) {
-      if (mounted) showSnack(context, tr(context, 'somethingWrong'));
+    } catch (error) {
+      if (mounted) showSnack(context, errorText(context, error));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -138,8 +139,8 @@ class _TripSafetyCardState extends State<TripSafetyCard> {
       if (mounted) showSnack(context, tr(context, 'accidentReported'));
     } on EvidenceException {
       if (mounted) showSnack(context, tr(context, 'accidentTooShort'));
-    } catch (_) {
-      if (mounted) showSnack(context, tr(context, 'somethingWrong'));
+    } catch (error) {
+      if (mounted) showSnack(context, errorText(context, error));
     } finally {
       if (mounted) setState(() => _busy = false);
     }

@@ -1,3 +1,4 @@
+import '../errors/error_text.dart';
 import 'package:flutter/material.dart';
 
 import '../l10n/l10n.dart';
@@ -36,8 +37,8 @@ class _HandoverCardState extends State<HandoverCard> {
       await action();
     } on HandoverException catch (e) {
       if (mounted) showSnack(context, tr(context, e.reason == 'seal' || e.reason == 'container' ? 'hoInvalid' : 'somethingWrong'));
-    } catch (_) {
-      if (mounted) showSnack(context, tr(context, 'somethingWrong'));
+    } catch (error) {
+      if (mounted) showSnack(context, errorText(context, error));
     } finally {
       if (mounted) setState(() => _busy = false);
     }

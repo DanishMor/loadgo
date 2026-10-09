@@ -1,3 +1,4 @@
+import '../core/errors/error_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -59,8 +60,8 @@ class _AdminTemplatesScreenState extends State<AdminTemplatesScreen> {
       if (mounted) _reload();
     } on TemplateException catch (e) {
       if (mounted) showSnack(context, tr(context, e.reason == 'limit' ? 'tplLimit' : 'tplInvalid'));
-    } catch (_) {
-      if (mounted) showSnack(context, tr(context, 'somethingWrong'));
+    } catch (error) {
+      if (mounted) showSnack(context, errorText(context, error));
     }
   }
 
@@ -68,8 +69,8 @@ class _AdminTemplatesScreenState extends State<AdminTemplatesScreen> {
     try {
       await ReplyTemplateService.remove(t.id);
       if (mounted) _reload();
-    } catch (_) {
-      if (mounted) showSnack(context, tr(context, 'somethingWrong'));
+    } catch (error) {
+      if (mounted) showSnack(context, errorText(context, error));
     }
   }
 

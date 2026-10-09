@@ -1,3 +1,4 @@
+import '../core/errors/error_text.dart';
 import 'package:flutter/material.dart';
 
 import '../core/l10n/l10n.dart';
@@ -15,8 +16,8 @@ class AdminPayoutsScreen extends StatelessWidget {
     try {
       await PayoutService.setStatus(p.id, status);
       if (context.mounted) showSnack(context, tr(context, 'statusUpdated'));
-    } catch (_) {
-      if (context.mounted) showSnack(context, tr(context, 'somethingWrong'));
+    } catch (error) {
+      if (context.mounted) showSnack(context, errorText(context, error));
     }
   }
 

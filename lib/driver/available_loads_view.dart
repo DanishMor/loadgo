@@ -1,3 +1,4 @@
+import '../core/errors/error_text.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -53,8 +54,8 @@ class _AcceptLoadButtonState extends State<AcceptLoadButton> {
     try {
       final ok = await MatchService.addFavourite(widget.load.pickup, widget.load.drop);
       if (mounted) showSnack(context, tr(context, ok ? 'routeSaved' : 'routesFull'));
-    } catch (_) {
-      if (mounted) showSnack(context, tr(context, 'somethingWrong'));
+    } catch (error) {
+      if (mounted) showSnack(context, errorText(context, error));
     }
   }
 

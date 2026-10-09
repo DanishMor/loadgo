@@ -1,3 +1,4 @@
+import '../errors/error_text.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -65,8 +66,8 @@ class _DetentionCardState extends State<DetentionCard> {
       } else {
         await BookingService.startWaiting(widget.booking);
       }
-    } catch (_) {
-      if (mounted) showSnack(context, tr(context, 'somethingWrong'));
+    } catch (error) {
+      if (mounted) showSnack(context, errorText(context, error));
     } finally {
       if (mounted) setState(() => _busy = false);
     }

@@ -1,3 +1,4 @@
+import '../core/errors/error_text.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'admin_user_screen.dart';
@@ -281,8 +282,8 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
       });
     } on UserActionException {
       if (mounted) showSnack(context, tr(context, 'auReasonNeeded'));
-    } catch (_) {
-      if (mounted) showSnack(context, tr(context, 'somethingWrong'));
+    } catch (error) {
+      if (mounted) showSnack(context, errorText(context, error));
     }
   }
 
@@ -427,8 +428,8 @@ class AdminVehiclesScreen extends StatelessWidget {
 Future<void> _run(BuildContext context, Future<void> Function() action) async {
   try {
     await action();
-  } catch (_) {
-    if (context.mounted) showSnack(context, tr(context, 'somethingWrong'));
+  } catch (error) {
+    if (context.mounted) showSnack(context, errorText(context, error));
   }
 }
 

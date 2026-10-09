@@ -1,3 +1,4 @@
+import '../core/errors/error_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -69,16 +70,16 @@ class _FleetVehiclesScreenState extends State<FleetVehiclesScreen> {
       if (mounted) showSnack(context, tr(context, 'vehicleAdded'));
     } on DuplicateVehicleException {
       if (mounted) showSnack(context, tr(context, 'duplicateVehicle'));
-    } catch (_) {
-      if (mounted) showSnack(context, tr(context, 'somethingWrong'));
+    } catch (error) {
+      if (mounted) showSnack(context, errorText(context, error));
     }
   }
 
   Future<void> _assign(Vehicle v, String? driverId) async {
     try {
       await VehicleService.assignDriver(v.id, driverId);
-    } catch (_) {
-      if (mounted) showSnack(context, tr(context, 'somethingWrong'));
+    } catch (error) {
+      if (mounted) showSnack(context, errorText(context, error));
     }
   }
 

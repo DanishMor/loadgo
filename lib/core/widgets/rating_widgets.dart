@@ -1,3 +1,4 @@
+import '../errors/error_text.dart';
 import 'package:flutter/material.dart';
 
 import '../models/booking.dart';
@@ -105,8 +106,8 @@ class _RatingPromptState extends State<RatingPrompt> {
       if (mounted) showSnack(context, tr(context, 'thanksForRating'));
     } on AlreadyRatedException {
       if (mounted) showSnack(context, tr(context, 'alreadyRated'));
-    } catch (_) {
-      if (mounted) showSnack(context, tr(context, 'somethingWrong'));
+    } catch (error) {
+      if (mounted) showSnack(context, errorText(context, error));
     } finally {
       if (mounted) setState(() => _saving = false);
     }

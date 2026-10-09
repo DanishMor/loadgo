@@ -1,3 +1,4 @@
+import '../core/errors/error_text.dart';
 import '../core/services/auth_helpers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -46,8 +47,8 @@ class _FleetDriversScreenState extends State<FleetDriversScreen> {
           _ => 'fleetInviteBadPhone',
         }));
       }
-    } catch (_) {
-      if (mounted) showSnack(context, tr(context, 'somethingWrong'));
+    } catch (error) {
+      if (mounted) showSnack(context, errorText(context, error));
     } finally {
       if (mounted) setState(() => _busy = false);
     }

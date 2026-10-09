@@ -1,3 +1,4 @@
+import '../errors/error_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -117,10 +118,10 @@ class _LrFormScreenState extends State<LrFormScreen> {
       if (!mounted) return;
       showSnack(context, widget.editing == null ? trf(context, 'blIssuedMsg', {'no': made.lrNo}) : tr(context, 'blNewVersionMsg'));
       Navigator.of(context).pop(true);
-    } catch (_) {
+    } catch (error) {
       if (mounted) {
         setState(() => _saving = false);
-        showSnack(context, tr(context, 'somethingWrong'));
+        showSnack(context, errorText(context, error));
       }
     }
   }

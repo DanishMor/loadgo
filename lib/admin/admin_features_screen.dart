@@ -1,3 +1,4 @@
+import '../core/errors/error_text.dart';
 import 'package:flutter/material.dart';
 
 import '../core/features/features.dart';
@@ -41,10 +42,10 @@ class _AdminFeaturesScreenState extends State<AdminFeaturesScreen> {
     try {
       await FeaturesService.save(next);
       if (mounted) showSnack(context, tr(context, 'featSaved'));
-    } catch (_) {
+    } catch (error) {
       if (mounted) {
         setState(() => _f = before);
-        showSnack(context, tr(context, 'somethingWrong'));
+        showSnack(context, errorText(context, error));
       }
     } finally {
       if (mounted) setState(() => _saving = false);

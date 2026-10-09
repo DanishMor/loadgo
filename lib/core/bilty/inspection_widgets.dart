@@ -1,3 +1,4 @@
+import '../errors/error_text.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -26,8 +27,8 @@ class InspectionRequestsList extends StatelessWidget {
     try {
       await InspectionService.respond(booking, lr, r.driverId, approve: approve);
       if (context.mounted) showSnack(context, tr(context, approve ? 'inOwnerApproved' : 'inDecided'));
-    } catch (_) {
-      if (context.mounted) showSnack(context, tr(context, 'somethingWrong'));
+    } catch (error) {
+      if (context.mounted) showSnack(context, errorText(context, error));
     }
   }
 
@@ -130,8 +131,8 @@ class InspectionOwnerPanel extends StatelessWidget {
                 try {
                   await InspectionService.allowFor(booking, lr, h);
                   if (context.mounted) showSnack(context, tr(context, 'inPreSaved'));
-                } catch (_) {
-                  if (context.mounted) showSnack(context, tr(context, 'somethingWrong'));
+                } catch (error) {
+                  if (context.mounted) showSnack(context, errorText(context, error));
                 }
               },
               itemBuilder: (_) => [for (final h in hourChoices) PopupMenuItem(key: ValueKey('inPreHours_$h'), value: h, child: Text(trf(context, 'inHoursN', {'n': h})))],
@@ -222,8 +223,8 @@ class _InspectionDriverPanelState extends State<InspectionDriverPanel> {
     try {
       await InspectionService.request(widget.booking, widget.lr, driverName: await _driverName());
       if (mounted) showSnack(context, tr(context, 'inRequested'));
-    } catch (_) {
-      if (mounted) showSnack(context, tr(context, 'somethingWrong'));
+    } catch (error) {
+      if (mounted) showSnack(context, errorText(context, error));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -242,8 +243,8 @@ class _InspectionDriverPanelState extends State<InspectionDriverPanel> {
         showSnack(context, trf(context, 'inSaved', {'t': _hm(end)}));
         _saved = _readSaved();
       }
-    } catch (_) {
-      if (mounted) showSnack(context, tr(context, 'somethingWrong'));
+    } catch (error) {
+      if (mounted) showSnack(context, errorText(context, error));
     } finally {
       if (mounted) setState(() => _busy = false);
     }

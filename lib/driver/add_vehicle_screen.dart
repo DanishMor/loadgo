@@ -1,3 +1,4 @@
+import '../core/errors/error_text.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -98,8 +99,8 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
     try {
       final bytes = await AddVehicleScreen.pickImage(context);
       if (bytes != null && mounted) setState(() => _rcImage = bytes);
-    } catch (_) {
-      if (mounted) showSnack(context, tr(context, 'somethingWrong'));
+    } catch (error) {
+      if (mounted) showSnack(context, errorText(context, error));
     }
   }
 
@@ -204,10 +205,10 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
       if (!mounted) return;
       setState(() => _saving = false);
       showSnack(context, tr(context, 'duplicateVehicle'));
-    } catch (_) {
+    } catch (error) {
       if (!mounted) return;
       setState(() => _saving = false);
-      showSnack(context, tr(context, 'somethingWrong'));
+      showSnack(context, errorText(context, error));
     }
   }
 

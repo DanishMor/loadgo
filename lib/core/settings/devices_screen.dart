@@ -1,3 +1,4 @@
+import '../errors/error_text.dart';
 import 'package:flutter/material.dart';
 
 import '../l10n/l10n.dart';
@@ -28,8 +29,8 @@ class _DevicesScreenState extends State<DevicesScreen> {
   Future<void> _run(Future<void> Function() f) async {
     try {
       await f();
-    } catch (_) {
-      if (mounted) showSnack(context, tr(context, 'somethingWrong'));
+    } catch (error) {
+      if (mounted) showSnack(context, errorText(context, error));
     }
   }
 

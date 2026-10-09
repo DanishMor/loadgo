@@ -1,3 +1,4 @@
+import '../core/errors/error_text.dart';
 import '../core/services/auth_helpers.dart';
 import 'package:flutter/material.dart';
 
@@ -62,8 +63,8 @@ Future<bool> editRiskTier(BuildContext context, {required String uid, required S
     await RiskService.setTier(uid, picked, reason: reason.text);
     if (context.mounted) showSnack(context, tr(context, 'riskTierUpdated'));
     return true;
-  } catch (_) {
-    if (context.mounted) showSnack(context, tr(context, 'somethingWrong'));
+  } catch (error) {
+    if (context.mounted) showSnack(context, errorText(context, error));
     return false;
   }
 }
@@ -96,8 +97,8 @@ class _FlaggedUsersScreenState extends State<FlaggedUsersScreen> {
       final n = await RiskService.bulkHold(chosen, reason: 'bulk hold (score)');
       if (mounted) showSnack(context, trf(context, 'riskHeld', {'n': n}));
       _reload();
-    } catch (_) {
-      if (mounted) showSnack(context, tr(context, 'somethingWrong'));
+    } catch (error) {
+      if (mounted) showSnack(context, errorText(context, error));
     }
   }
 

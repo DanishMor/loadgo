@@ -1,3 +1,4 @@
+import '../core/errors/error_text.dart';
 import 'user_overview_card.dart';
 import '../core/widgets/admin_phone.dart';
 import 'package:flutter/material.dart';
@@ -57,8 +58,8 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
       if (mounted) showSnack(context, tr(context, 'auDone'));
     } on UserActionException catch (e) {
       if (mounted) showSnack(context, tr(context, e.reason == 'reason' ? 'auReasonNeeded' : 'somethingWrong'));
-    } catch (_) {
-      if (mounted) showSnack(context, tr(context, 'somethingWrong'));
+    } catch (error) {
+      if (mounted) showSnack(context, errorText(context, error));
     }
   }
 

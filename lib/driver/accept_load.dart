@@ -1,3 +1,4 @@
+import '../core/errors/error_text.dart';
 import 'package:flutter/material.dart';
 
 import '../core/models/load.dart';
@@ -68,12 +69,12 @@ Future<String?> acceptLoadFlow(BuildContext context, Load load, {ValueChanged<bo
   onBusy?.call(true);
   try {
     vehicles = await VehicleService.fetchMyActive();
-  } catch (_) {
+  } catch (error) {
     if (context.mounted) {
       if (onRetry == null) {
-        showSnack(context, tr(context, 'somethingWrong'));
+        showSnack(context, errorText(context, error));
       } else {
-        showRetrySnack(context, tr(context, 'somethingWrong'), onRetry);
+        showRetrySnack(context, errorText(context, error), onRetry);
       }
     }
     return null;
@@ -104,12 +105,12 @@ Future<String?> acceptLoadFlow(BuildContext context, Load load, {ValueChanged<bo
     if (context.mounted) showSnack(context, tr(context, 'docsExpiredBlock'));
   } on VehicleBusyException {
     if (context.mounted) showSnack(context, tr(context, 'vehicleBusy'));
-  } catch (_) {
+  } catch (error) {
     if (context.mounted) {
       if (onRetry == null) {
-        showSnack(context, tr(context, 'somethingWrong'));
+        showSnack(context, errorText(context, error));
       } else {
-        showRetrySnack(context, tr(context, 'somethingWrong'), onRetry);
+        showRetrySnack(context, errorText(context, error), onRetry);
       }
     }
   } finally {

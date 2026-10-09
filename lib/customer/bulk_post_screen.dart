@@ -1,3 +1,4 @@
+import '../core/errors/error_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -56,10 +57,10 @@ class _BulkPostScreenState extends State<BulkPostScreen> {
           e.cause is AccountRestrictedException
               ? tr(context, 'accountRestricted')
               : trf(context, 'bulkPartial', {'n': e.postedIds.length}));
-    } catch (_) {
+    } catch (error) {
       if (!mounted) return;
       setState(() => _busy = false);
-      showSnack(context, tr(context, 'somethingWrong'));
+      showSnack(context, errorText(context, error));
     }
   }
 

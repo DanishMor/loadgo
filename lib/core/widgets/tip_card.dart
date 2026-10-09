@@ -1,3 +1,4 @@
+import '../errors/error_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -35,8 +36,8 @@ class _TipCardState extends State<TipCard> {
       if (mounted) showSnack(context, tr(context, 'tipSent'));
     } on TipException catch (e) {
       if (mounted) showSnack(context, tr(context, e.reason == 'amount' ? 'tipInvalid' : 'tipAlready'));
-    } catch (_) {
-      if (mounted) showSnack(context, tr(context, 'somethingWrong'));
+    } catch (error) {
+      if (mounted) showSnack(context, errorText(context, error));
     } finally {
       if (mounted) setState(() => _busy = false);
     }

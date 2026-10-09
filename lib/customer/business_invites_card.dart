@@ -1,3 +1,4 @@
+import '../core/errors/error_text.dart';
 import 'package:flutter/material.dart';
 
 import '../core/l10n/l10n.dart';
@@ -27,8 +28,8 @@ class _BusinessInvitesCardState extends State<BusinessInvitesCard> {
       if (mounted && accept) showSnack(context, tr(context, 'teamJoined'));
     } on BusinessTeamException {
       if (mounted) showSnack(context, tr(context, 'teamNeedCustomer'));
-    } catch (_) {
-      if (mounted) showSnack(context, tr(context, 'somethingWrong'));
+    } catch (error) {
+      if (mounted) showSnack(context, errorText(context, error));
     }
   }
 

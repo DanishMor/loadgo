@@ -1,3 +1,4 @@
+import '../core/errors/error_text.dart';
 import 'package:flutter/material.dart';
 
 import '../core/l10n/l10n.dart';
@@ -111,8 +112,8 @@ class _TransporterLoadsScreenState extends State<TransporterLoadsScreen> {
       if (mounted) showSnack(context, tr(context, 'offerExists'));
     } on OfferStateException {
       if (mounted) showSnack(context, tr(context, 'loadUnavailable'));
-    } catch (_) {
-      if (mounted) showSnack(context, tr(context, 'somethingWrong'));
+    } catch (error) {
+      if (mounted) showSnack(context, errorText(context, error));
     } finally {
       if (mounted) setState(() => _busyId = null);
     }

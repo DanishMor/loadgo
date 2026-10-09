@@ -1,3 +1,4 @@
+import '../errors/error_text.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -37,8 +38,8 @@ class _PaymentCardState extends State<PaymentCard> {
     setState(() => _busy = true);
     try {
       await action();
-    } catch (_) {
-      if (mounted) showSnack(context, tr(context, 'somethingWrong'));
+    } catch (error) {
+      if (mounted) showSnack(context, errorText(context, error));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -80,8 +81,8 @@ class _PaymentCardState extends State<PaymentCard> {
     try {
       final done = await PaymentService.shareUpiId(widget.booking);
       if (mounted) showSnack(context, tr(context, done ? 'upiIdShared' : 'upiMissing'));
-    } catch (_) {
-      if (mounted) showSnack(context, tr(context, 'somethingWrong'));
+    } catch (error) {
+      if (mounted) showSnack(context, errorText(context, error));
     }
   }
 

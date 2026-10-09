@@ -1,3 +1,4 @@
+import '../core/errors/error_text.dart';
 import 'package:flutter/material.dart';
 
 import '../core/l10n/l10n.dart';
@@ -40,8 +41,8 @@ class _AdminVerificationScreenState extends State<AdminVerificationScreen> {
     try {
       await AdminService.setStatus(d.uid, status, reason: reason, note: note);
       if (mounted) showSnack(context, tr(context, 'statusUpdated'));
-    } catch (_) {
-      if (mounted) showSnack(context, tr(context, 'somethingWrong'));
+    } catch (error) {
+      if (mounted) showSnack(context, errorText(context, error));
     }
   }
 

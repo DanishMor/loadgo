@@ -1,3 +1,4 @@
+import '../core/errors/error_text.dart';
 import 'package:flutter/material.dart';
 
 import '../core/services/backend.dart';
@@ -90,8 +91,8 @@ class _VehicleCardState extends State<_VehicleCard> {
     setState(() => _busy = true);
     try {
       await VehicleService.setActive(widget.vehicle.id, value);
-    } catch (_) {
-      if (mounted) showSnack(context, tr(context, 'somethingWrong'));
+    } catch (error) {
+      if (mounted) showSnack(context, errorText(context, error));
     } finally {
       if (mounted) setState(() => _busy = false);
     }

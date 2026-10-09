@@ -1,3 +1,4 @@
+import '../core/errors/error_text.dart';
 import '../core/pilot/reuse_survey.dart';
 import '../core/services/backend.dart';
 import '../core/services/trip_action_queue.dart';
@@ -228,7 +229,7 @@ class _NextStatusButtonState extends State<_NextStatusButton> {
       if (TripActionQueue.isNetworkError(e)) {
         await _queue(next, otp, pickup, delivery);
       } else if (mounted) {
-        showRetrySnack(context, tr(context, 'somethingWrong'), () => _sendAdvance(next, otp, pickup, delivery));
+        showRetrySnack(context, errorText(context, e), () => _sendAdvance(next, otp, pickup, delivery));
       }
     } finally {
       if (mounted) setState(() => _busy = false);

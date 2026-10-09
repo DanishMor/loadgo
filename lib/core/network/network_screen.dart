@@ -1,3 +1,4 @@
+import '../errors/error_text.dart';
 import 'package:flutter/material.dart';
 
 import '../l10n/l10n.dart';
@@ -77,8 +78,8 @@ class _NearbyTabState extends State<_NearbyTab> {
         return;
       }
       await NetworkService.setLocationMode(mode: mode, name: await NetworkService.myName(), lat: _here?.lat, lng: _here?.lng, hours: _hours);
-    } catch (_) {
-      if (mounted) showSnack(context, tr(context, 'somethingWrong'));
+    } catch (error) {
+      if (mounted) showSnack(context, errorText(context, error));
     }
   }
 
@@ -89,8 +90,8 @@ class _NearbyTabState extends State<_NearbyTab> {
         setState(() => _requested.add(d.uid));
         showSnack(context, tr(context, 'netRequested'));
       }
-    } catch (_) {
-      if (mounted) showSnack(context, tr(context, 'somethingWrong'));
+    } catch (error) {
+      if (mounted) showSnack(context, errorText(context, error));
     }
   }
 
@@ -260,8 +261,8 @@ class _GroupsTab extends StatelessWidget {
     try {
       await NetworkService.createGroup(name: name.text, kind: kind);
       if (context.mounted) showSnack(context, tr(context, 'netGroupMade'));
-    } catch (_) {
-      if (context.mounted) showSnack(context, tr(context, 'somethingWrong'));
+    } catch (error) {
+      if (context.mounted) showSnack(context, errorText(context, error));
     }
   }
 
@@ -363,8 +364,8 @@ class GroupScreen extends StatelessWidget {
     if (pick == null) return;
     try {
       await NetworkService.addMember(g, pick.otherUid(me));
-    } catch (_) {
-      if (context.mounted) showSnack(context, tr(context, 'somethingWrong'));
+    } catch (error) {
+      if (context.mounted) showSnack(context, errorText(context, error));
     }
   }
 }

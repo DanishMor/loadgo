@@ -1,3 +1,4 @@
+import '../core/errors/error_text.dart';
 import 'driver_trip_screen.dart';
 import '../core/payments/wallet_widgets.dart';
 import 'package:flutter/material.dart';
@@ -81,8 +82,8 @@ class _WalletScreenState extends State<WalletScreen> {
       }
     } on AccountRestrictedException {
       if (mounted) showSnack(context, tr(context, 'accountRestricted'));
-    } catch (_) {
-      if (mounted) showSnack(context, tr(context, 'somethingWrong'));
+    } catch (error) {
+      if (mounted) showSnack(context, errorText(context, error));
     }
   }
 

@@ -1,3 +1,4 @@
+import '../core/errors/error_text.dart';
 import '../core/drafts/smart_defaults.dart';
 import 'dart:async';
 
@@ -691,10 +692,10 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
       if (!mounted) return;
       setState(() => _saving = false);
       showSnack(context, trf(context, 'rateLimited', {'m': e.minutesLeft}));
-    } catch (_) {
+    } catch (error) {
       if (!mounted) return;
       setState(() => _saving = false);
-      showRetrySnack(context, tr(context, 'somethingWrong'), _submit);
+      showRetrySnack(context, errorText(context, error), _submit);
     }
   }
 

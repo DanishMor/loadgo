@@ -1,3 +1,4 @@
+import '../errors/error_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -47,8 +48,8 @@ class _DriverEvidenceCardState extends State<DriverEvidenceCard> {
       if (mounted) showSnack(context, tr(context, 'settingsSaved'));
     } on EvidenceException catch (e) {
       if (mounted) showSnack(context, tr(context, e.reason == 'end_before_start' ? 'odometerEndBeforeStart' : 'invalidNumber'));
-    } catch (_) {
-      if (mounted) showSnack(context, tr(context, 'somethingWrong'));
+    } catch (error) {
+      if (mounted) showSnack(context, errorText(context, error));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -62,8 +63,8 @@ class _DriverEvidenceCardState extends State<DriverEvidenceCard> {
       if (mounted) showSnack(context, tr(context, 'signatureSaved'));
     } on EvidenceException catch (e) {
       if (mounted) showSnack(context, tr(context, e.reason == 'already' ? 'signatureAlready' : 'somethingWrong'));
-    } catch (_) {
-      if (mounted) showSnack(context, tr(context, 'somethingWrong'));
+    } catch (error) {
+      if (mounted) showSnack(context, errorText(context, error));
     }
   }
 
@@ -156,8 +157,8 @@ class _CargoDocsCardState extends State<CargoDocsCard> {
       if (mounted) showSnack(context, tr(context, 'settingsSaved'));
     } on EvidenceException {
       if (mounted) showSnack(context, tr(context, 'cargoDocInvalid'));
-    } catch (_) {
-      if (mounted) showSnack(context, tr(context, 'somethingWrong'));
+    } catch (error) {
+      if (mounted) showSnack(context, errorText(context, error));
     }
   }
 

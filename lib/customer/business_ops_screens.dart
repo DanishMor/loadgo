@@ -1,3 +1,4 @@
+import '../core/errors/error_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -57,16 +58,16 @@ class _ApprovalsScreenState extends State<ApprovalsScreen> {
     try {
       await BusinessOpsService.setApprovalLimit(p);
       if (mounted) showSnack(context, tr(context, 'bizApprovalSaved'));
-    } catch (_) {
-      if (mounted) showSnack(context, tr(context, 'somethingWrong'));
+    } catch (error) {
+      if (mounted) showSnack(context, errorText(context, error));
     }
   }
 
   Future<void> _decide(Load l, bool approve) async {
     try {
       await BusinessOpsService.decide(l, approve: approve);
-    } catch (_) {
-      if (mounted) showSnack(context, tr(context, 'somethingWrong'));
+    } catch (error) {
+      if (mounted) showSnack(context, errorText(context, error));
     }
   }
 

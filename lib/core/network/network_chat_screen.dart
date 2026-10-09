@@ -1,3 +1,4 @@
+import '../errors/error_text.dart';
 import 'package:flutter/material.dart';
 
 import '../l10n/l10n.dart';
@@ -60,8 +61,8 @@ class _NetworkChatBodyState extends State<NetworkChatBody> {
       _ctrl.clear();
     } on RateLimitException catch (e) {
       if (mounted) showSnack(context, trf(context, 'rateLimited', {'m': e.minutesLeft}));
-    } catch (_) {
-      if (mounted) showRetrySnack(context, tr(context, 'somethingWrong'), _send);
+    } catch (error) {
+      if (mounted) showRetrySnack(context, errorText(context, error), _send);
     } finally {
       if (mounted) setState(() => _sending = false);
     }

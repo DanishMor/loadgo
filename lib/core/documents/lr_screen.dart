@@ -1,3 +1,4 @@
+import '../errors/error_text.dart';
 import 'package:flutter/material.dart';
 import 'eway_status_line.dart';
 import 'package:flutter/services.dart';
@@ -120,8 +121,8 @@ class _EwayBillFieldState extends State<_EwayBillField> {
     try {
       await BookingService.setEwayBill(widget.booking.id, text, validUntil: _validUntil);
       if (mounted) showSnack(context, tr(context, 'ewaySaved'));
-    } catch (_) {
-      if (mounted) showSnack(context, tr(context, 'somethingWrong'));
+    } catch (error) {
+      if (mounted) showSnack(context, errorText(context, error));
     } finally {
       if (mounted) setState(() => _saving = false);
     }

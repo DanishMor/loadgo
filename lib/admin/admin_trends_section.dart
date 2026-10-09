@@ -1,3 +1,4 @@
+import '../core/errors/error_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -81,7 +82,7 @@ class _AdminTrendsSectionState extends State<AdminTrendsSection> {
     return FutureBuilder<List<Booking>>(
       future: _bookings,
       builder: (context, snap) {
-        if (snap.hasError) return Text(tr(context, 'somethingWrong'));
+        if (snap.hasError) return Text(errorText(context, snap.error));
         if (!snap.hasData) return const Padding(padding: EdgeInsets.all(16), child: Center(child: CircularProgressIndicator()));
         final t = AdminTrends.from(snap.data!, now: (widget.clock ?? DateTime.now)(), days: _days);
         return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [

@@ -1,3 +1,4 @@
+import '../core/errors/error_text.dart';
 import 'package:flutter/material.dart';
 
 import '../core/l10n/l10n.dart';
@@ -34,8 +35,8 @@ class _DriverRewardsScreenState extends State<DriverRewardsScreen> {
       if (mounted) showSnack(context, tr(context, 'claimSent'));
     } on ClaimException catch (e) {
       if (mounted) showSnack(context, tr(context, e.reason == 'already' ? 'claimAlready' : 'claimNotReached'));
-    } catch (_) {
-      if (mounted) showSnack(context, tr(context, 'somethingWrong'));
+    } catch (error) {
+      if (mounted) showSnack(context, errorText(context, error));
     }
   }
 
@@ -45,8 +46,8 @@ class _DriverRewardsScreenState extends State<DriverRewardsScreen> {
       if (mounted) showSnack(context, tr(context, 'planRequested'));
     } on ClaimException {
       if (mounted) showSnack(context, tr(context, 'planAlreadyRequested'));
-    } catch (_) {
-      if (mounted) showSnack(context, tr(context, 'somethingWrong'));
+    } catch (error) {
+      if (mounted) showSnack(context, errorText(context, error));
     }
   }
 
