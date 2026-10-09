@@ -1,3 +1,4 @@
+import '../core/widgets/sync_indicator.dart';
 import 'driver_today.dart';
 import '../core/pilot/dispatch_card.dart';
 import '../core/pilot/payment_nudge_card.dart';
@@ -319,6 +320,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                 ],
               ),
             ),
+            SyncIndicator(onFlushed: (r) => showFlushResult(context, r)),
             DriverTodayStrip(
               bookings: _todayTrips,
               vehicles: _vehicles,

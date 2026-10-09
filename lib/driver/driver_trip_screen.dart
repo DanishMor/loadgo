@@ -1,5 +1,8 @@
 import '../core/pilot/reuse_survey.dart';
 import '../core/services/backend.dart';
+import '../core/services/trip_action_queue.dart';
+import '../core/services/connectivity_service.dart';
+import '../core/widgets/sync_indicator.dart';
 import 'package:flutter/material.dart';
 
 import '../core/claims/claim_screens.dart';
@@ -58,6 +61,7 @@ class DriverTripScreen extends StatelessWidget {
         // Extra bottom space keeps the action button clear of floating snackbars.
         padding: const EdgeInsets.fromLTRB(20, 10, 20, 100),
         children: [
+          SyncIndicator(onFlushed: (r) => showFlushResult(context, r)),
           BookingSummary(booking: booking),
           if (booking.isActive) ...[
             const SizedBox(height: 10),
@@ -185,10 +189,28 @@ class _NextStatusButtonState extends State<_NextStatusButton> {
     await _sendAdvance(next, otp, pickup, delivery);
   }
 
+  Future<void> _queue(String next, String? otp, PickupProof? pickup, DeliveryProof? delivery) async {
+    await TripActionQueue.enqueue(QueuedAction(
+      bookingId: widget.booking.id,
+      from: widget.booking.status,
+      otp: otp,
+      pickup: pickup?.toMap(),
+      delivery: delivery?.toMap(),
+      queuedAt: DateTime.now(),
+    ));
+    if (mounted) showSnack(context, tr(context, 'syncSavedOffline'));
+  }
+
   /// The network part of [_advance]; a failed call can be retried with the
   /// same OTP and proof.
   Future<void> _sendAdvance(String next, String? otp, PickupProof? pickup, DeliveryProof? delivery) async {
     setState(() => _busy = true);
+    // No network: keep the step on this phone and send it when the phone is online (Task 23).
+    if (!ConnectivityService.online.value) {
+      await _queue(next, otp, pickup, delivery);
+      if (mounted) setState(() => _busy = false);
+      return;
+    }
     try {
       await BookingService.advance(widget.booking.id, otp: otp, pickup: pickup, delivery: delivery);
       // GPS evidence with the event (best effort; needs the location permission).
@@ -197,9 +219,14 @@ class _NextStatusButtonState extends State<_NextStatusButton> {
       }
       if (mounted) showSnack(context, tr(context, 'statusUpdated'));
     } on WrongOtpException {
-      if (mounted) showSnack(context, tr(context, 'wrongOtp'));
-    } catch (_) {
-      if (mounted) showRetrySnack(context, tr(context, 'somethingWrong'), () => _sendAdvance(next, otp, pickup, delivery));
+      // Try again goes back to the code and proof form (the customer can read the code out again).
+      if (mounted) showRetrySnack(context, tr(context, 'wrongOtp'), () => _advance(next));
+    } catch (e) {
+      if (TripActionQueue.isNetworkError(e)) {
+        await _queue(next, otp, pickup, delivery);
+      } else if (mounted) {
+        showRetrySnack(context, tr(context, 'somethingWrong'), () => _sendAdvance(next, otp, pickup, delivery));
+      }
     } finally {
       if (mounted) setState(() => _busy = false);
     }
