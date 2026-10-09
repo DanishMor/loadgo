@@ -49,7 +49,7 @@ class _DriverOnboardingCardState extends State<DriverOnboardingCard> {
               Row(children: [
                 Icon(s.done ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded, size: 18, color: s.done ? AppColors.success : AppColors.faint),
                 const SizedBox(width: 8),
-                Text(tr(context, 'obStep_${s.key}'), key: ValueKey('obStep_${s.key}_${s.done ? 'done' : 'todo'}')),
+                Expanded(child: Text(tr(context, 'obStep_${s.key}'), key: ValueKey('obStep_${s.key}_${s.done ? 'done' : 'todo'}'))),
               ]),
             const SizedBox(height: 10),
             for (final d in o.docs)

@@ -1,3 +1,4 @@
+import 'driver_today.dart';
 import '../core/pilot/dispatch_card.dart';
 import '../core/pilot/payment_nudge_card.dart';
 import 'favourite_routes_screen.dart';
@@ -317,6 +318,15 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                   Switch(key: const ValueKey('onlineSwitch'), value: _isOnline, onChanged: _setOnline),
                 ],
               ),
+            ),
+            DriverTodayStrip(
+              bookings: _todayTrips,
+              vehicles: _vehicles,
+              loads: _openLoads,
+              onEarnings: () => _selectTab(_tripsTab),
+              onTrips: () => _selectTab(_tripsTab),
+              onPapers: _openVehicles,
+              onLoads: () => _selectTab(_loadsTab),
             ),
             const AnnouncementBanner(role: 'driver'),
             const DispatchSuggestionsCard(),
