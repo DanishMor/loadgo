@@ -6,6 +6,7 @@ import '../analytics/unit_economics.dart';
 import 'server_clock.dart';
 import '../admin/dispatch.dart';
 import '../admin/pilot_control.dart';
+import '../admin/pilot_report.dart';
 import '../admin/pilot_funnel.dart';
 import '../matching/supply_demand.dart';
 import '../models/ledger_entry.dart';
@@ -480,6 +481,29 @@ class AdminConsoleService {
     AuditService.inBatch(batch, AuditType.userAction, targetId: load.shipperId, loadId: load.id, data: {'action': 'callback_note', 'collection': 'admin_notes'});
     return batch.commit();
   }
+
+  /// The numbers of today or of the last seven days (see [PilotReport]). About
+  /// five aggregate reads plus up to 1,000 bookings.
+  static Future<PilotReport> pilotReport({required bool weekly}) => withRetry(() async {
+        final now = ServerClock.now();
+        final from = PilotReport.periodStart(now, weekly: weekly);
+        final since = Timestamp.fromDate(from);
+        Query<Map<String, dynamic>> q(String c) => _db.collection(c).where('createdAt', isGreaterThanOrEqualTo: since);
+        final bookings = await q('bookings').limit(PilotReport.bookingSample).get();
+        final r = await Future.wait([_count(q('users')), _count(q('loads')), _count(q('sos_alerts')), _count(q('tickets'))]);
+        return PilotReport(
+          weekly: weekly,
+          from: from,
+          to: DateTime(now.year, now.month, now.day),
+          signups: r[0],
+          loads: r[1],
+          bookings: bookings.docs.length,
+          delivered: bookings.docs.where((d) => d.data()['status'] == BookingStatus.delivered).length,
+          cancelled: bookings.docs.where((d) => d.data()['status'] == BookingStatus.cancelled).length,
+          sos: r[2],
+          tickets: r[3],
+        );
+      });
 
   static Future<HealthCounts> health() => withRetry(_health);
 

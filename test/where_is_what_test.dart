@@ -52,6 +52,7 @@ void main() {
       'adminInvites': 'Invite codes',
       'adminWaitlist': 'Waitlist',
       'adminDispatch': 'Manual dispatch',
+      'adminPilotReport': 'Pilot report',
       'adminPilotControl': 'Pilot control room',
       'flaggedUsers': 'Flagged users',
       'adminDeletionRequests': 'Deletion requests',
