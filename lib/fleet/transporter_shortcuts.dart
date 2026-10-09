@@ -1,3 +1,4 @@
+import '../core/bilty/lr_register_screen.dart';
 import 'package:flutter/material.dart';
 
 import '../core/l10n/l10n.dart';
@@ -161,6 +162,12 @@ class _TransporterShortcutsState extends State<TransporterShortcuts> {
             avatar: const Icon(Icons.account_balance_wallet_outlined, size: 18),
             label: Text(tr(context, 'trpBooks')),
             onPressed: () => _open(const TransporterBooksScreen()),
+          ),
+          ActionChip(
+            key: const ValueKey('trpOpenLrs'),
+            avatar: const Icon(Icons.description_outlined, size: 18),
+            label: Text(tr(context, 'lrrTitle')),
+            onPressed: () => _open(const LrRegisterScreen()),
           ),
           ActionChip(
             key: const ValueKey('trpOpenAnalytics'),

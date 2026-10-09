@@ -1,3 +1,4 @@
+import '../bilty/lr_register_screen.dart';
 import 'package:flutter/material.dart';
 
 import '../models/rating.dart';
@@ -183,6 +184,15 @@ class _ProfileViewState extends State<ProfileView> {
                       onTap: () => showLanguageSelector(context),
                     ),
                     ...widget.extraTiles,
+                    if (!widget.isDriver)
+                      ListTile(
+                        key: const ValueKey('profileLrRegister'),
+                        contentPadding: EdgeInsets.zero,
+                        leading: Icon(Icons.description_outlined, color: AppColors.muted),
+                        title: Text(tr(context, 'lrrTitle')),
+                        trailing: const Icon(Icons.chevron_right_rounded),
+                        onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const LrRegisterScreen())),
+                      ),
                     ListTile(
                       key: const ValueKey('profileSettings'),
                       contentPadding: EdgeInsets.zero,

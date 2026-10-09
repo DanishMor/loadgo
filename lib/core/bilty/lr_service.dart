@@ -168,6 +168,20 @@ class LrService {
         return list;
       });
 
+  /// Every LR version the signed-in person issued (newest 200) and every
+  /// link they made (newest 300), for the register (MASTER-6 Task 31).
+  static Stream<List<LrPublic>> watchMine() {
+    final uid = Backend.uid;
+    if (uid == null) return Stream.value(const []);
+    return _lrs.where('issuerId', isEqualTo: uid).limit(200).snapshots().map((s) => [for (final d in s.docs) LrPublic.fromDoc(d.id, d.data())]);
+  }
+
+  static Stream<List<LrShare>> watchMyShares() {
+    final uid = Backend.uid;
+    if (uid == null) return Stream.value(const []);
+    return _shares.where('ownerId', isEqualTo: uid).limit(300).snapshots().map((s) => [for (final d in s.docs) LrShare.fromDoc(d.id, d.data())]);
+  }
+
   /// The version to work with: the issued one, else the newest.
   static LrPublic? current(List<LrPublic> all) {
     for (final l in all) {

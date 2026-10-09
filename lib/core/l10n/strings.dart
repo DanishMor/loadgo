@@ -83,6 +83,7 @@ import 'safety_checks_strings.dart';
 import 'transporter_onboarding_strings.dart';
 import 'transporter_board_strings.dart';
 import 'bulk_bid_strings.dart';
+import 'lr_register_strings.dart';
 import 'admin_list_strings.dart';
 import 'statement_strings.dart';
 import 'evidence_timeline_strings.dart';
@@ -180,6 +181,7 @@ const List<Map<String, List<String>>> stringTables = [
   transporterOnboardingStrings,
   transporterBoardStrings,
   bulkBidStrings,
+  lrRegisterStrings,
   adminListStrings,
   statementStrings,
   evidenceTimelineStrings,

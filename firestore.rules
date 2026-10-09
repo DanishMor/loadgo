@@ -2198,7 +2198,12 @@ service cloud.firestore {
     }
 
     match /lrs/{lrId} {
-      allow read: if signedIn() && (isAdmin() || lrAuditParty(get(docPath('bookings', resource.data.bookingId)).data));
+      // The issuer, the customer and the fleet owner can also list by their own id (the register); the booking check stays for everyone else.
+      allow read: if signedIn() && (isAdmin()
+          || resource.data.issuerId == request.auth.uid
+          || resource.data.customerId == request.auth.uid
+          || resource.data.get('fleetOwnerId', '') == request.auth.uid
+          || lrAuditParty(get(docPath('bookings', resource.data.bookingId)).data));
       allow create: if signedIn()
           && lrPublicShape(request.resource.data)
           && lrId == lrIdOf(request.resource.data)

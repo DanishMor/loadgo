@@ -5730,3 +5730,27 @@ describe('books lines have a creation time (M6-30)', () => {
     await assertFails(updateDoc(doc(as('tr1'), 'transporter_accounts', 'b1'), { createdAt: serverTimestamp(), updatedAt: serverTimestamp() }));
   });
 });
+
+describe('LR register lists (M6-31)', () => {
+  beforeEach(async () => {
+    await seed(async (db) => {
+      await setDoc(doc(db, 'bookings', 'b1'), { customerId: 'c1', driverId: 'd1', fleetOwnerId: 'tr1', status: 'delivered', loadId: 'l1' });
+      await setDoc(doc(db, 'lrs', 'tr1_2026_1_v1'), { bookingId: 'b1', issuerId: 'tr1', issuerRole: 'transporter', customerId: 'c1', fleetOwnerId: 'tr1', lrNo: 'TR-2026-000001', seq: 1, year: 2026, version: 1, status: 'issued', pickup: 'A', drop: 'B', goods: 'x', complianceMode: 'hide', createdAt: Timestamp.now() });
+    });
+  });
+
+  test('the issuer and the customer list the LRs by their own id; a stranger cannot', async () => {
+    await assertSucceeds(getDocs(query(collection(as('tr1'), 'lrs'), where('issuerId', '==', 'tr1'))));
+    await assertSucceeds(getDocs(query(collection(as('c1'), 'lrs'), where('customerId', '==', 'c1'))));
+    await assertFails(getDocs(query(collection(as('x1'), 'lrs'), where('issuerId', '==', 'tr1'))));
+    await assertFails(getDocs(collection(as('x1'), 'lrs')));
+    await assertSucceeds(getDoc(doc(as('tr1'), 'lrs', 'tr1_2026_1_v1')));
+    await assertFails(getDoc(doc(as('x1'), 'lrs', 'tr1_2026_1_v1')));
+  });
+
+  test('the driver still reads by booking; the private parts stay closed to the driver', async () => {
+    await assertSucceeds(getDocs(query(collection(as('d1'), 'lrs'), where('bookingId', '==', 'b1'))));
+    await seed((db) => setDoc(doc(db, 'lrs', 'tr1_2026_1_v1', 'private', 'details'), { freightPaise: 100000 }));
+    await assertFails(getDoc(doc(as('d1'), 'lrs', 'tr1_2026_1_v1', 'private', 'details')));
+  });
+});
