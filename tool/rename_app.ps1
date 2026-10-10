@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
   Renames the app from one place. DryRun is the default: it only lists what would change.
 
@@ -25,7 +25,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 if (-not $Root) { $Root = Split-Path -Parent $PSScriptRoot }
-$DryRun = -not ($DryRun -match '^(false|0|\$false|no)$')
+$isDry = -not ($DryRun -match '^(false|0|\$false|no)$')
 $utf8 = New-Object System.Text.UTF8Encoding($false)
 
 function Read-Text($path) { [System.IO.File]::ReadAllText($path, $utf8) }
@@ -91,7 +91,7 @@ $generated = @(
 )
 
 Write-Host ''
-Write-Host $(if ($DryRun) { 'DRY RUN - nothing is written. Add -DryRun false to apply.' } else { 'APPLYING' })
+Write-Host $(if ($isDry) { 'DRY RUN - nothing is written. Add -DryRun false to apply.' } else { 'APPLYING' })
 Write-Host '--- files this script edits ---'
 if ($changes.Count -eq 0) { Write-Host '(nothing to change)' } else { $changes | ForEach-Object { Write-Host "  $_" } }
 Write-Host '--- files tool/apply_app_info.dart then regenerates ---'
@@ -103,7 +103,7 @@ if ($PackageId) {
   Write-Host "  add the new SHA-1 and SHA-256 (docs/RENAME.md). Do this BEFORE the first Play Store upload."
 }
 
-if ($DryRun) { return }
+if ($isDry) { return }
 
 foreach ($kv in $newFiles.GetEnumerator()) { Write-Text $kv.Key $kv.Value }
 Push-Location $Root
