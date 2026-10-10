@@ -147,7 +147,7 @@ class MoversDetails {
     for (final raw in text.split('\n')) {
       final line = raw.trim();
       if (line.isEmpty) continue;
-      final m = RegExp(r'^(.*?)(?:\s*[xX*]?\s*(\d+))?$').firstMatch(line)!;
+      final m = RegExp(r'^(.*?)(?:(?:\s+[xX]?|\s*\*)\s*(\d+))?$').firstMatch(line)!;
       final name = (m.group(1) ?? '').trim();
       final qty = m.group(2) == null ? 1 : int.parse(m.group(2)!);
       if (name.isEmpty || qty < 1 || qty > 99) return null;

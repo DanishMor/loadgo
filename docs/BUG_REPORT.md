@@ -76,3 +76,15 @@ Method, three rounds. **Round 1**: not a line-by-line read of every file; each c
 |---|---|---|---|---|
 | M6-B1 | lib/admin/admin_pilot_funnel_screen.dart, lib/fleet/transporter_shortcuts.dart | `setState(() => _x = someFuture)` returns the Future from the closure: Flutter asserts in debug builds and the refresh did not rebuild in tests | block body `setState(() { _x = ...; })` | Low (release builds ignore the assertion) |
 | M6-B2 | lib/admin/admin_lists.dart, lib/auth/driver_onboarding_card.dart | same `setState(() => _x = future)` pattern as M6-B1 | block body; test/setstate_future_guard_test.dart guards it | Low |
+
+## Windows laptop and Master-7 prep (2026-10-11)
+
+| ID | File | What was wrong | Fix | Severity |
+|---|---|---|---|---|
+| W-B1 | android/app/build.gradle.kts | `java.util.Properties()` did not resolve (Gradle's `java` extension shadows the package): the Android build failed at script compile | `import java.util.Properties` | High on Windows/Gradle 9 (no APK) |
+| W-B2 | android/gradle.properties | `-Xmx1024m` gave "Java heap space" on the first build | `-Xmx4g` (16 GB laptop) | High (no APK) |
+| W-B3 | android/app/proguard-rules.pro | R8 release build failed: missing `com.google.android.play.core.*` (Flutter deferred components, not used) | `-dontwarn com.google.android.play.core.**` | High (no release APK) |
+| W-B4 | 5 source-scan tests, tool/apply_app_info.dart | Windows `\` paths and CRLF made 6 tests fail | paths normalised to `/`; CRLF ignored in the app_info check | Low (tests only) |
+| W-B5 | firestore_rules_test/run-tests.sh | `VAR=x cmd` inside `emulators:exec` fails on Windows cmd.exe; script was CRLF | env set outside `emulators:exec`; `*.sh` kept LF | Low (tests only) |
+| W-B6 | tool/rename_app.ps1 (first draft) | a `[string]` param turned the boolean into a truthy string so the apply step never wrote | separate `$isDry` | Low (caught in P1 testing) |
+| P9-B1 | lib/core/pricing/fare_calculator.dart `MoversDetails.parseItems` | an item name ending in x or X lost its last letter when a quantity followed: "box 10" became "bo" x 10 ("Max 4" became "Ma") | the quantity separator needs a space or `*` (`^(.*?)(?:(?:\s+[xX]?|\s*\*)\s*(\d+))?$`); test/pure_logic_gaps_test.dart | Medium (wrong item names in a movers quote) |
