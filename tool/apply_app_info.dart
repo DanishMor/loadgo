@@ -83,7 +83,7 @@ Map<String, String> render(String root) {
 /// Paths whose current content differs from what [render] produces.
 List<String> outOfDate(String root) => [
       for (final e in render(root).entries)
-        if (!File('$root/${e.key}').existsSync() || File('$root/${e.key}').readAsStringSync() != e.value) e.key,
+        if (!File('$root/${e.key}').existsSync() || File('$root/${e.key}').readAsStringSync().replaceAll('\r\n', '\n') != e.value.replaceAll('\r\n', '\n')) e.key,
     ];
 
 void main(List<String> args) {

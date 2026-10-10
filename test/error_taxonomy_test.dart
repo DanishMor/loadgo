@@ -50,12 +50,12 @@ void main() {
 
   test('no screen prints a raw exception to the person', () {
     final bad = <String>[];
-    for (final f in Directory('lib').listSync(recursive: true).whereType<File>().where((f) => f.path.endsWith('.dart'))) {
+    for (final f in Directory('lib').listSync(recursive: true).whereType<File>().where((f) => f.path.replaceAll('\\', '/').endsWith('.dart'))) {
       final lines = f.readAsLinesSync();
       for (var i = 0; i < lines.length; i++) {
         final l = lines[i];
         if (l.trimLeft().startsWith('//') || l.contains('debugPrint')) continue;
-        if (RegExp(r"(showSnack|SnackBar|Text)\([^;]*(\$e\b|\$\{e\}|\$error\b|e\.toString\(\)|error\.toString\(\)|\be\.message\b)").hasMatch(l)) bad.add('${f.path}:${i + 1}');
+        if (RegExp(r"(showSnack|SnackBar|Text)\([^;]*(\$e\b|\$\{e\}|\$error\b|e\.toString\(\)|error\.toString\(\)|\be\.message\b)").hasMatch(l)) bad.add('${f.path.replaceAll('\\', '/')}:${i + 1}');
       }
     }
     // The admin health screen shows a stored log line for the owner, not a live exception.

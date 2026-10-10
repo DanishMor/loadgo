@@ -15,7 +15,7 @@ void main() {
   int unguarded() {
     var n = 0;
     for (final f in Directory('lib').listSync(recursive: true).whereType<File>()) {
-      if (!f.path.endsWith('.dart') || f.path.endsWith('live_stream.dart')) continue;
+      if (!f.path.replaceAll('\\', '/').endsWith('.dart') || f.path.replaceAll('\\', '/').endsWith('live_stream.dart')) continue;
       final s = f.readAsStringSync();
       final builders = RegExp(r'StreamBuilder<').allMatches(s).length;
       final guards = RegExp(r'hasError|\.error\b').allMatches(s).length;
@@ -39,11 +39,11 @@ void main() {
     };
     final bad = <String>[];
     for (final f in Directory('lib').listSync(recursive: true).whereType<File>()) {
-      if (!f.path.endsWith('.dart')) continue;
+      if (!f.path.replaceAll('\\', '/').endsWith('.dart')) continue;
       final s = f.readAsStringSync();
       if (!RegExp(r'LiveStream<List|StreamBuilder<List').hasMatch(s)) continue;
       if (RegExp(r'EmptyState|isEmpty|emptyText|isNotEmpty').hasMatch(s)) continue;
-      if (!reviewed.contains(f.path)) bad.add(f.path);
+      if (!reviewed.contains(f.path.replaceAll('\\', '/'))) bad.add(f.path.replaceAll('\\', '/'));
     }
     expect(bad, isEmpty, reason: 'add an EmptyState: $bad');
   });

@@ -25,8 +25,8 @@ void main() {
   test('phone keys are written only in the known files', () {
     final found = <String>{};
     for (final f in Directory('lib').listSync(recursive: true).whereType<File>()) {
-      if (!f.path.endsWith('.dart') || f.path.contains('l10n')) continue;
-      if (key.hasMatch(f.readAsStringSync())) found.add(f.path);
+      if (!f.path.replaceAll('\\', '/').endsWith('.dart') || f.path.replaceAll('\\', '/').contains('l10n')) continue;
+      if (key.hasMatch(f.readAsStringSync())) found.add(f.path.replaceAll('\\', '/'));
     }
     expect(found.difference(allowed.keys.toSet()), isEmpty, reason: 'new phone writers: review who can read the document');
   });

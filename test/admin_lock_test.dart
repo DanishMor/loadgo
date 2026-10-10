@@ -102,7 +102,7 @@ void main() {
   test('admin screens are referenced only from lib/admin and the one registered entry', () {
     final offenders = <String>[];
     for (final f in Directory('lib').listSync(recursive: true).whereType<File>()) {
-      final p = f.path;
+      final p = f.path.replaceAll('\\', '/');
       if (!p.endsWith('.dart') || p.startsWith('lib/admin/') || p.contains('/l10n/')) continue;
       final s = f.readAsStringSync();
       if (s.contains("'adminPanel'") || s.contains('AdminDashboardScreen') || s.contains('adminModeBanner')) offenders.add(p);

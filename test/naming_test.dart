@@ -39,10 +39,10 @@ void main() {
 
   test('no translation table writes the name itself: they use {app}', () {
     final bad = <String>[];
-    for (final f in Directory('lib/core/l10n').listSync().whereType<File>().where((f) => f.path.endsWith('.dart'))) {
+    for (final f in Directory('lib/core/l10n').listSync().whereType<File>().where((f) => f.path.replaceAll('\\', '/').endsWith('.dart'))) {
       final text = f.readAsStringSync();
       for (final name in {AppInfo.name, ...AppInfo.nameInLanguage}) {
-        if (text.contains(name)) bad.add('${f.path}: $name');
+        if (text.contains(name)) bad.add('${f.path.replaceAll('\\', '/')}: $name');
       }
     }
     expect(bad, isEmpty);
@@ -51,25 +51,25 @@ void main() {
   test('no screen, text or share string in lib/ spells the name: it comes from AppInfo', () {
     final literal = RegExp("'[^'\\n]*(?<![A-Za-z])${RegExp.escape(AppInfo.name)}(?![a-z])[^'\\n]*'");
     final bad = <String>[];
-    for (final f in Directory('lib').listSync(recursive: true).whereType<File>().where((f) => f.path.endsWith('.dart'))) {
-      if (f.path.endsWith('lib/core/app_info.dart') || f.path.contains('lib/core/l10n/')) continue;
+    for (final f in Directory('lib').listSync(recursive: true).whereType<File>().where((f) => f.path.replaceAll('\\', '/').endsWith('.dart'))) {
+      if (f.path.replaceAll('\\', '/').endsWith('lib/core/app_info.dart') || f.path.replaceAll('\\', '/').contains('lib/core/l10n/')) continue;
       var n = 0;
       for (final line in f.readAsLinesSync()) {
         n++;
         final t = line.trimLeft();
         if (t.startsWith('//')) continue;
         final code = t.contains(' // ') ? t.substring(0, t.indexOf(' // ')) : t;
-        if (literal.hasMatch(code)) bad.add('${f.path}:$n: $t');
+        if (literal.hasMatch(code)) bad.add('${f.path.replaceAll('\\', '/')}:$n: $t');
       }
     }
     expect(bad, isEmpty);
   });
 
   test('hosting pages carry the name and have no leftover token', () {
-    for (final f in Directory('hosting').listSync().whereType<File>().where((f) => f.path.endsWith('.html'))) {
+    for (final f in Directory('hosting').listSync().whereType<File>().where((f) => f.path.replaceAll('\\', '/').endsWith('.html'))) {
       final text = f.readAsStringSync();
-      expect(text.contains('{{'), isFalse, reason: f.path);
-      expect(text.contains(AppInfo.name), isTrue, reason: f.path);
+      expect(text.contains('{{'), isFalse, reason: f.path.replaceAll('\\', '/'));
+      expect(text.contains(AppInfo.name), isTrue, reason: f.path.replaceAll('\\', '/'));
     }
   });
 
