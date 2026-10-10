@@ -190,3 +190,6 @@ After the tasks were done the angles were read again (customer, driver, transpor
 
 Free gaps: 0 (every FREE gap is closed; G9.5 is cosmetic and recorded above)
 Open bugs: 0 (free)
+
+## Master-7 prep (2026-10-11)
+Free gaps: 0. Open bugs: 0 (free). Fixed on the way: parseItems dropped a trailing x (P9-B1), Windows path/CRLF test failures, rules test runner on Windows, R8 Play Core rule (docs/BUG_REPORT.md). Still owner work (not code): sign in git as the repo owner for pushes if 403, real phone test of the release APK, Firebase Console steps (docs/FIREBASE_CONSOLE_CHECKLIST.md), upload keystore (docs/SIGNING.md), final name and package id (docs/RENAME.md), icon from a designer, lawyer/CA (docs/LEGAL_QUESTIONS.md).
