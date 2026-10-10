@@ -23,7 +23,6 @@ Nothing moved into the free stack: every item above still needs a paid service, 
 | Push to ring a closed app, missed-call push | Needs a sender (FCM + Cloud Functions, Blaze) | Blaze plan |
 | Masked-number calling | Paid telephony provider | Provider contract; plug into the `CallProvider` interface |
 | GST / PAN check of a transporter | Paid KYC API | Provider contract (the badge is an admin decision today) |
-- M6-43: flutter build apk (release or debug) not possible here (no Android SDK); minify rules untested. Owner: build once on a PC with Android Studio and test on a phone.
 ## Windows laptop (2026-10-10)
 
 | Item | Why blocked | What is needed |

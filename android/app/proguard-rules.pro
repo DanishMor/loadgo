@@ -3,3 +3,7 @@
 # release build crashes with ClassNotFound, and say why.
 -keep class io.flutter.** { *; }
 -keep class org.webrtc.** { *; }
+
+# Flutter's deferred-components code refers to Play Core, which this app does not use
+# (no deferred components). R8 fails on the missing classes without this.
+-dontwarn com.google.android.play.core.**
