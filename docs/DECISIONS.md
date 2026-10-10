@@ -12,3 +12,4 @@ One line per assumption taken without asking.
 - Task 20 (update): the learning source for `ServerClock` is the device record (`users/{uid}/devices/{id}.lastSeenAt` is stamped by the server and read back) at sign-in and at most every six hours, plus chat acknowledgements. It is not saved between runs: an old offset would be wrong after the person fixes the phone clock.
 - M6-36: trust badges are shown to the driver only; customer-facing needs server summary (TODO(functions)).
 - M6-43: R8 minify/shrink turned on for release; unverified because the Android SDK is missing here (see BLOCKED.md).
+- 2026-10-11 P1: rename_app.ps1 takes -DryRun as a string (default true; apply with -DryRun false) because powershell -File cannot pass a real boolean; it reuses tool/apply_app_info.dart instead of a second generator.

@@ -27,5 +27,4 @@ Nothing moved into the free stack: every item above still needs a paid service, 
 
 | Item | Why blocked | What is needed |
 |---|---|---|
-| git push | Windows credential is `Safar143`; the repo is `DanishMor/loadgo` (403 Permission denied). | Owner: add `Safar143` as a collaborator with Write, or run `cmdkey /delete:git:https://github.com` and sign in as the repo owner on the next push. |
 | Run the app on the emulator | The debug APK builds (216 MB) but `emulator-5554` (Android 16, 2 GB RAM) crashes system_server / package service while installing it (`DeadSystemException`, `Broken pipe`). It is an emulator problem, not an app error. | Owner: cold boot or wipe the AVD and raise its RAM to 4 GB, or connect a real phone with USB debugging. |
