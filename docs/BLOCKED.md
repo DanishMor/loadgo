@@ -1,4 +1,4 @@
-# Blocked items
+﻿# Blocked items
 
 Things the autonomous runs could not finish because they need something outside the free stack or outside the code. Each has what is needed.
 
@@ -19,10 +19,14 @@ Nothing moved into the free stack: every item above still needs a paid service, 
 
 | Item | Why blocked | What is needed |
 |---|---|---|
-| `flutter build apk --debug` | This codespace has no Android SDK (`No Android SDK found`), so an APK cannot be built here. `flutter build web` works (flutter_webrtc included). | Run `flutter build apk --debug` on a machine with the Android SDK (Android Studio or `ANDROID_HOME`). The manifest has the new call permissions (INTERNET, MODIFY_AUDIO_SETTINGS, ACCESS_NETWORK_STATE, CHANGE_NETWORK_STATE) and iOS has `NSMicrophoneUsageDescription`. |
 | A real two-phone voice call test | WebRTC cannot be exercised in unit tests or here; the tests use a fake `CallProvider`. | Two devices on different networks; if the call does not connect behind strict networks a TURN server is needed (`// LATER(paid)`). |
 | Push to ring a closed app, missed-call push | Needs a sender (FCM + Cloud Functions, Blaze) | Blaze plan |
 | Masked-number calling | Paid telephony provider | Provider contract; plug into the `CallProvider` interface |
 | GST / PAN check of a transporter | Paid KYC API | Provider contract (the badge is an admin decision today) |
-- 2026-10-08 MASTER-5 Task 49: `flutter build apk --debug` again: "No Android SDK found". The web release build passes. Needs a machine with the Android SDK (owner).
 - M6-43: flutter build apk (release or debug) not possible here (no Android SDK); minify rules untested. Owner: build once on a PC with Android Studio and test on a phone.
+## Windows laptop (2026-10-10)
+
+| Item | Why blocked | What is needed |
+|---|---|---|
+| git push | Windows credential is `Safar143`; the repo is `DanishMor/loadgo` (403 Permission denied). | Owner: add `Safar143` as a collaborator with Write, or run `cmdkey /delete:git:https://github.com` and sign in as the repo owner on the next push. |
+| Run the app on the emulator | The debug APK builds (216 MB) but `emulator-5554` (Android 16, 2 GB RAM) crashes system_server / package service while installing it (`DeadSystemException`, `Broken pipe`). It is an emulator problem, not an app error. | Owner: cold boot or wipe the AVD and raise its RAM to 4 GB, or connect a real phone with USB debugging. |
