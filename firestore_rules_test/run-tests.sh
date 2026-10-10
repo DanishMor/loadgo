@@ -10,6 +10,6 @@ $EXEC "node --test matrix.test.mjs"
 i=1
 while [ $i -le $PARTS ]; do
   echo "== rules slice $i of $PARTS =="
-  $EXEC "RULES_PARTS=$PARTS RULES_PART=$i node rules.test.mjs"
+  RULES_PARTS=$PARTS RULES_PART=$i $EXEC "node rules.test.mjs"
   i=$((i+1))
 done
