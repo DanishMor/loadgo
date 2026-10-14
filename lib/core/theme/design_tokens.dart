@@ -195,10 +195,24 @@ class DsMotion {
 class DsType {
   DsType._();
 
-  static const String family = 'Roboto';
+  static const String family = 'Mukta';
+
+  /// For scripts Mukta does not carry: bundled Noto fonts, then the system font.
+  /// (Mukta covers Latin and Devanagari: English, Hindi, Hinglish, Marathi.)
+  static const List<String> fallback = [
+    'NotoSans',
+    'NotoSansKannada',
+    'NotoSansTamil',
+    'NotoSansTelugu',
+    'NotoSansGujarati',
+    'NotoSansBengali',
+    'NotoSansGurmukhi',
+    'NotoNaskhArabic',
+    'Roboto',
+  ];
 
   static TextStyle _s(double size, double line, FontWeight w, {double letter = 0}) =>
-      TextStyle(fontFamily: family, fontSize: size, height: line / size, fontWeight: w, letterSpacing: letter);
+      TextStyle(fontFamily: family, fontFamilyFallback: fallback, fontSize: size, height: line / size, fontWeight: w, letterSpacing: letter);
 
   static TextStyle get display => _s(32, 40, FontWeight.w700);
   static TextStyle get headline => _s(24, 32, FontWeight.w700);

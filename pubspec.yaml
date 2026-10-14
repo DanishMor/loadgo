@@ -85,6 +85,43 @@ flutter:
   # Bengali, Gurmukhi, Arabic script) so Indian-language text never turns into boxes.
   assets:
     - assets/fonts/
+    - assets/fonts/mukta/
+
+  # Load 20 brand font (Mukta, SIL OFL: assets/fonts/mukta/OFL.txt) for Latin and
+  # Devanagari. The other scripts use the bundled Noto fonts below as fallbacks, so
+  # text looks the same on every phone (lib/core/theme/design_tokens.dart, DsType).
+  fonts:
+    - family: Mukta
+      fonts:
+        - asset: assets/fonts/mukta/Mukta-Regular.ttf
+        - asset: assets/fonts/mukta/Mukta-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/mukta/Mukta-Bold.ttf
+          weight: 700
+    - family: NotoSans
+      fonts:
+        - asset: assets/fonts/NotoSans-Regular.ttf
+    - family: NotoSansBengali
+      fonts:
+        - asset: assets/fonts/NotoSansBengali-Regular.ttf
+    - family: NotoSansGujarati
+      fonts:
+        - asset: assets/fonts/NotoSansGujarati-Regular.ttf
+    - family: NotoSansGurmukhi
+      fonts:
+        - asset: assets/fonts/NotoSansGurmukhi-Regular.ttf
+    - family: NotoSansKannada
+      fonts:
+        - asset: assets/fonts/NotoSansKannada-Regular.ttf
+    - family: NotoSansTamil
+      fonts:
+        - asset: assets/fonts/NotoSansTamil-Regular.ttf
+    - family: NotoSansTelugu
+      fonts:
+        - asset: assets/fonts/NotoSansTelugu-Regular.ttf
+    - family: NotoNaskhArabic
+      fonts:
+        - asset: assets/fonts/NotoNaskhArabic-Regular.ttf
 
   # To add assets to your application, add an assets section, like this:
   # assets:

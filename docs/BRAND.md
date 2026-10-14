@@ -1,4 +1,4 @@
-﻿# Brand: Load 20
+# Brand: Load 20
 
 Ek jagah ki list: naam, tagline, tone, logo, colour, font, do aur dont. Colour aur font ke **asli values** `lib/core/theme/` (design tokens, L4) mein hain; yahan sirf niyam hain. Naam ka code mein ek hi source hai: `lib/core/app_info.dart` (`docs/NAMING.md`, `docs/RENAME.md`).
 
@@ -35,7 +35,7 @@ Niyam:
 ## 4. Logo
 Logo mark + wordmark vector (CustomPainter) mein banega (L13), kisi aur brand jaisa ya copyrighted nahi. Placeholder abhi: safed truck, neele background par (`tool/make_placeholder_icon.dart`). **Final logo designer se approve karwana hai** (aur assignment of rights likhwana: `docs/LEGAL_QUESTIONS.md` E2).
 * Chhoti jagah (icon, favicon): sirf mark. Bade (splash, hosting header): mark + wordmark.
-* Saaf jagah (clear space): mark ki ooonchai ka aadha chaaron taraf. Minimum size 24 dp (mark), 96 dp (wordmark).
+* Saaf jagah (clear space): mark ki oonchai ka aadha chaaron taraf. Minimum size 24 dp (mark), 96 dp (wordmark).
 * Sirf do rang version: gehra navy par safed, ya safed par gehra navy. Accent (amber) sirf mark ke ek chhote hisse mein.
 * Mat: stretch, rotate, shadow, outline, naya rang, photo ke upar bina overlay.
 
@@ -48,7 +48,7 @@ Direction: **gehra navy (bharosa) + saffron/amber accent (action)**, saath mein 
 * Role ka halka accent (customer, driver, transporter) sirf chhota detail; Admin ka alag "Admin mode" banner.
 
 ## 6. Font
-Ek brand font (OFL license, `assets/` mein license file ke saath) Latin ke liye + Devanagari; baaki scripts system fallback (L6). Heading bold, body regular; sankhya tabular (barabar chaudai) jahan paisa ya kilometer. Chhota text 12 sp se neeche nahi; 2.0x text scale par layout tootna nahi chahiye.
+Brand font **Mukta** (Ek Type, SIL OFL; `assets/fonts/mukta/` mein Regular, SemiBold, Bold aur `OFL.txt`) Latin + Devanagari ke liye. Baaki scripts (Kannada, Tamil, Telugu, Gujarati, Bengali, Gurmukhi, Urdu/Kashmiri) ke liye bundled Noto fonts fallback hain (`DsType.fallback`), phir system font; `test/typography_test.dart` har language ke har akshar ko font file ke cmap se check karta hai. Heading bold, body regular; sankhya tabular (barabar chaudai) jahan paisa ya kilometer. Chhota text 12 sp se neeche nahi; 2.0x text scale par layout tootna nahi chahiye.
 
 ## 7. Do aur Dont
 | Do | Dont |

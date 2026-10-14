@@ -130,6 +130,7 @@ class AppTheme {
       pageTransitionsTheme: lowEnd ? const PageTransitionsTheme(builders: {TargetPlatform.android: _NoTransitions(), TargetPlatform.iOS: _NoTransitions()}) : null,
       splashFactory: lowEnd ? NoSplash.splashFactory : null,
       fontFamily: DsType.family,
+      fontFamilyFallback: DsType.fallback,
       brightness: brightness,
       colorScheme: scheme,
       textTheme: DsType.textTheme(c),
