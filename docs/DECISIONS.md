@@ -13,3 +13,4 @@ One line per assumption taken without asking.
 - M6-36: trust badges are shown to the driver only; customer-facing needs server summary (TODO(functions)).
 - M6-43: R8 minify/shrink turned on for release; unverified because the Android SDK is missing here (see BLOCKED.md).
 - 2026-10-11 P1: rename_app.ps1 takes -DryRun as a string (default true; apply with -DryRun false) because powershell -File cannot pass a real boolean; it reuses tool/apply_app_info.dart instead of a second generator.
+- 2026-10-14 MASTER_PLAN_FINAL.md was pasted cut off after "key actions par haptics," (L15-L18). Assumption: L15-L18 = splash, role select, login/OTP and first-time tutorial polish with micro-animations and haptics; phases after Phase 4 (server features / functions) are not in the pasted text and are not started until the owner pastes them.
