@@ -85,8 +85,8 @@ void main() {
   };
   final pubspec = File('pubspec.yaml').readAsStringSync();
 
-  test('Mukta is bundled in three weights with its SIL OFL licence', () {
-    for (final n in ['Mukta-Regular.ttf', 'Mukta-SemiBold.ttf', 'Mukta-Bold.ttf']) {
+  test('Mukta is bundled in two weights with its SIL OFL licence', () {
+    for (final n in ['Mukta-Regular.ttf', 'Mukta-Bold.ttf']) {
       final f = mukta(n);
       expect(f.existsSync(), isTrue, reason: n);
       final head = f.readAsBytesSync().sublist(0, 4);
@@ -97,10 +97,8 @@ void main() {
     expect(lic, contains('Copyright'));
   });
 
-  test('pubspec registers Mukta (400, 600, 700) and every fallback family', () {
+  test('pubspec registers Mukta (400, 700) and every fallback family', () {
     expect(pubspec, contains('family: Mukta'));
-    expect(pubspec, contains('Mukta-SemiBold.ttf'));
-    expect(pubspec, contains('weight: 600'));
     expect(pubspec, contains('weight: 700'));
     expect(pubspec, contains('- assets/fonts/mukta/'));
     for (final fam in noto.keys) {

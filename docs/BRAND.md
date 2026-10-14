@@ -48,7 +48,7 @@ Direction: **gehra navy (bharosa) + saffron/amber accent (action)**, saath mein 
 * Role ka halka accent (customer, driver, transporter) sirf chhota detail; Admin ka alag "Admin mode" banner.
 
 ## 6. Font
-Brand font **Mukta** (Ek Type, SIL OFL; `assets/fonts/mukta/` mein Regular, SemiBold, Bold aur `OFL.txt`) Latin + Devanagari ke liye. Baaki scripts (Kannada, Tamil, Telugu, Gujarati, Bengali, Gurmukhi, Urdu/Kashmiri) ke liye bundled Noto fonts fallback hain (`DsType.fallback`), phir system font; `test/typography_test.dart` har language ke har akshar ko font file ke cmap se check karta hai. Heading bold, body regular; sankhya tabular (barabar chaudai) jahan paisa ya kilometer. Chhota text 12 sp se neeche nahi; 2.0x text scale par layout tootna nahi chahiye.
+Brand font **Mukta** (Ek Type, SIL OFL; `assets/fonts/mukta/` mein Regular, Bold aur `OFL.txt`) Latin + Devanagari ke liye. Baaki scripts (Kannada, Tamil, Telugu, Gujarati, Bengali, Gurmukhi, Urdu/Kashmiri) ke liye bundled Noto fonts fallback hain (`DsType.fallback`), phir system font; `test/typography_test.dart` har language ke har akshar ko font file ke cmap se check karta hai. Heading bold, body regular; sankhya tabular (barabar chaudai) jahan paisa ya kilometer. Chhota text 12 sp se neeche nahi; 2.0x text scale par layout tootna nahi chahiye.
 
 ## 7. Do aur Dont
 | Do | Dont |
