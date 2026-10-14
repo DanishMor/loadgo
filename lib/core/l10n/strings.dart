@@ -105,6 +105,7 @@ import 'risk_extra_strings.dart';
 import 'network_strings.dart';
 import 'pay_extra_strings.dart';
 import 'trip_alert_strings.dart';
+import 'ds_strings.dart';
 
 import 'app_control_strings.dart';
 import 'admin_tools_strings.dart';
@@ -249,6 +250,7 @@ const List<Map<String, List<String>>> stringTables = [
   problemReportStrings,
   transporterStrings,
   privateCommStrings,
+  dsStrings,
 ];
 
 final Map<String, List<String>> extraStrings = {
