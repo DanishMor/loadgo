@@ -2,6 +2,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import '../l10n/l10n.dart';
 import '../theme/app_theme.dart';
+import '../theme/design_tokens.dart';
+import 'ds/app_button.dart';
+import 'ds/status_badge.dart';
 
 /// Small UI building blocks shared by the vehicle, load and booking screens.
 /// Colors follow the palette already used across the app.
@@ -105,17 +108,18 @@ class AppCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final radius = DsRadius.all(DsRadius.lg);
     return Material(
       color: AppColors.card,
-      borderRadius: BorderRadius.circular(18),
+      borderRadius: radius,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: radius,
         child: Container(
           width: double.infinity,
           padding: padding,
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: radius,
             border: Border.all(color: AppColors.border),
           ),
           child: child,
@@ -133,24 +137,10 @@ class StatusChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Never wider than most of the screen: a long label (Tamil, Telugu, big
-    // text) wraps instead of overflowing.
-    return Container(
-      constraints: BoxConstraints(maxWidth: MediaQuery.sizeOf(context).width * 0.8),
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          color: color,
-          fontSize: 12,
-          fontWeight: FontWeight.w700,
-        ),
-      ),
-    );
+    // Never wider than most of the screen (a long label wraps) and the text is
+    // moved to a readable shade of [color]: see ColorBadge. New code should use
+    // StatusBadge.forStatus so one status always has one colour.
+    return ColorBadge(label: label, color: color);
   }
 }
 
@@ -256,53 +246,9 @@ class PrimaryButton extends StatelessWidget {
     this.icon,
   });
 
+  /// The action of the screen (saffron). Same as `AppButton(kind: primary)`.
   @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      height: 54,
-      child: ElevatedButton(
-        onPressed: loading ? null : onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primary,
-          foregroundColor: Colors.white,
-          disabledBackgroundColor: const Color(0xFF9DBCE5),
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
-          ),
-        ),
-        child: loading
-            ? const SizedBox(
-                width: 23,
-                height: 23,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2.5,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                ),
-              )
-            : Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (icon != null) ...[
-                    Icon(icon, size: 20),
-                    const SizedBox(width: 8),
-                  ],
-                  Flexible(
-                    child: Text(
-                      label,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-      ),
-    );
-  }
+  Widget build(BuildContext context) => AppButton(label: label, onPressed: onPressed, loading: loading, icon: icon);
 }
 
 class FieldLabel extends StatelessWidget {

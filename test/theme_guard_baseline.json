@@ -452,8 +452,8 @@
     "styles": 2
   },
   "lib/core/widgets/common.dart": {
-    "colors": 6,
-    "styles": 6
+    "colors": 5,
+    "styles": 4
   },
   "lib/core/widgets/detention_card.dart": {
     "colors": 0,
