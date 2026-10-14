@@ -1,0 +1,782 @@
+{
+  "lib/admin/admin_alerts_screen.dart": {
+    "colors": 1,
+    "styles": 2
+  },
+  "lib/admin/admin_appeals_screen.dart": {
+    "colors": 0,
+    "styles": 2
+  },
+  "lib/admin/admin_assistant_screen.dart": {
+    "colors": 0,
+    "styles": 3
+  },
+  "lib/admin/admin_chat_review_screen.dart": {
+    "colors": 0,
+    "styles": 1
+  },
+  "lib/admin/admin_cohorts_screen.dart": {
+    "colors": 0,
+    "styles": 3
+  },
+  "lib/admin/admin_config_screen.dart": {
+    "colors": 0,
+    "styles": 4
+  },
+  "lib/admin/admin_dashboard_screen.dart": {
+    "colors": 0,
+    "styles": 4
+  },
+  "lib/admin/admin_demo_screen.dart": {
+    "colors": 0,
+    "styles": 2
+  },
+  "lib/admin/admin_dispatch_screen.dart": {
+    "colors": 0,
+    "styles": 3
+  },
+  "lib/admin/admin_driver_rewards_screen.dart": {
+    "colors": 0,
+    "styles": 3
+  },
+  "lib/admin/admin_features_screen.dart": {
+    "colors": 0,
+    "styles": 3
+  },
+  "lib/admin/admin_feedback_screen.dart": {
+    "colors": 1,
+    "styles": 2
+  },
+  "lib/admin/admin_fraud_cases_screen.dart": {
+    "colors": 0,
+    "styles": 7
+  },
+  "lib/admin/admin_guard.dart": {
+    "colors": 1,
+    "styles": 1
+  },
+  "lib/admin/admin_health_screen.dart": {
+    "colors": 0,
+    "styles": 6
+  },
+  "lib/admin/admin_invites_screen.dart": {
+    "colors": 0,
+    "styles": 3
+  },
+  "lib/admin/admin_lists.dart": {
+    "colors": 0,
+    "styles": 1
+  },
+  "lib/admin/admin_offers_screen.dart": {
+    "colors": 0,
+    "styles": 6
+  },
+  "lib/admin/admin_payment_aging_screen.dart": {
+    "colors": 0,
+    "styles": 3
+  },
+  "lib/admin/admin_payouts_screen.dart": {
+    "colors": 0,
+    "styles": 1
+  },
+  "lib/admin/admin_pilot_control_screen.dart": {
+    "colors": 0,
+    "styles": 3
+  },
+  "lib/admin/admin_pilot_funnel_screen.dart": {
+    "colors": 0,
+    "styles": 4
+  },
+  "lib/admin/admin_pilot_report_screen.dart": {
+    "colors": 0,
+    "styles": 1
+  },
+  "lib/admin/admin_rating_burst_screen.dart": {
+    "colors": 0,
+    "styles": 2
+  },
+  "lib/admin/admin_rating_flags_screen.dart": {
+    "colors": 0,
+    "styles": 4
+  },
+  "lib/admin/admin_search_screen.dart": {
+    "colors": 0,
+    "styles": 2
+  },
+  "lib/admin/admin_supply_demand_screen.dart": {
+    "colors": 0,
+    "styles": 6
+  },
+  "lib/admin/admin_surveys_screen.dart": {
+    "colors": 0,
+    "styles": 2
+  },
+  "lib/admin/admin_templates_screen.dart": {
+    "colors": 0,
+    "styles": 1
+  },
+  "lib/admin/admin_trends_section.dart": {
+    "colors": 0,
+    "styles": 8
+  },
+  "lib/admin/admin_unit_economics_screen.dart": {
+    "colors": 0,
+    "styles": 3
+  },
+  "lib/admin/admin_user_screen.dart": {
+    "colors": 0,
+    "styles": 13
+  },
+  "lib/admin/admin_verification_screen.dart": {
+    "colors": 0,
+    "styles": 4
+  },
+  "lib/admin/admin_violations_screen.dart": {
+    "colors": 0,
+    "styles": 4
+  },
+  "lib/admin/user_overview_card.dart": {
+    "colors": 0,
+    "styles": 4
+  },
+  "lib/admin/user_risk_checks.dart": {
+    "colors": 0,
+    "styles": 4
+  },
+  "lib/auth/banned_screen.dart": {
+    "colors": 0,
+    "styles": 2
+  },
+  "lib/auth/customer_login_screen.dart": {
+    "colors": 4,
+    "styles": 10
+  },
+  "lib/auth/customer_profile_setup_screen.dart": {
+    "colors": 2,
+    "styles": 4
+  },
+  "lib/auth/driver_consent_screen.dart": {
+    "colors": 1,
+    "styles": 3
+  },
+  "lib/auth/driver_kyc_screen.dart": {
+    "colors": 2,
+    "styles": 4
+  },
+  "lib/auth/driver_login_screen.dart": {
+    "colors": 3,
+    "styles": 7
+  },
+  "lib/auth/driver_onboarding_card.dart": {
+    "colors": 0,
+    "styles": 4
+  },
+  "lib/auth/driver_pending_screen.dart": {
+    "colors": 4,
+    "styles": 4
+  },
+  "lib/auth/driver_profile_setup_screen.dart": {
+    "colors": 2,
+    "styles": 4
+  },
+  "lib/auth/fleet_profile_setup_screen.dart": {
+    "colors": 0,
+    "styles": 2
+  },
+  "lib/auth/otp_verification_screen.dart": {
+    "colors": 3,
+    "styles": 6
+  },
+  "lib/auth/role_selection_screen.dart": {
+    "colors": 4,
+    "styles": 9
+  },
+  "lib/auth/splash_screen.dart": {
+    "colors": 3,
+    "styles": 2
+  },
+  "lib/core/announcement/announcement.dart": {
+    "colors": 0,
+    "styles": 1
+  },
+  "lib/core/assistant/sahayak_screen.dart": {
+    "colors": 1,
+    "styles": 2
+  },
+  "lib/core/bilty/bilty_card.dart": {
+    "colors": 0,
+    "styles": 8
+  },
+  "lib/core/bilty/inspection_widgets.dart": {
+    "colors": 0,
+    "styles": 13
+  },
+  "lib/core/bilty/lr_copy_screen.dart": {
+    "colors": 0,
+    "styles": 9
+  },
+  "lib/core/bilty/lr_form_screen.dart": {
+    "colors": 0,
+    "styles": 3
+  },
+  "lib/core/bilty/lr_pdf.dart": {
+    "colors": 0,
+    "styles": 6
+  },
+  "lib/core/bilty/lr_register_screen.dart": {
+    "colors": 0,
+    "styles": 9
+  },
+  "lib/core/bilty/lr_send_screen.dart": {
+    "colors": 0,
+    "styles": 4
+  },
+  "lib/core/call/call_screens.dart": {
+    "colors": 2,
+    "styles": 4
+  },
+  "lib/core/call/mic_test.dart": {
+    "colors": 0,
+    "styles": 7
+  },
+  "lib/core/chat/chat_screen.dart": {
+    "colors": 0,
+    "styles": 10
+  },
+  "lib/core/chat/strike_appeal_screen.dart": {
+    "colors": 0,
+    "styles": 7
+  },
+  "lib/core/claims/claim_screens.dart": {
+    "colors": 0,
+    "styles": 7
+  },
+  "lib/core/claims/declared_value_line.dart": {
+    "colors": 0,
+    "styles": 1
+  },
+  "lib/core/claims/trip_evidence_timeline.dart": {
+    "colors": 0,
+    "styles": 1
+  },
+  "lib/core/documents/documents_center_screen.dart": {
+    "colors": 0,
+    "styles": 4
+  },
+  "lib/core/documents/eway_status_line.dart": {
+    "colors": 0,
+    "styles": 1
+  },
+  "lib/core/documents/invoice_issue_card.dart": {
+    "colors": 0,
+    "styles": 4
+  },
+  "lib/core/documents/invoice_pdf.dart": {
+    "colors": 0,
+    "styles": 11
+  },
+  "lib/core/documents/invoice_screen.dart": {
+    "colors": 0,
+    "styles": 9
+  },
+  "lib/core/documents/lr_screen.dart": {
+    "colors": 0,
+    "styles": 1
+  },
+  "lib/core/documents/payment_card.dart": {
+    "colors": 0,
+    "styles": 5
+  },
+  "lib/core/documents/pod_screen.dart": {
+    "colors": 0,
+    "styles": 6
+  },
+  "lib/core/enterprise/handover_card.dart": {
+    "colors": 0,
+    "styles": 4
+  },
+  "lib/core/errors/friendly_error_widget.dart": {
+    "colors": 2,
+    "styles": 1
+  },
+  "lib/core/l10n/language_widgets.dart": {
+    "colors": 2,
+    "styles": 3
+  },
+  "lib/core/network/network_chat_screen.dart": {
+    "colors": 0,
+    "styles": 9
+  },
+  "lib/core/network/network_screen.dart": {
+    "colors": 0,
+    "styles": 7
+  },
+  "lib/core/network/share_load_sheet.dart": {
+    "colors": 0,
+    "styles": 2
+  },
+  "lib/core/notifications/notifications_screen.dart": {
+    "colors": 0,
+    "styles": 7
+  },
+  "lib/core/payments/earnings_statement.dart": {
+    "colors": 0,
+    "styles": 5
+  },
+  "lib/core/payments/payment_timeline_card.dart": {
+    "colors": 0,
+    "styles": 5
+  },
+  "lib/core/payments/statement_sheet.dart": {
+    "colors": 0,
+    "styles": 2
+  },
+  "lib/core/payments/wallet_widgets.dart": {
+    "colors": 0,
+    "styles": 6
+  },
+  "lib/core/pilot/dispatch_card.dart": {
+    "colors": 0,
+    "styles": 4
+  },
+  "lib/core/pilot/payment_nudge_card.dart": {
+    "colors": 0,
+    "styles": 1
+  },
+  "lib/core/pilot/reuse_survey.dart": {
+    "colors": 0,
+    "styles": 1
+  },
+  "lib/core/pilot/waitlist.dart": {
+    "colors": 0,
+    "styles": 1
+  },
+  "lib/core/profile/edit_profile_screen.dart": {
+    "colors": 0,
+    "styles": 2
+  },
+  "lib/core/profile/profile_view.dart": {
+    "colors": 0,
+    "styles": 11
+  },
+  "lib/core/safety/emergency_contacts_screen.dart": {
+    "colors": 0,
+    "styles": 2
+  },
+  "lib/core/search/global_search_screen.dart": {
+    "colors": 0,
+    "styles": 2
+  },
+  "lib/core/settings/account_deletion_screen.dart": {
+    "colors": 0,
+    "styles": 3
+  },
+  "lib/core/settings/account_tools_screens.dart": {
+    "colors": 0,
+    "styles": 3
+  },
+  "lib/core/settings/devices_screen.dart": {
+    "colors": 0,
+    "styles": 2
+  },
+  "lib/core/settings/feedback_screen.dart": {
+    "colors": 1,
+    "styles": 1
+  },
+  "lib/core/settings/help_screen.dart": {
+    "colors": 0,
+    "styles": 2
+  },
+  "lib/core/settings/legal_screens.dart": {
+    "colors": 0,
+    "styles": 4
+  },
+  "lib/core/settings/onboarding_screen.dart": {
+    "colors": 0,
+    "styles": 2
+  },
+  "lib/core/settings/settings_screen.dart": {
+    "colors": 0,
+    "styles": 2
+  },
+  "lib/core/settings/simple_mode.dart": {
+    "colors": 0,
+    "styles": 1
+  },
+  "lib/core/support/problem_report.dart": {
+    "colors": 0,
+    "styles": 2
+  },
+  "lib/core/support/support_screens.dart": {
+    "colors": 0,
+    "styles": 10
+  },
+  "lib/core/transporter/party_statement.dart": {
+    "colors": 0,
+    "styles": 4
+  },
+  "lib/core/trip/trip_history_screen.dart": {
+    "colors": 0,
+    "styles": 5
+  },
+  "lib/core/trust/trust_badges_card.dart": {
+    "colors": 0,
+    "styles": 3
+  },
+  "lib/core/vehicles/vehicle_expenses_screen.dart": {
+    "colors": 0,
+    "styles": 2
+  },
+  "lib/core/wallet/txn_history_screen.dart": {
+    "colors": 0,
+    "styles": 4
+  },
+  "lib/core/widgets/bid_assistant_panel.dart": {
+    "colors": 0,
+    "styles": 2
+  },
+  "lib/core/widgets/booking_list_view.dart": {
+    "colors": 0,
+    "styles": 1
+  },
+  "lib/core/widgets/booking_type_widgets.dart": {
+    "colors": 0,
+    "styles": 2
+  },
+  "lib/core/widgets/booking_widgets.dart": {
+    "colors": 0,
+    "styles": 6
+  },
+  "lib/core/widgets/cancel_reason_picker.dart": {
+    "colors": 0,
+    "styles": 2
+  },
+  "lib/core/widgets/common.dart": {
+    "colors": 6,
+    "styles": 6
+  },
+  "lib/core/widgets/detention_card.dart": {
+    "colors": 0,
+    "styles": 4
+  },
+  "lib/core/widgets/evidence_cards.dart": {
+    "colors": 0,
+    "styles": 5
+  },
+  "lib/core/widgets/fare_breakdown.dart": {
+    "colors": 0,
+    "styles": 7
+  },
+  "lib/core/widgets/kyc_check_widgets.dart": {
+    "colors": 0,
+    "styles": 2
+  },
+  "lib/core/widgets/lifecycle_bar.dart": {
+    "colors": 0,
+    "styles": 1
+  },
+  "lib/core/widgets/live_stream.dart": {
+    "colors": 0,
+    "styles": 3
+  },
+  "lib/core/widgets/load_card.dart": {
+    "colors": 0,
+    "styles": 3
+  },
+  "lib/core/widgets/load_filter_sheet.dart": {
+    "colors": 0,
+    "styles": 1
+  },
+  "lib/core/widgets/location_widgets.dart": {
+    "colors": 0,
+    "styles": 5
+  },
+  "lib/core/widgets/logistics_labels.dart": {
+    "colors": 0,
+    "styles": 1
+  },
+  "lib/core/widgets/mini_bars.dart": {
+    "colors": 0,
+    "styles": 1
+  },
+  "lib/core/widgets/rating_widgets.dart": {
+    "colors": 1,
+    "styles": 8
+  },
+  "lib/core/widgets/reminder_widgets.dart": {
+    "colors": 0,
+    "styles": 2
+  },
+  "lib/core/widgets/role_tour_card.dart": {
+    "colors": 0,
+    "styles": 2
+  },
+  "lib/core/widgets/stat_tile.dart": {
+    "colors": 0,
+    "styles": 2
+  },
+  "lib/core/widgets/sync_indicator.dart": {
+    "colors": 0,
+    "styles": 1
+  },
+  "lib/core/widgets/tip_card.dart": {
+    "colors": 0,
+    "styles": 3
+  },
+  "lib/core/widgets/trip_cost_widgets.dart": {
+    "colors": 0,
+    "styles": 7
+  },
+  "lib/core/widgets/trip_eta_card.dart": {
+    "colors": 0,
+    "styles": 3
+  },
+  "lib/core/widgets/verification_badges.dart": {
+    "colors": 0,
+    "styles": 3
+  },
+  "lib/customer/bulk_post_screen.dart": {
+    "colors": 0,
+    "styles": 6
+  },
+  "lib/customer/business_ops_screens.dart": {
+    "colors": 0,
+    "styles": 7
+  },
+  "lib/customer/business_screen.dart": {
+    "colors": 0,
+    "styles": 2
+  },
+  "lib/customer/business_statement_screen.dart": {
+    "colors": 0,
+    "styles": 7
+  },
+  "lib/customer/business_team_screen.dart": {
+    "colors": 0,
+    "styles": 4
+  },
+  "lib/customer/customer_analytics_screen.dart": {
+    "colors": 0,
+    "styles": 3
+  },
+  "lib/customer/customer_bookings_view.dart": {
+    "colors": 0,
+    "styles": 1
+  },
+  "lib/customer/customer_home_screen.dart": {
+    "colors": 9,
+    "styles": 18
+  },
+  "lib/customer/delivered_actions.dart": {
+    "colors": 0,
+    "styles": 2
+  },
+  "lib/customer/load_offers_screen.dart": {
+    "colors": 0,
+    "styles": 7
+  },
+  "lib/customer/matching_vehicles_line.dart": {
+    "colors": 0,
+    "styles": 1
+  },
+  "lib/customer/my_loads_view.dart": {
+    "colors": 0,
+    "styles": 3
+  },
+  "lib/customer/offers_screen.dart": {
+    "colors": 0,
+    "styles": 9
+  },
+  "lib/customer/offers_section.dart": {
+    "colors": 0,
+    "styles": 3
+  },
+  "lib/customer/post_load_screen.dart": {
+    "colors": 0,
+    "styles": 13
+  },
+  "lib/customer/recurring_due_card.dart": {
+    "colors": 0,
+    "styles": 2
+  },
+  "lib/customer/route_report_screen.dart": {
+    "colors": 0,
+    "styles": 3
+  },
+  "lib/customer/saved_place_picker.dart": {
+    "colors": 0,
+    "styles": 3
+  },
+  "lib/customer/shipments_screen.dart": {
+    "colors": 0,
+    "styles": 3
+  },
+  "lib/customer/spending_screen.dart": {
+    "colors": 0,
+    "styles": 8
+  },
+  "lib/customer/templates_screen.dart": {
+    "colors": 0,
+    "styles": 1
+  },
+  "lib/customer/trip_otp_card.dart": {
+    "colors": 0,
+    "styles": 4
+  },
+  "lib/customer/truck_board_screen.dart": {
+    "colors": 0,
+    "styles": 4
+  },
+  "lib/driver/accept_load.dart": {
+    "colors": 0,
+    "styles": 3
+  },
+  "lib/driver/add_vehicle_screen.dart": {
+    "colors": 0,
+    "styles": 2
+  },
+  "lib/driver/assigned_trips_card.dart": {
+    "colors": 0,
+    "styles": 3
+  },
+  "lib/driver/available_loads_view.dart": {
+    "colors": 0,
+    "styles": 3
+  },
+  "lib/driver/city_demand_screen.dart": {
+    "colors": 0,
+    "styles": 8
+  },
+  "lib/driver/doc_suspension_banner.dart": {
+    "colors": 0,
+    "styles": 2
+  },
+  "lib/driver/driver_analytics_screen.dart": {
+    "colors": 0,
+    "styles": 3
+  },
+  "lib/driver/driver_home_screen.dart": {
+    "colors": 6,
+    "styles": 9
+  },
+  "lib/driver/driver_rewards_screen.dart": {
+    "colors": 0,
+    "styles": 13
+  },
+  "lib/driver/driver_today.dart": {
+    "colors": 0,
+    "styles": 2
+  },
+  "lib/driver/driver_trip_screen.dart": {
+    "colors": 0,
+    "styles": 1
+  },
+  "lib/driver/earnings_view.dart": {
+    "colors": 2,
+    "styles": 13
+  },
+  "lib/driver/empty_trucks_screen.dart": {
+    "colors": 0,
+    "styles": 4
+  },
+  "lib/driver/fleet_invites_card.dart": {
+    "colors": 0,
+    "styles": 1
+  },
+  "lib/driver/my_offers_screen.dart": {
+    "colors": 0,
+    "styles": 4
+  },
+  "lib/driver/my_vehicles_screen.dart": {
+    "colors": 0,
+    "styles": 4
+  },
+  "lib/driver/pickup_alerts.dart": {
+    "colors": 0,
+    "styles": 4
+  },
+  "lib/driver/recommended_loads.dart": {
+    "colors": 0,
+    "styles": 1
+  },
+  "lib/driver/return_loads_section.dart": {
+    "colors": 0,
+    "styles": 2
+  },
+  "lib/driver/simple_bid.dart": {
+    "colors": 0,
+    "styles": 3
+  },
+  "lib/driver/simple_home_screen.dart": {
+    "colors": 4,
+    "styles": 4
+  },
+  "lib/driver/trip_geofence_banner.dart": {
+    "colors": 0,
+    "styles": 1
+  },
+  "lib/driver/upcoming_trips.dart": {
+    "colors": 0,
+    "styles": 3
+  },
+  "lib/driver/vehicle_alerts_banner.dart": {
+    "colors": 0,
+    "styles": 2
+  },
+  "lib/driver/vehicle_documents_screen.dart": {
+    "colors": 0,
+    "styles": 4
+  },
+  "lib/driver/wallet_screen.dart": {
+    "colors": 0,
+    "styles": 8
+  },
+  "lib/fleet/fleet_analytics_screen.dart": {
+    "colors": 0,
+    "styles": 8
+  },
+  "lib/fleet/fleet_dashboard.dart": {
+    "colors": 0,
+    "styles": 13
+  },
+  "lib/fleet/fleet_drivers_screen.dart": {
+    "colors": 0,
+    "styles": 4
+  },
+  "lib/fleet/fleet_home_screen.dart": {
+    "colors": 0,
+    "styles": 1
+  },
+  "lib/fleet/fleet_vehicles_screen.dart": {
+    "colors": 0,
+    "styles": 5
+  },
+  "lib/fleet/transporter_board_card.dart": {
+    "colors": 0,
+    "styles": 8
+  },
+  "lib/fleet/transporter_books_screen.dart": {
+    "colors": 0,
+    "styles": 9
+  },
+  "lib/fleet/transporter_loads_screen.dart": {
+    "colors": 0,
+    "styles": 10
+  },
+  "lib/fleet/transporter_onboarding_card.dart": {
+    "colors": 0,
+    "styles": 3
+  },
+  "lib/fleet/transporter_profile_screen.dart": {
+    "colors": 0,
+    "styles": 2
+  },
+  "lib/fleet/transporter_shortcuts.dart": {
+    "colors": 0,
+    "styles": 1
+  },
+  "lib/fleet/transporter_trips_screen.dart": {
+    "colors": 0,
+    "styles": 7
+  }
+}
