@@ -453,15 +453,11 @@
   },
   "lib/core/widgets/common.dart": {
     "colors": 5,
-    "styles": 4
+    "styles": 2
   },
   "lib/core/widgets/detention_card.dart": {
     "colors": 0,
     "styles": 4
-  },
-  "lib/core/widgets/ds/otp_field.dart": {
-    "colors": 0,
-    "styles": 1
   },
   "lib/core/widgets/evidence_cards.dart": {
     "colors": 0,
@@ -481,7 +477,7 @@
   },
   "lib/core/widgets/live_stream.dart": {
     "colors": 0,
-    "styles": 3
+    "styles": 2
   },
   "lib/core/widgets/load_card.dart": {
     "colors": 0,

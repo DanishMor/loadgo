@@ -4,8 +4,10 @@ import 'package:flutter/material.dart';
 
 import '../errors/friendly_error.dart';
 import '../services/connectivity_service.dart';
-import 'common.dart';
 import '../l10n/l10n.dart';
+import '../theme/design_tokens.dart';
+import 'common.dart';
+import 'ds/illustrations.dart';
 
 typedef StreamFactory<D> = Stream<D> Function();
 
@@ -28,6 +30,10 @@ class LiveStream<D> extends StatefulWidget {
   /// The previous data stays on screen until the new stream delivers.
   final Object? resubscribeKey;
 
+  /// What to show while the first data is on its way. Default: a spinner. Lists
+  /// pass (_) => const SkeletonList() for grey placeholder cards.
+  final WidgetBuilder? loadingBuilder;
+
   const LiveStream({
     super.key,
     required this.stream,
@@ -35,6 +41,7 @@ class LiveStream<D> extends StatefulWidget {
     this.compact = false,
     this.slowAfter = const Duration(seconds: 8),
     this.resubscribeKey,
+    this.loadingBuilder,
   });
 
   @override
@@ -122,7 +129,7 @@ class _LiveStreamState<D> extends State<LiveStream<D>> {
                 compact: widget.compact,
               );
             }
-            return _spinner();
+            return widget.loadingBuilder?.call(context) ?? _spinner();
           },
         );
       },
@@ -161,6 +168,8 @@ class LiveDoc<V> extends StatelessWidget {
         builder: (context, data) => builder(context, data.$1),
       );
 }
+
+bool _isOffline(String messageKey) => messageKey == 'errorOffline';
 
 /// Friendly failure message with a Retry button.
 class ErrorRetry extends StatelessWidget {
@@ -201,6 +210,7 @@ class ErrorRetry extends StatelessWidget {
     }
     return EmptyState(
       icon: Icons.cloud_off_rounded,
+      illustration: _isOffline(messageKey) ? IllustrationKind.noNetwork : IllustrationKind.error,
       title: tr(context, messageKey),
       action: retry,
     );
@@ -227,7 +237,7 @@ class ErrorState extends StatelessWidget {
         Expanded(child: Text(tr(context, key), style: TextStyle(color: AppColors.muted))),
       ]));
     }
-    return EmptyState(icon: Icons.cloud_off_rounded, title: tr(context, key));
+    return EmptyState(icon: Icons.cloud_off_rounded, illustration: _isOffline(key) ? IllustrationKind.noNetwork : IllustrationKind.error, title: tr(context, key));
   }
 }
 
@@ -238,30 +248,22 @@ class OfflineBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = DsColors.of(Theme.of(context).brightness);
     return ValueListenableBuilder<bool>(
       valueListenable: ConnectivityService.online,
       builder: (context, online, _) {
         if (online) return const SizedBox.shrink();
         return Material(
-          color: Colors.black87,
+          color: c.text,
           child: SafeArea(
             top: false,
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: DsSpace.s4, vertical: DsSpace.s2),
               child: Row(
                 children: [
-                  Icon(
-                    Icons.wifi_off_rounded,
-                    size: 16,
-                    color: AppColors.card,
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      tr(context, 'offlineBanner'),
-                      style: const TextStyle(color: Colors.white, fontSize: 12),
-                    ),
-                  ),
+                  Icon(Icons.wifi_off_rounded, size: 16, color: c.bg),
+                  const SizedBox(width: DsSpace.s2),
+                  Expanded(child: Text(tr(context, 'offlineBanner'), style: DsType.caption.copyWith(color: c.bg))),
                 ],
               ),
             ),

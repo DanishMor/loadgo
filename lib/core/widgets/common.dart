@@ -4,6 +4,7 @@ import '../l10n/l10n.dart';
 import '../theme/app_theme.dart';
 import '../theme/design_tokens.dart';
 import 'ds/app_button.dart';
+import 'ds/illustrations.dart';
 import 'ds/status_badge.dart';
 
 /// Small UI building blocks shared by the vehicle, load and booking screens.
@@ -172,11 +173,16 @@ class RouteText extends StatelessWidget {
   }
 }
 
+/// "Nothing here" and "something went wrong" screens. Pass [illustration] for
+/// the drawn picture (see IllustrationKind), or leave it out for the small icon
+/// tile. Scrolls when the space left is smaller than the message (big text,
+/// short screen). The words always carry the meaning; the picture is decoration.
 class EmptyState extends StatelessWidget {
   final IconData icon;
   final String title;
   final String? subtitle;
   final Widget? action;
+  final IllustrationKind? illustration;
 
   const EmptyState({
     super.key,
@@ -184,54 +190,45 @@ class EmptyState extends StatelessWidget {
     required this.title,
     this.subtitle,
     this.action,
+    this.illustration,
   });
 
   @override
   Widget build(BuildContext context) {
-    // Scrolls when the space left is smaller than the message (big text, short screen).
+    final c = DsColors.of(Theme.of(context).brightness);
     return Center(
       child: SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.all(30),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 82,
-              height: 82,
-              decoration: BoxDecoration(
-                color: AppColors.primaryLight,
-                borderRadius: BorderRadius.circular(24),
+        child: Padding(
+          padding: const EdgeInsets.all(DsSpace.s8),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (illustration != null)
+                IllustrationView(illustration!)
+              else
+                Container(
+                  width: 82,
+                  height: 82,
+                  decoration: BoxDecoration(color: c.tint, borderRadius: DsRadius.all(DsRadius.xl)),
+                  child: Icon(icon, size: 42, color: c.primary),
+                ),
+              const SizedBox(height: DsSpace.s5),
+              Semantics(
+                header: true,
+                child: Text(title, textAlign: TextAlign.center, style: DsType.title.copyWith(color: c.text)),
               ),
-              child: Icon(icon, size: 42, color: AppColors.primary),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              title,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w800,
-                color: AppColors.title,
-              ),
-            ),
-            if (subtitle != null) ...[
-              const SizedBox(height: 8),
-              Text(
-                subtitle!,
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 14, color: AppColors.muted),
-              ),
+              if (subtitle != null) ...[
+                const SizedBox(height: DsSpace.s2),
+                Text(subtitle!, textAlign: TextAlign.center, style: DsType.bodySmall.copyWith(color: c.textMuted)),
+              ],
+              if (action != null) ...[const SizedBox(height: DsSpace.s5), action!],
             ],
-            if (action != null) ...[const SizedBox(height: 20), action!],
-          ],
+          ),
         ),
-      ),
       ),
     );
   }
 }
-
 class PrimaryButton extends StatelessWidget {
   final String label;
   final VoidCallback? onPressed;

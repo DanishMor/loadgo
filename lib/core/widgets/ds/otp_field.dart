@@ -132,7 +132,7 @@ class _OtpFieldState extends State<OtpField> {
                     maxLength: widget.length,
                     inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(widget.length)],
                     decoration: const InputDecoration(counterText: '', border: InputBorder.none, fillColor: Colors.transparent),
-                    style: const TextStyle(fontSize: 1, color: Colors.transparent),
+                    style: DsType.body.copyWith(fontSize: 1, color: Colors.transparent),
                   ),
                 ),
               ),
