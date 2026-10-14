@@ -3,19 +3,19 @@
 <plist version="1.0">
 	<dict>
 		<key>NSMicrophoneUsageDescription</key>
-		<string>LoadGo uses the microphone only during a call with your customer, driver or transporter. Nothing is recorded.</string>
+		<string>Load 20 uses the microphone only during a call with your customer, driver or transporter. Nothing is recorded.</string>
 		<key>NSLocationWhenInUseUsageDescription</key>
-		<string>LoadGo shares your live location with the customer while a trip is in transit.</string>
+		<string>Load 20 shares your live location with the customer while a trip is in transit.</string>
 		<key>NSPhotoLibraryUsageDescription</key>
-		<string>LoadGo needs photo access to upload your vehicle RC document.</string>
+		<string>Load 20 needs photo access to upload your vehicle RC document.</string>
 		<key>NSCameraUsageDescription</key>
-		<string>LoadGo needs camera access to photograph your vehicle RC document.</string>
+		<string>Load 20 needs camera access to photograph your vehicle RC document.</string>
 		<key>CADisableMinimumFrameDurationOnPhone</key>
 		<true/>
 		<key>CFBundleDevelopmentRegion</key>
 		<string>$(DEVELOPMENT_LANGUAGE)</string>
 		<key>CFBundleDisplayName</key>
-		<string>LoadGo</string>
+		<string>Load 20</string>
 		<key>CFBundleExecutable</key>
 		<string>$(EXECUTABLE_NAME)</string>
 		<key>CFBundleIdentifier</key>
@@ -23,7 +23,7 @@
 		<key>CFBundleInfoDictionaryVersion</key>
 		<string>6.0</string>
 		<key>CFBundleName</key>
-		<string>LoadGo</string>
+		<string>Load 20</string>
 		<key>CFBundlePackageType</key>
 		<string>APPL</string>
 		<key>CFBundleShortVersionString</key>

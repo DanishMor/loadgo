@@ -135,7 +135,7 @@ void main() {
     await tester.ensureVisible(find.byType(PrimaryButton));
     await tester.tap(find.byType(PrimaryButton));
     await tester.pumpAndSettle();
-    expect(find.textContaining('LoadGo cannot carry "ammunition"'), findsOneWidget);
+    expect(find.textContaining('Load 20 cannot carry "ammunition"'), findsOneWidget);
     expect((await tester.runAsync(() => db.collection('loads').get()))!.docs, isEmpty);
   });
 

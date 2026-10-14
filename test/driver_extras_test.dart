@@ -155,7 +155,7 @@ void main() {
       await tester.tap(find.byKey(ValueKey('claim_$id')));
       await settle(tester);
       expect(find.byKey(ValueKey('claimState_$id')), findsOneWidget);
-      expect(find.text('Claimed: waiting for LoadGo to pay'), findsOneWidget);
+      expect(find.text('Claimed: waiting for Load 20 to pay'), findsOneWidget);
     });
   });
 

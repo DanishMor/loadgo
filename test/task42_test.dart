@@ -142,7 +142,7 @@ void main() {
       AppControlService.apply(const AppControl(maintenance: true));
       await t.pumpAndSettle();
       expect(find.text('Under maintenance'), findsOneWidget);
-      expect(find.text('LoadGo is being improved. Please try again in a little while.'), findsOneWidget);
+      expect(find.text('Load 20 is being improved. Please try again in a little while.'), findsOneWidget);
     });
 
     testWidgets('clears when the admin lifts maintenance', (t) async {

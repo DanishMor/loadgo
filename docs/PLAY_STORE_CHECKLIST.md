@@ -3,7 +3,7 @@
 Status key: [x] done in the repo, [ ] needs you (account, keys, decisions).
 
 ## App identity
-- [x] App label `LoadGo` (AndroidManifest). Package id is still the Flutter default: decide the final id BEFORE the first upload, it cannot change later.
+- [x] App label `Load 20` (AndroidManifest). Package id is still the Flutter default: decide the final id BEFORE the first upload, it cannot change later.
 - [ ] App icon and feature graphic (512x512 icon, 1024x500 banner), 2-8 phone screenshots per language you list (plan and caption ideas: docs/PLAY_LISTING.md).
 - [x] Short and full description drafts in English, Hindi and Hinglish: docs/PLAY_LISTING.md (owner reviews; a test keeps them within the store limits).
 - [ ] Category: Maps & Navigation or Business. Contact e-mail and phone for the listing.

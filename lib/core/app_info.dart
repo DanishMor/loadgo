@@ -11,43 +11,43 @@ class AppInfo {
   AppInfo._();
 
   /// The display name, as written in Latin letters.
-  static const String name = 'LoadGo';
+  static const String name = 'Load 20';
 
   /// One line under the name, in English.
-  static const String tagline = 'Truck & Cargo Booking';
+  static const String tagline = 'Maal bhejo, bharosa ke saath';
 
   /// How the name is written in each language. Order (same as `AppLanguage`):
   /// en, hi, hinglish, kn, ta, te, mr, gu, bn, pa, ks, ur. A language that
   /// reads Latin letters keeps the Latin name.
   static const List<String> nameInLanguage = [
     name,
-    'लोडगो',
+    'लोड 20',
     name,
-    'ಲೋಡ್‌ಗೋ',
-    'லோடுகோ',
-    'లోడ్‌గో',
-    'लोडगो',
-    'લોડગો',
-    'লোডগো',
-    'ਲੋਡਗੋ',
-    'لوڈگو',
-    'لوڈگو',
+    'ಲೋಡ್ 20',
+    'லோட் 20',
+    'లోడ్ 20',
+    'लोड 20',
+    'લોડ 20',
+    'লোড 20',
+    'ਲੋਡ 20',
+    'لوڈ 20',
+    'لوڈ 20',
   ];
 
   /// The tagline in the 12 languages (same order).
   static const List<String> taglines = [
     tagline,
-    'ट्रक और कार्गो बुकिंग',
-    'Truck aur Cargo Booking',
-    'ಟ್ರಕ್ ಮತ್ತು ಕಾರ್ಗೋ ಬುಕ್ಕಿಂಗ್',
-    'டிரக் மற்றும் சரக்கு முன்பதிவு',
-    'ట్రక్ మరియు కార్గో బుకింగ్',
-    'ट्रक आणि कार्गो बुकिंग',
-    'ટ્રક અને કાર્ગો બુકિંગ',
-    'ট্রাক ও কার্গো বুকিং',
-    'ਟਰੱਕ ਅਤੇ ਕਾਰਗੋ ਬੁਕਿੰਗ',
-    'ٹرٛک تہٕ کارگو بُکِنگ',
-    'ٹرک اور کارگو بکنگ',
+    'माल भेजो, भरोसे के साथ',
+    'Maal bhejo, bharosa ke saath',
+    'ಸರಕು ಕಳುಹಿಸಿ, ನಂಬಿಕೆಯೊಂದಿಗೆ',
+    'சரக்கை அனுப்புங்கள், நம்பிக்கையுடன்',
+    'సరుకు పంపండి, నమ్మకంతో',
+    'माल पाठवा, विश्वासाने',
+    'માલ મોકલો, ભરોસા સાથે',
+    'মাল পাঠান, ভরসার সঙ্গে',
+    'ਮਾਲ ਭੇਜੋ, ਭਰੋਸੇ ਨਾਲ',
+    'مال بھیجیں، بھروسے کے ساتھ',
+    'مال بھیجیں، بھروسے کے ساتھ',
   ];
 
   /// One line about what the app is, for the web page and the store listings.

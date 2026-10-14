@@ -187,7 +187,7 @@ void main() {
       await settle(tester);
       expect((await tester.runAsync(() => db.collection('payouts').get()))!.docs.single.data()['amountPaise'], 40000);
       expect(tester.widget<Text>(find.byKey(const ValueKey('walletAvailable'))).data, '₹ 550');
-      expect(find.textContaining('waiting for LoadGo'), findsOneWidget);
+      expect(find.textContaining('waiting for Load 20'), findsOneWidget);
     });
 
     testWidgets('admin screen marks a request paid', (tester) async {

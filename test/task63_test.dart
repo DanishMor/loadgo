@@ -101,7 +101,7 @@ void main() {
         await db.collection('ledger').doc('b1_platform_commission').set({'driverId': 'd1', 'bookingId': 'b1', 'type': 'platform_commission', 'amountPaise': -50000, 'createdAt': Timestamp.fromDate(DateTime(2026, 10, 6, 10))});
       });
       await show(t, bk(pay: 'driver_confirmed', paid: 1000000));
-      expect(find.textContaining('LoadGo commission kept'), findsOneWidget);
+      expect(find.textContaining('Load 20 commission kept'), findsOneWidget);
       expect(find.textContaining('9,500'), findsOneWidget, reason: 'net amount in the wallet step');
       expect(t.widget<Text>(find.byKey(const ValueKey('ptNext'))).data, startsWith('All done'));
     });

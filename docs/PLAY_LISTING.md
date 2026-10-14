@@ -11,7 +11,7 @@ DRAFT, owner reviews every word before pasting into Play Console. Short descript
 
 ### English
 FULL_EN_START
-LoadGo connects people who need goods moved with truck drivers and transporters.
+Load 20 connects people who need goods moved with truck drivers and transporters.
 
 For customers
 - Post a load in three steps. Your last route and goods are remembered, and an unfinished load is saved as a draft.
@@ -32,12 +32,12 @@ Safety and privacy
 - Night-trip and rest reminders, an SOS button and emergency contacts.
 - Languages: English, Hindi, Hinglish, Kannada, Tamil, Telugu, Marathi, Gujarati, Bengali, Punjabi, Kashmiri and Urdu.
 
-LoadGo does not take online payments yet: customer and driver settle directly, and the app records the status. During the pilot, joining may need an invite code.
+Load 20 does not take online payments yet: customer and driver settle directly, and the app records the status. During the pilot, joining may need an invite code.
 FULL_EN_END
 
 ### Hindi
 FULL_HI_START
-LoadGo उन लोगों को जोड़ता है जिन्हें माल भेजना है और ट्रक ड्राइवरों तथा ट्रांसपोर्टरों को।
+Load 20 उन लोगों को जोड़ता है जिन्हें माल भेजना है और ट्रक ड्राइवरों तथा ट्रांसपोर्टरों को।
 
 ग्राहकों के लिए
 - तीन आसान कदमों में लोड डालें। पिछला रूट और माल याद रहता है, अधूरा लोड ड्राफ़्ट में सुरक्षित रहता है।
@@ -58,12 +58,12 @@ LoadGo उन लोगों को जोड़ता है जिन्ह�
 - रात की ट्रिप और आराम की याद, SOS बटन और आपातकालीन संपर्क।
 - भाषाएँ: अंग्रेज़ी, हिंदी, हिंग्लिश, कन्नड़, तमिल, तेलुगु, मराठी, गुजराती, बांग्ला, पंजाबी, कश्मीरी और उर्दू।
 
-LoadGo अभी ऑनलाइन भुगतान नहीं लेता: ग्राहक और ड्राइवर सीधे हिसाब करते हैं, ऐप सिर्फ़ स्थिति दर्ज करता है। पायलट के दौरान जुड़ने के लिए इन्वाइट कोड लग सकता है।
+Load 20 अभी ऑनलाइन भुगतान नहीं लेता: ग्राहक और ड्राइवर सीधे हिसाब करते हैं, ऐप सिर्फ़ स्थिति दर्ज करता है। पायलट के दौरान जुड़ने के लिए इन्वाइट कोड लग सकता है।
 FULL_HI_END
 
 ### Hinglish
 FULL_HG_START
-LoadGo un logon ko jodta hai jinhe maal bhejna hai aur truck driver aur transporters ko.
+Load 20 un logon ko jodta hai jinhe maal bhejna hai aur truck driver aur transporters ko.
 
 Customers ke liye
 - Teen aasaan steps mein load daalein. Pichla route aur maal yaad rehta hai, adhura load draft mein safe rehta hai.
@@ -84,7 +84,7 @@ Safety aur privacy
 - Raat ke trip aur rest ki yaad, SOS button aur emergency contacts.
 - Languages: English, Hindi, Hinglish, Kannada, Tamil, Telugu, Marathi, Gujarati, Bengali, Punjabi, Kashmiri aur Urdu.
 
-LoadGo abhi online payment nahi leta: customer aur driver seedha hisaab karte hain, app sirf status darj karta hai. Pilot ke dauran judne ke liye invite code lag sakta hai.
+Load 20 abhi online payment nahi leta: customer aur driver seedha hisaab karte hain, app sirf status darj karta hai. Pilot ke dauran judne ke liye invite code lag sakta hai.
 FULL_HG_END
 
 ## Screenshot plan (phone, 1080x1920 or 1080x2400, 2 to 8 per language; at least English, Hindi)

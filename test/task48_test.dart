@@ -54,7 +54,7 @@ void main() {
   group('Sahayak screen', () {
     testWidgets('starts with the greeting, role chips and an input', (t) async {
       await t.pumpWidget(host(const SahayakScreen(role: 'customer', logUnknown: false)));
-      expect(find.textContaining('I am LoadGo Sahayak'), findsOneWidget);
+      expect(find.textContaining('I am Load 20 Sahayak'), findsOneWidget);
       expect(find.byKey(const ValueKey('asChip_asChipPost')), findsOneWidget);
       expect(find.byKey(const ValueKey('asChip_asChipNearby')), findsNothing);
       expect(find.byKey(const ValueKey('asInput')), findsOneWidget);
@@ -128,7 +128,7 @@ void main() {
     testWidgets('the answer follows the app language', (t) async {
       languageNotifier.value = AppLanguage.hindi;
       await t.pumpWidget(host(const SahayakScreen(role: 'customer', logUnknown: false)));
-      expect(find.textContaining('लोडगो सहायक'), findsWidgets);
+      expect(find.textContaining('लोड 20 सहायक'), findsWidgets);
       await say(t, 'otp');
       expect(find.textContaining('6 अंकों'), findsOneWidget);
     });

@@ -21,7 +21,7 @@ function titleFor(n) {
     case 'status_changed': return STATUS_TITLES[n.status] || 'Booking update';
     case 'rating_received': return 'You received a new rating';
     case 'booking_cancelled': return 'Booking cancelled by driver';
-    default: return 'LoadGo';
+    default: return 'Load 20';
   }
 }
 

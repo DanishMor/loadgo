@@ -345,7 +345,7 @@ void main() {
       await t.pumpAndSettle();
       expect(csv!.split('\n').length, 2);
       expect(csv, contains('cancelled,Agra,Noida'));
-      expect(subject, 'LoadGo trip history');
+      expect(subject, 'Load 20 trip history');
     });
 
     testWidgets('a failing share shows a message instead of crashing', (t) async {

@@ -161,7 +161,7 @@ void main() {
     test('has route, status, vehicle, driver and last seen link', () async {
       final b = await booking(extra: {'lastKnownLocation': const GeoPoint(21.1458, 79.0882)});
       final t = tripSummaryText(b, who: 'Ramesh');
-      expect(t, contains('LoadGo trip of Ramesh: Pune -> Delhi'));
+      expect(t, contains('Load 20 trip of Ramesh: Pune -> Delhi'));
       expect(t, contains('Status: in transit'));
       expect(t, contains('Vehicle: MH12AB1234'));
       expect(t, contains('Driver: Ramesh'));
