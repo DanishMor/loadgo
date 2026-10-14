@@ -419,10 +419,6 @@
     "colors": 0,
     "styles": 5
   },
-  "lib/core/trust/trust_badges_card.dart": {
-    "colors": 0,
-    "styles": 3
-  },
   "lib/core/vehicles/vehicle_expenses_screen.dart": {
     "colors": 0,
     "styles": 2
@@ -462,10 +458,6 @@
   "lib/core/widgets/evidence_cards.dart": {
     "colors": 0,
     "styles": 5
-  },
-  "lib/core/widgets/fare_breakdown.dart": {
-    "colors": 0,
-    "styles": 7
   },
   "lib/core/widgets/kyc_check_widgets.dart": {
     "colors": 0,
@@ -528,10 +520,6 @@
     "styles": 7
   },
   "lib/core/widgets/trip_eta_card.dart": {
-    "colors": 0,
-    "styles": 3
-  },
-  "lib/core/widgets/verification_badges.dart": {
     "colors": 0,
     "styles": 3
   },

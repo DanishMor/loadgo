@@ -5,7 +5,9 @@ import '../pricing/cancel_preview.dart';
 import '../pricing/fare_calculator.dart';
 import '../services/pricing_service.dart';
 import '../pricing/surge.dart';
+import '../theme/design_tokens.dart';
 import 'common.dart';
+import 'ds/money_text.dart';
 
 /// String key of the surge line for a `SurgeKind`.
 String surgeLabelKey(String kind) => switch (kind) {
@@ -34,8 +36,7 @@ class _FareBreakdownViewState extends State<FareBreakdownView> {
           Row(
             children: [
               Expanded(
-                child: Text(label,
-                    style: TextStyle(color: bold ? AppColors.title : AppColors.muted, fontWeight: bold ? FontWeight.w800 : null)),
+                child: Text(label, style: (bold ? DsType.subtitle : DsType.bodySmall).copyWith(color: bold ? AppColors.title : AppColors.muted)),
               ),
               if (widget.explain && why != null)
                 InkWell(
@@ -47,14 +48,13 @@ class _FareBreakdownViewState extends State<FareBreakdownView> {
                     child: Icon(Icons.help_outline_rounded, size: 18, semanticLabel: tr(context, 'fexWhat'), color: AppColors.faint),
                   ),
                 ),
-              Text(formatPaise(paise),
-                  style: TextStyle(fontWeight: bold ? FontWeight.w800 : FontWeight.w600, color: AppColors.title)),
+              MoneyText(paise, size: bold ? MoneySize.body : MoneySize.small, color: AppColors.title),
             ],
           ),
           if (widget.explain && why != null && _open.contains(why))
             Padding(
               padding: const EdgeInsets.only(bottom: 4),
-              child: Text(tr(context, why), key: ValueKey('fexText_$why'), style: TextStyle(color: AppColors.muted, fontSize: 12)),
+              child: Text(tr(context, why), key: ValueKey('fexText_$why'), style: DsType.caption.copyWith(color: AppColors.muted)),
             ),
         ]),
       );
@@ -103,14 +103,14 @@ class CancelPreviewView extends StatelessWidget {
   Widget build(BuildContext context) {
     final p = preview;
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text(tr(context, 'fexCancelTitle'), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+      Text(tr(context, 'fexCancelTitle'), style: DsType.subtitle),
       const SizedBox(height: 6),
       Text(tr(context, 'fexCancelOpen'), key: const ValueKey('fexCancelOpen')),
       Text(trf(context, 'fexCancelFree', {'m': p.freeMinutes}), key: const ValueKey('fexCancelFree')),
       Text(trf(context, 'fexCancelAfter', {'amount': formatPaise(p.chargePaise), 'p': formatNum(p.chargePercent), 'min': formatPaise(p.minCharge), 'max': formatPaise(p.maxCharge)}), key: const ValueKey('fexCancelAfter')),
       Text(trf(context, 'fexCancelScheduled', {'h': p.scheduledFreeHours}), key: const ValueKey('fexCancelScheduled')),
       const SizedBox(height: 4),
-      Text(tr(context, 'fexCancelNote'), style: TextStyle(color: AppColors.muted, fontSize: 12)),
+      Text(tr(context, 'fexCancelNote'), style: DsType.caption.copyWith(color: AppColors.muted)),
     ]);
   }
 }
@@ -127,13 +127,13 @@ Future<void> showFareBreakdown(BuildContext context, FareBreakdown fare) => show
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(tr(c, 'fareEstimate'), style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
+              Text(tr(c, 'fareEstimate'), style: DsType.title),
               const SizedBox(height: 12),
               FareBreakdownView(fare: fare, explain: true),
               const SizedBox(height: 14),
               CancelPreviewView(preview: CancelPreview.of(PricingService.config.cancellation, farePaise: fare.total)),
               const SizedBox(height: 10),
-              Text(tr(c, 'estimateNote'), style: TextStyle(color: AppColors.muted, fontSize: 12)),
+              Text(tr(c, 'estimateNote'), style: DsType.caption.copyWith(color: AppColors.muted)),
             ],
           ),
         ),

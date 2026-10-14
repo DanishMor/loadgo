@@ -2,7 +2,7 @@
 
 Outside `lib/core/theme/` nothing should spell a colour (`Color(0x...)`) or build a `TextStyle`; colours come from `DsColors` / `AppPalette` / the theme and text from `DsType` / `Theme.of(context).textTheme` (`docs/BRAND.md`). The screens written before the design system still do, so this list is the **baseline**: `test/theme_guard_test.dart` fails if a file gets more hard-coded colours or styles than listed here, or if a file that is not listed gets any. Moving a screen onto the shared components (Phase 3) lowers its number; then run `dart run tool/theme_guard.dart --write` to lock it in. The goal is an empty table.
 
-Total: **66** colours, **814** text styles in **195** files.
+Total: **66** colours, **801** text styles in **192** files.
 
 | File | `Color(0x...)` | `TextStyle(` |
 |---|---|---|
@@ -111,7 +111,6 @@ Total: **66** colours, **814** text styles in **195** files.
 | `lib/core/support/support_screens.dart` | 0 | 10 |
 | `lib/core/transporter/party_statement.dart` | 0 | 4 |
 | `lib/core/trip/trip_history_screen.dart` | 0 | 5 |
-| `lib/core/trust/trust_badges_card.dart` | 0 | 3 |
 | `lib/core/vehicles/vehicle_expenses_screen.dart` | 0 | 2 |
 | `lib/core/wallet/txn_history_screen.dart` | 0 | 4 |
 | `lib/core/widgets/bid_assistant_panel.dart` | 0 | 2 |
@@ -122,7 +121,6 @@ Total: **66** colours, **814** text styles in **195** files.
 | `lib/core/widgets/common.dart` | 5 | 2 |
 | `lib/core/widgets/detention_card.dart` | 0 | 4 |
 | `lib/core/widgets/evidence_cards.dart` | 0 | 5 |
-| `lib/core/widgets/fare_breakdown.dart` | 0 | 7 |
 | `lib/core/widgets/kyc_check_widgets.dart` | 0 | 2 |
 | `lib/core/widgets/lifecycle_bar.dart` | 0 | 1 |
 | `lib/core/widgets/live_stream.dart` | 0 | 2 |
@@ -139,7 +137,6 @@ Total: **66** colours, **814** text styles in **195** files.
 | `lib/core/widgets/tip_card.dart` | 0 | 3 |
 | `lib/core/widgets/trip_cost_widgets.dart` | 0 | 7 |
 | `lib/core/widgets/trip_eta_card.dart` | 0 | 3 |
-| `lib/core/widgets/verification_badges.dart` | 0 | 3 |
 | `lib/customer/bulk_post_screen.dart` | 0 | 6 |
 | `lib/customer/business_ops_screens.dart` | 0 | 7 |
 | `lib/customer/business_screen.dart` | 0 | 2 |

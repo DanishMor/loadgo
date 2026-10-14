@@ -66,10 +66,13 @@ class StatusBadge extends StatelessWidget {
   final StatusTone tone;
   final bool showIcon;
 
-  const StatusBadge({super.key, required this.label, required this.tone, this.showIcon = true});
+  /// Replaces the tone's icon (a shield for Verified, a clock for On time).
+  final IconData? icon;
+
+  const StatusBadge({super.key, required this.label, required this.tone, this.showIcon = true, this.icon});
 
   /// Picks the tone from a status string.
-  StatusBadge.forStatus(String? status, {super.key, required this.label, this.showIcon = true}) : tone = statusToneFor(status);
+  StatusBadge.forStatus(String? status, {super.key, required this.label, this.showIcon = true, this.icon}) : tone = statusToneFor(status);
 
   @override
   Widget build(BuildContext context) {
@@ -83,7 +86,7 @@ class StatusBadge extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (showIcon) ...[ExcludeSemantics(child: Icon(s.icon, size: 14, color: s.fg)), const SizedBox(width: DsSpace.s1)],
+            if (showIcon) ...[ExcludeSemantics(child: Icon(icon ?? s.icon, size: 14, color: s.fg)), const SizedBox(width: DsSpace.s1)],
             Flexible(child: Text(label, style: DsType.caption.copyWith(color: s.fg, fontWeight: FontWeight.w700))),
           ],
         ),

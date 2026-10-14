@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import '../l10n/l10n.dart';
 import '../models/booking.dart';
 import '../services/backend.dart';
+import '../theme/design_tokens.dart';
 import '../widgets/common.dart';
+import '../widgets/ds/status_badge.dart';
 import 'trust_badges.dart';
 
 /// The driver's own trust numbers (MASTER-6 Task 36), from their own trips.
@@ -14,7 +16,7 @@ class TrustBadgesCard extends StatelessWidget {
   final Stream<List<Booking>> bookings;
   const TrustBadgesCard({super.key, required this.bookings});
 
-  Widget _chip(BuildContext context, String id, IconData icon, String text) => Chip(key: ValueKey('badge_$id'), avatar: Icon(icon, size: 16, color: AppColors.success), label: Text(text));
+  Widget _chip(BuildContext context, String id, IconData icon, String text) => StatusBadge(key: ValueKey('badge_$id'), label: text, tone: StatusTone.success, icon: icon);
 
   @override
   Widget build(BuildContext context) {
@@ -30,10 +32,10 @@ class TrustBadgesCard extends StatelessWidget {
         return AppCard(
           key: const ValueKey('trustCard'),
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(tr(context, 'tbHeading'), style: const TextStyle(fontWeight: FontWeight.w800)),
+            Text(tr(context, 'tbHeading'), style: DsType.subtitle),
             const SizedBox(height: 6),
             if (t.isNew)
-              Text(trf(context, 'tbNew', {'n': TrustBadges.minTrips - t.finished}), key: const ValueKey('badge_new'), style: TextStyle(color: AppColors.muted))
+              Text(trf(context, 'tbNew', {'n': TrustBadges.minTrips - t.finished}), key: const ValueKey('badge_new'), style: DsType.bodySmall.copyWith(color: AppColors.muted))
             else
               Wrap(spacing: 8, runSpacing: 4, children: [
                 if (t.showOnTime) _chip(context, 'onTime', Icons.schedule_rounded, trf(context, 'tbOnTime', {'p': t.onTimePercent})),
@@ -41,7 +43,7 @@ class TrustBadgesCard extends StatelessWidget {
                 if (t.showRepeat) _chip(context, 'repeat', Icons.repeat_rounded, trf(context, 'tbRepeat', {'n': t.repeatCustomers})),
               ]),
             const SizedBox(height: 4),
-            Text(tr(context, 'tbNote'), style: TextStyle(color: AppColors.faint, fontSize: 12)),
+            Text(tr(context, 'tbNote'), style: DsType.caption.copyWith(color: AppColors.muted)),
           ]),
         );
       },

@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 
 import '../identity/masking.dart';
 import '../l10n/l10n.dart';
+import '../theme/design_tokens.dart';
 import 'common.dart';
+import 'ds/status_badge.dart';
 
 /// Status of one identity item. LoadGo only checks formats and reviews
 /// drivers by hand; nothing is verified against an official source yet
@@ -66,11 +68,12 @@ class VerificationBadges extends StatelessWidget {
 
   const VerificationBadges({super.key, required this.user, required this.isDriver, this.reveal = false});
 
-  (String, Color) _look(BuildContext context, BadgeState s) => switch (s) {
-        BadgeState.verifiedByOtp => (tr(context, 'badgeOtpVerified'), AppColors.success),
-        BadgeState.reviewed => (tr(context, 'badgeReviewed'), AppColors.success),
-        BadgeState.providedUnverified => (tr(context, 'unverified'), AppColors.warning),
-        BadgeState.missing => (tr(context, 'badgeMissing'), AppColors.faint),
+  /// Label, tone and icon of one state. Colour is never alone: each has its own icon.
+  (String, StatusTone, IconData) _look(BuildContext context, BadgeState s) => switch (s) {
+        BadgeState.verifiedByOtp => (tr(context, 'badgeOtpVerified'), StatusTone.success, Icons.phone_android_rounded),
+        BadgeState.reviewed => (tr(context, 'badgeReviewed'), StatusTone.success, Icons.verified_user_outlined),
+        BadgeState.providedUnverified => (tr(context, 'unverified'), StatusTone.attention, Icons.hourglass_top_rounded),
+        BadgeState.missing => (tr(context, 'badgeMissing'), StatusTone.neutral, Icons.remove_circle_outline_rounded),
       };
 
   @override
@@ -87,12 +90,12 @@ class VerificationBadges extends StatelessWidget {
             child: Row(children: [
               Expanded(
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text(tr(context, b.labelKey), style: TextStyle(fontSize: 12, color: AppColors.muted)),
+                  Text(tr(context, b.labelKey), style: DsType.caption.copyWith(color: AppColors.muted)),
                   if ((b.value ?? '').isNotEmpty)
-                    Text(reveal ? (b.raw ?? '') : b.value!, style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.title)),
+                    Text(reveal ? (b.raw ?? '') : b.value!, style: DsType.body.copyWith(fontWeight: FontWeight.w700, color: AppColors.title)),
                 ]),
               ),
-              StatusChip(label: _look(context, b.state).$1, color: _look(context, b.state).$2),
+              StatusBadge(label: _look(context, b.state).$1, tone: _look(context, b.state).$2, icon: _look(context, b.state).$3),
             ]),
           ),
         if (info != null)
@@ -101,7 +104,7 @@ class VerificationBadges extends StatelessWidget {
             child: Text(
               info.at == null ? tr(context, 'badgeReviewedManual') : trf(context, 'badgeReviewedOn', {'date': formatDate(info.at)}),
               key: const ValueKey('reviewInfo'),
-              style: TextStyle(fontSize: 12, color: AppColors.muted),
+              style: DsType.caption.copyWith(color: AppColors.muted),
             ),
           ),
       ],
