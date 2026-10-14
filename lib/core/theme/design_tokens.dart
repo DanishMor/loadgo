@@ -68,10 +68,10 @@ class DsColors {
     textHint: Color(0xFF5B6B83),
     border: Color(0xFFDDE3EC),
     inputBorder: Color(0xFF7B889C),
-    focus: Color(0xFF123A6B),
-    primary: Color(0xFF123A6B),
+    focus: DsBrand.navy,
+    primary: DsBrand.navy,
     onPrimary: Color(0xFFFFFFFF),
-    accent: Color(0xFFF2A100),
+    accent: DsBrand.saffron,
     onAccent: Color(0xFF0F1B2D),
     accentStrong: Color(0xFFB45309),
     success: Color(0xFF146C3C),
@@ -119,6 +119,13 @@ class DsColors {
   );
 
   static DsColors of(Brightness b) => b == Brightness.dark ? dark : light;
+}
+
+/// The two brand colours as constants (a few places need a `const`).
+class DsBrand {
+  DsBrand._();
+  static const Color navy = Color(0xFF123A6B);
+  static const Color saffron = Color(0xFFF2A100);
 }
 
 /// Spacing on a 4 / 8 grid (logical pixels).
