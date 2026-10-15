@@ -21,3 +21,4 @@ One line per assumption taken without asking.
 
 - 2026-10-15 F4: new flags that guard server or security work (secureScreens now; wallet, push, photos later) are declared FeatureSpec(pilotOn: false, normalOn: false) so they stay OFF also when pilot mode is switched off. test/task60_test.dart "pilot mode off: every feature starts on" now expects each flag to equal its own normalOn (all older flags are normalOn: true, so nothing is weakened for them).
 - 2026-10-15 F7: WalletEntry (not LedgerEntry) for the pure money line, adapter fromLedger; existing collection payouts is extended (approved, reversed) instead of adding payout_requests. Label stays "Kamai aur hisaab"; the word "wallet" is a decision for the lawyer (WALLET_LEGAL.md in F13).
+- 2026-10-15 F10: ledger stays one query by driverId with a client sort (no new index); the hub limits what it draws. A paged ledger needs a composite index (driverId, createdAt desc): recorded for the owner, not deployed.

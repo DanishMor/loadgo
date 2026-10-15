@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../money/money.dart';
 
 /// Why a promo code cannot be used right now.
 enum PromoProblem { unknown, inactive, expired, belowMinimum, exhausted, usedUp }
@@ -117,11 +118,11 @@ class CreditLine {
 
   factory CreditLine.fromDoc(String id, Map<String, dynamic> d) => CreditLine(
         id: id,
-        amountPaise: (d['amountPaise'] as num?)?.toInt() ?? 0,
-        kind: d['kind'] as String? ?? '',
-        loadId: d['loadId'] as String?,
-        note: d['note'] as String? ?? '',
-        createdAt: (d['createdAt'] as Timestamp?)?.toDate(),
+        amountPaise: Money.parse(d['amountPaise']).paise,
+        kind: d['kind'] is String ? d['kind'] as String : '',
+        loadId: d['loadId'] is String ? d['loadId'] as String : null,
+        note: d['note'] is String ? d['note'] as String : '',
+        createdAt: d['createdAt'] is Timestamp ? (d['createdAt'] as Timestamp).toDate() : null,
       );
 
   static int balance(Iterable<CreditLine> lines) => lines.fold(0, (a, l) => a + l.amountPaise);

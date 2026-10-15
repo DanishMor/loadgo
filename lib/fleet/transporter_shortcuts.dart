@@ -1,3 +1,6 @@
+import '../core/features/features.dart';
+import '../core/widgets/feature_gate.dart';
+import '../core/wallet/hub/hub_screens.dart';
 import '../core/bilty/lr_register_screen.dart';
 import 'package:flutter/material.dart';
 
@@ -163,6 +166,15 @@ class _TransporterShortcutsState extends State<TransporterShortcuts> {
             avatar: const Icon(Icons.account_balance_wallet_outlined, size: 18),
             label: Text(tr(context, 'trpBooks')),
             onPressed: () => _open(const TransporterBooksScreen()),
+          ),
+          FeatureGate(
+            featureKey: FeatureKey.walletHub,
+            child: ActionChip(
+              key: const ValueKey('trpOpenHub'),
+              avatar: const Icon(Icons.account_balance_wallet_rounded, size: 18),
+              label: Text(tr(context, 'hubTitle')),
+              onPressed: () => _open(const TransporterHubScreen()),
+            ),
           ),
           ActionChip(
             key: const ValueKey('trpOpenLrs'),

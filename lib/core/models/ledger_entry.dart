@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import '../money/money.dart';
+
 /// Payment mode chosen on the load. Must stay in sync with firestore.rules.
 class PaymentMode {
   PaymentMode._();
@@ -46,14 +48,17 @@ class LedgerEntry {
   });
 
   factory LedgerEntry.fromDoc(DocumentSnapshot<Map<String, dynamic>> doc) {
+    // Defensive (F10): a missing field, a wrong type, NaN or a huge number in an
+    // old or damaged document becomes an empty value, never an exception.
     final d = doc.data() ?? const {};
+    String text(String k) => d[k] is String ? d[k] as String : '';
     return LedgerEntry(
       id: doc.id,
-      driverId: d['driverId'] as String? ?? '',
-      bookingId: d['bookingId'] as String? ?? '',
-      type: d['type'] as String? ?? '',
-      amountPaise: (d['amountPaise'] as num?)?.round() ?? 0,
-      createdAt: (d['createdAt'] as Timestamp?)?.toDate(),
+      driverId: text('driverId'),
+      bookingId: text('bookingId'),
+      type: text('type'),
+      amountPaise: Money.parse(d['amountPaise']).paise,
+      createdAt: d['createdAt'] is Timestamp ? (d['createdAt'] as Timestamp).toDate() : null,
     );
   }
 }

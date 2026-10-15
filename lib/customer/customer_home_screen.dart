@@ -1,3 +1,4 @@
+import '../core/wallet/hub/hub_screens.dart';
 import '../core/assistant/sahayak_screen.dart';
 import '../core/search/global_search_screen.dart';
 import '../core/services/backend.dart';
@@ -522,6 +523,7 @@ class _MoreForYou extends StatelessWidget {
         _chip(context, 'templates', Icons.bookmarks_outlined, 'templatesTitle', (_) => const TemplatesScreen()),
         _chip(context, 'transactions', Icons.account_balance_wallet_outlined, 'txnTitle', (_) => const TxnHistoryScreen(isDriver: false)),
         _chip(context, 'spending', Icons.savings_outlined, 'ehSpendTitle', (_) => const SpendingScreen()),
+        FeatureGate(featureKey: FeatureKey.walletHub, child: _chip(context, 'hub', Icons.account_balance_wallet_rounded, 'hubTitle', (_) => const CustomerHubScreen())),
         _chip(context, 'drivers', Icons.favorite_border_rounded, 'favouriteDrivers', (_) => const MyDriversScreen()),
         _chip(context, 'analytics', Icons.bar_chart_rounded, 'myAnalytics', (_) => const CustomerAnalyticsScreen()),
         OffersGate(test: (s) => s.any, child: _chip(context, 'offers', Icons.local_offer_outlined, 'offersAndCredits', (_) => const OffersScreen())),

@@ -1,3 +1,4 @@
+import 'wallet_entry.dart';
 import '../core/widgets/sync_indicator.dart';
 import 'driver_today.dart';
 import '../core/trust/trust_badges_card.dart';
@@ -55,7 +56,6 @@ import '../core/services/doc_expiry_service.dart';
 import 'my_offers_screen.dart';
 import 'assigned_trips_card.dart';
 import 'fleet_invites_card.dart';
-import 'wallet_screen.dart';
 import '../core/documents/documents_center_screen.dart';
 import '../core/theme/design_tokens.dart';
 
@@ -417,7 +417,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                 _tile(
                   Icons.account_balance_wallet_outlined,
                   tr(context, 'wallet'),
-                  onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const WalletScreen())),
+                  onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => driverWalletPage())),
                 ),
               ],
             ),

@@ -1,3 +1,4 @@
+import 'wallet_entry.dart';
 import 'package:flutter/material.dart';
 
 import '../core/assistant/sahayak_screen.dart';
@@ -17,7 +18,6 @@ import '../core/widgets/common.dart';
 import '../core/widgets/live_stream.dart';
 import 'available_loads_view.dart';
 import 'driver_trip_screen.dart';
-import 'wallet_screen.dart';
 import '../core/theme/design_tokens.dart';
 
 /// Driver home in Simple Mode: four big icon buttons, at most three words
@@ -191,7 +191,7 @@ class SimpleMoneyScreen extends StatelessWidget {
                         height: 64,
                         child: FilledButton.icon(
                           key: const ValueKey('simpleAskMoney'),
-                          onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const WalletScreen())),
+                          onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => driverWalletPage())),
                           icon: const Icon(Icons.account_balance_outlined, size: 28),
                           label: Text(tr(context, 'simpleAskMoney'), style: DsStyle.t20w700),
                         ),

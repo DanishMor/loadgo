@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart' show Timestamp;
+import '../money/money.dart';
 import '../constants/logistics.dart';
 import '../enterprise/validators.dart';
 import '../identity/kyc_validators.dart';
@@ -236,16 +237,19 @@ class TripAccount {
   /// Still to come from the party (never negative).
   int get dueFromPartyPaise => revenuePaise > receivedPaise ? revenuePaise - receivedPaise : 0;
 
-  factory TripAccount.fromMap(String id, Map<String, dynamic> d) => TripAccount(
-        bookingId: id,
-        partyId: d['partyId'] as String? ?? '',
-        partyName: d['partyName'] as String? ?? '',
-        revenuePaise: (d['revenuePaise'] as num?)?.round() ?? 0,
-        driverPayPaise: (d['driverPayPaise'] as num?)?.round() ?? 0,
-        otherCostPaise: (d['otherCostPaise'] as num?)?.round() ?? 0,
-        receivedPaise: (d['receivedPaise'] as num?)?.round() ?? 0,
-        at: ((d['createdAt'] ?? d['updatedAt']) as Timestamp?)?.toDate(),
-      );
+  factory TripAccount.fromMap(String id, Map<String, dynamic> d) {
+    final when = d['createdAt'] is Timestamp ? d['createdAt'] : d['updatedAt'];
+    return TripAccount(
+      bookingId: id,
+      partyId: d['partyId'] is String ? d['partyId'] as String : '',
+      partyName: d['partyName'] is String ? d['partyName'] as String : '',
+      revenuePaise: Money.parse(d['revenuePaise']).paise,
+      driverPayPaise: Money.parse(d['driverPayPaise']).paise,
+      otherCostPaise: Money.parse(d['otherCostPaise']).paise,
+      receivedPaise: Money.parse(d['receivedPaise']).paise,
+      at: when is Timestamp ? when.toDate() : null,
+    );
+  }
 
   /// Whole rupees typed by a person -> paise; null for junk or out of range.
   static int? paiseFromRupees(String raw) {

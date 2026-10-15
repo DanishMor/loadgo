@@ -107,6 +107,7 @@ import 'pay_extra_strings.dart';
 import 'trip_alert_strings.dart';
 import 'ds_strings.dart';
 import 'otp_limit_strings.dart';
+import 'hub_strings.dart';
 
 import 'app_control_strings.dart';
 import 'admin_tools_strings.dart';
@@ -253,6 +254,7 @@ const List<Map<String, List<String>>> stringTables = [
   privateCommStrings,
   dsStrings,
   otpLimitStrings,
+  hubStrings,
 ];
 
 final Map<String, List<String>> extraStrings = {

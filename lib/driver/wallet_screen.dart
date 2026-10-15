@@ -1,9 +1,7 @@
-import '../core/errors/error_text.dart';
 import '../core/security/secure_screen.dart';
 import 'driver_trip_screen.dart';
 import '../core/payments/wallet_widgets.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import '../core/l10n/l10n.dart';
 import '../core/models/booking.dart';
@@ -12,8 +10,8 @@ import '../core/models/payout.dart';
 import '../core/services/booking_service.dart';
 import '../core/services/payment_service.dart';
 import '../core/services/payout_service.dart';
-import '../core/models/risk.dart';
 import '../core/payments/statement_sheet.dart';
+import '../core/wallet/payout_flow.dart';
 import '../core/wallet/txn_history_screen.dart';
 import '../core/widgets/common.dart';
 import '../core/widgets/live_stream.dart';
@@ -46,48 +44,7 @@ class _WalletScreenState extends State<WalletScreen> {
         ),
       );
 
-  Future<void> _requestPayout(WalletBalances b) async {
-    final ctrl = TextEditingController(text: (b.available / 100).toStringAsFixed(b.available % 100 == 0 ? 0 : 2));
-    final rupees = await showDialog<double>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(tr(context, 'requestPayout')),
-        content: TextField(
-          key: const ValueKey('payoutAmount'),
-          controller: ctrl,
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          inputFormatters: [LengthLimitingTextInputFormatter(10), FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))],
-          decoration: InputDecoration(prefixIcon: const Icon(Icons.currency_rupee_rounded), helperText: trf(context, 'payoutAvailable', {'amount': formatPaise(b.available)})),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: Text(tr(context, 'cancel'))),
-          FilledButton(
-            key: const ValueKey('payoutSubmit'),
-            onPressed: () => Navigator.pop(context, double.tryParse(ctrl.text.trim())),
-            child: Text(tr(context, 'requestPayout')),
-          ),
-        ],
-      ),
-    );
-    // The dialog is still animating out, so the controller is not disposed here.
-    if (rupees == null || !mounted) return;
-    try {
-      await PayoutService.request((rupees * 100).round());
-      if (mounted) showSnack(context, tr(context, 'payoutRequested'));
-    } on PayoutException catch (e) {
-      if (mounted) {
-        showSnack(context, tr(context, switch (e.reason) {
-          'too_much' => 'payoutTooMuch',
-          'open_request' => 'payoutOpenRequest',
-          _ => 'payoutAmountInvalid',
-        }));
-      }
-    } on AccountRestrictedException {
-      if (mounted) showSnack(context, tr(context, 'accountRestricted'));
-    } catch (error) {
-      if (mounted) showSnack(context, errorText(context, error));
-    }
-  }
+  Future<void> _requestPayout(WalletBalances b) => startPayoutRequest(context, b);
 
   Color _statusColor(String s) => switch (s) {
         Payout.paid => AppColors.success,
