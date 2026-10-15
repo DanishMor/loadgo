@@ -126,6 +126,7 @@ class DsBrand {
   DsBrand._();
   static const Color navy = Color(0xFF123A6B);
   static const Color saffron = Color(0xFFF2A100);
+  static const Color white = Color(0xFFFFFFFF);
 }
 
 /// The colours the screens written before the design system still reach for
