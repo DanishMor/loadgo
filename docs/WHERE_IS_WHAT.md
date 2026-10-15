@@ -148,3 +148,19 @@ Admin Panel: **Profile > Admin** (only for accounts in `admins/{uid}`). The pane
 | Driver rewards, Payouts, Offers, Config | money records and settings; Config also has the **Announcement banner** (text per language, level, last day, roles) | super |
 
 Every admin list (tickets, SOS, reports, audit log, vehicles, deletion requests ...) has a search box, saved filters (kept on the device), "Show 50 more" and **Export CSV** of what is on screen (no phone numbers, e-mail, KYC or free text). Every admin change also writes an audit event.
+
+## Design system (Load 20, Phase 2 to 4)
+| What | Where |
+|---|---|
+| Colours, type scale (DsType, DsStyle consts), spacing, radius, elevation, motion; legacy colours (DsLegacy), hero gradient (DsHero), `context.ds` | `lib/core/theme/design_tokens.dart` |
+| Material 3 light and dark theme, RoleAccents (customer, driver, transporter), Low-end switch | `lib/core/theme/app_theme.dart` |
+| Contrast maths (`contrastRatio`, `ensureContrast`) | `lib/core/theme/contrast.dart` |
+| Brand font Mukta (OFL) + Noto fallbacks | `assets/fonts/mukta/`, `pubspec.yaml`, `test/typography_test.dart` |
+| Buttons, status badges (one colour per status), OTP field, text fields, top bar, bottom nav, dialogs, sheets, snackbars | `lib/core/widgets/ds/` (`app_button`, `status_badge`, `otp_field`, `app_text_field`, `app_top_bar`, `app_bottom_nav`, `app_dialogs`) |
+| Money display, balance hide switch | `lib/core/widgets/ds/money_text.dart` |
+| Skeleton loading, drawn pictures for empty and error states | `lib/core/widgets/ds/skeleton.dart`, `illustrations.dart` |
+| Logo mark, wordmark, lockup | `lib/core/widgets/ds/brand_logo.dart`; icons from `tool/make_brand_assets_test.dart` (`docs/ICON_AND_SPLASH.md`) |
+| Entrance animations (reduce-motion aware), haptics (Settings > Touch feedback) | `lib/core/widgets/ds/motion.dart`, `haptics.dart` |
+| Login pieces (header, phone field) | `lib/auth/login_widgets.dart` |
+| Guard: no hard-coded colour or text style outside the theme (table is empty) | `tool/theme_guard.dart`, `test/theme_guard_test.dart`, `docs/THEME_EXCEPTIONS.md` |
+| Brand rules, name checks | `docs/BRAND.md`, `docs/NAME_CHECKLIST.md`, `docs/RENAME.md` |
