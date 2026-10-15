@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../security/secure_screen.dart';
 import '../constants/logistics.dart';
 import '../l10n/l10n.dart';
 import '../models/booking.dart';
@@ -21,7 +22,7 @@ class DocumentsCenterScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return SecureScope(child: Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: AppColors.background,
@@ -46,7 +47,7 @@ class DocumentsCenterScreen extends StatelessWidget {
           },
         ),
       ),
-    );
+    ));
   }
 }
 

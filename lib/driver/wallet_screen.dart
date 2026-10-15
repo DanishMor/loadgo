@@ -1,4 +1,5 @@
 import '../core/errors/error_text.dart';
+import '../core/security/secure_screen.dart';
 import 'driver_trip_screen.dart';
 import '../core/payments/wallet_widgets.dart';
 import 'package:flutter/material.dart';
@@ -96,7 +97,7 @@ class _WalletScreenState extends State<WalletScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return SecureScope(child: Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: AppColors.background,
@@ -206,6 +207,6 @@ class _WalletScreenState extends State<WalletScreen> {
           ),
         ),
       ),
-    );
+    ));
   }
 }

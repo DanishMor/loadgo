@@ -1,4 +1,5 @@
 import '../core/errors/error_text.dart';
+import '../core/security/secure_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -153,7 +154,7 @@ class _VehicleDocumentsScreenState extends State<VehicleDocumentsScreen> {
   @override
   Widget build(BuildContext context) {
     final v = widget.vehicle;
-    return Scaffold(
+    return SecureScope(child: Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: AppColors.background,
@@ -217,6 +218,6 @@ class _VehicleDocumentsScreenState extends State<VehicleDocumentsScreen> {
           ),
         ),
       ),
-    );
+    ));
   }
 }

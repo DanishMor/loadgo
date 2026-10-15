@@ -10,6 +10,7 @@ Goal: put LoadGo in front of a small, known group (one or two corridors, tens of
 | Report a problem | ON | Features > Report a problem |
 | Transporter accounts | ON | Features > Transporter accounts |
 | Bilty (LR) | ON | Features > Bilty (LR) |
+| Block screenshots on private screens | OFF | Features > Block screenshots on private screens |
 | Promo codes, credits, referral | OFF | Offers (three switches, default OFF) |
 | Surge pricing | OFF | `config/pricing.surge.enabled` |
 | Driver network and groups | OFF | Features |

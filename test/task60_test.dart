@@ -35,10 +35,10 @@ void main() {
       expect(f.isOn(FeatureKey.problemReport), isTrue);
     });
 
-    test('pilot mode off: every feature starts on', () {
+    test('pilot mode off: every feature starts on, except the ones declared OFF in both modes', () {
       final f = const Features(pilotMode: false);
       for (final s in Features.registry) {
-        expect(f.isOn(s.key), isTrue, reason: s.key);
+        expect(f.isOn(s.key), s.normalOn, reason: s.key); // server and security features declare normalOn: false and stay OFF
       }
     });
 

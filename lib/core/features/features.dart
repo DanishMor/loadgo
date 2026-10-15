@@ -19,6 +19,9 @@ class FeatureKey {
   static const problemReport = 'problemReport';
   static const transporter = 'transporter';
   static const bilty = 'bilty';
+
+  /// F4: no screenshots or screen recording on sensitive screens (release builds).
+  static const secureScreens = 'secureScreens';
 }
 
 /// `config/features`: {pilotMode: bool, flags: {key: bool}}. A missing
@@ -43,6 +46,8 @@ class Features {
     FeatureSpec(FeatureKey.transporter, pilotOn: true),
     // Task 70: numbered LR (bilty) with copy types, PDF and share links. ON for testing.
     FeatureSpec(FeatureKey.bilty, pilotOn: true),
+    // F4: OFF until the owner has tried it on a real phone.
+    FeatureSpec(FeatureKey.secureScreens, pilotOn: false, normalOn: false),
   ];
 
   static final _byKey = {for (final s in registry) s.key: s};

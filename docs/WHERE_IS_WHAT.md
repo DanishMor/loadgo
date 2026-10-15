@@ -18,6 +18,7 @@ force any flag On or Off; a forced value always wins. A flag that is OFF hides i
 | `problemReport` | Two-tap "Report a problem" on trip screens and in Help | ON | ON | Trip screens, Help |
 | `transporter` | The Transporter role (company profile, bids, assigning, books) | ON | ON | First screen > Transporter card; Transporter app |
 | `bilty` | Numbered LR (bilty) with driver, consignee and full copies, PDF and share link | ON | ON | Trip screen > LR; Transporter > Trips > LR |
+| `secureScreens` | No screenshots or screen recording on the login code, documents, private LR copy, earnings and trip code screens (Android release builds) | OFF | OFF | Admin > Features > Block screenshots on private screens |
 
 Other switches that are not in the list above:
 

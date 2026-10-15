@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import '../security/secure_screen.dart';
 import 'package:flutter/material.dart';
 
 import '../l10n/l10n.dart';
@@ -55,7 +56,7 @@ class LrCopyScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return SecureScope(child: Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: AppColors.background,
@@ -81,7 +82,7 @@ class LrCopyScreen extends StatelessWidget {
           },
         ),
       ),
-    );
+    ));
   }
 }
 
@@ -170,7 +171,7 @@ class _DriverLrViewState extends State<_DriverLrView> {
   @override
   Widget build(BuildContext context) {
     final lr = widget.lr;
-    return Scaffold(
+    return SecureScope(child: Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(backgroundColor: AppColors.background, scrolledUnderElevation: 0, title: Text(tr(context, 'blDriverCopyBtn'), style: DsStyle.w700)),
       body: SafeArea(
@@ -204,6 +205,6 @@ class _DriverLrViewState extends State<_DriverLrView> {
           },
         ),
       ),
-    );
+    ));
   }
 }

@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import '../core/security/secure_screen.dart';
 import 'package:flutter/material.dart';
 
 import '../core/l10n/l10n.dart';
@@ -210,7 +211,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     final c = context.ds;
     final role = widget.role ?? (widget.isDriver ? 'driver' : 'customer');
     final accentRole = role == 'fleet' ? 'transporter' : role;
-    return Scaffold(
+    return SecureScope(child: Scaffold(
       appBar: AppTopBar(title: tr(context, 'verifyMobile'), role: accentRole, actions: const [LanguageButton()]),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -245,6 +246,6 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
           ),
         ),
       ),
-    );
+    ));
   }
 }

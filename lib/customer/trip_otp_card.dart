@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../core/security/secure_screen.dart';
 import '../core/constants/logistics.dart';
 import '../core/l10n/l10n.dart';
 import '../core/models/booking.dart';
@@ -59,7 +60,7 @@ class _TripOtpCardState extends State<TripOtpCard> {
         }
         if (!snap.hasData) return const SizedBox.shrink();
         final o = snap.data!;
-        return AppCard(
+        return SecureScope(child: AppCard(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -97,7 +98,7 @@ class _TripOtpCardState extends State<TripOtpCard> {
               Text(tr(context, 'otpShareNote'), style: DsStyle.t12w400.copyWith(color: AppColors.faint)),
             ],
           ),
-        );
+        ));
       },
     );
   }
