@@ -24,6 +24,9 @@ enum IllustrationKind {
 
   /// No trips: a truck on a road.
   noTrips,
+
+  /// Safe and private: a shield with a tick.
+  shield,
 }
 
 /// One of the [IllustrationKind] pictures at [width] (height is 3/4 of it).
@@ -83,6 +86,8 @@ class IllustrationPainter extends CustomPainter {
         _success(canvas);
       case IllustrationKind.noTrips:
         _noTrips(canvas);
+      case IllustrationKind.shield:
+        _shield(canvas);
     }
     canvas.restore();
   }
@@ -155,6 +160,20 @@ class IllustrationPainter extends CustomPainter {
     canvas.drawCircle(const Offset(80, 58), 34, _line(c.success, 6));
     final tick = Path()..moveTo(64, 58)..lineTo(76, 70)..lineTo(98, 46);
     canvas.drawPath(tick, _line(c.success, 8));
+  }
+
+  void _shield(Canvas canvas) {
+    final body = Path()
+      ..moveTo(80, 20)
+      ..lineTo(118, 33)
+      ..lineTo(118, 62)
+      ..cubicTo(118, 84, 102, 97, 80, 104)
+      ..cubicTo(58, 97, 42, 84, 42, 62)
+      ..lineTo(42, 33)
+      ..close();
+    canvas.drawPath(body, _fill(c.surface));
+    canvas.drawPath(body, _line(c.primary, 6));
+    canvas.drawPath(Path()..moveTo(64, 62)..lineTo(76, 74)..lineTo(98, 48), _line(c.success, 8));
   }
 
   void _noTrips(Canvas canvas) {

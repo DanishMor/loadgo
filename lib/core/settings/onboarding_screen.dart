@@ -3,6 +3,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../l10n/l10n.dart';
 import '../theme/design_tokens.dart';
+import '../widgets/ds/app_button.dart';
+import '../widgets/ds/brand_logo.dart';
+import '../widgets/ds/haptics.dart';
+import '../widgets/ds/illustrations.dart';
+import '../widgets/ds/motion.dart';
 
 /// Remembers on this device that the first-time slides were shown.
 class OnboardingStore {
@@ -38,9 +43,9 @@ class OnboardingScreen extends StatefulWidget {
 
 class _OnboardingScreenState extends State<OnboardingScreen> {
   static const _slides = [
-    (Icons.local_shipping_rounded, 'onbTitle1', 'onbBody1'),
-    (Icons.verified_user_rounded, 'onbTitle2', 'onbBody2'),
-    (Icons.lock_person_rounded, 'onbTitle3', 'onbBody3'),
+    (IllustrationKind.noTrips, 'onbTitle1', 'onbBody1'),
+    (IllustrationKind.success, 'onbTitle2', 'onbBody2'),
+    (IllustrationKind.shield, 'onbTitle3', 'onbBody3'),
   ];
 
   final _controller = PageController();
@@ -50,6 +55,17 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   void dispose() {
     _controller.dispose();
     super.dispose();
+  }
+
+  /// To the next slide. With animations off (the system setting or Low-end mode)
+  /// the duration is zero, which PageController.nextPage refuses, so jump instead.
+  void _next() {
+    final d = DsMotion.duration(context, DsMotion.normal);
+    if (d == Duration.zero) {
+      _controller.jumpToPage(_page + 1);
+    } else {
+      _controller.nextPage(duration: d, curve: DsMotion.standard);
+    }
   }
 
   Future<void> _finish() async {
@@ -65,54 +81,74 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     final last = _page == _slides.length - 1;
+    final c = context.ds;
     return Scaffold(
       body: SafeArea(
         child: Column(children: [
-          Align(
-            alignment: Alignment.centerRight,
-            child: TextButton(key: const ValueKey('onbSkip'), onPressed: _finish, child: Text(tr(context, 'onbSkip'))),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(DsSpace.gutter, DsSpace.s2, DsSpace.s2, 0),
+            child: Row(
+              children: [
+                const Expanded(child: Align(alignment: AlignmentDirectional.centerStart, child: BrandLockup(markSize: 32))),
+                AppButton(key: const ValueKey('onbSkip'), label: tr(context, 'onbSkip'), kind: AppButtonKind.tertiary, expand: false, onPressed: _finish),
+              ],
+            ),
           ),
           Expanded(
             child: PageView(
               controller: _controller,
-              onPageChanged: (i) => setState(() => _page = i),
+              onPageChanged: (i) {
+                Haptics.tap();
+                setState(() => _page = i);
+              },
               children: [
-                for (final (icon, title, body) in _slides)
-                  SingleChildScrollView(
-                    padding: const EdgeInsets.symmetric(horizontal: 28),
-                    child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                      const SizedBox(height: 40),
-                      Icon(icon, size: 96, color: Theme.of(context).colorScheme.primary),
-                      const SizedBox(height: 28),
-                      Text(tr(context, title), textAlign: TextAlign.center, style: DsStyle.t24w700),
-                      const SizedBox(height: 12),
-                      Text(tr(context, body), textAlign: TextAlign.center, style: DsStyle.t16w400.copyWith(height: 1.4)),
-                    ]),
+                for (final (kind, title, body) in _slides)
+                  LayoutBuilder(
+                    builder: (context, box) => SingleChildScrollView(
+                      padding: const EdgeInsets.symmetric(horizontal: DsSpace.s8),
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(minHeight: box.maxHeight),
+                        child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+                          const SizedBox(height: DsSpace.s6),
+                          PopIn(child: IllustrationView(kind, width: 200)),
+                          const SizedBox(height: DsSpace.s6),
+                          FadeSlideIn(
+                            delay: const Duration(milliseconds: 120),
+                            child: Semantics(header: true, child: Text(tr(context, title), textAlign: TextAlign.center, style: DsType.headline.copyWith(color: c.text))),
+                          ),
+                          const SizedBox(height: DsSpace.s3),
+                          FadeSlideIn(
+                            delay: const Duration(milliseconds: 220),
+                            child: Text(tr(context, body), textAlign: TextAlign.center, style: DsType.body.copyWith(height: 1.45, color: c.textMuted)),
+                          ),
+                          const SizedBox(height: DsSpace.s6),
+                        ]),
+                      ),
+                    ),
                   ),
               ],
             ),
           ),
-          Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-            for (var i = 0; i < _slides.length; i++)
-              Container(
-                margin: const EdgeInsets.all(4),
-                width: i == _page ? 22 : 8,
-                height: 8,
-                decoration: BoxDecoration(
-                  color: i == _page ? Theme.of(context).colorScheme.primary : Colors.grey.shade400,
-                  borderRadius: BorderRadius.circular(4),
+          Semantics(
+            label: trf(context, 'dsPageOf', {'n': _page + 1, 'm': _slides.length}),
+            excludeSemantics: true,
+            child: Row(key: const ValueKey('onbDots'), mainAxisAlignment: MainAxisAlignment.center, children: [
+              for (var i = 0; i < _slides.length; i++)
+                AnimatedContainer(
+                  duration: DsMotion.duration(context, DsMotion.normal),
+                  margin: const EdgeInsets.all(DsSpace.s1),
+                  width: i == _page ? 24 : 8,
+                  height: 8,
+                  decoration: BoxDecoration(color: i == _page ? c.primary : c.inputBorder, borderRadius: DsRadius.all(DsRadius.pill)),
                 ),
-              ),
-          ]),
+            ]),
+          ),
           Padding(
-            padding: const EdgeInsets.all(20),
-            child: FilledButton(
+            padding: const EdgeInsets.all(DsSpace.s5),
+            child: AppButton(
               key: const ValueKey('onbNext'),
-              style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(50)),
-              onPressed: last
-                  ? _finish
-                  : () => _controller.nextPage(duration: const Duration(milliseconds: 250), curve: Curves.easeOut),
-              child: Text(tr(context, last ? 'onbStart' : 'onbNext')),
+              label: tr(context, last ? 'onbStart' : 'onbNext'),
+              onPressed: last ? _finish : _next,
             ),
           ),
         ]),
