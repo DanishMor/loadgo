@@ -10,6 +10,7 @@ import '../core/models/risk.dart';
 import '../core/l10n/l10n.dart';
 import 'my_vehicles_screen.dart';
 import '../core/widgets/logistics_labels.dart';
+import '../core/theme/design_tokens.dart';
 
 /// Lets the driver pick one of their active vehicles and confirm. Returns null
 /// when cancelled.
@@ -29,9 +30,9 @@ Future<Vehicle?> _chooseVehicle(BuildContext context, Load load, List<Vehicle> v
             RouteText(pickup: load.pickup, drop: load.drop),
             const SizedBox(height: 4),
             Text('${formatNum(load.weight)} T • ${vehicleTypeLabel(context, load.vehicleType)} • ${formatDate(load.pickupDate)}',
-                style: TextStyle(color: AppColors.muted)),
+                style: DsStyle.inherit.copyWith(color: AppColors.muted)),
             const SizedBox(height: 16),
-            Text(tr(sheetContext, 'chooseVehicle'), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+            Text(tr(sheetContext, 'chooseVehicle'), style: DsStyle.t16w700),
             const SizedBox(height: 8),
             Flexible(
               child: ListView(
@@ -41,7 +42,7 @@ Future<Vehicle?> _chooseVehicle(BuildContext context, Load load, List<Vehicle> v
                     ListTile(
                       contentPadding: EdgeInsets.zero,
                       leading: const Icon(Icons.local_shipping_rounded, color: AppColors.primary),
-                      title: Text(v.number, style: const TextStyle(fontWeight: FontWeight.w700)),
+                      title: Text(v.number, style: DsStyle.w700),
                       subtitle: Text(
                         '${vehicleTypeLabel(context, v.type)} • ${formatNum(v.capacity)} T'
                         '${v.canTakeBooking ? '' : ' • ${availabilityLabel(context, v.availability)}'}',

@@ -5,6 +5,7 @@ import '../core/l10n/l10n.dart';
 import '../core/services/strike_appeal_service.dart';
 import '../core/widgets/common.dart';
 import '../core/widgets/live_stream.dart';
+import '../core/theme/design_tokens.dart';
 
 /// Admin > Strike appeals (MASTER-6 Task 34): read the person's reason, then
 /// take one strike off or keep it, with a short note the person sees.
@@ -49,8 +50,8 @@ class AdminAppealsScreen extends StatelessWidget {
               AppCard(
                 key: ValueKey('appeal_${a.violationId}'),
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text(a.violationId, style: const TextStyle(fontWeight: FontWeight.w800)),
-                  if (a.createdAt != null) Text(formatDateTime(a.createdAt!), style: TextStyle(color: AppColors.muted, fontSize: 12)),
+                  Text(a.violationId, style: DsStyle.w700),
+                  if (a.createdAt != null) Text(formatDateTime(a.createdAt!), style: DsStyle.t12w400.copyWith(color: AppColors.muted)),
                   const SizedBox(height: 4),
                   Text(a.text, key: ValueKey('appealText_${a.violationId}')),
                   const SizedBox(height: 8),

@@ -5,6 +5,7 @@ import '../core/l10n/l10n.dart';
 import '../core/models/booking.dart';
 import '../core/services/trip_otp_service.dart';
 import '../core/widgets/common.dart';
+import '../core/theme/design_tokens.dart';
 
 /// Customer's pickup and delivery codes for an active booking. The code
 /// still needed is shown large; codes already used are hidden.
@@ -24,17 +25,12 @@ class _TripOtpCardState extends State<TripOtpCard> {
     child: Row(
       children: [
         Expanded(
-          child: Text(label, style: TextStyle(color: AppColors.muted)),
+          child: Text(label, style: DsStyle.inherit.copyWith(color: AppColors.muted)),
         ),
         SelectableText(
           code,
           key: ValueKey('otp_$label'),
-          style: TextStyle(
-            fontSize: big ? 26 : 16,
-            fontWeight: FontWeight.w800,
-            letterSpacing: 4,
-            color: AppColors.title,
-          ),
+          style: DsStyle.w700.copyWith(fontSize: big ? 26 : 16, letterSpacing: 4, color: AppColors.title),
         ),
       ],
     ),
@@ -72,14 +68,14 @@ class _TripOtpCardState extends State<TripOtpCard> {
                   const SizedBox(width: 8),
                   Text(
                     tr(context, 'tripCodes'),
-                    style: TextStyle(fontWeight: FontWeight.w800, color: AppColors.title),
+                    style: DsStyle.w700.copyWith(color: AppColors.title),
                   ),
                 ],
               ),
               if (beforePickup) _code(tr(context, 'pickupOtp'), o.pickupOtp, big: true),
               _code(tr(context, 'deliveryOtp'), o.deliveryOtp, big: !beforePickup),
               const SizedBox(height: 8),
-              Text(tr(context, 'otpShareNote'), style: TextStyle(color: AppColors.faint, fontSize: 12)),
+              Text(tr(context, 'otpShareNote'), style: DsStyle.t12w400.copyWith(color: AppColors.faint)),
             ],
           ),
         );

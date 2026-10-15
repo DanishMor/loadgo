@@ -15,6 +15,7 @@ import '../core/services/vehicle_service.dart';
 import '../core/widgets/common.dart';
 import '../core/widgets/live_stream.dart';
 import '../core/widgets/logistics_labels.dart';
+import '../core/theme/design_tokens.dart';
 
 /// Vehicles, drivers, trips in progress, idle vehicles and earnings per
 /// vehicle. Earnings are a record from delivered bookings, not a payout.
@@ -48,9 +49,9 @@ class _FleetDashboardState extends State<FleetDashboard> {
   Widget _stat(String label, String value, {Key? key}) => Expanded(
         child: AppCard(
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(label, style: TextStyle(color: AppColors.muted, fontSize: 12)),
+            Text(label, style: DsStyle.t12w400.copyWith(color: AppColors.muted)),
             const SizedBox(height: 4),
-            Text(value, key: key, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.title)),
+            Text(value, key: key, style: DsStyle.t20w700.copyWith(color: AppColors.title)),
           ]),
         ),
       );
@@ -69,7 +70,7 @@ class _FleetDashboardState extends State<FleetDashboard> {
           Row(children: [
             const Icon(Icons.car_crash_outlined, color: AppColors.warning),
             const SizedBox(width: 8),
-            Text(tr(context, 'fleetBreakdownTitle'), style: const TextStyle(fontWeight: FontWeight.w800)),
+            Text(tr(context, 'fleetBreakdownTitle'), style: DsStyle.w700),
           ]),
           for (final b in broken)
             Builder(builder: (context) {
@@ -103,7 +104,7 @@ class _FleetDashboardState extends State<FleetDashboard> {
           child: AppCard(
             key: const ValueKey('fleetSuggestions'),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(tr(context, 'fleetSuggestTitle'), style: const TextStyle(fontWeight: FontWeight.w800)),
+              Text(tr(context, 'fleetSuggestTitle'), style: DsStyle.w700),
               const SizedBox(height: 4),
               for (final s in list.take(5))
                 Padding(
@@ -111,7 +112,7 @@ class _FleetDashboardState extends State<FleetDashboard> {
                   child: Text(trf(context, 'fleetSuggestLine', {'load': '${s.load.pickup} → ${s.load.drop} (${formatNum(s.load.weight)} T)', 'vehicle': s.vehicle.number}), key: ValueKey('suggest_${s.load.id}')),
                 ),
               const SizedBox(height: 6),
-              Text(tr(context, 'fleetSuggestNote'), style: TextStyle(fontSize: 12, color: AppColors.faint)),
+              Text(tr(context, 'fleetSuggestNote'), style: DsStyle.t12w400.copyWith(color: AppColors.faint)),
             ]),
           ),
         );
@@ -140,9 +141,9 @@ class _FleetDashboardState extends State<FleetDashboard> {
                 const SizedBox(height: 24),
                 Icon(Icons.local_shipping_outlined, size: 56, color: AppColors.muted),
                 const SizedBox(height: 12),
-                Text(tr(context, 'fleetNoVehicles'), textAlign: TextAlign.center, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+                Text(tr(context, 'fleetNoVehicles'), textAlign: TextAlign.center, style: DsStyle.t18w700),
                 const SizedBox(height: 6),
-                Text(tr(context, 'fleetNoVehiclesSub'), textAlign: TextAlign.center, style: TextStyle(color: AppColors.muted)),
+                Text(tr(context, 'fleetNoVehiclesSub'), textAlign: TextAlign.center, style: DsStyle.inherit.copyWith(color: AppColors.muted)),
               ]);
             }
             return ListView(padding: const EdgeInsets.fromLTRB(16, 4, 16, 24), children: [
@@ -165,7 +166,7 @@ class _FleetDashboardState extends State<FleetDashboard> {
                 _stat(tr(context, 'totalEarnings'), formatPaise(s.totalEarningsPaise), key: const ValueKey('statTotal')),
               ]),
               const SizedBox(height: 6),
-              Text(tr(context, 'fleetEarningsNote'), style: TextStyle(color: AppColors.faint, fontSize: 12)),
+              Text(tr(context, 'fleetEarningsNote'), style: DsStyle.t12w400.copyWith(color: AppColors.faint)),
               _breakdowns(context, vehicles, bookings),
               _suggestions(context, vehicles),
               const SizedBox(height: 14),
@@ -174,7 +175,7 @@ class _FleetDashboardState extends State<FleetDashboard> {
                 builder: (context, snap) => TransporterBoardCard(vehicles: vehicles, bookings: bookings, members: members, accounts: snap.data ?? const [], now: widget.now()),
               ),
               const SizedBox(height: 14),
-              Text(tr(context, 'fleetPerVehicle'), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+              Text(tr(context, 'fleetPerVehicle'), style: DsStyle.t18w700),
               const SizedBox(height: 8),
               for (final r in s.vehicles)
                 Padding(
@@ -184,8 +185,8 @@ class _FleetDashboardState extends State<FleetDashboard> {
                     child: Row(children: [
                       Expanded(
                         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                          Text(r.vehicle.number, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
-                          Text('${vehicleTypeLabel(context, r.vehicle.type)} • ${r.driverName ?? tr(context, 'fleetNoDriver')}', style: TextStyle(color: AppColors.muted, fontSize: 13)),
+                          Text(r.vehicle.number, style: DsStyle.t16w700),
+                          Text('${vehicleTypeLabel(context, r.vehicle.type)} • ${r.driverName ?? tr(context, 'fleetNoDriver')}', style: DsStyle.t14w400.copyWith(color: AppColors.muted)),
                           const SizedBox(height: 4),
                           Wrap(spacing: 6, children: [
                             StatusChip(label: availabilityLabel(context, r.vehicle.availability), color: availabilityColor(r.vehicle.availability)),
@@ -195,8 +196,8 @@ class _FleetDashboardState extends State<FleetDashboard> {
                         ]),
                       ),
                       Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
-                        Text(formatPaise(r.earningsPaise), style: const TextStyle(fontWeight: FontWeight.w800, color: AppColors.primary)),
-                        Text(trf(context, 'fleetTripsDone', {'n': r.deliveredTrips}), style: TextStyle(color: AppColors.muted, fontSize: 12)),
+                        Text(formatPaise(r.earningsPaise), style: DsStyle.w700.copyWith(color: AppColors.primary)),
+                        Text(trf(context, 'fleetTripsDone', {'n': r.deliveredTrips}), style: DsStyle.t12w400.copyWith(color: AppColors.muted)),
                       ]),
                     ]),
                   ),

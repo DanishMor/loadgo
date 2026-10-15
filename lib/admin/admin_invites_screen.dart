@@ -8,6 +8,7 @@ import '../core/pilot/waitlist.dart';
 import '../core/services/admin_console_service.dart';
 import '../core/widgets/common.dart';
 import '../core/widgets/live_stream.dart';
+import '../core/theme/design_tokens.dart';
 
 /// Admin > Invite codes (MASTER-6 Task 1): make codes for a role and route,
 /// see the uses left, switch one off, and let a phone number in without a code.
@@ -120,7 +121,7 @@ class _AdminInvitesScreenState extends State<AdminInvitesScreen> {
         const SizedBox(height: 12),
         AppCard(
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(tr(context, 'invMake'), style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+            Text(tr(context, 'invMake'), style: DsStyle.t16w700),
             const SizedBox(height: 8),
             Wrap(spacing: 8, children: [
               for (final r in InviteCode.roles) ChoiceChip(key: ValueKey('invRole_$r'), label: Text(_roleLabel(r)), selected: _role == r, onSelected: (_) => setState(() => _role = r)),
@@ -138,7 +139,7 @@ class _AdminInvitesScreenState extends State<AdminInvitesScreen> {
         const SizedBox(height: 12),
         AppCard(
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(tr(context, 'invWhitelistHint'), style: const TextStyle(fontWeight: FontWeight.w700)),
+            Text(tr(context, 'invWhitelistHint'), style: DsStyle.w700),
             Row(children: [
               Expanded(child: TextField(key: const ValueKey('invPhone'), controller: _phone, keyboardType: TextInputType.phone, maxLength: 15)),
               const SizedBox(width: 8),
@@ -159,7 +160,7 @@ class _AdminInvitesScreenState extends State<AdminInvitesScreen> {
                   key: ValueKey('inv_${c.code}'),
                   child: ListTile(
                     contentPadding: EdgeInsets.zero,
-                    title: SelectableText(c.code, style: const TextStyle(fontWeight: FontWeight.w800, letterSpacing: 2)),
+                    title: SelectableText(c.code, style: DsStyle.w700.copyWith(letterSpacing: 2)),
                     subtitle: Text('${_roleLabel(c.role)}${c.route.isEmpty ? '' : ' · ${c.route}'}\n${trf(context, 'invLeft', {'left': c.left, 'max': c.maxUses})}'),
                     isThreeLine: true,
                     trailing: TextButton(

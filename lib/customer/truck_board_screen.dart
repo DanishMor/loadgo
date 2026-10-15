@@ -12,6 +12,7 @@ import '../core/widgets/common.dart';
 import '../core/widgets/live_stream.dart';
 import '../core/widgets/logistics_labels.dart';
 import 'post_load_screen.dart';
+import '../core/theme/design_tokens.dart';
 
 String truckBoardErrorKey(Object e) {
   if (e is AccountRestrictedException) return 'accountRestricted';
@@ -229,9 +230,9 @@ class _TruckBoardScreenState extends State<TruckBoardScreen> {
                         RouteText(pickup: p.fromCity, drop: p.toCity),
                         const SizedBox(height: 6),
                         Text('${vehicleTypeLabel(context, p.vehicleType)} • ${formatNum(p.capacity)} T • ${p.vehicleNumber} • ${formatDate(p.availableDate)}',
-                            style: TextStyle(color: AppColors.muted)),
-                        if (p.driverName.isNotEmpty) Text(p.driverName, style: const TextStyle(fontWeight: FontWeight.w700)),
-                        if (p.note.isNotEmpty) Text(p.note, style: TextStyle(color: AppColors.muted, fontSize: 13)),
+                            style: DsStyle.inherit.copyWith(color: AppColors.muted)),
+                        if (p.driverName.isNotEmpty) Text(p.driverName, style: DsStyle.w700),
+                        if (p.note.isNotEmpty) Text(p.note, style: DsStyle.t14w400.copyWith(color: AppColors.muted)),
                         const SizedBox(height: 8),
                         FilledButton(key: ValueKey('request_${p.id}'), onPressed: () => _request(p), child: Text(tr(context, 'requestTruck'))),
                       ]),
@@ -278,7 +279,7 @@ class MyTruckRequestsScreen extends StatelessWidget {
                       Expanded(child: RouteText(pickup: r.pickup, drop: r.drop)),
                       StatusChip(label: tr(context, 'request_${r.status}'), color: _color(r.status)),
                     ]),
-                    Text('${formatNum(r.weight)} T${r.note.isEmpty ? '' : ' • ${r.note}'}', style: TextStyle(color: AppColors.muted)),
+                    Text('${formatNum(r.weight)} T${r.note.isEmpty ? '' : ' • ${r.note}'}', style: DsStyle.inherit.copyWith(color: AppColors.muted)),
                     if (r.status == TruckRequest.accepted)
                       Padding(
                         padding: const EdgeInsets.only(top: 8),

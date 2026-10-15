@@ -8,6 +8,7 @@ import 'common.dart';
 import '../l10n/l10n.dart';
 import 'logistics_labels.dart';
 import '../network/share_load_sheet.dart';
+import '../theme/design_tokens.dart';
 
 String loadStatusLabel(BuildContext context, String status, {bool cancelled = false}) => switch (status) {
       LoadStatus.closed when cancelled => tr(context, 'statusCancelled'),
@@ -43,7 +44,7 @@ class LoadCard extends StatelessWidget {
         children: [
           Icon(icon, size: 16, color: AppColors.muted),
           const SizedBox(width: 4),
-          Text(text, style: TextStyle(color: AppColors.body, fontSize: 13, fontWeight: FontWeight.w600)),
+          Text(text, style: DsStyle.t14w600.copyWith(color: AppColors.body)),
         ],
       );
 
@@ -105,11 +106,11 @@ class LoadCard extends StatelessWidget {
           const SizedBox(height: 10),
           Text(
             load.budget == null ? '${tr(context, 'budget')}: ${tr(context, 'budgetNegotiable')}' : formatRupees(load.budget!),
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.primary),
+            style: DsStyle.t16w700.copyWith(color: AppColors.primary),
           ),
           if (load.notes.isNotEmpty) ...[
             const SizedBox(height: 6),
-            Text(load.notes, maxLines: 2, overflow: TextOverflow.ellipsis, style: TextStyle(color: AppColors.muted, fontSize: 13)),
+            Text(load.notes, maxLines: 2, overflow: TextOverflow.ellipsis, style: DsStyle.t14w400.copyWith(color: AppColors.muted)),
           ],
           if (action != null) ...[const SizedBox(height: 12), action!],
         ],

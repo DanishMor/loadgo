@@ -8,6 +8,7 @@ import '../core/models/business.dart';
 import '../core/services/business_service.dart';
 import '../core/widgets/common.dart';
 import '../core/widgets/live_stream.dart';
+import '../core/theme/design_tokens.dart';
 
 String bizRoleLabel(BuildContext context, String role) => tr(context, switch (role) {
       BizRole.owner => 'roleOwner',
@@ -68,7 +69,7 @@ class _BusinessTeamScreenState extends State<BusinessTeamScreen> {
       body: ListView(padding: const EdgeInsets.all(16), children: [
         AppCard(
           child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-            Text(tr(context, 'teamInviteBooker'), style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+            Text(tr(context, 'teamInviteBooker'), style: DsStyle.t16w700),
             Row(children: [
               Expanded(
                 child: TextField(
@@ -90,11 +91,11 @@ class _BusinessTeamScreenState extends State<BusinessTeamScreen> {
               items: [for (final r in BizRole.assignable) DropdownMenuItem(value: r, child: Text(bizRoleLabel(context, r)))],
               onChanged: (v) => setState(() => _role = v ?? _role),
             ),
-            Text(tr(context, 'teamRoleNote'), style: TextStyle(color: AppColors.faint, fontSize: 12)),
+            Text(tr(context, 'teamRoleNote'), style: DsStyle.t12w400.copyWith(color: AppColors.faint)),
           ]),
         ),
         const SizedBox(height: 14),
-        Text(tr(context, 'businessTeam'), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+        Text(tr(context, 'businessTeam'), style: DsStyle.t18w700),
         LiveStream<List<BusinessMember>>(
           stream: () => _members,
           compact: true,
@@ -121,7 +122,7 @@ class _BusinessTeamScreenState extends State<BusinessTeamScreen> {
           ]),
         ),
         const SizedBox(height: 14),
-        Text(tr(context, 'fleetInvitesSent'), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+        Text(tr(context, 'fleetInvitesSent'), style: DsStyle.t18w700),
         LiveStream<List<BusinessInvite>>(
           stream: () => _invites,
           compact: true,

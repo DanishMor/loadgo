@@ -7,6 +7,7 @@ import '../core/services/booking_service.dart';
 import '../core/widgets/common.dart';
 import '../core/widgets/live_stream.dart';
 import '../core/widgets/mini_bars.dart';
+import '../core/theme/design_tokens.dart';
 
 /// "04/2026" for a `yyyy-MM` key (the same in every language).
 String monthLabel(String key) {
@@ -37,11 +38,11 @@ class _SpendingScreenState extends State<SpendingScreen> {
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Row(children: [
               Expanded(child: Text(lines[i].label, overflow: TextOverflow.ellipsis)),
-              Text(formatPaise(lines[i].paise), key: ValueKey('${keyPrefix}_$i'), style: const TextStyle(fontWeight: FontWeight.w700)),
+              Text(formatPaise(lines[i].paise), key: ValueKey('${keyPrefix}_$i'), style: DsStyle.w700),
             ]),
             const SizedBox(height: 3),
             LinearProgressIndicator(value: peak == 0 ? 0 : lines[i].paise / peak, minHeight: 4, color: AppColors.primary, backgroundColor: AppColors.border),
-            Text(trf(context, 'ehResults', {'n': lines[i].trips}), style: TextStyle(fontSize: 11, color: AppColors.faint)),
+            Text(trf(context, 'ehResults', {'n': lines[i].trips}), style: DsStyle.t12w400.copyWith(color: AppColors.faint)),
           ]),
         ),
     ]);
@@ -61,7 +62,7 @@ class _SpendingScreenState extends State<SpendingScreen> {
           return ListView(
             padding: const EdgeInsets.fromLTRB(20, 16, 20, 30),
             children: [
-              Text(tr(context, 'ehLastMonths'), style: TextStyle(fontWeight: FontWeight.w800, color: AppColors.title)),
+              Text(tr(context, 'ehLastMonths'), style: DsStyle.w700.copyWith(color: AppColors.title)),
               const SizedBox(height: 10),
               MiniBars(
                 keyPrefix: 'spendBar',
@@ -81,21 +82,21 @@ class _SpendingScreenState extends State<SpendingScreen> {
               const SizedBox(height: 16),
               AppCard(
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text(trf(context, 'ehSpentIn', {'month': monthLabel(key)}), style: TextStyle(color: AppColors.muted)),
+                  Text(trf(context, 'ehSpentIn', {'month': monthLabel(key)}), style: DsStyle.inherit.copyWith(color: AppColors.muted)),
                   const SizedBox(height: 4),
-                  Text(formatPaise(m.totalPaise), key: const ValueKey('spendTotal'), style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: AppColors.title)),
-                  Text(trf(context, 'ehResults', {'n': m.trips}), style: TextStyle(color: AppColors.muted)),
+                  Text(formatPaise(m.totalPaise), key: const ValueKey('spendTotal'), style: DsStyle.t28w700.copyWith(color: AppColors.title)),
+                  Text(trf(context, 'ehResults', {'n': m.trips}), style: DsStyle.inherit.copyWith(color: AppColors.muted)),
                 ]),
               ),
               const SizedBox(height: 16),
               if (m.isEmpty)
                 EmptyState(icon: Icons.receipt_long_outlined, title: tr(context, 'ehNoSpend'))
               else ...[
-                Text(tr(context, 'ehByCargo'), style: TextStyle(fontWeight: FontWeight.w800, color: AppColors.title)),
+                Text(tr(context, 'ehByCargo'), style: DsStyle.w700.copyWith(color: AppColors.title)),
                 const SizedBox(height: 6),
                 _lines(m.byCargo, 'spendCargo'),
                 const SizedBox(height: 16),
-                Text(tr(context, 'ehByRoute'), style: TextStyle(fontWeight: FontWeight.w800, color: AppColors.title)),
+                Text(tr(context, 'ehByRoute'), style: DsStyle.w700.copyWith(color: AppColors.title)),
                 const SizedBox(height: 6),
                 _lines(m.byRoute, 'spendRoute'),
               ],

@@ -9,6 +9,7 @@ import '../widgets/live_stream.dart';
 import 'invoice_screen.dart';
 import 'lr_screen.dart';
 import 'pod_screen.dart';
+import '../theme/design_tokens.dart';
 
 /// Invoices, LRs and PODs of the user's bookings in one place. Drivers pass
 /// [header] with their vehicle papers (that screen lives in lib/driver).
@@ -25,7 +26,7 @@ class DocumentsCenterScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: AppColors.background,
         scrolledUnderElevation: 0,
-        title: Text(tr(context, 'documentsCenter'), style: const TextStyle(fontWeight: FontWeight.w700)),
+        title: Text(tr(context, 'documentsCenter'), style: DsStyle.w700),
       ),
       body: SafeArea(
         child: LiveStream<List<Booking>>(
@@ -36,9 +37,9 @@ class DocumentsCenterScreen extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(20, 10, 20, 30),
               children: [
                 if (header != null) ...[header!, const SizedBox(height: 16)],
-                Text(tr(context, 'tripDocuments'), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+                Text(tr(context, 'tripDocuments'), style: DsStyle.t18w700),
                 const SizedBox(height: 10),
-                if (withDocs.isEmpty) Text(tr(context, 'noDocuments'), style: TextStyle(color: AppColors.muted)),
+                if (withDocs.isEmpty) Text(tr(context, 'noDocuments'), style: DsStyle.inherit.copyWith(color: AppColors.muted)),
                 for (final b in withDocs) ...[_BookingDocs(booking: b), const SizedBox(height: 10)],
               ],
             );
@@ -62,7 +63,7 @@ class _BookingDocs extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           RouteText(pickup: b.pickup, drop: b.drop),
-          Text('${b.lrNumber} • ${formatDate(b.pickupDate)}', style: TextStyle(color: AppColors.muted, fontSize: 12)),
+          Text('${b.lrNumber} • ${formatDate(b.pickupDate)}', style: DsStyle.t12w400.copyWith(color: AppColors.muted)),
           const SizedBox(height: 6),
           Wrap(
             spacing: 6,

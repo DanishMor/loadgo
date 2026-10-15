@@ -34,6 +34,7 @@ import 'return_loads_section.dart';
 import '../core/documents/payment_card.dart';
 import '../core/payments/payment_timeline_card.dart';
 import '../core/services/server_clock.dart';
+import '../core/theme/design_tokens.dart';
 
 void openDriverTrip(BuildContext context, String bookingId) {
   Navigator.of(context).push(MaterialPageRoute(builder: (_) => DriverTripScreen(bookingId: bookingId)));
@@ -286,7 +287,7 @@ class _CancelBookingButtonState extends State<_CancelBookingButton> {
                   ? trf(dialogContext, 'cancelFree', {'m': policy.freeMinutes})
                   : trf(dialogContext, 'cancelChargeNote', {'amount': formatPaise(charge)}),
               key: const ValueKey('cancelPolicyNote'),
-              style: TextStyle(fontSize: 13, color: AppColors.muted),
+              style: DsStyle.t14w400.copyWith(color: AppColors.muted),
             ),
             const SizedBox(height: 12),
             CancelReasonPicker(by: 'driver', onChanged: (r) => reason = r),

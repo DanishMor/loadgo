@@ -6,6 +6,7 @@ import '../models/load_filter.dart';
 import '../services/vehicle_type_service.dart';
 import 'common.dart';
 import 'logistics_labels.dart';
+import '../theme/design_tokens.dart';
 
 /// Bottom sheet for drop city, vehicle type, budget, weight and pickup dates.
 /// Pops the new filter.
@@ -81,7 +82,7 @@ class _LoadFilterSheetState extends State<LoadFilterSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(tr(context, 'filters'), style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
+            Text(tr(context, 'filters'), style: DsStyle.t20w700),
             const SizedBox(height: 16),
             TextField(key: const ValueKey('dropFilter'), controller: _dropCtrl, decoration: InputDecoration(labelText: tr(context, 'filterDrop')), inputFormatters: [LengthLimitingTextInputFormatter(100)]),
             const SizedBox(height: 16),

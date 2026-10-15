@@ -6,6 +6,7 @@ import '../core/l10n/l10n.dart';
 import '../core/services/admin_console_service.dart';
 import '../core/widgets/common.dart';
 import '../core/widgets/live_stream.dart';
+import '../core/theme/design_tokens.dart';
 
 /// Admin > Pilot report (MASTER-6 Task 5): today's or the last seven days'
 /// numbers as plain text to paste into WhatsApp.
@@ -66,7 +67,7 @@ class _AdminPilotReportScreenState extends State<AdminPilotReportScreen> {
                 label: Text(tr(context, 'prCopy')),
               ),
               const SizedBox(height: 8),
-              Text(tr(context, 'prFootnote'), style: TextStyle(color: AppColors.faint, fontSize: 12)),
+              Text(tr(context, 'prFootnote'), style: DsStyle.t12w400.copyWith(color: AppColors.faint)),
             ]);
           },
         ),

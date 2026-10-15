@@ -10,6 +10,7 @@ import '../services/booking_service.dart';
 import '../services/pricing_service.dart';
 import '../services/vehicle_type_service.dart';
 import 'common.dart';
+import '../theme/design_tokens.dart';
 
 /// Waiting time at loading / unloading with the charge it would cost
 /// (record only). The driver gets Start / Stop while the trip is in that
@@ -86,12 +87,12 @@ class _DetentionCardState extends State<DetentionCard> {
         Row(children: [
           const Icon(Icons.hourglass_bottom_rounded, color: AppColors.warning),
           const SizedBox(width: 8),
-          Text(tr(context, 'detentionTitle'), style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+          Text(tr(context, 'detentionTitle'), style: DsStyle.t16w700),
         ]),
         const SizedBox(height: 8),
-        Text(trf(context, 'detentionMinutes', {'n': minutes}), key: const ValueKey('detentionMinutes'), style: const TextStyle(fontWeight: FontWeight.w700)),
+        Text(trf(context, 'detentionMinutes', {'n': minutes}), key: const ValueKey('detentionMinutes'), style: DsStyle.w700),
         Text(trf(context, 'detentionCharge', {'amount': formatPaise(_charge), 'free': cfg.detentionFreeMinutes}),
-            key: const ValueKey('detentionCharge'), style: TextStyle(color: AppColors.muted, fontSize: 13)),
+            key: const ValueKey('detentionCharge'), style: DsStyle.t14w400.copyWith(color: AppColors.muted)),
         if (canControl)
           Padding(
             padding: const EdgeInsets.only(top: 8),
@@ -102,7 +103,7 @@ class _DetentionCardState extends State<DetentionCard> {
             ),
           ),
         const SizedBox(height: 4),
-        Text(tr(context, 'detentionNote'), style: TextStyle(color: AppColors.faint, fontSize: 12)),
+        Text(tr(context, 'detentionNote'), style: DsStyle.t12w400.copyWith(color: AppColors.faint)),
       ]),
     );
   }

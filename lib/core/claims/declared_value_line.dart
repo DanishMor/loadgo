@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../l10n/l10n.dart';
 import '../services/backend.dart';
 import '../widgets/common.dart';
+import '../theme/design_tokens.dart';
 
 /// "Declared goods value: ₹ 50,000" for a claim, read once from the load
 /// (give [loadId], or a [bookingId] to find the load through). Shows
@@ -44,7 +45,7 @@ class DeclaredValueLine extends StatelessWidget {
           child: Text(
             v > 0 ? trf(context, 'declaredValueLine', {'amount': formatPaise(v)}) : tr(context, 'declaredValueNone'),
             key: const ValueKey('declaredValueLine'),
-            style: TextStyle(color: AppColors.muted),
+            style: DsStyle.inherit.copyWith(color: AppColors.muted),
           ),
         );
       },

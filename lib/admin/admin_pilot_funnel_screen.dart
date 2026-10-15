@@ -5,6 +5,7 @@ import '../core/l10n/l10n.dart';
 import '../core/services/admin_console_service.dart';
 import '../core/widgets/common.dart';
 import '../core/widgets/live_stream.dart';
+import '../core/theme/design_tokens.dart';
 
 /// Admin > Pilot funnel: where customers, drivers and transporters stop on the
 /// way to their first delivery. Read once (Refresh to count again).
@@ -33,7 +34,7 @@ class _AdminPilotFunnelScreenState extends State<AdminPilotFunnelScreen> {
     return AppCard(
       key: ValueKey('funnel_$id'),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(tr(context, titleKey), style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
+        Text(tr(context, titleKey), style: DsStyle.t18w700),
         const SizedBox(height: 8),
         for (final s in steps)
           Padding(
@@ -41,14 +42,14 @@ class _AdminPilotFunnelScreenState extends State<AdminPilotFunnelScreen> {
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Row(children: [
                 Expanded(child: Text(tr(context, s.key))),
-                Text('${s.count}', key: ValueKey('funnel_${id}_${s.key}'), style: const TextStyle(fontWeight: FontWeight.w800)),
+                Text('${s.count}', key: ValueKey('funnel_${id}_${s.key}'), style: DsStyle.w700),
               ]),
               const SizedBox(height: 3),
               LinearProgressIndicator(value: top == 0 ? 0 : s.count / top, minHeight: 6, borderRadius: BorderRadius.circular(3)),
             ]),
           ),
         if (drop != null)
-          Text(trf(context, 'pfBiggestDrop', {'from': tr(context, drop.$1), 'to': tr(context, drop.$2), 'n': drop.$3}), key: ValueKey('funnelDrop_$id'), style: TextStyle(color: AppColors.warning, fontWeight: FontWeight.w700)),
+          Text(trf(context, 'pfBiggestDrop', {'from': tr(context, drop.$1), 'to': tr(context, drop.$2), 'n': drop.$3}), key: ValueKey('funnelDrop_$id'), style: DsStyle.w700.copyWith(color: AppColors.warning)),
       ]),
     );
   }
@@ -76,7 +77,7 @@ class _AdminPilotFunnelScreenState extends State<AdminPilotFunnelScreen> {
             const SizedBox(height: 12),
             _section(context, 'transporters', 'pfTransporters', f.transporters),
             const SizedBox(height: 8),
-            Text(tr(context, 'pfNote'), style: TextStyle(color: AppColors.faint, fontSize: 12)),
+            Text(tr(context, 'pfNote'), style: DsStyle.t12w400.copyWith(color: AppColors.faint)),
           ]);
         },
       ),

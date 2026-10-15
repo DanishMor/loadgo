@@ -6,6 +6,7 @@ import '../core/admin/reply_templates.dart';
 import '../core/l10n/l10n.dart';
 import '../core/services/reply_template_service.dart';
 import '../core/widgets/common.dart';
+import '../core/theme/design_tokens.dart';
 
 /// Admin > Reply templates (super admin): the canned answers offered in the
 /// ticket reply box.
@@ -99,7 +100,7 @@ class _AdminTemplatesScreenState extends State<AdminTemplatesScreen> {
               return AppCard(
                 key: ValueKey('tpl_${t.id}'),
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text(t.title, style: const TextStyle(fontWeight: FontWeight.w800)),
+                  Text(t.title, style: DsStyle.w700),
                   const SizedBox(height: 4),
                   Text(t.text, maxLines: 3, overflow: TextOverflow.ellipsis),
                   Wrap(alignment: WrapAlignment.end, children: [

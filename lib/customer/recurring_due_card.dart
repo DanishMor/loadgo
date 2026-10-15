@@ -5,6 +5,7 @@ import '../core/models/recurring.dart';
 import '../core/services/recurring_service.dart';
 import '../core/widgets/common.dart';
 import 'post_load_screen.dart';
+import '../core/theme/design_tokens.dart';
 
 /// Home: repeating loads that came due. "Post now" opens Post Load filled in;
 /// "Skip" moves to the next date. Hidden when nothing is due.
@@ -42,10 +43,10 @@ class _RecurringDueCardState extends State<RecurringDueCard> {
                   Row(children: [
                     const Icon(Icons.repeat_rounded, color: AppColors.primary),
                     const SizedBox(width: 8),
-                    Expanded(child: Text(tr(context, 'repeatDueTitle'), style: const TextStyle(fontWeight: FontWeight.w800))),
+                    Expanded(child: Text(tr(context, 'repeatDueTitle'), style: DsStyle.w700)),
                   ]),
                   const SizedBox(height: 4),
-                  Text('${r.template.pickup} → ${r.template.drop}', style: TextStyle(color: AppColors.muted)),
+                  Text('${r.template.pickup} → ${r.template.drop}', style: DsStyle.inherit.copyWith(color: AppColors.muted)),
                   const SizedBox(height: 8),
                   Wrap(spacing: 8, children: [
                     FilledButton(key: ValueKey('recurringPost_${r.id}'), onPressed: () => _post(r), child: Text(tr(context, 'repeatPostNow'))),

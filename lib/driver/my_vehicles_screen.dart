@@ -12,6 +12,7 @@ import '../core/widgets/live_stream.dart';
 import 'add_vehicle_screen.dart';
 import '../core/widgets/logistics_labels.dart';
 import 'vehicle_documents_screen.dart';
+import '../core/theme/design_tokens.dart';
 
 void openEditVehicle(BuildContext context, Vehicle vehicle) {
   Navigator.of(context).push<bool>(MaterialPageRoute(builder: (_) => AddVehicleScreen(vehicle: vehicle)));
@@ -35,7 +36,7 @@ class MyVehiclesScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: AppColors.background,
         scrolledUnderElevation: 0,
-        title: Text(tr(context, 'myVehicles'), style: const TextStyle(fontWeight: FontWeight.w700)),
+        title: Text(tr(context, 'myVehicles'), style: DsStyle.w700),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => openAddVehicle(context),
@@ -117,12 +118,12 @@ class _VehicleCardState extends State<_VehicleCard> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(v.number, style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: AppColors.title)),
+                Text(v.number, style: DsStyle.t18w700.copyWith(color: AppColors.title)),
                 const SizedBox(height: 4),
                 Text('${vehicleTypeLabel(context, v.type)} • ${formatNum(v.capacity)} T • RC ${v.rcNumber}',
-                    style: TextStyle(color: AppColors.muted, fontSize: 13)),
+                    style: DsStyle.t14w400.copyWith(color: AppColors.muted)),
                 if (_profileLine(context, v) case final line?)
-                  Text(line, key: ValueKey('profile_${v.id}'), style: TextStyle(color: AppColors.muted, fontSize: 12)),
+                  Text(line, key: ValueKey('profile_${v.id}'), style: DsStyle.t12w400.copyWith(color: AppColors.muted)),
                 const SizedBox(height: 8),
                 Wrap(
                   spacing: 6,

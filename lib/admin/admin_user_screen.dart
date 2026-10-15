@@ -12,6 +12,7 @@ import '../core/widgets/common.dart';
 import '../core/widgets/live_stream.dart';
 import 'flagged_users_screen.dart' show riskTierLabel;
 import 'user_risk_checks.dart';
+import '../core/theme/design_tokens.dart';
 
 /// Admin > Users > one user: status, suspend / ban / restore, force
 /// re-verification, internal notes and the history of admin actions.
@@ -136,18 +137,18 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
           return ListView(padding: const EdgeInsets.all(20), children: [
             AppCard(
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(name, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
+                Text(name, style: DsStyle.t20w700),
                 Row(children: [
-                  AdminPhoneText(uid: widget.uid, phone: '${u['phone'] ?? ''}', style: TextStyle(color: AppColors.muted, fontSize: 12)),
-                  Text('  ·  ${widget.uid}', style: TextStyle(color: AppColors.muted, fontSize: 12)),
+                  AdminPhoneText(uid: widget.uid, phone: '${u['phone'] ?? ''}', style: DsStyle.t12w400.copyWith(color: AppColors.muted)),
+                  Text('  ·  ${widget.uid}', style: DsStyle.t12w400.copyWith(color: AppColors.muted)),
                 ]),
                 const SizedBox(height: 8),
-                Text('${tr(context, 'auStatus')}: ${riskTierLabel(context, tier)}', key: const ValueKey('userStanding'), style: const TextStyle(fontWeight: FontWeight.w700)),
-                if ((u['riskReason'] as String?)?.isNotEmpty ?? false) Text(u['riskReason'] as String, style: TextStyle(color: AppColors.muted)),
-                if (isDriver) Text('${tr(context, 'driverVerification')}: ${u['verificationStatus'] ?? 'pending'}', style: TextStyle(color: AppColors.muted)),
-                if (isDriver) ...[const SizedBox(height: 8), Text(tr(context, 'autoCheckTitle'), style: const TextStyle(fontWeight: FontWeight.w700)), const SizedBox(height: 4), AutoCheckChips(user: u)],
-                if (ProfileExtras.fromProfile(u).currentAddress.isNotEmpty) Text('${tr(context, 'addrCurrent')}: ${maskAddress(ProfileExtras.fromProfile(u).currentAddress)}', key: const ValueKey('maskedAddr'), style: TextStyle(color: AppColors.muted)),
-                if (ProfileExtras.fromProfile(u).upiId.isNotEmpty) Text('UPI: ${maskUpiId(ProfileExtras.fromProfile(u).upiId)}', key: const ValueKey('maskedUpi'), style: TextStyle(color: AppColors.muted)),
+                Text('${tr(context, 'auStatus')}: ${riskTierLabel(context, tier)}', key: const ValueKey('userStanding'), style: DsStyle.w700),
+                if ((u['riskReason'] as String?)?.isNotEmpty ?? false) Text(u['riskReason'] as String, style: DsStyle.inherit.copyWith(color: AppColors.muted)),
+                if (isDriver) Text('${tr(context, 'driverVerification')}: ${u['verificationStatus'] ?? 'pending'}', style: DsStyle.inherit.copyWith(color: AppColors.muted)),
+                if (isDriver) ...[const SizedBox(height: 8), Text(tr(context, 'autoCheckTitle'), style: DsStyle.w700), const SizedBox(height: 4), AutoCheckChips(user: u)],
+                if (ProfileExtras.fromProfile(u).currentAddress.isNotEmpty) Text('${tr(context, 'addrCurrent')}: ${maskAddress(ProfileExtras.fromProfile(u).currentAddress)}', key: const ValueKey('maskedAddr'), style: DsStyle.inherit.copyWith(color: AppColors.muted)),
+                if (ProfileExtras.fromProfile(u).upiId.isNotEmpty) Text('UPI: ${maskUpiId(ProfileExtras.fromProfile(u).upiId)}', key: const ValueKey('maskedUpi'), style: DsStyle.inherit.copyWith(color: AppColors.muted)),
               ]),
             ),
             const SizedBox(height: 12),
@@ -167,7 +168,7 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
             const SizedBox(height: 20),
             UserRiskChecks(uid: widget.uid, isDriver: isDriver),
             const SizedBox(height: 20),
-            Text(tr(context, 'auNotes'), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+            Text(tr(context, 'auNotes'), style: DsStyle.t16w700),
             Row(children: [
               Expanded(child: TextField(key: const ValueKey('noteField'), controller: _note, maxLength: 1000, decoration: InputDecoration(hintText: tr(context, 'auNoteHint'), counterText: ''))),
               IconButton(tooltip: tr(context, 'a11yAddNote'), key: const ValueKey('noteAdd'), icon: const Icon(Icons.add_comment_outlined), onPressed: _addNote),
@@ -176,19 +177,19 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
               stream: () => _notes,
               compact: true,
               builder: (context, notes) => notes.isEmpty
-                  ? Text(tr(context, 'auNoNotes'), style: TextStyle(color: AppColors.muted))
+                  ? Text(tr(context, 'auNoNotes'), style: DsStyle.inherit.copyWith(color: AppColors.muted))
                   : Column(children: [
                       for (final n in notes)
                         ListTile(contentPadding: EdgeInsets.zero, dense: true, title: Text(n.text), subtitle: Text(n.createdAt == null ? n.by : '${n.by} · ${formatDateTime(n.createdAt!)}')),
                     ]),
             ),
             const SizedBox(height: 20),
-            Text(tr(context, 'auHistory'), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+            Text(tr(context, 'auHistory'), style: DsStyle.t16w700),
             LiveStream<List<UserActionEvent>>(
               stream: () => _history,
               compact: true,
               builder: (context, events) => events.isEmpty
-                  ? Text(tr(context, 'auNoHistory'), style: TextStyle(color: AppColors.muted))
+                  ? Text(tr(context, 'auNoHistory'), style: DsStyle.inherit.copyWith(color: AppColors.muted))
                   : Column(children: [
                       for (final e in events)
                         ListTile(

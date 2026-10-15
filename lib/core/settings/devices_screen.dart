@@ -5,6 +5,7 @@ import '../l10n/l10n.dart';
 import '../services/device_service.dart';
 import '../widgets/common.dart';
 import '../widgets/live_stream.dart';
+import '../theme/design_tokens.dart';
 
 /// Settings > My devices: where the account is signed in, trust / revoke a
 /// device, and "log out everywhere".
@@ -65,7 +66,7 @@ class _DevicesScreenState extends State<DevicesScreen> {
               key: ValueKey('device_${d.id}'),
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Row(children: [
-                  Expanded(child: Text('${d.label}${d.id == _mine ? ' · ${tr(context, 'thisDevice')}' : ''}', style: const TextStyle(fontWeight: FontWeight.w800))),
+                  Expanded(child: Text('${d.label}${d.id == _mine ? ' · ${tr(context, 'thisDevice')}' : ''}', style: DsStyle.w700)),
                   if (d.revoked)
                     StatusChip(label: tr(context, 'deviceRevoked'), color: Colors.redAccent)
                   else if (d.trusted)
@@ -73,7 +74,7 @@ class _DevicesScreenState extends State<DevicesScreen> {
                   else
                     StatusChip(label: tr(context, 'deviceNew'), color: AppColors.warning),
                 ]),
-                if (d.lastSeenAt != null) Text(formatDateTime(d.lastSeenAt!), style: TextStyle(color: AppColors.muted, fontSize: 12)),
+                if (d.lastSeenAt != null) Text(formatDateTime(d.lastSeenAt!), style: DsStyle.t12w400.copyWith(color: AppColors.muted)),
                 if (!d.revoked)
                   Row(children: [
                     if (!d.trusted) TextButton(key: ValueKey('trust_${d.id}'), onPressed: () => _run(() => DeviceService.trust(d.id)), child: Text(tr(context, 'deviceTrust'))),

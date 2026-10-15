@@ -57,6 +57,7 @@ import 'assigned_trips_card.dart';
 import 'fleet_invites_card.dart';
 import 'wallet_screen.dart';
 import '../core/documents/documents_center_screen.dart';
+import '../core/theme/design_tokens.dart';
 
 class DriverHomeScreen extends StatefulWidget {
   const DriverHomeScreen({super.key});
@@ -147,7 +148,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
     return tr(context, 'goodEvening');
   }
 
-  Widget _title(String text) => Text(text, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.title));
+  Widget _title(String text) => Text(text, style: DsStyle.t20w700.copyWith(color: AppColors.title));
 
   Widget _emptyCard(IconData icon, String text) => Container(
         width: double.infinity,
@@ -157,7 +158,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
           children: [
             Icon(icon, color: AppColors.faint),
             const SizedBox(width: 12),
-            Expanded(child: Text(text, style: TextStyle(color: AppColors.muted))),
+            Expanded(child: Text(text, style: DsStyle.inherit.copyWith(color: AppColors.muted))),
           ],
         ),
       );
@@ -172,9 +173,9 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(icon, color: const Color(0xFF1565C0), size: 28),
+                Icon(icon, color: AppColors.primary, size: 28),
                 const SizedBox(height: 10),
-                Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800)),
+                Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: DsStyle.t14w700),
               ],
             ),
           ),
@@ -249,9 +250,9 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(tr(context, 'noVehicleTitle'), style: TextStyle(fontWeight: FontWeight.w800, color: AppColors.title)),
+                      Text(tr(context, 'noVehicleTitle'), style: DsStyle.w700.copyWith(color: AppColors.title)),
                       const SizedBox(height: 2),
-                      Text(tr(context, 'noVehicleSub'), style: TextStyle(fontSize: 12, color: AppColors.muted)),
+                      Text(tr(context, 'noVehicleSub'), style: DsStyle.t12w400.copyWith(color: AppColors.muted)),
                     ],
                   ),
                 ),
@@ -282,9 +283,9 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(_greeting(), style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800)),
+                      Text(_greeting(), style: DsStyle.t24w700),
                       const SizedBox(height: 2),
-                      Text(tr(context, 'driver'), style: TextStyle(color: AppColors.muted)),
+                      Text(tr(context, 'driver'), style: DsStyle.inherit.copyWith(color: AppColors.muted)),
                     ],
                   ),
                 ),
@@ -293,7 +294,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                   tooltip: tr(context, 'search'),
                   onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const GlobalSearchScreen(isDriver: true))),
                   icon: const Icon(Icons.search_rounded),
-                  color: const Color(0xFF1565C0),
+                  color: AppColors.primary,
                 ),
                 SahayakButton(
                   role: 'driver',
@@ -302,7 +303,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                     openNearbyLoads: () => _selectTab(_loadsTab),
                   ),
                 ),
-                IconButton(tooltip: tr(context, 'language'), onPressed: () => showLanguageSelector(context), icon: const Icon(Icons.language_rounded), color: const Color(0xFF1565C0)),
+                IconButton(tooltip: tr(context, 'language'), onPressed: () => showLanguageSelector(context), icon: const Icon(Icons.language_rounded), color: AppColors.primary),
                 NotificationBell(isDriver: true, onOpenBooking: (id) => openDriverTrip(context, id)),
               ],
             ),
@@ -312,10 +313,10 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
               decoration: BoxDecoration(color: _isOnline ? AppColors.successBg : AppColors.chip, borderRadius: BorderRadius.circular(18)),
               child: Row(
                 children: [
-                  Icon(Icons.circle, size: 14, color: _isOnline ? const Color(0xFF12B76A) : AppColors.faint),
+                  Icon(Icons.circle, size: 14, color: _isOnline ? AppColors.success : AppColors.faint),
                   const SizedBox(width: 10),
                   Expanded(
-                    child: Text(_isOnline ? tr(context, 'online') : tr(context, 'offline'), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+                    child: Text(_isOnline ? tr(context, 'online') : tr(context, 'offline'), style: DsStyle.t18w700),
                   ),
                   Switch(key: const ValueKey('onlineSwitch'), value: _isOnline, onChanged: _setOnline),
                 ],
@@ -347,11 +348,11 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(gradient: const LinearGradient(colors: [Color(0xFF0D47A1), Color(0xFF1976D2)]), borderRadius: BorderRadius.circular(20)),
+              decoration: BoxDecoration(gradient: const LinearGradient(colors: DsHero.colors), borderRadius: BorderRadius.circular(20)),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(tr(context, 'todayEarnings'), style: const TextStyle(color: Colors.white70)),
+                  Text(tr(context, 'todayEarnings'), style: DsStyle.inherit.copyWith(color: Colors.white70)),
                   const SizedBox(height: 6),
                   TodayEarningsText(bookings: _todayTrips),
                 ],

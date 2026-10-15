@@ -23,6 +23,7 @@ import '../core/voice/voice_parser.dart';
 import 'recommended_loads.dart';
 import '../core/services/match_service.dart';
 import '../core/matching/load_ranker.dart' show PlannedRoute;
+import '../core/theme/design_tokens.dart';
 
 /// Accept button wired to the full accept flow, with its own busy state.
 class AcceptLoadButton extends StatefulWidget {
@@ -88,7 +89,7 @@ class _AcceptLoadButtonState extends State<AcceptLoadButton> {
         icon: _busy
             ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
             : const Icon(Icons.check_circle_outline_rounded),
-        label: Text(tr(context, 'accept'), style: const TextStyle(fontWeight: FontWeight.w700)),
+        label: Text(tr(context, 'accept'), style: DsStyle.w700),
       ),
     );
   }
@@ -175,7 +176,7 @@ class _AvailableLoadsViewState extends State<AvailableLoadsView> {
         const SizedBox(width: 4),
         Text(trf(context, 'kmAway', {'n': km}),
             key: ValueKey('kmAway_$km'),
-            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.primary)),
+            style: DsStyle.t14w700.copyWith(color: AppColors.primary)),
       ]),
     );
   }
@@ -276,7 +277,7 @@ class _AvailableLoadsViewState extends State<AvailableLoadsView> {
             child: Row(children: [
               Expanded(
                 child: Text(tr(context, 'availableLoads'),
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: AppColors.title)),
+                    style: DsStyle.t24w700.copyWith(color: AppColors.title)),
               ),
               IconButton(
                 key: const ValueKey('plannedRoute'),

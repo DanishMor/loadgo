@@ -9,6 +9,7 @@ import '../core/models/enterprise.dart';
 import '../core/services/enterprise_service.dart';
 import '../core/widgets/common.dart';
 import '../core/widgets/live_stream.dart';
+import '../core/theme/design_tokens.dart';
 
 String branchTypeLabel(BuildContext context, String type) => tr(context, switch (type) {
       BranchType.factory => 'placeFactory',
@@ -120,7 +121,7 @@ class _BusinessScreenState extends State<BusinessScreen> {
                   ),
                   Padding(
                     padding: const EdgeInsets.only(bottom: 8),
-                    child: Text(tr(context, 'gstinNote'), style: TextStyle(fontSize: 12, color: AppColors.muted)),
+                    child: Text(tr(context, 'gstinNote'), style: DsStyle.t12w400.copyWith(color: AppColors.muted)),
                   ),
                   TextFormField(
                     key: const ValueKey('bizAddress'),
@@ -133,7 +134,7 @@ class _BusinessScreenState extends State<BusinessScreen> {
               ),
               const SizedBox(height: 24),
               Row(children: [
-                Expanded(child: Text(tr(context, 'branches'), style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 18))),
+                Expanded(child: Text(tr(context, 'branches'), style: DsStyle.t18w700)),
                 TextButton.icon(
                   key: const ValueKey('addBranch'),
                   onPressed: _addBranch,

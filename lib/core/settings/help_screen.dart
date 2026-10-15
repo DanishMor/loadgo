@@ -8,6 +8,7 @@ import '../l10n/l10n.dart';
 import 'feedback_screen.dart';
 import 'legal_screens.dart';
 import 'onboarding_screen.dart';
+import '../theme/design_tokens.dart';
 
 /// Which questions each role sees (MASTER-5 Task 42). A role not listed for a
 /// question does not see it; `null` (role unknown) sees them all.
@@ -66,10 +67,10 @@ class HelpScreen extends StatelessWidget {
           ExpansionTile(
             key: ValueKey('faq$i'),
             initiallyExpanded: openFaq == i,
-            title: Text(tr(context, 'faqQ$i'), style: const TextStyle(fontWeight: FontWeight.w700)),
+            title: Text(tr(context, 'faqQ$i'), style: DsStyle.w700),
             childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
             expandedAlignment: Alignment.centerLeft,
-            children: [Text(tr(context, 'faqA$i'), style: const TextStyle(height: 1.4))],
+            children: [Text(tr(context, 'faqA$i'), style: DsStyle.inherit.copyWith(height: 1.4))],
           ),
         const Divider(),
         ListTile(

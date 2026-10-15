@@ -7,6 +7,7 @@ import '../core/models/driver_extras.dart';
 import '../core/services/driver_extras_service.dart';
 import '../core/widgets/common.dart';
 import '../core/widgets/live_stream.dart';
+import '../core/theme/design_tokens.dart';
 
 /// Admin: driver incentives (create, switch off), claims to pay by hand, and
 /// Pro plan requests / manual plan changes.
@@ -53,7 +54,7 @@ class _IncentivesTab extends StatelessWidget {
             for (final i in list)
               ListTile(
                 key: ValueKey('adminIncentive_${i.id}'),
-                title: Text(i.title, style: const TextStyle(fontWeight: FontWeight.w800)),
+                title: Text(i.title, style: DsStyle.w700),
                 subtitle: Text('${trf(context, 'incentiveRule', {'trips': i.targetTrips, 'days': i.windowDays, 'bonus': formatPaise(i.bonusPaise)})}\n${formatDate(i.startsAt)}'),
                 isThreeLine: true,
                 trailing: Switch(
@@ -162,7 +163,7 @@ class _ClaimsTab extends StatelessWidget {
               title: Text('${formatPaise(c.bonusPaise)} · ${c.driverId}'),
               subtitle: Text('${c.incentiveId} · ${c.createdAt == null ? '' : formatDateTime(c.createdAt!)}'),
               trailing: c.status == IncentiveClaim.paid
-                  ? Text(tr(context, 'claimPaid'), style: const TextStyle(color: AppColors.success, fontWeight: FontWeight.w700))
+                  ? Text(tr(context, 'claimPaid'), style: DsStyle.w700.copyWith(color: AppColors.success))
                   : FilledButton.tonal(
                       key: ValueKey('markPaid_${c.id}'),
                       onPressed: () => DriverExtrasService.markClaimPaid(c.id),
@@ -207,7 +208,7 @@ class _PlansTabState extends State<_PlansTab> {
     return ListView(padding: const EdgeInsets.all(16), children: [
       TextField(key: const ValueKey('planDays'), controller: _days, keyboardType: TextInputType.number, decoration: InputDecoration(labelText: tr(context, 'planDays')), inputFormatters: [LengthLimitingTextInputFormatter(10)]),
       const SizedBox(height: 8),
-      Text(tr(context, 'planRequests'), style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+      Text(tr(context, 'planRequests'), style: DsStyle.t16w700),
       LiveStream<List<dynamic>>(
         stream: DriverExtrasService.watchPlanRequests,
         compact: true,

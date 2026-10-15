@@ -8,6 +8,7 @@ import '../core/offers/offers_switch.dart';
 import '../core/services/offers_switch_service.dart';
 import '../core/services/rewards_service.dart';
 import '../core/widgets/common.dart';
+import '../core/theme/design_tokens.dart';
 
 /// Result of the offers block on Post Load: the promo to try (re-checked and
 /// numbered when the load is posted) and the credits to spend.
@@ -172,7 +173,7 @@ class _OffersSectionState extends State<OffersSection> {
               child: Text(
                 stale ? tr(context, 'promoNoLongerFits') : trf(context, 'promoApplied', {'amount': formatPaise(discount)}),
                 key: const ValueKey('promoApplied'),
-                style: TextStyle(color: stale ? AppColors.warning : AppColors.success, fontWeight: FontWeight.w700),
+                style: DsStyle.w700.copyWith(color: stale ? AppColors.warning : AppColors.success),
               ),
             ),
           if (sw.credits && _balance > 0)
@@ -194,11 +195,11 @@ class _OffersSectionState extends State<OffersSection> {
                   'amount': formatPaise(payableAfterOffers(total: total, promo: stale ? null : _promo, creditsBalance: _balance, useCredits: _useCredits)),
                 }),
                 key: const ValueKey('payableAfterOffers'),
-                style: TextStyle(fontWeight: FontWeight.w800, color: AppColors.title),
+                style: DsStyle.w700.copyWith(color: AppColors.title),
               ),
             ),
           const SizedBox(height: 4),
-          Text(tr(context, 'offersRecordNote'), style: TextStyle(color: AppColors.faint, fontSize: 12)),
+          Text(tr(context, 'offersRecordNote'), style: DsStyle.t12w400.copyWith(color: AppColors.faint)),
         ],
       ),
     );

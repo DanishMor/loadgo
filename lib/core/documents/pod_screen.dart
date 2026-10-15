@@ -8,6 +8,7 @@ import '../widgets/logistics_labels.dart';
 import '../models/trip_evidence.dart';
 import '../services/trip_evidence_service.dart';
 import '../widgets/signature_pad.dart';
+import '../theme/design_tokens.dart';
 
 /// Proof-of-delivery packet: timeline with times, OTP checks, cargo details
 /// at pickup and receiver details at delivery. Same view for both parties.
@@ -22,12 +23,12 @@ class PodScreen extends StatelessWidget {
       children: [
         SizedBox(
           width: 140,
-          child: Text(label, style: TextStyle(color: AppColors.muted)),
+          child: Text(label, style: DsStyle.inherit.copyWith(color: AppColors.muted)),
         ),
         Expanded(
           child: Text(
             value,
-            style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.title),
+            style: DsStyle.w600.copyWith(color: AppColors.title),
           ),
         ),
       ],
@@ -40,7 +41,7 @@ class PodScreen extends StatelessWidget {
       children: [
         Text(
           title,
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.title),
+          style: DsStyle.t16w700.copyWith(color: AppColors.title),
         ),
         const SizedBox(height: 6),
         ...children,
@@ -59,7 +60,7 @@ class PodScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: AppColors.background,
         scrolledUnderElevation: 0,
-        title: Text(tr(context, 'podTitle'), style: const TextStyle(fontWeight: FontWeight.w700)),
+        title: Text(tr(context, 'podTitle'), style: DsStyle.w700),
       ),
       body: SafeArea(
         // Not lazy: the packet is short and should read like one document.
@@ -69,7 +70,7 @@ class PodScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               _section(tr(context, 'route'), [
-                Text(b.route.join('  →  '), style: const TextStyle(fontWeight: FontWeight.w700)),
+                Text(b.route.join('  →  '), style: DsStyle.w700),
                 row(tr(context, 'lrNumber'), b.lrNumber),
                 row(tr(context, 'vehicle'), '${b.vehicleNumber} (${vehicleTypeLabel(context, b.vehicleType)})'),
                 if (b.driverName.isNotEmpty) row(tr(context, 'driver'), b.driverName),
@@ -119,7 +120,7 @@ class PodScreen extends StatelessWidget {
                     Icon(Icons.photo_library_outlined, color: AppColors.faint),
                     const SizedBox(width: 10),
                     Expanded(
-                      child: Text(tr(context, 'photosLater'), style: TextStyle(color: AppColors.muted)),
+                      child: Text(tr(context, 'photosLater'), style: DsStyle.inherit.copyWith(color: AppColors.muted)),
                     ),
                   ],
                 ),

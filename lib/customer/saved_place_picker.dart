@@ -7,6 +7,7 @@ import '../core/l10n/l10n.dart';
 import '../core/models/saved_place.dart';
 import '../core/services/saved_place_service.dart';
 import '../core/widgets/common.dart';
+import '../core/theme/design_tokens.dart';
 
 String placeLabelText(BuildContext context, String label) => tr(context, switch (label) {
       PlaceLabel.office => 'placeOffice',
@@ -63,7 +64,7 @@ class _SavedPlacesSheetState extends State<_SavedPlacesSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(tr(context, 'savedPlaces'), style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
+            Text(tr(context, 'savedPlaces'), style: DsStyle.t20w700),
             const SizedBox(height: 8),
             Flexible(
               child: StreamBuilder<List<SavedPlace>>(
@@ -73,7 +74,7 @@ class _SavedPlacesSheetState extends State<_SavedPlacesSheet> {
                   if (snap.hasData && places.isEmpty) {
                     return Padding(
                       padding: const EdgeInsets.symmetric(vertical: 16),
-                      child: Text(tr(context, 'noSavedPlaces'), style: TextStyle(color: AppColors.muted)),
+                      child: Text(tr(context, 'noSavedPlaces'), style: DsStyle.inherit.copyWith(color: AppColors.muted)),
                     );
                   }
                   return ListView(
@@ -84,7 +85,7 @@ class _SavedPlacesSheetState extends State<_SavedPlacesSheet> {
                           key: ValueKey('place_${p.id}'),
                           contentPadding: EdgeInsets.zero,
                           leading: Icon(placeLabelIcon(p.label), color: AppColors.primary),
-                          title: Text(p.name, style: const TextStyle(fontWeight: FontWeight.w700)),
+                          title: Text(p.name, style: DsStyle.w700),
                           subtitle: Text('${placeLabelText(context, p.label)} • ${p.address}${p.hasBilling ? '\nGSTIN ${p.gstin}' : ''}'),
                           isThreeLine: p.hasBilling,
                           onTap: () => Navigator.of(context).pop(p),

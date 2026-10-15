@@ -16,6 +16,7 @@ import '../core/payments/statement_sheet.dart';
 import '../core/wallet/txn_history_screen.dart';
 import '../core/widgets/common.dart';
 import '../core/widgets/live_stream.dart';
+import '../core/theme/design_tokens.dart';
 
 /// Driver wallet: pending / available / paid-out figures, payout requests,
 /// and the ledger lines (trip earnings and platform commission). Records
@@ -38,8 +39,8 @@ class _WalletScreenState extends State<WalletScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(label, style: TextStyle(color: AppColors.muted, fontSize: 12)),
-            Text(formatPaise(paise), key: key, style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: color ?? AppColors.title)),
+            Text(label, style: DsStyle.t12w400.copyWith(color: AppColors.muted)),
+            Text(formatPaise(paise), key: key, style: DsStyle.t16w700.copyWith(color: color ?? AppColors.title)),
           ],
         ),
       );
@@ -100,7 +101,7 @@ class _WalletScreenState extends State<WalletScreen> {
       appBar: AppBar(
         backgroundColor: AppColors.background,
         scrolledUnderElevation: 0,
-        title: Text(tr(context, 'wallet'), style: const TextStyle(fontWeight: FontWeight.w700)),
+        title: Text(tr(context, 'wallet'), style: DsStyle.w700),
         actions: [
           IconButton(
             key: const ValueKey('openTxnHistory'),
@@ -165,23 +166,23 @@ class _WalletScreenState extends State<WalletScreen> {
                         label: Text(tr(context, 'stmtTitle')),
                       ),
                     ),
-                    Text(tr(context, 'recordsOnly'), style: TextStyle(fontSize: 12, color: AppColors.faint)),
+                    Text(tr(context, 'recordsOnly'), style: DsStyle.t12w400.copyWith(color: AppColors.faint)),
                     if (payouts.isNotEmpty) ...[
                       const SizedBox(height: 16),
-                      Text(tr(context, 'payoutHistory'), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+                      Text(tr(context, 'payoutHistory'), style: DsStyle.t18w700),
                       for (final p in payouts)
                         ListTile(
                           key: ValueKey('payout_${p.id}'),
                           contentPadding: EdgeInsets.zero,
                           leading: const Icon(Icons.account_balance_outlined),
-                          title: Text(formatPaise(p.amountPaise), style: const TextStyle(fontWeight: FontWeight.w800)),
+                          title: Text(formatPaise(p.amountPaise), style: DsStyle.w700),
                           subtitle: p.createdAt == null ? null : Text(formatDateTime(p.createdAt!)),
                           trailing: StatusChip(label: tr(context, 'payout_${p.status}'), color: _statusColor(p.status)),
                         ),
                     ],
                     WalletWaitingCard(bookings: bookings, onOpen: widget.onOpenTrip ?? (c, id) => openDriverTrip(c, id)),
                     const SizedBox(height: 12),
-                    if (entries.isEmpty) Text(tr(context, 'noLedger'), style: TextStyle(color: AppColors.muted)),
+                    if (entries.isEmpty) Text(tr(context, 'noLedger'), style: DsStyle.inherit.copyWith(color: AppColors.muted)),
                     for (final e in entries)
                       ListTile(
                         key: ValueKey('ledger_${e.id}'),
@@ -196,7 +197,7 @@ class _WalletScreenState extends State<WalletScreen> {
                           'LG-${e.bookingId.length > 10 ? e.bookingId.substring(0, 10).toUpperCase() : e.bookingId.toUpperCase()}',
                           if (e.createdAt != null) formatDateTime(e.createdAt!),
                         ].join(' • ')),
-                        trailing: Text(formatPaise(e.amountPaise), style: const TextStyle(fontWeight: FontWeight.w800)),
+                        trailing: Text(formatPaise(e.amountPaise), style: DsStyle.w700),
                       ),
                   ],
                 );

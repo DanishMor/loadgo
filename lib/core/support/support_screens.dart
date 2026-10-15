@@ -16,6 +16,7 @@ import '../services/support_service.dart';
 import '../safety/call.dart';
 import '../widgets/common.dart';
 import '../widgets/live_stream.dart';
+import '../theme/design_tokens.dart';
 
 String ticketCategoryLabel(BuildContext context, String c) => tr(context, switch (c) {
   TicketCategory.bookingIssue => 'catBookingIssue',
@@ -66,7 +67,7 @@ class TicketTile extends StatelessWidget {
               Expanded(
                 child: Text(
                   t.subject,
-                  style: TextStyle(fontWeight: FontWeight.w800, color: AppColors.title),
+                  style: DsStyle.w700.copyWith(color: AppColors.title),
                 ),
               ),
               StatusChip(label: ticketStatusLabel(context, t.status), color: ticketStatusColor(t.status)),
@@ -81,7 +82,7 @@ class TicketTile extends StatelessWidget {
               if (t.escalationLevel > 0) trf(context, 'escalationLevel', {'n': t.escalationLevel}),
               if (t.updatedAt != null) formatDateTime(t.updatedAt!),
             ].join(' • '),
-            style: TextStyle(color: AppColors.muted, fontSize: 12),
+            style: DsStyle.t12w400.copyWith(color: AppColors.muted),
           ),
         ],
       ),
@@ -100,7 +101,7 @@ class SupportHomeScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: AppColors.background,
         scrolledUnderElevation: 0,
-        title: Text(tr(context, 'helpSupport'), style: const TextStyle(fontWeight: FontWeight.w700)),
+        title: Text(tr(context, 'helpSupport'), style: DsStyle.w700),
       ),
       floatingActionButton: FloatingActionButton.extended(
         key: const ValueKey('newTicket'),
@@ -125,8 +126,8 @@ class SupportHomeScreen extends StatelessWidget {
                     const SizedBox(width: 12),
                     Expanded(
                       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                        Text(tr(context, 'callSupport'), style: const TextStyle(fontWeight: FontWeight.w800)),
-                        Text(c.hours.isEmpty ? c.phone : '${c.phone} · ${c.hours}', style: TextStyle(color: AppColors.muted, fontSize: 13)),
+                        Text(tr(context, 'callSupport'), style: DsStyle.w700),
+                        Text(c.hours.isEmpty ? c.phone : '${c.phone} · ${c.hours}', style: DsStyle.t14w400.copyWith(color: AppColors.muted)),
                       ]),
                     ),
                   ]),
@@ -242,7 +243,7 @@ class _NewTicketScreenState extends State<NewTicketScreen> {
       appBar: AppBar(
         backgroundColor: AppColors.background,
         scrolledUnderElevation: 0,
-        title: Text(tr(context, 'newTicket'), style: const TextStyle(fontWeight: FontWeight.w700)),
+        title: Text(tr(context, 'newTicket'), style: DsStyle.w700),
       ),
       body: SafeArea(
         child: Form(
@@ -359,7 +360,7 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                 for (final t in templates)
                   ListTile(
                     key: ValueKey('pickTpl_${t.id}'),
-                    title: Text(t.title, style: const TextStyle(fontWeight: FontWeight.w700)),
+                    title: Text(t.title, style: DsStyle.w700),
                     subtitle: Text(t.text, maxLines: 2, overflow: TextOverflow.ellipsis),
                     onTap: () => Navigator.pop(c, t),
                   ),
@@ -392,7 +393,7 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
       appBar: AppBar(
         backgroundColor: AppColors.background,
         scrolledUnderElevation: 0,
-        title: Text(tr(context, 'helpSupport'), style: const TextStyle(fontWeight: FontWeight.w700)),
+        title: Text(tr(context, 'helpSupport'), style: DsStyle.w700),
       ),
       body: SafeArea(
         child: LiveDoc<SupportTicket>(
@@ -445,16 +446,13 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                                       r.fromAdmin
                                           ? tr(context, 'supportTeam')
                                           : (r.authorId == Backend.uid ? tr(context, 'you') : tr(context, 'customer')),
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.w700,
-                                        color: r.fromAdmin ? AppColors.primary : AppColors.title,
-                                      ),
+                                      style: DsStyle.w700.copyWith(color: r.fromAdmin ? AppColors.primary : AppColors.title),
                                     ),
                                     Text(r.text),
                                     if (r.createdAt != null)
                                       Text(
                                         formatDateTime(r.createdAt!),
-                                        style: TextStyle(fontSize: 11, color: AppColors.faint),
+                                        style: DsStyle.t12w400.copyWith(color: AppColors.faint),
                                       ),
                                   ],
                                 ),

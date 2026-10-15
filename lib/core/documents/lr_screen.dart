@@ -12,6 +12,7 @@ import '../widgets/logistics_labels.dart';
 import 'pod_screen.dart';
 import '../bilty/bilty_card.dart';
 import '../services/backend.dart';
+import '../theme/design_tokens.dart';
 
 /// Digital lorry receipt (LR / bilty) generated from the booking, with the
 /// e-way bill number either party can record.
@@ -26,7 +27,7 @@ class LrScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: AppColors.background,
         scrolledUnderElevation: 0,
-        title: Text(tr(context, 'lrTitle'), style: const TextStyle(fontWeight: FontWeight.w700)),
+        title: Text(tr(context, 'lrTitle'), style: DsStyle.w700),
       ),
       body: SafeArea(
         child: LiveDoc<Booking>(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'l10n.dart';
 import '../widgets/common.dart';
+import '../theme/design_tokens.dart';
 
 void showLanguageSelector(BuildContext context) {
   showModalBottomSheet<void>(
@@ -21,12 +22,12 @@ void showLanguageSelector(BuildContext context) {
                 children: [
                   Text(
                     tr(context, 'language'),
-                    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
+                    style: DsStyle.t24w700,
                   ),
                   const SizedBox(height: 6),
                   Text(
                     tr(context, 'languageCount'),
-                    style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+                    style: DsStyle.t14w400.copyWith(color: Colors.grey.shade600),
                   ),
                   const SizedBox(height: 14),
                   Flexible(
@@ -45,7 +46,7 @@ void showLanguageSelector(BuildContext context) {
                               isSelected ? AppColors.primaryLight : Colors.transparent,
                           leading: CircleAvatar(
                             backgroundColor: isSelected
-                                ? const Color(0xFF1565C0)
+                                ? AppColors.primary
                                 : AppColors.chip,
                             child: Icon(
                               Icons.language_rounded,
@@ -54,14 +55,11 @@ void showLanguageSelector(BuildContext context) {
                           ),
                           title: Text(
                             languageInfo[lang]!.nativeName,
-                            style: TextStyle(
-                              fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                              color: AppColors.title,
-                            ),
+                            style: DsStyle.inherit.copyWith(fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600, color: AppColors.title),
                           ),
                           subtitle: Text(languageInfo[lang]!.englishName),
                           trailing: isSelected
-                              ? const Icon(Icons.check_circle_rounded, color: Color(0xFF1565C0))
+                              ? const Icon(Icons.check_circle_rounded, color: AppColors.primary)
                               : null,
                           onTap: () {
                             setAppLanguage(lang);

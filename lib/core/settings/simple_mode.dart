@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../l10n/l10n.dart';
 import '../widgets/common.dart';
+import '../theme/design_tokens.dart';
 
 /// Driver Simple Mode: big buttons, icons and very little text. Saved on the
 /// device (shared_preferences); off until the driver chooses it.
@@ -112,7 +113,7 @@ class _SimpleModePromptState extends State<SimpleModePrompt> {
             Row(children: [
               const Icon(Icons.accessibility_new_rounded, size: 28),
               const SizedBox(width: 10),
-              Expanded(child: Text(tr(context, 'simpleModeAsk'), style: const TextStyle(fontWeight: FontWeight.w700))),
+              Expanded(child: Text(tr(context, 'simpleModeAsk'), style: DsStyle.w700)),
             ]),
             const SizedBox(height: 10),
             Row(children: [

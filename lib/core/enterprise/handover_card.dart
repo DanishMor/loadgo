@@ -7,6 +7,7 @@ import '../models/booking.dart';
 import '../models/handover.dart';
 import '../services/handover_service.dart';
 import '../widgets/common.dart';
+import '../theme/design_tokens.dart';
 
 /// Container handover on a two-leg shipment (IE10), shown to the driver of
 /// either leg. Nothing for an ordinary booking.
@@ -64,10 +65,10 @@ class _HandoverCardState extends State<HandoverCard> {
               children.add(Text(trf(context, 'hoDetails', {'container': h!.containerNumber.isEmpty ? '-' : h.containerNumber, 'seal': h.leg1!.sealNumber.isEmpty ? '-' : h.leg1!.sealNumber}), key: const ValueKey('hoDetails')));
             }
             if (h?.complete == true) {
-              children.add(Text(tr(context, h!.sealMatches ? 'hoDone' : 'hoSealDiffers'), key: ValueKey(h.sealMatches ? 'hoDone' : 'hoSealDiffers'), style: TextStyle(fontWeight: FontWeight.w700, color: h.sealMatches ? AppColors.success : AppColors.warning)));
+              children.add(Text(tr(context, h!.sealMatches ? 'hoDone' : 'hoSealDiffers'), key: ValueKey(h.sealMatches ? 'hoDone' : 'hoSealDiffers'), style: DsStyle.w700.copyWith(color: h.sealMatches ? AppColors.success : AppColors.warning)));
             } else if (leg.leg == 1) {
               if (h?.leg1 != null) {
-                children.add(Text(tr(context, 'hoLeg1Done'), key: const ValueKey('hoLeg1Done'), style: TextStyle(color: AppColors.muted)));
+                children.add(Text(tr(context, 'hoLeg1Done'), key: const ValueKey('hoLeg1Done'), style: DsStyle.inherit.copyWith(color: AppColors.muted)));
               } else if (b.status == BookingStatus.unloading || b.status == BookingStatus.delivered) {
                 children.addAll([
                   _field('hoContainer', _container, tr(context, 'containerNumber'), max: 15),
@@ -78,7 +79,7 @@ class _HandoverCardState extends State<HandoverCard> {
               }
             } else {
               if (h?.leg1 == null) {
-                children.add(Text(tr(context, 'hoWaiting'), key: const ValueKey('hoWaiting'), style: TextStyle(color: AppColors.muted)));
+                children.add(Text(tr(context, 'hoWaiting'), key: const ValueKey('hoWaiting'), style: DsStyle.inherit.copyWith(color: AppColors.muted)));
               } else {
                 children.addAll([
                   _field('hoSeal', _seal, tr(context, 'hoSeal')),
@@ -91,7 +92,7 @@ class _HandoverCardState extends State<HandoverCard> {
             return AppCard(
               key: const ValueKey('handoverCard'),
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(tr(context, 'hoTitle'), style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+                Text(tr(context, 'hoTitle'), style: DsStyle.t16w700),
                 const SizedBox(height: 6),
                 ...children,
               ]),

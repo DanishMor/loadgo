@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'common.dart';
+import '../theme/design_tokens.dart';
 
 /// One labelled number on an analytics screen.
 class StatTile extends StatelessWidget {
@@ -16,8 +17,8 @@ class StatTile extends StatelessWidget {
       child: Row(children: [
         Icon(icon, color: AppColors.primary),
         const SizedBox(width: 12),
-        Expanded(child: Text(label, style: TextStyle(color: AppColors.muted))),
-        Text(value, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.title)),
+        Expanded(child: Text(label, style: DsStyle.inherit.copyWith(color: AppColors.muted))),
+        Text(value, style: DsStyle.t18w700.copyWith(color: AppColors.title)),
       ]),
     );
   }

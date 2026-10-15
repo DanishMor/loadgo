@@ -5,6 +5,7 @@ import '../core/models/booking.dart';
 import '../core/services/transporter_service.dart';
 import '../core/widgets/common.dart';
 import '../core/widgets/logistics_labels.dart';
+import '../core/theme/design_tokens.dart';
 
 /// Driver home: trips a transporter assigned to this driver (the booking is
 /// the company's; the driver moves it through the trip steps). Shows nothing
@@ -34,7 +35,7 @@ class _AssignedTripsCardState extends State<AssignedTripsCard> {
           child: AppCard(
             key: const ValueKey('assignedTrips'),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(tr(context, 'trpMyAssigned'), style: const TextStyle(fontWeight: FontWeight.w800)),
+              Text(tr(context, 'trpMyAssigned'), style: DsStyle.w700),
               for (final b in trips)
                 InkWell(
                   key: ValueKey('assignedTrip_${b.id}'),
@@ -42,10 +43,10 @@ class _AssignedTripsCardState extends State<AssignedTripsCard> {
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8),
                     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      Text('${b.pickup} → ${b.drop}', style: const TextStyle(fontWeight: FontWeight.w600)),
+                      Text('${b.pickup} → ${b.drop}', style: DsStyle.w600),
                       const SizedBox(height: 4),
                       Wrap(spacing: 8, runSpacing: 4, crossAxisAlignment: WrapCrossAlignment.center, children: [
-                        if (b.assignedVehicleNumber.isNotEmpty) Text(b.assignedVehicleNumber, style: TextStyle(color: AppColors.muted)),
+                        if (b.assignedVehicleNumber.isNotEmpty) Text(b.assignedVehicleNumber, style: DsStyle.inherit.copyWith(color: AppColors.muted)),
                         StatusChip(label: bookingStatusLabel(context, b.status), color: bookingStatusColor(b.status)),
                       ]),
                     ]),

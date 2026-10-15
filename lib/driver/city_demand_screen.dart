@@ -10,6 +10,7 @@ import '../core/services/vehicle_service.dart';
 import '../core/widgets/common.dart';
 import '../core/widgets/live_stream.dart';
 import '../core/widgets/logistics_labels.dart';
+import '../core/theme/design_tokens.dart';
 
 /// Driver > City demand: how many open loads start in each city and which
 /// vehicle types are asked for most. Types the driver owns are highlighted.
@@ -51,9 +52,9 @@ class _CityDemandScreenState extends State<CityDemandScreen> {
                 return ListView(
                   padding: const EdgeInsets.fromLTRB(20, 8, 20, 30),
                   children: [
-                    Text(trf(context, 'demandTotal', {'n': summary.totalLoads}), style: TextStyle(color: AppColors.muted)),
+                    Text(trf(context, 'demandTotal', {'n': summary.totalLoads}), style: DsStyle.inherit.copyWith(color: AppColors.muted)),
                     const SizedBox(height: 16),
-                    Text(tr(context, 'demandByType'), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+                    Text(tr(context, 'demandByType'), style: DsStyle.t18w700),
                     const SizedBox(height: 8),
                     for (final e in summary.byType.entries)
                       Padding(
@@ -63,16 +64,16 @@ class _CityDemandScreenState extends State<CityDemandScreen> {
                           SizedBox(
                             width: 110,
                             child: Text(vehicleTypeLabel(context, e.key),
-                                style: TextStyle(fontWeight: mine.contains(e.key) ? FontWeight.w800 : FontWeight.w500)),
+                                style: DsStyle.inherit.copyWith(fontWeight: mine.contains(e.key) ? FontWeight.w800 : FontWeight.w500)),
                           ),
                           Expanded(child: LinearProgressIndicator(value: e.value / maxType, minHeight: 10, borderRadius: BorderRadius.circular(8))),
                           const SizedBox(width: 8),
-                          Text('${e.value}', style: const TextStyle(fontWeight: FontWeight.w800)),
+                          Text('${e.value}', style: DsStyle.w700),
                           if (mine.contains(e.key)) const Padding(padding: EdgeInsets.only(left: 4), child: Icon(Icons.local_shipping_rounded, size: 16, color: AppColors.primary)),
                         ]),
                       ),
                     const SizedBox(height: 16),
-                    Text(tr(context, 'demandByCity'), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+                    Text(tr(context, 'demandByCity'), style: DsStyle.t18w700),
                     const SizedBox(height: 8),
                     for (final c in summary.cities)
                       Padding(
@@ -81,8 +82,8 @@ class _CityDemandScreenState extends State<CityDemandScreen> {
                           key: ValueKey('city_${c.city}'),
                           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                             Row(children: [
-                              Expanded(child: Text(_cityLabel(c), style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16))),
-                              Text(trf(context, 'demandLoads', {'n': c.loads}), style: const TextStyle(fontWeight: FontWeight.w800, color: AppColors.primary)),
+                              Expanded(child: Text(_cityLabel(c), style: DsStyle.t16w700)),
+                              Text(trf(context, 'demandLoads', {'n': c.loads}), style: DsStyle.w700.copyWith(color: AppColors.primary)),
                             ]),
                             const SizedBox(height: 8),
                             Wrap(spacing: 8, runSpacing: 4, children: [
@@ -96,7 +97,7 @@ class _CityDemandScreenState extends State<CityDemandScreen> {
                           ]),
                         ),
                       ),
-                    Text(tr(context, 'demandNote'), style: TextStyle(color: AppColors.faint, fontSize: 12)),
+                    Text(tr(context, 'demandNote'), style: DsStyle.t12w400.copyWith(color: AppColors.faint)),
                   ],
                 );
               },

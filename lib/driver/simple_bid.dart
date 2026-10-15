@@ -4,6 +4,7 @@ import '../core/l10n/l10n.dart';
 import '../core/voice/voice_input.dart';
 import '../core/voice/voice_parser.dart';
 import '../core/widgets/common.dart';
+import '../core/theme/design_tokens.dart';
 
 /// Step of the big +/- buttons: 100 rupees below 5,000, 500 above.
 int simpleBidStep(int rupees) => rupees < 5000 ? 100 : 500;
@@ -63,7 +64,7 @@ class _SimpleBidSheetState extends State<_SimpleBidSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(tr(context, 'yourPrice'), textAlign: TextAlign.center, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
+            Text(tr(context, 'yourPrice'), textAlign: TextAlign.center, style: DsStyle.t20w700),
             const SizedBox(height: 12),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -71,7 +72,7 @@ class _SimpleBidSheetState extends State<_SimpleBidSheet> {
                 _stepper(Icons.remove_rounded, false, const ValueKey('bidMinus')),
                 Expanded(
                   child: Text(formatRupees(_rupees),
-                      key: const ValueKey('bidAmount'), textAlign: TextAlign.center, style: const TextStyle(fontSize: 38, fontWeight: FontWeight.w800)),
+                      key: const ValueKey('bidAmount'), textAlign: TextAlign.center, style: DsStyle.t32w700),
                 ),
                 _stepper(Icons.add_rounded, true, const ValueKey('bidPlus')),
               ],
@@ -85,7 +86,7 @@ class _SimpleBidSheetState extends State<_SimpleBidSheet> {
               child: FilledButton(
                 key: const ValueKey('bidConfirm'),
                 onPressed: () => Navigator.of(context).pop(_rupees * 100),
-                child: Text(tr(context, 'simpleSendPrice'), style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800)),
+                child: Text(tr(context, 'simpleSendPrice'), style: DsStyle.t24w700),
               ),
             ),
           ],

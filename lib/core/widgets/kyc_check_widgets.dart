@@ -5,6 +5,7 @@ import '../l10n/l10n.dart';
 import '../services/admin_user_service.dart';
 import '../services/user_service.dart';
 import 'common.dart';
+import '../theme/design_tokens.dart';
 
 String kycProblemLabel(BuildContext context, String code) => tr(context, switch (code) {
       KycProblem.licenceExpired => 'kpLicenceExpired',
@@ -70,8 +71,8 @@ class _ReviewFlagBannerState extends State<ReviewFlagBanner> {
               const SizedBox(width: 12),
               Expanded(
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text(tr(context, 'reviewFlagTitle'), style: const TextStyle(fontWeight: FontWeight.w800)),
-                  Text('${reviewKindLabel(context, f['kind'] as String? ?? ReviewKind.other)}: ${f['note'] ?? ''}', style: TextStyle(color: AppColors.muted)),
+                  Text(tr(context, 'reviewFlagTitle'), style: DsStyle.w700),
+                  Text('${reviewKindLabel(context, f['kind'] as String? ?? ReviewKind.other)}: ${f['note'] ?? ''}', style: DsStyle.inherit.copyWith(color: AppColors.muted)),
                 ]),
               ),
             ]),

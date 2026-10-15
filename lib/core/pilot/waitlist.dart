@@ -6,6 +6,7 @@ import '../pricing/cities.dart';
 import '../services/backend.dart';
 import '../services/ttl_cache.dart';
 import '../widgets/common.dart';
+import '../theme/design_tokens.dart';
 
 /// Which cities the pilot serves (MASTER-6 Task 2): `config/pilot.openCities`
 /// (city names). An empty or missing list means everywhere; a place that is
@@ -153,7 +154,7 @@ class _WaitlistOpenCardState extends State<WaitlistOpenCard> {
         child: Row(children: [
           Icon(Icons.celebration_outlined, color: AppColors.success),
           const SizedBox(width: 12),
-          Expanded(child: Text(trf(context, 'wlOpened', {'from': w.from, 'to': w.to}), style: const TextStyle(fontWeight: FontWeight.w700))),
+          Expanded(child: Text(trf(context, 'wlOpened', {'from': w.from, 'to': w.to}), style: DsStyle.w700)),
           IconButton(
             key: const ValueKey('wlOpenClose'),
             tooltip: tr(context, 'wlGotIt'),

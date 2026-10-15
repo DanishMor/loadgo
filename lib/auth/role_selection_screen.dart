@@ -9,6 +9,7 @@ import '../core/l10n/language_widgets.dart';
 import 'driver_login_screen.dart';
 import 'customer_login_screen.dart';
 import '../core/widgets/common.dart';
+import '../core/theme/design_tokens.dart';
 
 
 // ROLE SELECTION
@@ -41,17 +42,17 @@ class RoleSelectionScreen extends StatelessWidget {
               const SizedBox(height: 20),
               Text(
                 AppInfo.name,
-                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Color(0xFF1565C0)),
+                style: DsStyle.t14w700.copyWith(color: AppColors.primary),
               ),
               const SizedBox(height: 12),
               Text(
                 tr(context, 'welcome'),
-                style: TextStyle(fontSize: 30, fontWeight: FontWeight.w800, color: AppColors.title),
+                style: DsStyle.t32w700.copyWith(color: AppColors.title),
               ),
               const SizedBox(height: 8),
               Text(
                 tr(context, 'chooseRole'),
-                style: TextStyle(fontSize: 16, color: AppColors.muted),
+                style: DsStyle.t16w400.copyWith(color: AppColors.muted),
               ),
               const SizedBox(height: 32),
               _RoleCard(
@@ -108,7 +109,7 @@ class RoleSelectionScreen extends StatelessWidget {
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.language_rounded, color: Color(0xFF1565C0), size: 25),
+                      const Icon(Icons.language_rounded, color: AppColors.primary, size: 25),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Column(
@@ -116,12 +117,12 @@ class RoleSelectionScreen extends StatelessWidget {
                           children: [
                             Text(
                               tr(context, 'language'),
-                              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                              style: DsStyle.t16w700,
                             ),
                             const SizedBox(height: 3),
                             Text(
                               trLanguageName(LanguageScope.of(context)),
-                              style: TextStyle(fontSize: 13, color: AppColors.muted),
+                              style: DsStyle.t14w400.copyWith(color: AppColors.muted),
                             ),
                           ],
                         ),
@@ -136,7 +137,7 @@ class RoleSelectionScreen extends StatelessWidget {
                 child: Text(
                   tr(context, 'footer'),
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 13, color: AppColors.muted, fontWeight: FontWeight.w500),
+                  style: DsStyle.t14w400.copyWith(color: AppColors.muted),
                 ),
               ),
             ],
@@ -181,12 +182,12 @@ class _RoleCard extends StatelessWidget {
             width: 58,
             height: 58,
             decoration: BoxDecoration(color: AppColors.primaryLight, borderRadius: BorderRadius.circular(16)),
-            child: Icon(icon, color: const Color(0xFF1565C0), size: 32),
+            child: Icon(icon, color: AppColors.primary, size: 32),
           ),
           const SizedBox(height: 16),
-          Text(title, style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: AppColors.title)),
+          Text(title, style: DsStyle.t24w700.copyWith(color: AppColors.title)),
           const SizedBox(height: 7),
-          Text(subtitle, style: TextStyle(fontSize: 14, height: 1.45, color: AppColors.muted)),
+          Text(subtitle, style: DsStyle.t14w400.copyWith(height: 1.45, color: AppColors.muted)),
           const SizedBox(height: 18),
           SizedBox(
             width: double.infinity,
@@ -194,7 +195,7 @@ class _RoleCard extends StatelessWidget {
             child: ElevatedButton(
               onPressed: onPressed,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF1565C0),
+                backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
                 elevation: 0,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
@@ -202,7 +203,7 @@ class _RoleCard extends StatelessWidget {
               child: Text(
                 buttonText,
                 textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                style: DsStyle.t16w700,
               ),
             ),
           ),

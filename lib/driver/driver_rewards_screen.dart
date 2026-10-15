@@ -10,6 +10,7 @@ import '../core/services/pricing_service.dart';
 import '../core/services/user_service.dart';
 import '../core/widgets/common.dart';
 import '../core/widgets/live_stream.dart';
+import '../core/theme/design_tokens.dart';
 
 /// Driver > Earnings > "Tips, bonuses and plan": tips received, incentive
 /// targets with progress and a claim button, and the Free / Pro plan.
@@ -53,7 +54,7 @@ class _DriverRewardsScreenState extends State<DriverRewardsScreen> {
 
   Widget _section(String key) => Padding(
         padding: const EdgeInsets.only(top: 18, bottom: 8),
-        child: Text(tr(context, key), style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.title)),
+        child: Text(tr(context, key), style: DsStyle.t18w700.copyWith(color: AppColors.title)),
       );
 
   Widget _planCard() {
@@ -70,12 +71,12 @@ class _DriverRewardsScreenState extends State<DriverRewardsScreen> {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(tr(context, pro ? 'planPro' : 'planFree'),
-                    key: const ValueKey('currentPlan'), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+                    key: const ValueKey('currentPlan'), style: DsStyle.t18w700),
               ),
             ]),
             const SizedBox(height: 8),
             Text(trf(context, 'planCommissions', {'free': formatNum(cfg.commissionPercent), 'pro': formatNum(cfg.proCommissionPercent)}),
-                style: TextStyle(color: AppColors.muted)),
+                style: DsStyle.inherit.copyWith(color: AppColors.muted)),
             if (!pro)
               StreamBuilder<Map<String, dynamic>?>(
                 stream: DriverExtrasService.watchMyPlanRequest(),
@@ -84,13 +85,13 @@ class _DriverRewardsScreenState extends State<DriverRewardsScreen> {
                   return Padding(
                     padding: const EdgeInsets.only(top: 10),
                     child: status == DriverPlan.requestPending
-                        ? Text(tr(context, 'planPending'), key: const ValueKey('planPending'), style: const TextStyle(color: AppColors.warning, fontWeight: FontWeight.w700))
+                        ? Text(tr(context, 'planPending'), key: const ValueKey('planPending'), style: DsStyle.w700.copyWith(color: AppColors.warning))
                         : FilledButton.tonal(key: const ValueKey('requestPro'), onPressed: _requestPro, child: Text(tr(context, 'planRequestPro'))),
                   );
                 },
               ),
             const SizedBox(height: 6),
-            Text(tr(context, 'planNote'), style: TextStyle(color: AppColors.faint, fontSize: 12)),
+            Text(tr(context, 'planNote'), style: DsStyle.t12w400.copyWith(color: AppColors.faint)),
           ]),
         );
       },
@@ -119,7 +120,7 @@ class _DriverRewardsScreenState extends State<DriverRewardsScreen> {
                 builder: (context, list) {
                   final now = DateTime.now();
                   final shown = [for (final i in list) if (i.isRunning(now) || claims.any((c) => c.incentiveId == i.id) || i.canClaim(bookings, now)) i];
-                  if (shown.isEmpty) return Text(tr(context, 'noIncentives'), style: TextStyle(color: AppColors.muted));
+                  if (shown.isEmpty) return Text(tr(context, 'noIncentives'), style: DsStyle.inherit.copyWith(color: AppColors.muted));
                   return Column(children: [for (final i in shown) _incentiveCard(i, bookings, claims, now)]);
                 },
               ),
@@ -132,9 +133,9 @@ class _DriverRewardsScreenState extends State<DriverRewardsScreen> {
           compact: true,
           builder: (context, tips) => AppCard(
             child: Row(children: [
-              Expanded(child: Text(trf(context, 'tipsCount', {'n': tips.length}), style: TextStyle(color: AppColors.muted))),
+              Expanded(child: Text(trf(context, 'tipsCount', {'n': tips.length}), style: DsStyle.inherit.copyWith(color: AppColors.muted))),
               Text(formatPaise(Tip.total(tips)),
-                  key: const ValueKey('tipsTotal'), style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.primary)),
+                  key: const ValueKey('tipsTotal'), style: DsStyle.t20w700.copyWith(color: AppColors.primary)),
             ]),
           ),
         ),
@@ -151,22 +152,22 @@ class _DriverRewardsScreenState extends State<DriverRewardsScreen> {
       child: AppCard(
         key: ValueKey('incentive_${i.id}'),
         child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          Text(i.title, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+          Text(i.title, style: DsStyle.t16w700),
           const SizedBox(height: 4),
           Text(trf(context, 'incentiveRule', {'trips': i.targetTrips, 'days': i.windowDays, 'bonus': formatPaise(i.bonusPaise)}),
-              style: TextStyle(color: AppColors.muted, fontSize: 13)),
+              style: DsStyle.t14w400.copyWith(color: AppColors.muted)),
           const SizedBox(height: 10),
           LinearProgressIndicator(key: ValueKey('progress_${i.id}'), value: i.progress(bookings), minHeight: 8, borderRadius: BorderRadius.circular(8)),
           const SizedBox(height: 6),
           Text(trf(context, 'incentiveProgress', {'done': done > i.targetTrips ? i.targetTrips : done, 'target': i.targetTrips}),
-              key: ValueKey('progressText_${i.id}'), style: const TextStyle(fontWeight: FontWeight.w700)),
-          if (daysLeft >= 0) Text(trf(context, 'incentiveDaysLeft', {'n': daysLeft}), style: TextStyle(color: AppColors.faint, fontSize: 12)),
+              key: ValueKey('progressText_${i.id}'), style: DsStyle.w700),
+          if (daysLeft >= 0) Text(trf(context, 'incentiveDaysLeft', {'n': daysLeft}), style: DsStyle.t12w400.copyWith(color: AppColors.faint)),
           if (claim != null)
             Padding(
               padding: const EdgeInsets.only(top: 8),
               child: Text(tr(context, claim.status == IncentiveClaim.paid ? 'claimPaid' : 'claimWaiting'),
                   key: ValueKey('claimState_${i.id}'),
-                  style: TextStyle(color: claim.status == IncentiveClaim.paid ? AppColors.success : AppColors.warning, fontWeight: FontWeight.w700)),
+                  style: DsStyle.w700.copyWith(color: claim.status == IncentiveClaim.paid ? AppColors.success : AppColors.warning)),
             )
           else if (i.canClaim(bookings, now))
             Padding(

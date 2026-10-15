@@ -5,6 +5,7 @@ import '../core/onboarding/driver_onboarding.dart';
 import '../core/services/user_service.dart';
 import '../core/widgets/common.dart';
 import 'driver_kyc_screen.dart';
+import '../core/theme/design_tokens.dart';
 
 /// Progress bar, step list and document checklist of a driver in set-up, and
 /// the reason plus a way to send documents again after a rejection
@@ -41,7 +42,7 @@ class _DriverOnboardingCardState extends State<DriverOnboardingCard> {
         return AppCard(
           key: const ValueKey('onboardingCard'),
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(trf(context, 'obTitle', {'done': o.doneCount, 'total': o.steps.length}), style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+            Text(trf(context, 'obTitle', {'done': o.doneCount, 'total': o.steps.length}), style: DsStyle.t16w700),
             const SizedBox(height: 8),
             LinearProgressIndicator(key: const ValueKey('obBar'), value: o.fraction, minHeight: 8, borderRadius: BorderRadius.circular(4)),
             const SizedBox(height: 8),
@@ -56,13 +57,13 @@ class _DriverOnboardingCardState extends State<DriverOnboardingCard> {
               Row(children: [
                 Icon(d.present ? Icons.check_rounded : Icons.close_rounded, size: 16, color: d.present ? AppColors.success : AppColors.warning),
                 const SizedBox(width: 8),
-                Expanded(child: Text(tr(context, 'obDoc_${d.key}'), style: TextStyle(color: AppColors.muted, fontSize: 13))),
+                Expanded(child: Text(tr(context, 'obDoc_${d.key}'), style: DsStyle.t14w400.copyWith(color: AppColors.muted))),
               ]),
             if (o.isRejected) ...[
               const SizedBox(height: 12),
-              Text(tr(context, 'obRejectedTitle'), key: const ValueKey('obRejected'), style: TextStyle(fontWeight: FontWeight.w800, color: AppColors.warning)),
+              Text(tr(context, 'obRejectedTitle'), key: const ValueKey('obRejected'), style: DsStyle.w700.copyWith(color: AppColors.warning)),
               if (o.rejectReason.isNotEmpty) Text(tr(context, RejectReason.labelKey(o.rejectReason)), key: const ValueKey('obReason')),
-              if (o.rejectNote.isNotEmpty) Text(o.rejectNote, key: const ValueKey('obNote'), style: TextStyle(color: AppColors.muted)),
+              if (o.rejectNote.isNotEmpty) Text(o.rejectNote, key: const ValueKey('obNote'), style: DsStyle.inherit.copyWith(color: AppColors.muted)),
               const SizedBox(height: 8),
               FilledButton(key: const ValueKey('obResubmit'), onPressed: _resubmit, child: Text(tr(context, 'obResubmit'))),
             ],

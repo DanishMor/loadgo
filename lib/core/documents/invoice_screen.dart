@@ -13,6 +13,7 @@ import '../widgets/live_stream.dart';
 import '../widgets/logistics_labels.dart';
 import 'invoice_issue_card.dart';
 import 'payment_card.dart';
+import '../theme/design_tokens.dart';
 
 void openInvoice(BuildContext context, String bookingId) {
   Navigator.of(context).push(MaterialPageRoute(builder: (_) => InvoiceScreen(bookingId: bookingId)));
@@ -38,7 +39,7 @@ class InvoiceScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: AppColors.background,
         scrolledUnderElevation: 0,
-        title: Text(tr(context, 'invoice'), style: const TextStyle(fontWeight: FontWeight.w700)),
+        title: Text(tr(context, 'invoice'), style: DsStyle.w700),
       ),
       body: SafeArea(
         child: LiveDoc<Booking>(
@@ -66,9 +67,9 @@ class InvoiceScreen extends StatelessWidget {
                             const Icon(Icons.local_shipping_rounded, color: AppColors.primary),
                             const SizedBox(width: 8),
                             Text(AppInfo.name,
-                                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.primary)),
+                                style: DsStyle.t18w700.copyWith(color: AppColors.primary)),
                             const Spacer(),
-                            Text(invoiceNumber(b), style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.body)),
+                            Text(invoiceNumber(b), style: DsStyle.w700.copyWith(color: AppColors.body)),
                           ],
                         ),
                         const Divider(height: 28),
@@ -85,25 +86,25 @@ class InvoiceScreen extends StatelessWidget {
                         if (gst == null)
                           _InvoiceRow(tr(context, 'fare'), tr(context, 'budgetNegotiable'))
                         else ...[
-                          Text(tr(context, 'taxBreakdown'), style: const TextStyle(fontWeight: FontWeight.w800)),
+                          Text(tr(context, 'taxBreakdown'), style: DsStyle.w700),
                           _InvoiceRow(tr(context, 'taxableValue'), formatPaise(gst.taxable)),
                           _InvoiceRow(trf(context, 'cgst', {'p': half}), formatPaise(gst.cgst)),
                           _InvoiceRow(trf(context, 'sgst', {'p': half}), formatPaise(gst.sgst)),
                           const Divider(height: 20),
                           Row(
                             children: [
-                              Text(tr(context, 'invoiceTotal'), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+                              Text(tr(context, 'invoiceTotal'), style: DsStyle.t16w700),
                               const Spacer(),
                               Text(
                                 formatPaise(gst.total),
                                 key: const ValueKey('invoiceTotal'),
-                                style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: AppColors.primary),
+                                style: DsStyle.t24w700.copyWith(color: AppColors.primary),
                               ),
                             ],
                           ),
                         ],
                         const SizedBox(height: 8),
-                        Text(tr(context, 'invoiceNote'), style: TextStyle(fontSize: 12, color: AppColors.faint)),
+                        Text(tr(context, 'invoiceNote'), style: DsStyle.t12w400.copyWith(color: AppColors.faint)),
                       ],
                     ),
                   ),
@@ -132,10 +133,10 @@ class _InvoiceRow extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(width: 130, child: Text(label, style: TextStyle(color: AppColors.muted))),
+            SizedBox(width: 130, child: Text(label, style: DsStyle.inherit.copyWith(color: AppColors.muted))),
             Expanded(
               child: Text(value,
-                  textAlign: TextAlign.right, style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.title)),
+                  textAlign: TextAlign.right, style: DsStyle.w700.copyWith(color: AppColors.title)),
             ),
           ],
         ),

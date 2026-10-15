@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../core/l10n/l10n.dart';
 import '../core/models/vehicle.dart';
 import '../core/widgets/common.dart';
+import '../core/theme/design_tokens.dart';
 
 /// Number of vehicle papers expiring within 30 days (or expired) and
 /// vehicles whose service is due, across [vehicles].
@@ -44,10 +45,10 @@ class VehicleAlertsBanner extends StatelessWidget {
                       if (a.expiringDocs > 0)
                         Text(
                           trf(context, 'docsExpiringBanner', {'n': a.expiringDocs}),
-                          style: TextStyle(fontWeight: FontWeight.w800, color: AppColors.title),
+                          style: DsStyle.w700.copyWith(color: AppColors.title),
                         ),
                       if (a.serviceDue > 0)
-                        Text(tr(context, 'serviceDue'), style: TextStyle(fontSize: 13, color: AppColors.muted)),
+                        Text(tr(context, 'serviceDue'), style: DsStyle.t14w400.copyWith(color: AppColors.muted)),
                     ],
                   ),
                 ),

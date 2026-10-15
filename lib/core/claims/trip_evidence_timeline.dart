@@ -7,6 +7,7 @@ import '../services/booking_service.dart';
 import '../widgets/common.dart';
 import '../widgets/live_stream.dart';
 import '../widgets/logistics_labels.dart';
+import '../theme/design_tokens.dart';
 
 /// One line of what the trip's own records say happened (MASTER-5 Task 34).
 class EvidenceStep {
@@ -71,7 +72,7 @@ class TripEvidenceTimeline extends StatelessWidget {
       compact: true,
       builder: (context, b) {
         final steps = b == null ? const <EvidenceStep>[] : TripEvidence.of(b);
-        if (steps.isEmpty) return Text(tr(context, 'evNone'), style: TextStyle(color: AppColors.muted));
+        if (steps.isEmpty) return Text(tr(context, 'evNone'), style: DsStyle.inherit.copyWith(color: AppColors.muted));
         return Column(children: [
           for (final (i, s) in steps.indexed)
             ListTile(

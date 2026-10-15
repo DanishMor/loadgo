@@ -9,6 +9,7 @@ import '../services/network_service.dart';
 import '../services/rate_limit_service.dart';
 import '../widgets/common.dart';
 import 'network_logic.dart';
+import '../theme/design_tokens.dart';
 
 /// Lets a driver send a load card to a connection or a group (D14, CH7).
 Future<void> showShareToNetwork(BuildContext context, Load load) async {
@@ -60,9 +61,9 @@ class _ShareSheet extends StatelessWidget {
               shrinkWrap: true,
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
               children: [
-                Text(tr(context, 'netShareTo'), style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+                Text(tr(context, 'netShareTo'), style: DsStyle.t16w700),
                 const SizedBox(height: 8),
-                if (conns.isEmpty && gs.isEmpty) Padding(padding: const EdgeInsets.all(12), child: Text(tr(context, 'netShareNothing'), style: TextStyle(color: AppColors.muted))),
+                if (conns.isEmpty && gs.isEmpty) Padding(padding: const EdgeInsets.all(12), child: Text(tr(context, 'netShareNothing'), style: DsStyle.inherit.copyWith(color: AppColors.muted))),
                 for (final g in gs)
                   ListTile(
                     key: ValueKey('shareTo_group_${g.id}'),

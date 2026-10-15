@@ -16,6 +16,7 @@ import '../services/comm_guard.dart';
 import '../services/server_clock.dart';
 import 'chat_helpers.dart';
 import 'strike_appeal_screen.dart';
+import '../theme/design_tokens.dart';
 
 /// "Chat" button with an unread badge for a booking (both roles).
 class BookingChatButton extends StatelessWidget {
@@ -122,11 +123,11 @@ class _ChatScreenState extends State<ChatScreen> {
         icon: const Icon(Icons.shield_outlined),
         title: Text(tr(c, 'pcWarnTitle')),
         content: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(tr(c, 'pcKind${o.kind.name}'), style: const TextStyle(fontWeight: FontWeight.w700)),
+          Text(tr(c, 'pcKind${o.kind.name}'), style: DsStyle.w700),
           const SizedBox(height: 8),
           Text(body),
           if (o.review) Padding(padding: const EdgeInsets.only(top: 8), child: Text(tr(c, 'pcReviewNote'))),
-          if (!o.recorded) Padding(padding: const EdgeInsets.only(top: 8), child: Text(tr(c, 'pcNotRecorded'), style: TextStyle(color: AppColors.muted, fontSize: 12))),
+          if (!o.recorded) Padding(padding: const EdgeInsets.only(top: 8), child: Text(tr(c, 'pcNotRecorded'), style: DsStyle.t12w400.copyWith(color: AppColors.muted))),
         ]),
         actions: [FilledButton(key: const ValueKey('contactWarningOk'), onPressed: () => Navigator.of(c).pop(), child: Text(tr(c, 'pcOk')))],
       ),
@@ -162,7 +163,7 @@ class _ChatScreenState extends State<ChatScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(m.text, style: TextStyle(color: mine ? Colors.white : AppColors.title)),
+              Text(m.text, style: DsStyle.inherit.copyWith(color: mine ? Colors.white : AppColors.title)),
               if (m.flagged)
                 Padding(
                   padding: const EdgeInsets.only(top: 4),
@@ -173,14 +174,14 @@ class _ChatScreenState extends State<ChatScreen> {
                       const SizedBox(width: 4),
                       Flexible(
                         child: Text(tr(context, 'flaggedMessage'),
-                            style: TextStyle(fontSize: 11, color: mine ? Colors.white70 : AppColors.warning)),
+                            style: DsStyle.t12w400.copyWith(color: mine ? Colors.white70 : AppColors.warning)),
                       ),
                     ],
                   ),
                 ),
               if (m.createdAt != null)
                 Row(mainAxisSize: MainAxisSize.min, children: [
-                  Text(formatDateTime(m.createdAt!), style: TextStyle(fontSize: 10, color: mine ? Colors.white60 : AppColors.faint)),
+                  Text(formatDateTime(m.createdAt!), style: DsStyle.t12w400.copyWith(color: mine ? Colors.white60 : AppColors.faint)),
                   if (mine) ...[
                     const SizedBox(width: 4),
                     Icon(
@@ -206,7 +207,7 @@ class _ChatScreenState extends State<ChatScreen> {
       appBar: AppBar(
         backgroundColor: AppColors.background,
         scrolledUnderElevation: 0,
-        title: Text(tr(context, 'chat'), style: const TextStyle(fontWeight: FontWeight.w700)),
+        title: Text(tr(context, 'chat'), style: DsStyle.w700),
         actions: [
           if (bookingAllowsCall(widget.booking))
             IconButton(
@@ -244,7 +245,7 @@ class _ChatScreenState extends State<ChatScreen> {
               width: double.infinity,
               color: AppColors.warnBg,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              child: Text(tr(context, 'pcChatNote'), style: TextStyle(fontSize: 12, color: AppColors.body)),
+              child: Text(tr(context, 'pcChatNote'), style: DsStyle.t12w400.copyWith(color: AppColors.body)),
             ),
             StreamBuilder<ChatStatus>(
               stream: CommGuard.watch(),
@@ -256,7 +257,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   width: double.infinity,
                   color: Colors.red.withValues(alpha: 0.12),
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                  child: Text(trf(context, 'pcBlockedBanner', {'until': formatDateTime(until)}), style: TextStyle(fontSize: 12, color: AppColors.body)),
+                  child: Text(trf(context, 'pcBlockedBanner', {'until': formatDateTime(until)}), style: DsStyle.t12w400.copyWith(color: AppColors.body)),
                 );
               },
             ),
@@ -284,7 +285,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 if (snap.data == true) {
                   return Padding(
                     padding: const EdgeInsets.all(16),
-                    child: Text(tr(context, 'youBlocked'), style: TextStyle(color: AppColors.muted)),
+                    child: Text(tr(context, 'youBlocked'), style: DsStyle.inherit.copyWith(color: AppColors.muted)),
                   );
                 }
                 return Padding(
@@ -311,7 +312,7 @@ class _ChatScreenState extends State<ChatScreen> {
                         if (n == null || n > ChatHelpers.lowAt) return const SizedBox.shrink();
                         return Padding(
                           padding: const EdgeInsets.only(bottom: 4),
-                          child: Text(trf(context, 'chatLeft', {'n': n}), key: const ValueKey('chatLeft'), style: TextStyle(fontSize: 12, color: n == 0 ? Colors.redAccent : AppColors.warning)),
+                          child: Text(trf(context, 'chatLeft', {'n': n}), key: const ValueKey('chatLeft'), style: DsStyle.t12w400.copyWith(color: n == 0 ? Colors.redAccent : AppColors.warning)),
                         );
                       },
                     ),

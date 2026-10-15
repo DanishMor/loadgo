@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../l10n/l10n.dart';
 import '../services/backend.dart';
 import '../widgets/common.dart';
+import '../theme/design_tokens.dart';
 
 /// Home card: a reminder an admin left about a payment record (MASTER-6
 /// Task 8). [target] is `customer` or `driver`. "Got it" removes it.
@@ -55,7 +56,7 @@ class _PaymentNudgeCardState extends State<PaymentNudgeCard> {
           const SizedBox(width: 12),
           Expanded(
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(tr(context, 'pagCardTitle'), style: const TextStyle(fontWeight: FontWeight.w800)),
+              Text(tr(context, 'pagCardTitle'), style: DsStyle.w700),
               Text(tr(context, widget.target == 'driver' ? 'pagCardDriver' : 'pagCardCustomer')),
             ]),
           ),

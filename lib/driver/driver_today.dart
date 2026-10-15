@@ -12,6 +12,7 @@ import '../core/services/match_service.dart';
 import '../core/services/pricing_service.dart';
 import '../core/widgets/common.dart';
 import 'upcoming_trips.dart';
+import '../core/theme/design_tokens.dart';
 
 /// The four numbers of a driver's day (MASTER-6 Task 22).
 class DriverToday {
@@ -126,8 +127,8 @@ class _DriverTodayStripState extends State<DriverTodayStrip> {
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Icon(icon, size: 20, color: alert ? AppColors.warning : AppColors.primary),
               const SizedBox(height: 6),
-              Text(value, key: ValueKey('todayN_$id'), maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
-              Text(label, maxLines: 2, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 11, color: AppColors.muted)),
+              Text(value, key: ValueKey('todayN_$id'), maxLines: 1, overflow: TextOverflow.ellipsis, style: DsStyle.t18w700),
+              Text(label, maxLines: 2, overflow: TextOverflow.ellipsis, style: DsStyle.t12w400.copyWith(color: AppColors.muted)),
             ]),
           ),
         ),

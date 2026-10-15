@@ -8,6 +8,7 @@ import '../core/services/user_service.dart';
 import 'role_selection_screen.dart';
 import 'start_resolvers.dart';
 import '../core/widgets/common.dart';
+import '../core/theme/design_tokens.dart';
 
 /// One clear question during driver onboarding: may LoadGo keep the last
 /// location to show the nearest loads first? Either answer continues.
@@ -75,12 +76,12 @@ class _DriverConsentScreenState extends State<DriverConsentScreen> {
                           width: 96,
                           height: 96,
                           decoration: BoxDecoration(color: AppColors.primaryLight, borderRadius: BorderRadius.circular(28)),
-                          child: const Icon(Icons.my_location_rounded, size: 50, color: Color(0xFF1565C0)),
+                          child: const Icon(Icons.my_location_rounded, size: 50, color: AppColors.primary),
                         ),
                         const SizedBox(height: 24),
-                        Text(tr(context, 'locConsentTitle'), textAlign: TextAlign.center, style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: AppColors.title)),
+                        Text(tr(context, 'locConsentTitle'), textAlign: TextAlign.center, style: DsStyle.t28w700.copyWith(color: AppColors.title)),
                         const SizedBox(height: 12),
-                        Text(tr(context, 'locConsentBody'), textAlign: TextAlign.center, style: TextStyle(fontSize: 15, height: 1.5, color: AppColors.muted)),
+                        Text(tr(context, 'locConsentBody'), textAlign: TextAlign.center, style: DsStyle.t16w400.copyWith(height: 1.5, color: AppColors.muted)),
                         ],
                       ),
                     ),
@@ -92,7 +93,7 @@ class _DriverConsentScreenState extends State<DriverConsentScreen> {
                   child: FilledButton(
                     key: const ValueKey('consentAllow'),
                     onPressed: _saving ? null : () => _answer(true),
-                    child: Text(tr(context, 'locConsentAllow'), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+                    child: Text(tr(context, 'locConsentAllow'), style: DsStyle.t16w700),
                   ),
                 ),
                 const SizedBox(height: 8),

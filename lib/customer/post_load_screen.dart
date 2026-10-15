@@ -42,6 +42,7 @@ import '../core/services/recurring_service.dart';
 import '../core/services/repeat_service.dart';
 import '../core/services/rate_limit_service.dart';
 import '../core/pilot/waitlist.dart';
+import '../core/theme/design_tokens.dart';
 
 /// Customer form to post a load. Pops with `true` once posted.
 /// [repostFrom] prefills everything except the pickup date.
@@ -420,12 +421,12 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
                 'hours': _rentalHours,
               }),
               key: const ValueKey('rentalIncludes'),
-              style: TextStyle(color: AppColors.muted, fontSize: 13),
+              style: DsStyle.t14w400.copyWith(color: AppColors.muted),
             )
           else
             Text(
               auto != null ? trf(context, 'distanceAuto', {'km': auto}) : tr(context, 'distanceUnknown'),
-              style: TextStyle(color: AppColors.muted, fontSize: 13),
+              style: DsStyle.t14w400.copyWith(color: AppColors.muted),
             ),
           if (_bookingType != BookingType.rental) const SizedBox(height: 10),
           if (_bookingType != BookingType.rental) TextFormField(
@@ -448,10 +449,10 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(tr(context, 'fareTotal'), style: TextStyle(color: AppColors.muted, fontSize: 12)),
+                      Text(tr(context, 'fareTotal'), style: DsStyle.t12w400.copyWith(color: AppColors.muted)),
                       Text(formatPaise(quote.total),
                           key: const ValueKey('fareTotal'),
-                          style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: AppColors.title)),
+                          style: DsStyle.t24w700.copyWith(color: AppColors.title)),
                     ],
                   ),
                 ),
@@ -466,7 +467,7 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
             ),
           ],
           const SizedBox(height: 6),
-          Text(tr(context, 'estimateNote'), style: TextStyle(color: AppColors.faint, fontSize: 12)),
+          Text(tr(context, 'estimateNote'), style: DsStyle.t12w400.copyWith(color: AppColors.faint)),
         ],
       ),
     );
@@ -713,7 +714,7 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
       appBar: AppBar(
         backgroundColor: AppColors.background,
         scrolledUnderElevation: 0,
-        title: Text(tr(context, 'postLoad'), style: const TextStyle(fontWeight: FontWeight.w700)),
+        title: Text(tr(context, 'postLoad'), style: DsStyle.w700),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -737,8 +738,8 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
                     child: AppCard(
                       key: const ValueKey('draftBanner'),
                       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                        Text(tr(context, 'draftTitle'), style: const TextStyle(fontWeight: FontWeight.w800)),
-                        Text('${_draft!.pickup.trim().isEmpty ? '...' : _draft!.pickup} → ${_draft!.drop.trim().isEmpty ? '...' : _draft!.drop}', style: TextStyle(color: AppColors.muted)),
+                        Text(tr(context, 'draftTitle'), style: DsStyle.w700),
+                        Text('${_draft!.pickup.trim().isEmpty ? '...' : _draft!.pickup} → ${_draft!.drop.trim().isEmpty ? '...' : _draft!.drop}', style: DsStyle.inherit.copyWith(color: AppColors.muted)),
                         const SizedBox(height: 6),
                         Wrap(spacing: 8, children: [
                           FilledButton(key: const ValueKey('draftResume'), onPressed: () => _applyDraft(_draft!), child: Text(tr(context, 'draftResume'))),
@@ -790,7 +791,7 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
                   Padding(
                     padding: const EdgeInsets.only(bottom: 8),
                     child: Wrap(spacing: 8, runSpacing: 4, crossAxisAlignment: WrapCrossAlignment.center, children: [
-                      Text(tr(context, 'sdUsual'), style: TextStyle(color: AppColors.muted, fontSize: 12)),
+                      Text(tr(context, 'sdUsual'), style: DsStyle.t12w400.copyWith(color: AppColors.muted)),
                       for (final (i, p) in _presets.indexed)
                         ActionChip(
                           key: ValueKey('sdPreset_$i'),
@@ -936,7 +937,7 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
                       ),
                       child: Text(
                         _pickupDate == null ? '--' : formatDate(_pickupDate),
-                        style: const TextStyle(fontSize: 16),
+                        style: DsStyle.t16w400,
                       ),
                     ),
                   ),
@@ -1133,12 +1134,12 @@ class _StepHeader extends StatelessWidget {
       key: ValueKey('postStep$step'),
       padding: const EdgeInsets.only(top: 6, bottom: 12),
       child: Row(children: [
-        CircleAvatar(radius: 14, backgroundColor: AppColors.primary, child: Text('$step', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 13))),
+        CircleAvatar(radius: 14, backgroundColor: AppColors.primary, child: Text('$step', style: DsStyle.t14w700.copyWith(color: Colors.white))),
         const SizedBox(width: 10),
         Expanded(
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(trf(context, 'wizStepOf', {'n': step}), style: TextStyle(fontSize: 12, color: AppColors.muted)),
-            Text(tr(context, titleKey), style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.title)),
+            Text(trf(context, 'wizStepOf', {'n': step}), style: DsStyle.t12w400.copyWith(color: AppColors.muted)),
+            Text(tr(context, titleKey), style: DsStyle.t18w700.copyWith(color: AppColors.title)),
           ]),
         ),
       ]),

@@ -5,6 +5,7 @@ import '../core/l10n/l10n.dart';
 import '../core/services/admin_console_service.dart';
 import '../core/widgets/common.dart';
 import '../core/widgets/live_stream.dart';
+import '../core/theme/design_tokens.dart';
 
 /// Admin > Pilot control room (MASTER-6 Task 3): today's sign-ups, drivers
 /// sharing location, open and unfilled loads, running trips, open SOS and
@@ -36,7 +37,7 @@ class _AdminPilotControlScreenState extends State<AdminPilotControlScreen> {
         Icon(icon, color: color),
         const SizedBox(width: 12),
         Expanded(child: Text(tr(context, labelKey))),
-        Text('$n', key: ValueKey('pcN_$id'), style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: color)),
+        Text('$n', key: ValueKey('pcN_$id'), style: DsStyle.t24w700.copyWith(color: color)),
       ]),
     );
   }
@@ -57,7 +58,7 @@ class _AdminPilotControlScreenState extends State<AdminPilotControlScreen> {
           return ListView(padding: const EdgeInsets.all(16), children: [
             AppCard(
               key: const ValueKey('pcBanner'),
-              child: Text(tr(context, pc.needsAttention ? 'pcAttention' : 'pcAllQuiet'), style: TextStyle(fontWeight: FontWeight.w800, color: pc.needsAttention ? AppColors.warning : AppColors.success)),
+              child: Text(tr(context, pc.needsAttention ? 'pcAttention' : 'pcAllQuiet'), style: DsStyle.w700.copyWith(color: pc.needsAttention ? AppColors.warning : AppColors.success)),
             ),
             const SizedBox(height: 8),
             _tile('sos', 'pcOpenSos', pc.openSos, Icons.sos_rounded, alert: true),
@@ -74,7 +75,7 @@ class _AdminPilotControlScreenState extends State<AdminPilotControlScreen> {
             const SizedBox(height: 8),
             _tile('tickets', 'pcOpenTickets', pc.openTickets, Icons.support_agent_rounded),
             const SizedBox(height: 8),
-            Text(tr(context, 'pcNote'), style: TextStyle(color: AppColors.faint, fontSize: 12)),
+            Text(tr(context, 'pcNote'), style: DsStyle.t12w400.copyWith(color: AppColors.faint)),
           ]);
         },
       ),

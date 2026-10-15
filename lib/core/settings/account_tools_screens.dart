@@ -15,6 +15,7 @@ import '../services/phone_change_service.dart';
 import '../services/user_service.dart';
 import '../widgets/common.dart';
 import '../widgets/live_stream.dart';
+import '../theme/design_tokens.dart';
 
 /// Settings > Linked accounts: the company teams and fleets this login belongs
 /// to, and the account's own company profile (A9).
@@ -96,7 +97,7 @@ class _DataExportScreenState extends State<DataExportScreen> {
           : _json == null
               ? const Center(child: CircularProgressIndicator())
               : ListView(padding: const EdgeInsets.all(16), children: [
-                  Text(tr(context, 'dataExportInfo'), style: TextStyle(color: AppColors.muted)),
+                  Text(tr(context, 'dataExportInfo'), style: DsStyle.inherit.copyWith(color: AppColors.muted)),
                   const SizedBox(height: 12),
                   FilledButton.icon(
                     key: const ValueKey('exportCopy'),
@@ -108,7 +109,7 @@ class _DataExportScreenState extends State<DataExportScreen> {
                     },
                   ),
                   const SizedBox(height: 12),
-                  SelectableText(_json!, key: const ValueKey('exportJson'), style: const TextStyle(fontFamily: 'monospace', fontSize: 11)),
+                  SelectableText(_json!, key: const ValueKey('exportJson'), style: DsStyle.t12w400.copyWith(fontFamily: 'monospace')),
                 ]),
     );
   }
@@ -187,7 +188,7 @@ class _PhoneChangeScreenState extends State<PhoneChangeScreen> {
     return Scaffold(
       appBar: AppBar(title: Text(tr(context, 'phoneChange'))),
       body: ListView(padding: const EdgeInsets.all(16), children: [
-        Text(tr(context, 'phoneChangeInfo'), style: TextStyle(color: AppColors.muted)),
+        Text(tr(context, 'phoneChangeInfo'), style: DsStyle.inherit.copyWith(color: AppColors.muted)),
         const SizedBox(height: 16),
         TextField(
           key: const ValueKey('newMobile'),

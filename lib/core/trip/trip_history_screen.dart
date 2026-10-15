@@ -8,6 +8,7 @@ import '../widgets/common.dart';
 import '../widgets/live_stream.dart';
 import '../widgets/logistics_labels.dart';
 import 'trip_history.dart';
+import '../theme/design_tokens.dart';
 
 /// Trip history of either role with status, date and vehicle filters and a
 /// CSV share. [bookings] is the role's own stream; [onOpen] opens a trip.
@@ -97,7 +98,7 @@ class _TripHistoryScreenState extends State<TripHistoryScreen> {
       ]),
       if (vehicles.length > 1) ...[
         const SizedBox(height: 8),
-        Text(tr(context, 'ehVehicles'), style: TextStyle(color: AppColors.muted, fontSize: 12)),
+        Text(tr(context, 'ehVehicles'), style: DsStyle.t12w400.copyWith(color: AppColors.muted)),
         Wrap(spacing: 8, runSpacing: 4, children: [
           for (final v in vehicles)
             FilterChip(
@@ -121,14 +122,14 @@ class _TripHistoryScreenState extends State<TripHistoryScreen> {
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             RouteText(pickup: b.pickup, drop: b.drop, fontSize: 15),
             const SizedBox(height: 4),
-            Text('${formatDate(historyDate(b))} · ${bookingStatusLabel(context, b.status)}', style: TextStyle(color: AppColors.muted, fontSize: 13)),
-            if (b.vehicleNumber.isNotEmpty) Text(b.vehicleNumber, style: TextStyle(color: AppColors.faint, fontSize: 12)),
+            Text('${formatDate(historyDate(b))} · ${bookingStatusLabel(context, b.status)}', style: DsStyle.t14w400.copyWith(color: AppColors.muted)),
+            if (b.vehicleNumber.isNotEmpty) Text(b.vehicleNumber, style: DsStyle.t12w400.copyWith(color: AppColors.faint)),
           ]),
         ),
         const SizedBox(width: 8),
         Text(
           paise == null ? tr(context, 'budgetNegotiable') : formatPaise(paise),
-          style: TextStyle(fontWeight: FontWeight.w800, color: b.status == BookingStatus.cancelled ? AppColors.muted : AppColors.success),
+          style: DsStyle.w700.copyWith(color: b.status == BookingStatus.cancelled ? AppColors.muted : AppColors.success),
         ),
       ]),
     );
@@ -159,7 +160,7 @@ class _TripHistoryScreenState extends State<TripHistoryScreen> {
                   children: [
                     _filters(all),
                     const SizedBox(height: 12),
-                    Text(trf(context, 'ehResults', {'n': shown.length}), key: const ValueKey('hist_count'), style: TextStyle(color: AppColors.muted)),
+                    Text(trf(context, 'ehResults', {'n': shown.length}), key: const ValueKey('hist_count'), style: DsStyle.inherit.copyWith(color: AppColors.muted)),
                     const SizedBox(height: 8),
                     if (shown.isEmpty)
                       EmptyState(

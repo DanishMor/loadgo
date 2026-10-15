@@ -11,7 +11,8 @@ import 'dart:convert';
 import 'dart:io';
 
 final _color = RegExp(r'Color\(\s*0x[0-9A-Fa-f]+\s*\)');
-final _style = RegExp(r'(?<![A-Za-z_])TextStyle\(');
+// pw.TextStyle( is the PDF library's own style (the PDF carries its own fonts): not counted.
+final _style = RegExp(r'(?<![A-Za-z_.])TextStyle\(');
 
 class Count {
   final int colors;

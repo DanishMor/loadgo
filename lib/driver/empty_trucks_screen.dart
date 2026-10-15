@@ -10,6 +10,7 @@ import '../core/services/vehicle_service.dart';
 import '../core/widgets/common.dart';
 import '../core/widgets/live_stream.dart';
 import '../core/widgets/logistics_labels.dart';
+import '../core/theme/design_tokens.dart';
 
 String _errorKey(Object e) {
   if (e is AccountRestrictedException) return 'accountRestricted';
@@ -98,7 +99,7 @@ class _EmptyTrucksScreenState extends State<EmptyTrucksScreen> {
       body: ListView(padding: const EdgeInsets.fromLTRB(20, 4, 20, 30), children: [
         AppCard(
           child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-            Text(tr(context, 'postEmptyTruck'), style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+            Text(tr(context, 'postEmptyTruck'), style: DsStyle.t16w700),
             DropdownButtonFormField<String>(
               isExpanded: true,
               key: const ValueKey('truckVehicle'),
@@ -121,7 +122,7 @@ class _EmptyTrucksScreenState extends State<EmptyTrucksScreen> {
           ]),
         ),
         const SizedBox(height: 16),
-        Text(tr(context, 'requestsForMe'), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+        Text(tr(context, 'requestsForMe'), style: DsStyle.t18w700),
         LiveStream<List<TruckRequest>>(
           stream: TruckBoardService.watchRequestsForDriver,
           compact: true,
@@ -137,7 +138,7 @@ class _EmptyTrucksScreenState extends State<EmptyTrucksScreen> {
                       Expanded(child: RouteText(pickup: r.pickup, drop: r.drop)),
                       StatusChip(label: tr(context, 'request_${r.status}'), color: _color(r.status)),
                     ]),
-                    Text('${r.customerName.isEmpty ? '' : '${r.customerName} • '}${formatNum(r.weight)} T${r.note.isEmpty ? '' : ' • ${r.note}'}', style: TextStyle(color: AppColors.muted)),
+                    Text('${r.customerName.isEmpty ? '' : '${r.customerName} • '}${formatNum(r.weight)} T${r.note.isEmpty ? '' : ' • ${r.note}'}', style: DsStyle.inherit.copyWith(color: AppColors.muted)),
                     if (r.status == TruckRequest.pending)
                       Row(children: [
                         TextButton(key: ValueKey('decline_${r.id}'), onPressed: () => TruckBoardService.answer(r, accept: false), child: Text(tr(context, 'decline'))),
@@ -149,7 +150,7 @@ class _EmptyTrucksScreenState extends State<EmptyTrucksScreen> {
           ]),
         ),
         const SizedBox(height: 16),
-        Text(tr(context, 'myEmptyTrucks'), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+        Text(tr(context, 'myEmptyTrucks'), style: DsStyle.t18w700),
         LiveStream<List<TruckPost>>(
           stream: TruckBoardService.watchMyPosts,
           compact: true,

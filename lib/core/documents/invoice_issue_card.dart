@@ -10,6 +10,7 @@ import '../services/invoice_service.dart';
 import '../widgets/common.dart';
 import '../widgets/live_stream.dart';
 import 'invoice_pdf.dart';
+import '../theme/design_tokens.dart';
 
 /// Under the invoice summary: the driver issues the numbered GST invoice and
 /// records e-way bill details; both sides share the PDF.
@@ -99,13 +100,13 @@ class _InvoiceIssueCardState extends State<InvoiceIssueCard> {
       compact: true,
       builder: (context, found) {
         final inv = found.isEmpty ? null : found.first;
-        final title = Text(tr(context, 'invoiceIssueTitle'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.title));
+        final title = Text(tr(context, 'invoiceIssueTitle'), style: DsStyle.t16w700.copyWith(color: AppColors.title));
         if (inv != null) {
           return AppCard(
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               title,
               const SizedBox(height: 4),
-              Text(trf(context, 'invoiceNumberLine', {'no': inv.number}), key: const ValueKey('invoiceSeriesNo'), style: const TextStyle(fontWeight: FontWeight.w700)),
+              Text(trf(context, 'invoiceNumberLine', {'no': inv.number}), key: const ValueKey('invoiceSeriesNo'), style: DsStyle.w700),
               if (inv.ewayBillNo.isNotEmpty) Text('${tr(context, 'ewayBill')}: ${inv.ewayBillNo}'),
               const SizedBox(height: 8),
               OutlinedButton.icon(
@@ -118,7 +119,7 @@ class _InvoiceIssueCardState extends State<InvoiceIssueCard> {
                 const SizedBox(height: 8),
                 _field('ewayNo', _eway, tr(context, 'ewayBill'), max: 12, digits: true),
                 _field('ewayKm', _distance, tr(context, 'ewayDistance'), max: 4, digits: true),
-                Text(tr(context, 'ewayRecordNote'), style: TextStyle(fontSize: 12, color: AppColors.faint)),
+                Text(tr(context, 'ewayRecordNote'), style: DsStyle.t12w400.copyWith(color: AppColors.faint)),
                 TextButton(key: const ValueKey('ewayUpdate'), onPressed: () => _saveEway(inv), child: Text(tr(context, 'save'))),
               ],
             ]),
@@ -136,7 +137,7 @@ class _InvoiceIssueCardState extends State<InvoiceIssueCard> {
             _field('buyerGstin', _buyerGstin, tr(context, 'buyerGstinLabel'), max: 15, caps: true),
             _field('ewayNo', _eway, tr(context, 'ewayBill'), max: 12, digits: true),
             _field('ewayKm', _distance, tr(context, 'ewayDistance'), max: 4, digits: true),
-            Text(tr(context, 'ewayRecordNote'), style: TextStyle(fontSize: 12, color: AppColors.faint)),
+            Text(tr(context, 'ewayRecordNote'), style: DsStyle.t12w400.copyWith(color: AppColors.faint)),
             const SizedBox(height: 8),
             PrimaryButton(label: tr(context, 'invoiceIssue'), loading: _busy, onPressed: _issue),
           ]),

@@ -6,6 +6,7 @@ import '../core/models/payout.dart';
 import '../core/services/payout_service.dart';
 import '../core/widgets/common.dart';
 import '../core/widgets/live_stream.dart';
+import '../core/theme/design_tokens.dart';
 
 /// Admin: payout requests. Pay outside the app, then mark the request paid
 /// (or reject it). Nothing moves money from here.
@@ -33,7 +34,7 @@ class AdminPayoutsScreen extends StatelessWidget {
             final p = list[i];
             return ListTile(
                 key: ValueKey('adminPayout_${p.id}'),
-                title: Text('${formatPaise(p.amountPaise)} · ${p.driverId}', style: const TextStyle(fontWeight: FontWeight.w800)),
+                title: Text('${formatPaise(p.amountPaise)} · ${p.driverId}', style: DsStyle.w700),
                 subtitle: Text('${tr(context, 'payout_${p.status}')}${p.createdAt == null ? '' : ' · ${formatDateTime(p.createdAt!)}'}'),
                 trailing: p.status == Payout.requested
                     ? Row(mainAxisSize: MainAxisSize.min, children: [

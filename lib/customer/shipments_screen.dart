@@ -14,6 +14,7 @@ import '../core/widgets/common.dart';
 import '../core/widgets/live_stream.dart';
 import '../core/widgets/logistics_labels.dart';
 import 'trade_hub_picker.dart';
+import '../core/theme/design_tokens.dart';
 
 String legStageLabel(BuildContext context, LegStage s) => tr(context, switch (s) {
       LegStage.posted => 'stepPosted',
@@ -256,7 +257,7 @@ class ShipmentDetailScreen extends StatelessWidget {
           if (!snap.hasData) return const Center(child: CircularProgressIndicator());
           final legs = snap.data!;
           return ListView(padding: const EdgeInsets.all(16), children: [
-            Text('${s.origin} → ${s.hub} → ${s.destination}', style: const TextStyle(fontWeight: FontWeight.w800)),
+            Text('${s.origin} → ${s.hub} → ${s.destination}', style: DsStyle.w700),
             if (s.sealNumber.isNotEmpty) Text('${tr(context, 'sealNumber')}: ${s.sealNumber}'),
             if (legs.complete)
               Padding(
@@ -271,7 +272,7 @@ class ShipmentDetailScreen extends StatelessWidget {
                 final key = v.complete ? (v.sealMatches ? 'hoDone' : 'hoSealDiffers') : 'hoLeg1Done';
                 return Padding(
                   padding: const EdgeInsets.only(top: 8),
-                  child: Text('${tr(context, 'hoTitle')}: ${tr(context, key)}', key: const ValueKey('shipmentHandover'), style: TextStyle(color: v.complete && !v.sealMatches ? AppColors.warning : AppColors.muted)),
+                  child: Text('${tr(context, 'hoTitle')}: ${tr(context, key)}', key: const ValueKey('shipmentHandover'), style: DsStyle.inherit.copyWith(color: v.complete && !v.sealMatches ? AppColors.warning : AppColors.muted)),
                 );
               },
             ),
@@ -283,7 +284,7 @@ class ShipmentDetailScreen extends StatelessWidget {
                     padding: const EdgeInsets.only(top: 8, bottom: 4),
                     child: Text(
                       '${trf(context, 'legLabel', {'n': step.leg})}: ${step.leg == 1 ? '${s.origin} → ${s.hub}' : '${s.hub} → ${s.destination}'}',
-                      style: TextStyle(color: AppColors.muted),
+                      style: DsStyle.inherit.copyWith(color: AppColors.muted),
                     ),
                   ),
                 ListTile(

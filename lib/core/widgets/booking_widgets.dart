@@ -10,6 +10,7 @@ import 'trip_eta_card.dart';
 import '../l10n/l10n.dart';
 import 'live_stream.dart';
 import 'logistics_labels.dart';
+import '../theme/design_tokens.dart';
 
 /// Compact list card used by the driver Trips tab and customer Bookings tab.
 class BookingCard extends StatelessWidget {
@@ -37,7 +38,7 @@ class BookingCard extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             '${formatNum(b.weight)} T • ${b.cargoType} • ${b.vehicleNumber} • ${formatDate(b.pickupDate)}',
-            style: TextStyle(color: AppColors.muted, fontSize: 13),
+            style: DsStyle.t14w400.copyWith(color: AppColors.muted),
           ),
         ],
       ),
@@ -59,8 +60,8 @@ class BookingSummary extends StatelessWidget {
           children: [
             Icon(icon, size: 18, color: AppColors.muted),
             const SizedBox(width: 10),
-            SizedBox(width: 90, child: Text(label, style: TextStyle(color: AppColors.muted))),
-            Expanded(child: Text(value, style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.body))),
+            SizedBox(width: 90, child: Text(label, style: DsStyle.inherit.copyWith(color: AppColors.muted))),
+            Expanded(child: Text(value, style: DsStyle.w700.copyWith(color: AppColors.body))),
           ],
         ),
       );
@@ -171,12 +172,12 @@ class BookingTimeline extends StatelessWidget {
                 children: [
                   Text(
                     bookingStatusLabel(context, status),
-                    style: TextStyle(fontWeight: FontWeight.w800, color: done ? AppColors.title : AppColors.faint),
+                    style: DsStyle.w700.copyWith(color: done ? AppColors.title : AppColors.faint),
                   ),
                   if (time != null)
                     Text(
                       [formatDateTime(time), if (_since[status] != null) '+${durationText(context, _since[status]!)}'].join('  '),
-                      style: TextStyle(fontSize: 12, color: AppColors.muted),
+                      style: DsStyle.t12w400.copyWith(color: AppColors.muted),
                     ),
                 ],
               ),
@@ -203,7 +204,7 @@ class BookingDetailScaffold extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: AppColors.background,
         scrolledUnderElevation: 0,
-        title: Text(title, style: const TextStyle(fontWeight: FontWeight.w700)),
+        title: Text(title, style: DsStyle.w700),
       ),
       body: SafeArea(
         child: _BookingStreamBody(bookingId: bookingId, builder: builder),

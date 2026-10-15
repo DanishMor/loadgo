@@ -40,6 +40,7 @@ import 'admin_payouts_screen.dart';
 import 'admin_signals_screen.dart';
 import 'admin_verification_screen.dart';
 import 'flagged_users_screen.dart';
+import '../core/theme/design_tokens.dart';
 
 String staffRoleKey(String role) => switch (role) {
       StaffRole.support => 'staffRoleSupport',
@@ -119,7 +120,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               if (role != null)
                 Padding(
                   padding: const EdgeInsets.only(right: 16),
-                  child: Center(child: Text(tr(context, staffRoleKey(role)), key: const ValueKey('staffRole'), style: const TextStyle(fontSize: 12))),
+                  child: Center(child: Text(tr(context, staffRoleKey(role)), key: const ValueKey('staffRole'), style: DsStyle.t12w400)),
                 ),
             ],
           ),
@@ -162,14 +163,14 @@ class _AdminAnalyticsScreenState extends State<AdminAnalyticsScreen> {
 
   Widget _section(String title, Map<String, int> rows, String Function(String) label) => AppCard(
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(title, style: const TextStyle(fontWeight: FontWeight.w800)),
+          Text(title, style: DsStyle.w700),
           const SizedBox(height: 8),
           for (final e in rows.entries)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 2),
               child: Row(children: [
                 Expanded(child: Text(label(e.key))),
-                Text('${e.value}', key: ValueKey('count_${e.key}'), style: const TextStyle(fontWeight: FontWeight.w700)),
+                Text('${e.value}', key: ValueKey('count_${e.key}'), style: DsStyle.w700),
               ]),
             ),
         ]),
@@ -202,7 +203,7 @@ class _AdminAnalyticsScreenState extends State<AdminAnalyticsScreen> {
                 Text('${tr(context, 'adminTotalUsers')}: ${c.users}', key: const ValueKey('totalUsers')),
                 Text('${tr(context, 'adminDriversCount')}: ${c.drivers}'),
                 Text('${tr(context, 'adminDeliveredFare')}: ${formatPaise(c.deliveredFarePaise)}',
-                    key: const ValueKey('deliveredFare'), style: const TextStyle(fontWeight: FontWeight.w800)),
+                    key: const ValueKey('deliveredFare'), style: DsStyle.w700),
               ]),
             ),
             const SizedBox(height: 12),

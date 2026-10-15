@@ -6,6 +6,7 @@ import '../core/services/admin_console_service.dart';
 import '../core/widgets/common.dart';
 import '../core/widgets/live_stream.dart';
 import '../core/widgets/logistics_labels.dart';
+import '../core/theme/design_tokens.dart';
 
 /// Admin > Supply and demand: open loads against free trucks per city and per
 /// vehicle type, biggest shortage first. Read once (Refresh to reload), to
@@ -43,8 +44,8 @@ class _AdminSupplyDemandScreenState extends State<AdminSupplyDemandScreen> {
         child: Row(children: [
           Expanded(
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(title, style: const TextStyle(fontWeight: FontWeight.w800)),
-              Text(trf(context, 'sdLine', {'d': r.demand, 's': r.supply}), style: TextStyle(color: AppColors.muted, fontSize: 12)),
+              Text(title, style: DsStyle.w700),
+              Text(trf(context, 'sdLine', {'d': r.demand, 's': r.supply}), style: DsStyle.t12w400.copyWith(color: AppColors.muted)),
             ]),
           ),
           StatusChip(label: _label(context, r.balance), color: _color(r.balance)),
@@ -67,17 +68,17 @@ class _AdminSupplyDemandScreenState extends State<AdminSupplyDemandScreen> {
           if (d.totalDemand == 0 && d.totalSupply == 0) return EmptyState(icon: Icons.balance_rounded, title: tr(context, 'sdNone'));
           return ListView(padding: const EdgeInsets.all(16), children: [
             AppCard(
-              child: Text(trf(context, 'sdTotals', {'d': d.totalDemand, 's': d.totalSupply, 'u': d.unlocatedSupply}), key: const ValueKey('sdTotals'), style: const TextStyle(fontWeight: FontWeight.w700)),
+              child: Text(trf(context, 'sdTotals', {'d': d.totalDemand, 's': d.totalSupply, 'u': d.unlocatedSupply}), key: const ValueKey('sdTotals'), style: DsStyle.w700),
             ),
             const SizedBox(height: 8),
-            Text(tr(context, 'sdNote'), style: TextStyle(color: AppColors.muted, fontSize: 12)),
+            Text(tr(context, 'sdNote'), style: DsStyle.t12w400.copyWith(color: AppColors.muted)),
             const SizedBox(height: 16),
-            Text(tr(context, 'sdByCity'), style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+            Text(tr(context, 'sdByCity'), style: DsStyle.t16w700),
             const SizedBox(height: 8),
             for (final r in d.cities)
               Padding(padding: const EdgeInsets.only(bottom: 8), child: _row(context, 'sdCity_${r.city}', r.city.isEmpty ? tr(context, 'sdOtherCities') : r.city, r)),
             const SizedBox(height: 12),
-            Text(tr(context, 'sdByType'), style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+            Text(tr(context, 'sdByType'), style: DsStyle.t16w700),
             const SizedBox(height: 8),
             for (final e in d.types.entries) Padding(padding: const EdgeInsets.only(bottom: 8), child: _row(context, 'sdType_${e.key}', vehicleTypeLabel(context, e.key), e.value)),
           ]);

@@ -27,6 +27,7 @@ import 'admin_chat_review_screen.dart';
 import '../core/services/comm_admin_service.dart';
 import 'admin_fraud_cases_screen.dart';
 import 'flagged_users_screen.dart';
+import '../core/theme/design_tokens.dart';
 
 typedef Doc = QueryDocumentSnapshot<Map<String, dynamic>>;
 
@@ -159,7 +160,7 @@ class _LiveListState extends State<_LiveList> {
                   return Padding(
                     padding: const EdgeInsets.all(12),
                     child: Wrap(spacing: 8, runSpacing: 8, alignment: WrapAlignment.center, children: [
-                      Text(trf(context, 'adminShowing', {'n': visible.length, 'total': list.length}), style: TextStyle(color: AppColors.muted)),
+                      Text(trf(context, 'adminShowing', {'n': visible.length, 'total': list.length}), style: DsStyle.inherit.copyWith(color: AppColors.muted)),
                       if (visible.length < list.length)
                         OutlinedButton(key: const ValueKey('adminShowMore'), onPressed: () => setState(() => _shown += _page), child: Text(tr(context, 'adminShowMore'))),
                       OutlinedButton.icon(

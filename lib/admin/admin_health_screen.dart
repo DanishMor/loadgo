@@ -5,6 +5,7 @@ import '../core/services/admin_console_service.dart';
 import '../core/services/error_log_service.dart';
 import '../core/widgets/common.dart';
 import '../core/widgets/live_stream.dart';
+import '../core/theme/design_tokens.dart';
 
 /// Admin > System health: totals and the latest sampled client errors.
 class AdminHealthScreen extends StatefulWidget {
@@ -24,9 +25,9 @@ class _AdminHealthScreenState extends State<AdminHealthScreen> {
   Widget _tile(String key, String label, int value) => Expanded(
         child: AppCard(
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(label, style: TextStyle(color: AppColors.muted, fontSize: 12)),
+            Text(label, style: DsStyle.t12w400.copyWith(color: AppColors.muted)),
             const SizedBox(height: 4),
-            Text('$value', key: ValueKey('health_$key'), style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800)),
+            Text('$value', key: ValueKey('health_$key'), style: DsStyle.t24w700),
           ]),
         ),
       );
@@ -62,9 +63,9 @@ class _AdminHealthScreenState extends State<AdminHealthScreen> {
           },
         ),
         const SizedBox(height: 20),
-        Text(tr(context, 'healthErrors'), style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+        Text(tr(context, 'healthErrors'), style: DsStyle.t16w700),
         const SizedBox(height: 4),
-        Text(tr(context, 'healthErrorsNote'), style: TextStyle(color: AppColors.muted, fontSize: 12)),
+        Text(tr(context, 'healthErrorsNote'), style: DsStyle.t12w400.copyWith(color: AppColors.muted)),
         const SizedBox(height: 8),
         LiveStream<List<AppError>>(
           stream: ErrorLogService.watchRecent,
@@ -76,9 +77,9 @@ class _AdminHealthScreenState extends State<AdminHealthScreen> {
                 AppCard(
                   key: ValueKey('err_${e.id}'),
                   child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Text(e.message, maxLines: 4, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w600)),
+                    Text(e.message, maxLines: 4, overflow: TextOverflow.ellipsis, style: DsStyle.w600),
                     const SizedBox(height: 4),
-                    Text('${e.screen} · ${e.appVersion} · ${e.createdAt == null ? '' : formatDateTime(e.createdAt!)}', style: TextStyle(color: AppColors.muted, fontSize: 12)),
+                    Text('${e.screen} · ${e.appVersion} · ${e.createdAt == null ? '' : formatDateTime(e.createdAt!)}', style: DsStyle.t12w400.copyWith(color: AppColors.muted)),
                   ]),
                 ),
             ]);

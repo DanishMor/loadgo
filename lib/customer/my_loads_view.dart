@@ -11,6 +11,7 @@ import '../core/widgets/load_card.dart';
 import 'post_load_screen.dart';
 import 'load_offers_screen.dart';
 import '../core/support/support_screens.dart';
+import '../core/theme/design_tokens.dart';
 
 /// Customer "My Loads" tab: live list of the customer's posted loads.
 class MyLoadsView extends StatefulWidget {
@@ -90,7 +91,7 @@ class _MyLoadsViewState extends State<MyLoadsView> {
               alignment: WrapAlignment.spaceBetween,
               crossAxisAlignment: WrapCrossAlignment.center,
               children: [
-                Text(tr(context, 'myLoads'), style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: AppColors.title)),
+                Text(tr(context, 'myLoads'), style: DsStyle.t24w700.copyWith(color: AppColors.title)),
                 TextButton.icon(
                   onPressed: widget.onPostLoad,
                   icon: const Icon(Icons.add_rounded),
@@ -148,7 +149,7 @@ class _ContactSupportNote extends StatelessWidget {
           const Icon(Icons.info_outline_rounded, color: AppColors.warning),
           const SizedBox(width: 10),
           Expanded(
-            child: Text(tr(context, 'cannotCancelMatched'), style: TextStyle(fontSize: 13, color: AppColors.body)),
+            child: Text(tr(context, 'cannotCancelMatched'), style: DsStyle.t14w400.copyWith(color: AppColors.body)),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const NewTicketScreen())),
@@ -180,7 +181,7 @@ class _CancelLoadButtonState extends State<_CancelLoadButton> {
         content: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text(tr(dialogContext, 'cancelLoadConfirm')),
           const SizedBox(height: 8),
-          Text(tr(dialogContext, 'cancelLoadFreeNote'), key: const ValueKey('cancelLoadFreeNote'), style: TextStyle(fontSize: 13, color: AppColors.muted)),
+          Text(tr(dialogContext, 'cancelLoadFreeNote'), key: const ValueKey('cancelLoadFreeNote'), style: DsStyle.t14w400.copyWith(color: AppColors.muted)),
           const SizedBox(height: 12),
           CancelReasonPicker(by: 'customer', onChanged: (r) => reason = r),
         ]),

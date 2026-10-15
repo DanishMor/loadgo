@@ -6,6 +6,7 @@ import '../core/l10n/l10n.dart';
 import '../core/services/admin_console_service.dart';
 import '../core/widgets/common.dart';
 import '../core/widgets/live_stream.dart';
+import '../core/theme/design_tokens.dart';
 
 /// Admin > Payment aging (MASTER-6 Task 8): delivered trips whose payment
 /// record is not done, by age, with a Remind button (one per 6 hours).
@@ -64,8 +65,8 @@ class _AdminPaymentAgingScreenState extends State<AdminPaymentAgingScreen> {
                 child: Row(children: [
                   Expanded(
                     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      Text('${r.bookingId} · ${trf(context, 'pagDays', {'n': r.ageDays})}${r.amountPaise > 0 ? ' · ${formatPaise(r.amountPaise)}' : ''}', style: const TextStyle(fontWeight: FontWeight.w700)),
-                      Text(tr(context, r.waitingOn == 'driver' ? 'pagWaitDriver' : 'pagWaitCustomer'), style: TextStyle(color: AppColors.muted)),
+                      Text('${r.bookingId} · ${trf(context, 'pagDays', {'n': r.ageDays})}${r.amountPaise > 0 ? ' · ${formatPaise(r.amountPaise)}' : ''}', style: DsStyle.w700),
+                      Text(tr(context, r.waitingOn == 'driver' ? 'pagWaitDriver' : 'pagWaitCustomer'), style: DsStyle.inherit.copyWith(color: AppColors.muted)),
                     ]),
                   ),
                   OutlinedButton(
@@ -76,7 +77,7 @@ class _AdminPaymentAgingScreenState extends State<AdminPaymentAgingScreen> {
                 ]),
               ),
             const SizedBox(height: 8),
-            Text(tr(context, 'pagFootnote'), style: TextStyle(color: AppColors.faint, fontSize: 12)),
+            Text(tr(context, 'pagFootnote'), style: DsStyle.t12w400.copyWith(color: AppColors.faint)),
           ]);
         },
       ),

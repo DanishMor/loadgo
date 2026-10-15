@@ -7,6 +7,7 @@ import '../services/safety_service.dart';
 import '../services/user_service.dart';
 import '../widgets/common.dart';
 import 'call.dart';
+import '../theme/design_tokens.dart';
 
 /// Up to three people to call in an emergency, stored on the profile.
 class EmergencyContactsScreen extends StatefulWidget {
@@ -61,7 +62,7 @@ class _EmergencyContactsScreenState extends State<EmergencyContactsScreen> {
       appBar: AppBar(
         backgroundColor: AppColors.background,
         scrolledUnderElevation: 0,
-        title: Text(tr(context, 'emergencyContacts'), style: const TextStyle(fontWeight: FontWeight.w700)),
+        title: Text(tr(context, 'emergencyContacts'), style: DsStyle.w700),
       ),
       floatingActionButton: contacts == null || contacts.length >= SafetyService.maxContacts
           ? null
@@ -77,7 +78,7 @@ class _EmergencyContactsScreenState extends State<EmergencyContactsScreen> {
             : ListView(
                 padding: const EdgeInsets.fromLTRB(20, 10, 20, 100),
                 children: [
-                  Text(tr(context, 'maxContacts'), style: TextStyle(color: AppColors.muted)),
+                  Text(tr(context, 'maxContacts'), style: DsStyle.inherit.copyWith(color: AppColors.muted)),
                   const SizedBox(height: 10),
                   for (final (i, c) in contacts.indexed)
                     Card(

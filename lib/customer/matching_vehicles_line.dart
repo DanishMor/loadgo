@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../core/l10n/l10n.dart';
 import '../core/services/match_service.dart';
 import '../core/widgets/common.dart';
+import '../core/theme/design_tokens.dart';
 
 /// "N matching vehicles available" for the load being posted. Re-counts when
 /// the vehicle type or weight changes; stays silent while the weight is
@@ -62,7 +63,7 @@ class _MatchingVehiclesLineState extends State<MatchingVehiclesLine> {
           child: Text(
             n > 0 ? trf(context, 'matchingVehiclesCount', {'n': n}) : tr(context, 'noMatchingVehicles'),
             key: const ValueKey('matchingVehicles'),
-            style: TextStyle(fontSize: 13, color: AppColors.muted),
+            style: DsStyle.t14w400.copyWith(color: AppColors.muted),
           ),
         ),
       ]),

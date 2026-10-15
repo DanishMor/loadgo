@@ -5,6 +5,7 @@ import '../constants/logistics.dart';
 import '../l10n/l10n.dart';
 import '../pricing/fare_calculator.dart';
 import 'common.dart';
+import '../theme/design_tokens.dart';
 
 String bookingTypeLabel(BuildContext context, String type) => tr(context, switch (type) {
       BookingType.rental => 'typeRental',
@@ -77,7 +78,7 @@ class HelpersStepper extends StatelessWidget {
         ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Text('$value', key: const ValueKey('helpersValue'), style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
+          child: Text('$value', key: const ValueKey('helpersValue'), style: DsStyle.t20w700),
         ),
         IconButton.outlined(
           key: const ValueKey('helpersPlus'),
@@ -86,7 +87,7 @@ class HelpersStepper extends StatelessWidget {
           icon: const Icon(Icons.add_rounded),
         ),
         const SizedBox(width: 12),
-        Expanded(child: Text(tr(context, 'helpersHint'), style: TextStyle(color: AppColors.muted, fontSize: 12))),
+        Expanded(child: Text(tr(context, 'helpersHint'), style: DsStyle.t12w400.copyWith(color: AppColors.muted))),
       ],
     );
   }

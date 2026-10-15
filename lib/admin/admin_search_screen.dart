@@ -6,6 +6,7 @@ import '../core/l10n/l10n.dart';
 import '../core/services/admin_console_service.dart';
 import '../core/widgets/common.dart';
 import 'admin_user_screen.dart';
+import '../core/theme/design_tokens.dart';
 
 /// Admin > Search everything (MASTER-6 Task 10).
 class AdminSearchScreen extends StatefulWidget {
@@ -78,7 +79,7 @@ class _AdminSearchScreenState extends State<AdminSearchScreen> {
       builder: (ctx) => Padding(
         padding: const EdgeInsets.all(16),
         child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-          SelectableText(id, style: const TextStyle(fontWeight: FontWeight.w800)),
+          SelectableText(id, style: DsStyle.w700),
           Text('${b['pickup'] ?? ''} → ${b['drop'] ?? ''} · ${b['status'] ?? ''}'),
           const SizedBox(height: 8),
           Wrap(spacing: 8, children: [
@@ -119,7 +120,7 @@ class _AdminSearchScreenState extends State<AdminSearchScreen> {
             ),
           ),
         const SizedBox(height: 8),
-        Text(tr(context, 'asNote'), style: TextStyle(color: AppColors.faint, fontSize: 12)),
+        Text(tr(context, 'asNote'), style: DsStyle.t12w400.copyWith(color: AppColors.faint)),
       ]),
     );
   }

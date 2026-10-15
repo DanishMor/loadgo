@@ -9,6 +9,7 @@ import '../services/server_clock.dart';
 import '../share/share_csv.dart';
 import '../widgets/common.dart';
 import 'earnings_statement.dart';
+import '../theme/design_tokens.dart';
 
 /// Bottom sheet on the wallet: pick a period, share the earnings as CSV or PDF.
 Future<void> showStatementSheet(BuildContext context, {required List<LedgerEntry> entries, required List<Booking> bookings, String driverName = ''}) {
@@ -73,7 +74,7 @@ class _StatementSheetState extends State<StatementSheet> {
       child: SingleChildScrollView(
         padding: EdgeInsets.fromLTRB(20, 0, 20, 20 + MediaQuery.of(context).viewInsets.bottom),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
-          Text(tr(context, 'stmtTitle'), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+          Text(tr(context, 'stmtTitle'), style: DsStyle.t18w700),
           const SizedBox(height: 8),
           Wrap(spacing: 8, children: [
             for (final p in StatementPeriod.values)
@@ -85,7 +86,7 @@ class _StatementSheetState extends State<StatementSheet> {
               ),
           ]),
           const SizedBox(height: 12),
-          Text('${s.rows.length} · ${formatPaise(s.earningPaise)} − ${formatPaise(-s.commissionPaise)} = ${formatPaise(s.netPaise)}', key: const ValueKey('stmtTotals'), style: TextStyle(color: AppColors.muted)),
+          Text('${s.rows.length} · ${formatPaise(s.earningPaise)} − ${formatPaise(-s.commissionPaise)} = ${formatPaise(s.netPaise)}', key: const ValueKey('stmtTotals'), style: DsStyle.inherit.copyWith(color: AppColors.muted)),
           const SizedBox(height: 12),
           FilledButton.icon(key: const ValueKey('stmtCsv'), onPressed: _busy ? null : () => _share(false), icon: const Icon(Icons.table_chart_outlined), label: Text(tr(context, 'stmtCsv'))),
           const SizedBox(height: 8),

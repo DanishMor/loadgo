@@ -6,6 +6,7 @@ import '../core/models/chat_message.dart';
 import '../core/services/comm_admin_service.dart';
 import '../core/widgets/common.dart';
 import '../core/widgets/live_stream.dart';
+import '../core/theme/design_tokens.dart';
 
 /// One booking's chat, opened for a report or a dispute (and logged). Also
 /// shows both phone numbers on request; that is logged too.
@@ -51,7 +52,7 @@ class _AdminChatReviewScreenState extends State<AdminChatReviewScreen> {
                     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                       for (var i = 0; i < widget.parties.length; i++)
                         Text('${tr(context, i == 0 ? 'pcCustomerLabel' : 'pcDriverLabel')}: ${_phones![widget.parties[i]] ?? ''}'),
-                      Text(tr(context, 'pcNumbersLogged'), style: TextStyle(color: AppColors.faint, fontSize: 12)),
+                      Text(tr(context, 'pcNumbersLogged'), style: DsStyle.t12w400.copyWith(color: AppColors.faint)),
                     ]),
                   ),
           ),

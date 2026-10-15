@@ -7,6 +7,8 @@ import 'start_resolvers.dart';
 import 'driver_onboarding_card.dart';
 import 'role_selection_screen.dart';
 import '../core/widgets/common.dart';
+import '../core/theme/design_tokens.dart';
+import '../core/widgets/ds/status_badge.dart';
 
 class DriverPendingScreen extends StatefulWidget {
   const DriverPendingScreen({super.key});
@@ -70,20 +72,19 @@ class _DriverPendingScreenState extends State<DriverPendingScreen> {
                           width: 110,
                           height: 110,
                           decoration: BoxDecoration(color: AppColors.warnBg, borderRadius: BorderRadius.circular(32)),
-                          child: const Icon(Icons.hourglass_top_rounded, size: 56, color: Color(0xFFB54708)),
+                          child: Icon(Icons.hourglass_top_rounded, size: 56, color: context.ds.warning),
                         ),
                         const SizedBox(height: 20),
-                        Chip(
+                        StatusBadge(
                           key: const ValueKey('pendingChip'),
-                          avatar: const Icon(Icons.pending_actions_rounded, size: 18, color: Color(0xFFB54708)),
-                          label: Text(tr(context, 'pendingVerification'), style: const TextStyle(fontWeight: FontWeight.w700, color: Color(0xFFB54708))),
-                          backgroundColor: AppColors.warnBg,
-                          side: BorderSide.none,
+                          label: tr(context, 'pendingVerification'),
+                          tone: StatusTone.attention,
+                          icon: Icons.pending_actions_rounded,
                         ),
                         const SizedBox(height: 16),
-                        Text(tr(context, 'pendingTitle'), textAlign: TextAlign.center, style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: AppColors.title)),
+                        Text(tr(context, 'pendingTitle'), textAlign: TextAlign.center, style: DsStyle.t24w700.copyWith(color: AppColors.title)),
                         const SizedBox(height: 10),
-                        Text(tr(context, 'pendingSub'), textAlign: TextAlign.center, style: TextStyle(fontSize: 15, height: 1.5, color: AppColors.muted)),
+                        Text(tr(context, 'pendingSub'), textAlign: TextAlign.center, style: DsStyle.t16w400.copyWith(height: 1.5, color: AppColors.muted)),
                         const SizedBox(height: 20),
                         DriverOnboardingCard(onResubmitted: _checkStatus),
                         ],
@@ -97,7 +98,7 @@ class _DriverPendingScreenState extends State<DriverPendingScreen> {
                   child: ElevatedButton(
                     onPressed: _checking ? null : _checkStatus,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF1565C0),
+                      backgroundColor: AppColors.primary,
                       foregroundColor: Colors.white,
                       elevation: 0,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
@@ -108,7 +109,7 @@ class _DriverPendingScreenState extends State<DriverPendingScreen> {
                             height: 23,
                             child: CircularProgressIndicator(strokeWidth: 2.5, valueColor: AlwaysStoppedAnimation<Color>(Colors.white)),
                           )
-                        : Text(tr(context, 'refreshStatus'), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+                        : Text(tr(context, 'refreshStatus'), style: DsStyle.t16w700),
                   ),
                 ),
               ],

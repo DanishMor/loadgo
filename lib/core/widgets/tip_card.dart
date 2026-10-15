@@ -7,6 +7,7 @@ import '../models/booking.dart';
 import '../models/driver_extras.dart';
 import '../services/driver_extras_service.dart';
 import 'common.dart';
+import '../theme/design_tokens.dart';
 
 /// After delivery the customer can record a tip for the driver (once).
 /// Record only: the customer hands it over directly.
@@ -59,11 +60,11 @@ class _TipCardState extends State<TipCard> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(tr(context, 'tipTitle'), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+              Text(tr(context, 'tipTitle'), style: DsStyle.t16w700),
               const SizedBox(height: 8),
               if (tip != null)
                 Text(trf(context, 'tipGiven', {'amount': formatPaise(tip.amountPaise)}),
-                    key: const ValueKey('tipGiven'), style: const TextStyle(color: AppColors.success, fontWeight: FontWeight.w700))
+                    key: const ValueKey('tipGiven'), style: DsStyle.w700.copyWith(color: AppColors.success))
               else ...[
                 Wrap(spacing: 8, children: [
                   for (final p in Tip.quickAmounts)
@@ -88,7 +89,7 @@ class _TipCardState extends State<TipCard> {
                   FilledButton.tonal(key: const ValueKey('tipSend'), onPressed: _busy ? null : _custom, child: Text(tr(context, 'tipSendButton'))),
                 ]),
                 const SizedBox(height: 4),
-                Text(tr(context, 'tipNote'), style: TextStyle(color: AppColors.faint, fontSize: 12)),
+                Text(tr(context, 'tipNote'), style: DsStyle.t12w400.copyWith(color: AppColors.faint)),
               ],
             ],
           ),

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../l10n/l10n.dart';
 import '../pricing/bid_assistant.dart';
 import 'common.dart';
+import '../theme/design_tokens.dart';
 
 /// Suggested bid with the reasons, in the price dialog (MASTER-6 Task 24).
 class BidAssistantPanel extends StatelessWidget {
@@ -20,11 +21,11 @@ class BidAssistantPanel extends StatelessWidget {
         );
     String reason(BidReason r) => trf(context, r.key, {for (final e in r.args.entries) e.key: formatPaise(e.value as int)});
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text(tr(context, 'bidSuggested'), style: const TextStyle(fontWeight: FontWeight.w800)),
+      Text(tr(context, 'bidSuggested'), style: DsStyle.w700),
       const SizedBox(height: 4),
       Wrap(spacing: 8, runSpacing: 4, children: [chip('low', 'bidLow', s.low), chip('fair', 'bidFair', s.fair), chip('high', 'bidHigh', s.high)]),
       const SizedBox(height: 4),
-      for (final r in s.reasons) Text(reason(r), key: ValueKey('bidWhy_${r.key}'), style: TextStyle(color: AppColors.muted, fontSize: 12)),
+      for (final r in s.reasons) Text(reason(r), key: ValueKey('bidWhy_${r.key}'), style: DsStyle.t12w400.copyWith(color: AppColors.muted)),
     ]);
   }
 }

@@ -17,6 +17,7 @@ import '../services/rewards_service.dart';
 import '../widgets/common.dart';
 import '../widgets/live_stream.dart';
 import 'txn_history.dart';
+import '../theme/design_tokens.dart';
 
 /// Money in and out for the signed-in customer or driver, with filters and a
 /// CSV copy. Records only: no money moves through LoadGo.
@@ -56,8 +57,8 @@ class _TxnHistoryScreenState extends State<TxnHistoryScreen> {
 
   Widget _total(String label, int paise, Color color) => Expanded(
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(label, style: TextStyle(color: AppColors.muted, fontSize: 12)),
-          Text(formatPaise(paise), style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: color)),
+          Text(label, style: DsStyle.t12w400.copyWith(color: AppColors.muted)),
+          Text(formatPaise(paise), style: DsStyle.t16w700.copyWith(color: color)),
         ]),
       );
 
@@ -122,7 +123,7 @@ class _TxnHistoryScreenState extends State<TxnHistoryScreen> {
                 label: Text(tr(context, 'txnCopyCsv')),
               ),
             ),
-            if (shown.isEmpty) Padding(padding: const EdgeInsets.all(20), child: Text(tr(context, 'txnNone'), style: TextStyle(color: AppColors.muted))),
+            if (shown.isEmpty) Padding(padding: const EdgeInsets.all(20), child: Text(tr(context, 'txnNone'), style: DsStyle.inherit.copyWith(color: AppColors.muted))),
             for (final l in shown)
               ListTile(
                 key: ValueKey('txn_${l.id}'),
@@ -134,7 +135,7 @@ class _TxnHistoryScreenState extends State<TxnHistoryScreen> {
                   formatDateTime(l.date),
                   if (l.pending) tr(context, 'txnPending'),
                 ].join(' • ')),
-                trailing: Text(formatPaise(l.amountPaise), style: const TextStyle(fontWeight: FontWeight.w800)),
+                trailing: Text(formatPaise(l.amountPaise), style: DsStyle.w700),
               ),
           ]);
         },

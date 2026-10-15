@@ -9,6 +9,7 @@ import 'common.dart';
 import '../l10n/l10n.dart';
 import '../voice/voice_input.dart';
 import '../voice/voice_parser.dart';
+import '../theme/design_tokens.dart';
 
 /// Translated display name of a vehicle type id.
 String vehicleTypeLabel(BuildContext context, String id) {
@@ -163,7 +164,7 @@ class _PriceDialogState extends State<_PriceDialog> {
             ],
             if (widget.note != null) ...[
               const SizedBox(height: 8),
-              Text(widget.note!, style: TextStyle(color: AppColors.muted, fontSize: 12)),
+              Text(widget.note!, style: DsStyle.t12w400.copyWith(color: AppColors.muted)),
             ],
             if (widget.footer case final footer?) ...[
               const SizedBox(height: 10),

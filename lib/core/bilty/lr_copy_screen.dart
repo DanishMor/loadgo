@@ -13,6 +13,7 @@ import 'lr_copy_view.dart';
 import 'lr_model.dart';
 import 'lr_service.dart';
 import 'lr_visibility.dart';
+import '../theme/design_tokens.dart';
 
 /// The rows of one copy as a card. Used by the preview, by the copy screen and
 /// by the driver's trip screen.
@@ -27,14 +28,14 @@ class LrCopyCard extends StatelessWidget {
     final rows = lrRows(fields);
     return AppCard(
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(tr(context, lrHeadingKey(issuerRole)), style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
-        Text(tr(context, lrCopyKey(copy)), style: TextStyle(color: AppColors.muted)),
+        Text(tr(context, lrHeadingKey(issuerRole)), style: DsStyle.t16w700),
+        Text(tr(context, lrCopyKey(copy)), style: DsStyle.inherit.copyWith(color: AppColors.muted)),
         const Divider(),
         for (final r in rows)
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 3),
             child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              SizedBox(width: 120, child: Text(tr(context, r.labelKey), style: TextStyle(color: AppColors.muted, fontSize: 13))),
+              SizedBox(width: 120, child: Text(tr(context, r.labelKey), style: DsStyle.t14w400.copyWith(color: AppColors.muted))),
               Expanded(child: Text(r.value, key: ValueKey('lrRow_${r.labelKey}'))),
             ]),
           ),
@@ -59,7 +60,7 @@ class LrCopyScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: AppColors.background,
         scrolledUnderElevation: 0,
-        title: Text(tr(context, copy == LrCopy.driver ? 'blDriverCopyBtn' : lrHeadingKey(lr.issuerRole)), style: const TextStyle(fontWeight: FontWeight.w700)),
+        title: Text(tr(context, copy == LrCopy.driver ? 'blDriverCopyBtn' : lrHeadingKey(lr.issuerRole)), style: DsStyle.w700),
       ),
       body: SafeArea(
         child: FutureBuilder<LrBundle>(
@@ -71,7 +72,7 @@ class LrCopyScreen extends StatelessWidget {
               if (lr.isCancelled)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 10),
-                  child: Text(trf(context, 'blCancelledNote', {'reason': lr.cancelReason}), style: const TextStyle(color: Colors.red, fontWeight: FontWeight.w700)),
+                  child: Text(trf(context, 'blCancelledNote', {'reason': lr.cancelReason}), style: DsStyle.w700.copyWith(color: Colors.red)),
                 ),
               if (lr.status == LrStatus.superseded) Padding(padding: const EdgeInsets.only(bottom: 10), child: Text(tr(context, 'blStatusSuperseded'))),
               LrCopyCard(fields: fields, copy: copy, issuerRole: lr.issuerRole),
@@ -171,7 +172,7 @@ class _DriverLrViewState extends State<_DriverLrView> {
     final lr = widget.lr;
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(backgroundColor: AppColors.background, scrolledUnderElevation: 0, title: Text(tr(context, 'blDriverCopyBtn'), style: const TextStyle(fontWeight: FontWeight.w700))),
+      appBar: AppBar(backgroundColor: AppColors.background, scrolledUnderElevation: 0, title: Text(tr(context, 'blDriverCopyBtn'), style: DsStyle.w700)),
       body: SafeArea(
         child: FutureBuilder<LrBundle>(
           future: _bundle,
@@ -181,7 +182,7 @@ class _DriverLrViewState extends State<_DriverLrView> {
             final fields = LrVisibility.snapshot(bundle, LrCopy.driver, grantValid: _valid);
             final shown = LrVisibility.showsCompliance(LrCopy.driver, complianceMode: lr.complianceMode, grantValid: _valid) && bundle.compliance != null;
             return ListView(padding: const EdgeInsets.fromLTRB(20, 10, 20, 30), children: [
-              if (lr.isCancelled) Padding(padding: const EdgeInsets.only(bottom: 10), child: Text(trf(context, 'blCancelledNote', {'reason': lr.cancelReason}), style: const TextStyle(color: Colors.red, fontWeight: FontWeight.w700))),
+              if (lr.isCancelled) Padding(padding: const EdgeInsets.only(bottom: 10), child: Text(trf(context, 'blCancelledNote', {'reason': lr.cancelReason}), style: DsStyle.w700.copyWith(color: Colors.red))),
               LrCopyCard(fields: fields, copy: LrCopy.driver, issuerRole: lr.issuerRole),
               const SizedBox(height: 12),
               AppCard(
@@ -189,10 +190,10 @@ class _DriverLrViewState extends State<_DriverLrView> {
                   Row(children: [
                     const Icon(Icons.visibility_off_outlined, size: 18),
                     const SizedBox(width: 8),
-                    Expanded(child: Text(tr(context, 'blRateHidden'), key: const ValueKey('rateHiddenLabel'), style: const TextStyle(fontWeight: FontWeight.w700))),
+                    Expanded(child: Text(tr(context, 'blRateHidden'), key: const ValueKey('rateHiddenLabel'), style: DsStyle.w700)),
                   ]),
                   const SizedBox(height: 6),
-                  Text(tr(context, 'blChatInApp'), style: TextStyle(color: AppColors.muted, fontSize: 13)),
+                  Text(tr(context, 'blChatInApp'), style: DsStyle.t14w400.copyWith(color: AppColors.muted)),
                 ]),
               ),
               if (!lr.isCancelled) ...[

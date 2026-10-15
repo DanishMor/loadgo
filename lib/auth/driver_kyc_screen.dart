@@ -11,6 +11,8 @@ import '../core/services/user_service.dart';
 import 'role_selection_screen.dart';
 import 'start_resolvers.dart';
 import '../core/widgets/common.dart';
+import '../core/theme/design_tokens.dart';
+import '../core/widgets/ds/app_button.dart';
 
 /// Compulsory step after the driver's profile: licence, RC, Aadhaar (last 4
 /// digits only) and PAN. Home and Loads stay closed until this is saved
@@ -128,7 +130,7 @@ class _DriverKycScreenState extends State<DriverKycScreen> {
 
   Widget _label(String text) => Padding(
         padding: const EdgeInsets.only(bottom: 8),
-        child: Text(text, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.body)),
+        child: Text(text, style: DsStyle.t14w700.copyWith(color: AppColors.body)),
       );
 
   String _dateText(DateTime d) =>
@@ -159,9 +161,9 @@ class _DriverKycScreenState extends State<DriverKycScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(tr(context, 'kycTitle'), style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: AppColors.title)),
+                  Text(tr(context, 'kycTitle'), style: DsStyle.t28w700.copyWith(color: AppColors.title)),
                   const SizedBox(height: 8),
-                  Text(tr(context, 'kycSub'), style: TextStyle(fontSize: 15, color: AppColors.muted)),
+                  Text(tr(context, 'kycSub'), style: DsStyle.t16w400.copyWith(color: AppColors.muted)),
                   const SizedBox(height: 24),
                   _label(tr(context, 'dlNumber')),
                   TextFormField(
@@ -222,28 +224,7 @@ class _DriverKycScreenState extends State<DriverKycScreen> {
                     validator: (v) => isValidPan(v ?? '') ? null : tr(context, 'kycInvalidPan'),
                   ),
                   const SizedBox(height: 30),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 54,
-                    child: ElevatedButton(
-                      key: const ValueKey('kycSubmit'),
-                      onPressed: _saving ? null : _submit,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF1565C0),
-                        foregroundColor: Colors.white,
-                        disabledBackgroundColor: const Color(0xFF9DBCE5),
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                      ),
-                      child: _saving
-                          ? const SizedBox(
-                              width: 23,
-                              height: 23,
-                              child: CircularProgressIndicator(strokeWidth: 2.5, valueColor: AlwaysStoppedAnimation<Color>(Colors.white)),
-                            )
-                          : Text(tr(context, 'kycSubmit'), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
-                    ),
-                  ),
+                  AppButton(key: const ValueKey('kycSubmit'), label: tr(context, 'kycSubmit'), loading: _saving, onPressed: _submit),
                 ],
               ),
             ),

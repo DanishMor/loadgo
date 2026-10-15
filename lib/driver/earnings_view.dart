@@ -11,6 +11,7 @@ import '../core/trip/trip_history_screen.dart';
 import '../core/widgets/live_stream.dart';
 import '../core/widgets/mini_bars.dart';
 import 'driver_rewards_screen.dart';
+import '../core/theme/design_tokens.dart';
 
 /// Driver "Earnings" tab: totals from delivered trips plus recent payouts.
 class EarningsView extends StatelessWidget {
@@ -27,11 +28,10 @@ class EarningsView extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(label, style: TextStyle(color: AppColors.muted, fontSize: 13)),
+              Text(label, style: DsStyle.t14w400.copyWith(color: AppColors.muted)),
               const SizedBox(height: 6),
               Text(value,
-                  style: TextStyle(
-                      fontSize: 22, fontWeight: FontWeight.w800, color: highlight ? AppColors.primary : AppColors.title)),
+                  style: DsStyle.t24w700.copyWith(color: highlight ? AppColors.primary : AppColors.title)),
             ],
           ),
         ),
@@ -49,7 +49,7 @@ class EarningsView extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(20, 18, 20, 30),
             children: [
               Text(tr(context, 'earnings'),
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: AppColors.title)),
+                  style: DsStyle.t24w700.copyWith(color: AppColors.title)),
               const SizedBox(height: 16),
               FeatureGate(
                 featureKey: FeatureKey.driverRewards,
@@ -57,7 +57,7 @@ class EarningsView extends StatelessWidget {
                   key: const ValueKey('openRewards'),
                   contentPadding: EdgeInsets.zero,
                   leading: const Icon(Icons.card_giftcard_rounded, color: AppColors.primary),
-                  title: Text(tr(context, 'tipsBonusesPlan'), style: const TextStyle(fontWeight: FontWeight.w700)),
+                  title: Text(tr(context, 'tipsBonusesPlan'), style: DsStyle.w700),
                   trailing: const Icon(Icons.chevron_right_rounded),
                   onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const DriverRewardsScreen())),
                 ),
@@ -66,16 +66,16 @@ class EarningsView extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(colors: [Color(0xFF0D47A1), Color(0xFF1976D2)]),
+                  gradient: const LinearGradient(colors: DsHero.colors),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(tr(context, 'totalEarnings'), style: const TextStyle(color: Colors.white70)),
+                    Text(tr(context, 'totalEarnings'), style: DsStyle.inherit.copyWith(color: Colors.white70)),
                     const SizedBox(height: 6),
                     Text(formatRupees(e.total),
-                        style: const TextStyle(color: Colors.white, fontSize: 34, fontWeight: FontWeight.w800)),
+                        style: DsStyle.t32w700.copyWith(color: Colors.white)),
                   ],
                 ),
               ),
@@ -98,7 +98,7 @@ class EarningsView extends StatelessWidget {
               const SizedBox(height: 4),
               AppCard(
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text(tr(context, 'ehEarnByDay'), style: TextStyle(color: AppColors.muted, fontSize: 13)),
+                  Text(tr(context, 'ehEarnByDay'), style: DsStyle.t14w400.copyWith(color: AppColors.muted)),
                   const SizedBox(height: 10),
                   MiniBars(
                     keyPrefix: 'earnBar',
@@ -111,15 +111,15 @@ class EarningsView extends StatelessWidget {
                 key: const ValueKey('openHistory'),
                 contentPadding: EdgeInsets.zero,
                 leading: const Icon(Icons.history_rounded, color: AppColors.primary),
-                title: Text(tr(context, 'ehHistoryTitle'), style: const TextStyle(fontWeight: FontWeight.w700)),
+                title: Text(tr(context, 'ehHistoryTitle'), style: DsStyle.w700),
                 trailing: const Icon(Icons.chevron_right_rounded),
                 onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => TripHistoryScreen(bookings: bookings, onOpen: onOpenTrip))),
               ),
               const SizedBox(height: 8),
-              Text(tr(context, 'earningsNote'), style: TextStyle(fontSize: 12, color: AppColors.faint)),
+              Text(tr(context, 'earningsNote'), style: DsStyle.t12w400.copyWith(color: AppColors.faint)),
               const SizedBox(height: 20),
               Text(tr(context, 'recentTrips'),
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.title)),
+                  style: DsStyle.t18w700.copyWith(color: AppColors.title)),
               const SizedBox(height: 10),
               if (e.delivered.isEmpty)
                 EmptyState(icon: Icons.account_balance_wallet_outlined, title: tr(context, 'noEarningsYet'))
@@ -136,12 +136,12 @@ class EarningsView extends StatelessWidget {
                               RouteText(pickup: b.pickup, drop: b.drop, fontSize: 15),
                               const SizedBox(height: 4),
                               Text(formatDate(EarningsSummary.deliveredAt(b)),
-                                  style: TextStyle(color: AppColors.muted, fontSize: 13)),
+                                  style: DsStyle.t14w400.copyWith(color: AppColors.muted)),
                             ],
                           ),
                         ),
                         Text(b.budget == null ? tr(context, 'budgetNegotiable') : formatRupees(b.budget!),
-                            style: const TextStyle(fontWeight: FontWeight.w800, color: AppColors.success)),
+                            style: DsStyle.w700.copyWith(color: AppColors.success)),
                       ],
                     ),
                   ),
@@ -168,7 +168,7 @@ class TodayEarningsText extends StatelessWidget {
         if (snap.hasError) return ErrorState(error: snap.error);
         final today = EarningsSummary.from(snap.data ?? const [], DateTime.now()).today;
         return Text(formatRupees(today),
-            style: const TextStyle(color: Colors.white, fontSize: 34, fontWeight: FontWeight.w800));
+            style: DsStyle.t32w700.copyWith(color: Colors.white));
       },
     );
   }

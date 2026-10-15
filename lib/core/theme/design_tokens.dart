@@ -128,6 +128,34 @@ class DsBrand {
   static const Color saffron = Color(0xFFF2A100);
 }
 
+/// The colours the screens written before the design system still reach for
+/// through AppColors (core/widgets/common.dart). They are const, so they
+/// work inside const widget trees, and they read on both a light and a dark
+/// surface only loosely: new code uses [DsColors] / the theme instead. Each one
+/// goes when the last screen that uses it moves (docs/THEME_EXCEPTIONS.md).
+class DsLegacy {
+  DsLegacy._();
+  static const Color primary = Color(0xFF1565C0);
+  static const Color success = Color(0xFF12B76A);
+  static const Color warning = Color(0xFFF79009);
+  static const Color star = Color(0xFFFDB022);
+  static const Color danger = Color(0xFFD92D20);
+  static const Color purple = Color(0xFF6A1B9A);
+}
+
+/// The deep-navy gradient behind the big white-text cards on the home screens.
+class DsHero {
+  DsHero._();
+  static const Color start = Color(0xFF0B2A52);
+  static const Color end = Color(0xFF1D5A9E);
+  static const List<Color> colors = [start, end];
+}
+
+/// context.ds is the colour set of the theme being shown (light or dark).
+extension DsContext on BuildContext {
+  DsColors get ds => DsColors.of(Theme.of(this).brightness);
+}
+
 /// Spacing on a 4 / 8 grid (logical pixels).
 class DsSpace {
   DsSpace._();
@@ -188,6 +216,46 @@ class DsMotion {
   static bool reduced(BuildContext context) => lowEnd || MediaQuery.maybeDisableAnimationsOf(context) == true;
 
   static Duration duration(BuildContext context, Duration d) => reduced(context) ? Duration.zero : d;
+}
+
+/// Constant text styles for the whole scale: size (12, 14, 16, 18, 20, 24, 28,
+/// 32) x weight (regular, semi-bold 600, bold 700). They are `const`, so they
+/// work inside `const` widget trees; colour comes from `.copyWith(color: ...)`
+/// or from the theme. No line height is set: it is inherited from the theme,
+/// as it was before. Use `Theme.of(context).textTheme` or [DsType] for new code
+/// that wants the named roles (title, body, caption).
+class DsStyle {
+  DsStyle._();
+
+  /// Nothing set: size, colour and family come from the surrounding text style.
+  static const TextStyle inherit = TextStyle();
+  static const TextStyle w600 = TextStyle(fontWeight: FontWeight.w600);
+  static const TextStyle w700 = TextStyle(fontWeight: FontWeight.w700);
+
+  static const TextStyle t12w400 = TextStyle(fontSize: 12);
+  static const TextStyle t12w600 = TextStyle(fontSize: 12, fontWeight: FontWeight.w600);
+  static const TextStyle t12w700 = TextStyle(fontSize: 12, fontWeight: FontWeight.w700);
+  static const TextStyle t14w400 = TextStyle(fontSize: 14);
+  static const TextStyle t14w600 = TextStyle(fontSize: 14, fontWeight: FontWeight.w600);
+  static const TextStyle t14w700 = TextStyle(fontSize: 14, fontWeight: FontWeight.w700);
+  static const TextStyle t16w400 = TextStyle(fontSize: 16);
+  static const TextStyle t16w600 = TextStyle(fontSize: 16, fontWeight: FontWeight.w600);
+  static const TextStyle t16w700 = TextStyle(fontSize: 16, fontWeight: FontWeight.w700);
+  static const TextStyle t18w400 = TextStyle(fontSize: 18);
+  static const TextStyle t18w600 = TextStyle(fontSize: 18, fontWeight: FontWeight.w600);
+  static const TextStyle t18w700 = TextStyle(fontSize: 18, fontWeight: FontWeight.w700);
+  static const TextStyle t20w400 = TextStyle(fontSize: 20);
+  static const TextStyle t20w600 = TextStyle(fontSize: 20, fontWeight: FontWeight.w600);
+  static const TextStyle t20w700 = TextStyle(fontSize: 20, fontWeight: FontWeight.w700);
+  static const TextStyle t24w400 = TextStyle(fontSize: 24);
+  static const TextStyle t24w600 = TextStyle(fontSize: 24, fontWeight: FontWeight.w600);
+  static const TextStyle t24w700 = TextStyle(fontSize: 24, fontWeight: FontWeight.w700);
+  static const TextStyle t28w400 = TextStyle(fontSize: 28);
+  static const TextStyle t28w600 = TextStyle(fontSize: 28, fontWeight: FontWeight.w600);
+  static const TextStyle t28w700 = TextStyle(fontSize: 28, fontWeight: FontWeight.w700);
+  static const TextStyle t32w400 = TextStyle(fontSize: 32);
+  static const TextStyle t32w600 = TextStyle(fontSize: 32, fontWeight: FontWeight.w600);
+  static const TextStyle t32w700 = TextStyle(fontSize: 32, fontWeight: FontWeight.w700);
 }
 
 /// Type scale (size / line height / weight). Font family comes from [DsType.family]

@@ -7,6 +7,7 @@ import '../core/services/offer_service.dart';
 import '../core/widgets/common.dart';
 import '../core/widgets/live_stream.dart';
 import '../core/widgets/logistics_labels.dart';
+import '../core/theme/design_tokens.dart';
 
 /// The driver's offers with what they can do next: withdraw, accept the
 /// customer's counter, or confirm a selected offer (creates the booking).
@@ -23,7 +24,7 @@ class MyOffersScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: AppColors.background,
         scrolledUnderElevation: 0,
-        title: Text(tr(context, 'myOffers'), style: const TextStyle(fontWeight: FontWeight.w700)),
+        title: Text(tr(context, 'myOffers'), style: DsStyle.w700),
       ),
       body: SafeArea(
         child: LiveStream<List<Offer>>(
@@ -90,12 +91,12 @@ class _DriverOfferCardState extends State<_DriverOfferCard> {
             ],
           ),
           const SizedBox(height: 6),
-          Text('${o.vehicleNumber} • ${vehicleTypeLabel(context, o.vehicleType)}', style: TextStyle(color: AppColors.muted)),
+          Text('${o.vehicleNumber} • ${vehicleTypeLabel(context, o.vehicleType)}', style: DsStyle.inherit.copyWith(color: AppColors.muted)),
           const SizedBox(height: 6),
-          Text(formatPaise(o.pricePaise), style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.title)),
+          Text(formatPaise(o.pricePaise), style: DsStyle.t20w700.copyWith(color: AppColors.title)),
           if (o.counterPaise != null && o.status == OfferStatus.countered)
             Text(trf(context, 'counterOf', {'amount': formatPaise(o.counterPaise!)}),
-                style: const TextStyle(color: AppColors.warning, fontWeight: FontWeight.w700)),
+                style: DsStyle.w700.copyWith(color: AppColors.warning)),
           const SizedBox(height: 10),
           Wrap(
             spacing: 8,

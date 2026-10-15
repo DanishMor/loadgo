@@ -10,6 +10,7 @@ import '../core/services/fleet_service.dart';
 import '../core/services/vehicle_service.dart';
 import '../core/widgets/common.dart';
 import '../core/widgets/live_stream.dart';
+import '../core/theme/design_tokens.dart';
 
 /// Invite drivers by phone number, see pending invites and members, remove a
 /// member (their vehicles go back to the owner).
@@ -59,7 +60,7 @@ class _FleetDriversScreenState extends State<FleetDriversScreen> {
     return ListView(padding: const EdgeInsets.fromLTRB(16, 4, 16, 24), children: [
       AppCard(
         child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          Text(tr(context, 'fleetInviteDriver'), style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+          Text(tr(context, 'fleetInviteDriver'), style: DsStyle.t16w700),
           Row(children: [
             Expanded(
               child: TextField(
@@ -74,11 +75,11 @@ class _FleetDriversScreenState extends State<FleetDriversScreen> {
             const SizedBox(width: 8),
             FilledButton(key: const ValueKey('inviteSend'), onPressed: _busy ? null : _invite, child: Text(tr(context, 'fleetInvite'))),
           ]),
-          Text(tr(context, 'fleetInviteNote'), style: TextStyle(color: AppColors.faint, fontSize: 12)),
+          Text(tr(context, 'fleetInviteNote'), style: DsStyle.t12w400.copyWith(color: AppColors.faint)),
         ]),
       ),
       const SizedBox(height: 14),
-      Text(tr(context, 'fleetMembers'), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+      Text(tr(context, 'fleetMembers'), style: DsStyle.t18w700),
       LiveStream<List<FleetMember>>(
         stream: () => _members,
         compact: true,
@@ -107,7 +108,7 @@ class _FleetDriversScreenState extends State<FleetDriversScreen> {
         ),
       ),
       const SizedBox(height: 14),
-      Text(tr(context, 'fleetInvitesSent'), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+      Text(tr(context, 'fleetInvitesSent'), style: DsStyle.t18w700),
       LiveStream<List<FleetInvite>>(
         stream: () => _invites,
         compact: true,

@@ -7,6 +7,7 @@ import '../core/l10n/l10n.dart';
 import '../core/services/admin_console_service.dart';
 import '../core/widgets/common.dart';
 import '../core/widgets/live_stream.dart';
+import '../core/theme/design_tokens.dart';
 
 /// Admin > Unit economics (super admin): the last 30 days in plain numbers,
 /// with the two costs typed in rupees. Revenue is the commission recorded in
@@ -69,7 +70,7 @@ class _AdminUnitEconomicsScreenState extends State<AdminUnitEconomicsScreen> {
         padding: const EdgeInsets.symmetric(vertical: 6),
         child: Row(children: [
           Expanded(child: Text(label)),
-          Text(value, key: ValueKey('ue_$key'), style: TextStyle(fontWeight: FontWeight.w800, color: color)),
+          Text(value, key: ValueKey('ue_$key'), style: DsStyle.w700.copyWith(color: color)),
         ]),
       );
 
@@ -94,7 +95,7 @@ class _AdminUnitEconomicsScreenState extends State<AdminUnitEconomicsScreen> {
           String money(int? p) => p == null ? '-' : formatPaise(p);
           final profit = u.profitPaise;
           return ListView(padding: const EdgeInsets.all(16), children: [
-            Text(trf(context, 'ueNote', {'days': u.days}), style: TextStyle(color: AppColors.muted, fontSize: 12)),
+            Text(trf(context, 'ueNote', {'days': u.days}), style: DsStyle.t12w400.copyWith(color: AppColors.muted)),
             const SizedBox(height: 8),
             AppCard(
               child: Column(children: [
@@ -112,7 +113,7 @@ class _AdminUnitEconomicsScreenState extends State<AdminUnitEconomicsScreen> {
               ]),
             ),
             const SizedBox(height: 16),
-            Text(tr(context, 'ueCosts'), style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+            Text(tr(context, 'ueCosts'), style: DsStyle.t16w700),
             const SizedBox(height: 8),
             TextField(
               key: const ValueKey('ueFixed'),

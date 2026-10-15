@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../l10n/l10n.dart';
 import '../services/backend.dart';
 import '../widgets/common.dart';
+import '../theme/design_tokens.dart';
 
 /// Driver home: loads an admin suggested (MASTER-6 Task 4). It assigns
 /// nothing; the driver finds the load in Loads and accepts as usual.
@@ -47,22 +48,22 @@ class _DispatchSuggestionsCardState extends State<DispatchSuggestionsCard> {
       child: AppCard(
         key: const ValueKey('dispatchCard'),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(tr(context, 'dispCardTitle'), style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+          Text(tr(context, 'dispCardTitle'), style: DsStyle.t16w700),
           for (final d in _items)
             Padding(
               padding: const EdgeInsets.only(top: 8),
               child: Row(children: [
                 Expanded(
                   child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Text('${d.data()['pickup']} → ${d.data()['drop']}', style: const TextStyle(fontWeight: FontWeight.w700)),
-                    Text('${d.data()['weight']} t · ${d.data()['vehicleType']}${'${d.data()['note']}'.isEmpty ? '' : '\n${d.data()['note']}'}', style: TextStyle(color: AppColors.muted)),
+                    Text('${d.data()['pickup']} → ${d.data()['drop']}', style: DsStyle.w700),
+                    Text('${d.data()['weight']} t · ${d.data()['vehicleType']}${'${d.data()['note']}'.isEmpty ? '' : '\n${d.data()['note']}'}', style: DsStyle.inherit.copyWith(color: AppColors.muted)),
                   ]),
                 ),
                 TextButton(key: ValueKey('dispDismiss_${d.id}'), onPressed: () => _dismiss(d.id), child: Text(tr(context, 'dispDismiss'))),
               ]),
             ),
           const SizedBox(height: 6),
-          Text(tr(context, 'dispCardHint'), style: TextStyle(color: AppColors.faint, fontSize: 12)),
+          Text(tr(context, 'dispCardHint'), style: DsStyle.t12w400.copyWith(color: AppColors.faint)),
         ]),
       ),
     );

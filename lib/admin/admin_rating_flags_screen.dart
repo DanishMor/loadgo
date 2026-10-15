@@ -6,6 +6,7 @@ import '../core/models/rating.dart';
 import '../core/services/rating_service.dart';
 import '../core/widgets/common.dart';
 import '../core/widgets/live_stream.dart';
+import '../core/theme/design_tokens.dart';
 
 /// Admin > Low ratings: every rating under 3 stars, open ones first.
 class AdminRatingFlagsScreen extends StatelessWidget {
@@ -28,8 +29,8 @@ class AdminRatingFlagsScreen extends StatelessWidget {
               return AppCard(
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   Text(trf(context, 'ratingFlagLine', {'stars': f.stars, 'rater': f.raterId, 'rated': f.ratedId}),
-                      style: const TextStyle(fontWeight: FontWeight.w700)),
-                  Text(f.bookingId, style: TextStyle(color: AppColors.muted, fontSize: 12)),
+                      style: DsStyle.w700),
+                  Text(f.bookingId, style: DsStyle.t12w400.copyWith(color: AppColors.muted)),
                   _CommentRow(flag: f),
                   if (f.status == RatingFlag.open)
                     Wrap(spacing: 8, children: [
@@ -45,7 +46,7 @@ class AdminRatingFlagsScreen extends StatelessWidget {
                       ),
                     ])
                   else
-                    Text(f.status, style: TextStyle(color: AppColors.muted)),
+                    Text(f.status, style: DsStyle.inherit.copyWith(color: AppColors.muted)),
                 ]),
               );
             },
@@ -78,7 +79,7 @@ class _CommentRowState extends State<_CommentRow> {
         if (d == null) return const SizedBox.shrink();
         final comment = d['comment'] as String? ?? '';
         if (d['moderated'] == true || _hidden) {
-          return Padding(padding: const EdgeInsets.only(top: 6), child: Text(tr(context, 'ratingCommentHidden'), style: TextStyle(color: AppColors.muted, fontStyle: FontStyle.italic)));
+          return Padding(padding: const EdgeInsets.only(top: 6), child: Text(tr(context, 'ratingCommentHidden'), style: DsStyle.inherit.copyWith(color: AppColors.muted, fontStyle: FontStyle.italic)));
         }
         if (comment.isEmpty) return const SizedBox.shrink();
         return Padding(

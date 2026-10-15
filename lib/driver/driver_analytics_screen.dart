@@ -6,6 +6,7 @@ import '../core/services/analytics_service.dart';
 import '../core/widgets/common.dart';
 import '../core/widgets/live_stream.dart';
 import '../core/widgets/stat_tile.dart';
+import '../core/theme/design_tokens.dart';
 
 /// Trips, earnings, offer acceptance and cancel rate for a driver.
 class DriverAnalyticsScreen extends StatelessWidget {
@@ -31,15 +32,15 @@ class DriverAnalyticsScreen extends StatelessWidget {
             const SizedBox(height: 10),
             StatTile(icon: Icons.cancel_outlined, label: tr(context, 'statCancelRate'), value: rate(s.cancelRate)),
             const SizedBox(height: 16),
-            Text(tr(context, 'statTopRoutes'), style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+            Text(tr(context, 'statTopRoutes'), style: DsStyle.t16w700),
             const SizedBox(height: 8),
-            if (s.topRoutes.isEmpty) Text(tr(context, 'statNoData'), style: TextStyle(color: AppColors.muted)),
+            if (s.topRoutes.isEmpty) Text(tr(context, 'statNoData'), style: DsStyle.inherit.copyWith(color: AppColors.muted)),
             for (final r in s.topRoutes)
               ListTile(
                 key: ValueKey('route_${r.route}'),
                 contentPadding: EdgeInsets.zero,
                 title: Text(r.route),
-                trailing: Text('${r.count}', style: const TextStyle(fontWeight: FontWeight.w800)),
+                trailing: Text('${r.count}', style: DsStyle.w700),
               ),
           ]);
         },

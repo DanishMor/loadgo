@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../l10n/l10n.dart';
+import '../theme/design_tokens.dart';
 
 /// Remembers on this device that the first-time slides were shown.
 class OnboardingStore {
@@ -83,9 +84,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       const SizedBox(height: 40),
                       Icon(icon, size: 96, color: Theme.of(context).colorScheme.primary),
                       const SizedBox(height: 28),
-                      Text(tr(context, title), textAlign: TextAlign.center, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800)),
+                      Text(tr(context, title), textAlign: TextAlign.center, style: DsStyle.t24w700),
                       const SizedBox(height: 12),
-                      Text(tr(context, body), textAlign: TextAlign.center, style: const TextStyle(fontSize: 16, height: 1.4)),
+                      Text(tr(context, body), textAlign: TextAlign.center, style: DsStyle.t16w400.copyWith(height: 1.4)),
                     ]),
                   ),
               ],

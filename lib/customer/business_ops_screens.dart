@@ -16,6 +16,7 @@ import '../core/support/support_screens.dart';
 import '../core/widgets/common.dart';
 import '../core/widgets/live_stream.dart';
 import '../core/widgets/load_card.dart';
+import '../core/theme/design_tokens.dart';
 
 /// Rupees typed as text to paise (null when not a positive amount).
 int? _paise(String text) {
@@ -92,7 +93,7 @@ class _ApprovalsScreenState extends State<ApprovalsScreen> {
                 const SizedBox(width: 8),
                 FilledButton(key: const ValueKey('approvalLimitSave'), onPressed: () => _once.run(_saveLimit), child: Text(tr(context, 'save'))),
               ]),
-              Text(tr(context, 'bizApprovalHelp'), style: TextStyle(color: AppColors.faint, fontSize: 12)),
+              Text(tr(context, 'bizApprovalHelp'), style: DsStyle.t12w400.copyWith(color: AppColors.faint)),
             ]),
           ),
         const SizedBox(height: 12),
@@ -100,7 +101,7 @@ class _ApprovalsScreenState extends State<ApprovalsScreen> {
           stream: () => _waiting,
           compact: true,
           builder: (context, loads) {
-            if (loads.isEmpty) return Padding(padding: const EdgeInsets.all(16), child: Text(tr(context, 'bizNoApprovals'), style: TextStyle(color: AppColors.muted)));
+            if (loads.isEmpty) return Padding(padding: const EdgeInsets.all(16), child: Text(tr(context, 'bizNoApprovals'), style: DsStyle.inherit.copyWith(color: AppColors.muted)));
             return Column(children: [
               for (final l in loads)
                 Column(key: ValueKey('approval_${l.id}'), crossAxisAlignment: CrossAxisAlignment.stretch, children: [
@@ -329,20 +330,20 @@ class _SpendDashboardScreenState extends State<SpendDashboardScreen> {
                   key: ValueKey('spend_${m.month}'),
                   child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                     Row(children: [
-                      Text(m.month, style: const TextStyle(fontWeight: FontWeight.w800)),
+                      Text(m.month, style: DsStyle.w700),
                       const Spacer(),
-                      Text(formatPaise(m.totalPaise), key: ValueKey('spendTotal_${m.month}'), style: const TextStyle(fontWeight: FontWeight.w800)),
+                      Text(formatPaise(m.totalPaise), key: ValueKey('spendTotal_${m.month}'), style: DsStyle.w700),
                     ]),
                     const SizedBox(height: 6),
                     ClipRRect(borderRadius: BorderRadius.circular(4), child: LinearProgressIndicator(value: maxTotal == 0 ? 0 : m.totalPaise / maxTotal, minHeight: 8)),
                     const SizedBox(height: 6),
-                    Text('${tr(context, 'bizFreight')}: ${formatPaise(m.freightPaise)}', style: TextStyle(color: AppColors.muted, fontSize: 12)),
+                    Text('${tr(context, 'bizFreight')}: ${formatPaise(m.freightPaise)}', style: DsStyle.t12w400.copyWith(color: AppColors.muted)),
                     for (final k in BizExpenseKind.all)
-                      if ((m.byKind[k] ?? 0) > 0) Text('${bizExpenseKindLabel(context, k)}: ${formatPaise(m.byKind[k]!)}', style: TextStyle(color: AppColors.muted, fontSize: 12)),
+                      if ((m.byKind[k] ?? 0) > 0) Text('${bizExpenseKindLabel(context, k)}: ${formatPaise(m.byKind[k]!)}', style: DsStyle.t12w400.copyWith(color: AppColors.muted)),
                   ]),
                 ),
               const SizedBox(height: 8),
-              if (expenses.isEmpty) Text(tr(context, 'bizNoExpenses'), style: TextStyle(color: AppColors.muted)),
+              if (expenses.isEmpty) Text(tr(context, 'bizNoExpenses'), style: DsStyle.inherit.copyWith(color: AppColors.muted)),
               for (final e in expenses.take(30))
                 ListTile(
                   key: ValueKey('expense_${e.id}'),

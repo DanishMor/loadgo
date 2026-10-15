@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../l10n/l10n.dart';
 import '../models/lifecycle.dart';
 import 'common.dart';
+import '../theme/design_tokens.dart';
 
 String lifecycleLabel(BuildContext context, LifecycleStage s) => tr(context, switch (s) {
       LifecycleStage.created => 'lcCreated',
@@ -40,7 +41,7 @@ class LifecycleBar extends StatelessWidget {
             const SizedBox(height: 2),
             Text(lifecycleLabel(context, s),
                 key: ValueKey('lc_${s.name}'),
-                style: TextStyle(fontSize: 11, fontWeight: i == at ? FontWeight.w800 : FontWeight.w500, color: i <= at ? AppColors.title : AppColors.faint)),
+                style: DsStyle.t12w400.copyWith(fontWeight: i == at ? FontWeight.w800 : FontWeight.w500, color: i <= at ? AppColors.title : AppColors.faint)),
           ]),
         ],
       ]),
