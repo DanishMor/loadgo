@@ -8,6 +8,7 @@ import '../core/models/vehicle.dart';
 import '../core/services/vehicle_service.dart';
 import '../core/widgets/common.dart';
 import '../core/widgets/logistics_labels.dart';
+import '../core/theme/design_tokens.dart';
 
 /// Insurance / PUC / fitness / permit details, next service date and the
 /// maintenance switch for one vehicle. Text only: nothing is uploaded or
@@ -117,7 +118,7 @@ class _VehicleDocumentsScreenState extends State<VehicleDocumentsScreen> {
               Expanded(
                 child: Text(
                   vehicleDocLabel(context, kind),
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.title),
+                  style: DsStyle.t16w700.copyWith(color: AppColors.title),
                 ),
               ),
               if (info.isExpired(now))
@@ -157,7 +158,7 @@ class _VehicleDocumentsScreenState extends State<VehicleDocumentsScreen> {
       appBar: AppBar(
         backgroundColor: AppColors.background,
         scrolledUnderElevation: 0,
-        title: Text(tr(context, 'vehicleDocs'), style: const TextStyle(fontWeight: FontWeight.w700)),
+        title: Text(tr(context, 'vehicleDocs'), style: DsStyle.w700),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -170,7 +171,7 @@ class _VehicleDocumentsScreenState extends State<VehicleDocumentsScreen> {
                   Expanded(
                     child: Text(
                       v.number,
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.title),
+                      style: DsStyle.t18w700.copyWith(color: AppColors.title),
                     ),
                   ),
                   StatusChip(
@@ -180,7 +181,7 @@ class _VehicleDocumentsScreenState extends State<VehicleDocumentsScreen> {
                 ],
               ),
               const SizedBox(height: 6),
-              Text(tr(context, 'docsTextOnly'), style: TextStyle(color: AppColors.muted, fontSize: 12)),
+              Text(tr(context, 'docsTextOnly'), style: DsStyle.t12w400.copyWith(color: AppColors.muted)),
               const SizedBox(height: 14),
               for (final k in VehicleDocKind.all) ...[_docCard(k), const SizedBox(height: 12)],
               AppCard(

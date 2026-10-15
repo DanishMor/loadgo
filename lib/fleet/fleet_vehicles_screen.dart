@@ -14,6 +14,7 @@ import '../core/vehicles/vehicle_expenses_screen.dart';
 import '../core/widgets/common.dart';
 import '../core/widgets/live_stream.dart';
 import '../core/widgets/logistics_labels.dart';
+import '../core/theme/design_tokens.dart';
 
 /// The fleet's vehicles: add one, assign it to an active driver, take it back.
 class FleetVehiclesScreen extends StatefulWidget {
@@ -113,8 +114,8 @@ class _FleetVehiclesScreenState extends State<FleetVehiclesScreen> {
                   child: AppCard(
                     key: ValueKey('fleetVehicle_${v.id}'),
                     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      Text(v.number, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
-                      Text('${vehicleTypeLabel(context, v.type)} • ${formatNum(v.capacity)} T', style: TextStyle(color: AppColors.muted)),
+                      Text(v.number, style: DsStyle.t16w700),
+                      Text('${vehicleTypeLabel(context, v.type)} • ${formatNum(v.capacity)} T', style: DsStyle.inherit.copyWith(color: AppColors.muted)),
                       Wrap(spacing: 6, children: [StatusChip(label: availabilityLabel(context, v.availability), color: availabilityColor(v.availability))]),
                       Align(
                         alignment: Alignment.centerLeft,
@@ -140,15 +141,15 @@ class _FleetVehiclesScreenState extends State<FleetVehiclesScreen> {
                   ),
                 ),
               if (attached.isNotEmpty) ...[
-                Padding(padding: const EdgeInsets.only(top: 8, bottom: 6), child: Text(tr(context, 'trpAttachedVehicles'), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800))),
+                Padding(padding: const EdgeInsets.only(top: 8, bottom: 6), child: Text(tr(context, 'trpAttachedVehicles'), style: DsStyle.t16w700)),
                 for (final v in attached)
                   Padding(
                     padding: const EdgeInsets.only(bottom: 8),
                     child: AppCard(
                       key: ValueKey('attachedVehicle_${v.id}'),
                       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                        Text(v.number, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
-                        Text('${vehicleTypeLabel(context, v.type)} • ${formatNum(v.capacity)} T', style: TextStyle(color: AppColors.muted)),
+                        Text(v.number, style: DsStyle.t16w700),
+                        Text('${vehicleTypeLabel(context, v.type)} • ${formatNum(v.capacity)} T', style: DsStyle.inherit.copyWith(color: AppColors.muted)),
                         Wrap(spacing: 6, children: [
                           StatusChip(label: tr(context, 'trpAttachedChip'), color: AppColors.primary),
                           StatusChip(label: availabilityLabel(context, v.availability), color: availabilityColor(v.availability)),

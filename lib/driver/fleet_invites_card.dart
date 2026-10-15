@@ -9,6 +9,7 @@ import '../core/services/fleet_service.dart';
 import '../core/services/transporter_service.dart';
 import '../core/services/vehicle_service.dart';
 import '../core/widgets/common.dart';
+import '../core/theme/design_tokens.dart';
 
 /// Driver home: pending invites from transporters (matched by phone number)
 /// and the fleets the driver already belongs to. Shows nothing when empty.
@@ -96,7 +97,7 @@ class _FleetInvitesCardState extends State<FleetInvitesCard> {
                               }
                             },
                           ),
-                        Text(tr(context, 'trpAttachNote'), style: TextStyle(color: AppColors.faint, fontSize: 12)),
+                        Text(tr(context, 'trpAttachNote'), style: DsStyle.t12w400.copyWith(color: AppColors.faint)),
                       ]);
                     },
                   ),

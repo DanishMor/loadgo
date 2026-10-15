@@ -7,6 +7,7 @@ import '../core/models/load.dart';
 import '../core/services/admin_console_service.dart';
 import '../core/widgets/common.dart';
 import '../core/widgets/live_stream.dart';
+import '../core/theme/design_tokens.dart';
 
 /// Admin > Manual dispatch (MASTER-6 Task 4): loads that wait for a driver,
 /// the nearest fitting drivers, a suggestion with a note, and a call-back note
@@ -82,8 +83,8 @@ class _AdminDispatchScreenState extends State<AdminDispatchScreen> {
               AppCard(
                 key: ValueKey('dispLoad_${l.id}'),
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text('${l.pickup} → ${l.drop}', style: const TextStyle(fontWeight: FontWeight.w800)),
-                  Text('${l.weight} t · ${l.vehicleType}', style: TextStyle(color: AppColors.muted)),
+                  Text('${l.pickup} → ${l.drop}', style: DsStyle.w700),
+                  Text('${l.weight} t · ${l.vehicleType}', style: DsStyle.inherit.copyWith(color: AppColors.muted)),
                   Wrap(spacing: 8, children: [
                     FilledButton.tonal(key: ValueKey('dispSuggest_${l.id}'), onPressed: () => _suggest(l), child: Text(tr(context, 'dispSuggest'))),
                     OutlinedButton(key: ValueKey('dispCall_${l.id}'), onPressed: () => _callback(l), child: Text(tr(context, 'dispCallback'))),
@@ -123,7 +124,7 @@ class _SuggestSheetState extends State<_SuggestSheet> {
       padding: EdgeInsets.fromLTRB(16, 16, 16, 16 + MediaQuery.of(context).viewInsets.bottom),
       child: SingleChildScrollView(
         child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text('${widget.load.pickup} → ${widget.load.drop}', style: const TextStyle(fontWeight: FontWeight.w800)),
+          Text('${widget.load.pickup} → ${widget.load.drop}', style: DsStyle.w700),
           const SizedBox(height: 8),
           if (list.isEmpty) Text(tr(context, 'dispNoDrivers'), key: const ValueKey('dispNoDrivers')),
           TextField(key: const ValueKey('dispNote'), controller: _note, maxLength: Dispatch.maxNote, decoration: InputDecoration(labelText: tr(context, 'dispNoteHint'))),

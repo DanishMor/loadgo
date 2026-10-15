@@ -11,6 +11,7 @@ import '../core/transporter/party_statement.dart';
 import '../core/transporter/transporter_logic.dart';
 import '../core/widgets/common.dart';
 import '../core/widgets/live_stream.dart';
+import '../core/theme/design_tokens.dart';
 
 /// Opens the books line of one trip: what the party pays, what the driver is
 /// owed, other cost and what has come in. A record for the transporter's own
@@ -28,7 +29,7 @@ Future<void> editTripAccount(BuildContext context, Booking booking, {TripAccount
       title: Text(tr(c, 'trpBooks')),
       content: SingleChildScrollView(
         child: Column(mainAxisSize: MainAxisSize.min, children: [
-          Text(tr(c, 'trpBooksNote'), style: TextStyle(color: AppColors.muted, fontSize: 12)),
+          Text(tr(c, 'trpBooksNote'), style: DsStyle.t12w400.copyWith(color: AppColors.muted)),
           const SizedBox(height: 8),
           TextField(key: const ValueKey('acctParty'), controller: party, decoration: InputDecoration(labelText: tr(c, 'company')), inputFormatters: [LengthLimitingTextInputFormatter(80)]),
           for (final e in [
@@ -82,7 +83,7 @@ class TransporterBooksScreen extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 3),
         child: Row(children: [
           Expanded(child: Text(label)),
-          Text(value, key: key, style: TextStyle(fontWeight: FontWeight.w800, color: color)),
+          Text(value, key: key, style: DsStyle.w700.copyWith(color: color)),
         ]),
       );
 
@@ -93,7 +94,7 @@ class TransporterBooksScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: AppColors.background,
         scrolledUnderElevation: 0,
-        title: Text(tr(context, 'trpBooks'), style: const TextStyle(fontWeight: FontWeight.w700)),
+        title: Text(tr(context, 'trpBooks'), style: DsStyle.w700),
       ),
       body: SafeArea(
         child: LiveStream<List<TripAccount>>(
@@ -119,9 +120,9 @@ class TransporterBooksScreen extends StatelessWidget {
                 ]),
               ),
               const SizedBox(height: 8),
-              Text(tr(context, 'trpBooksNote'), style: TextStyle(color: AppColors.faint, fontSize: 12)),
+              Text(tr(context, 'trpBooksNote'), style: DsStyle.t12w400.copyWith(color: AppColors.faint)),
               const SizedBox(height: 14),
-              Text(tr(context, 'trpPartyDues'), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+              Text(tr(context, 'trpPartyDues'), style: DsStyle.t18w700),
               const SizedBox(height: 8),
               for (final p in books.parties)
                 Padding(
@@ -131,11 +132,11 @@ class TransporterBooksScreen extends StatelessWidget {
                     child: Row(children: [
                       Expanded(
                         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                          Text(p.partyName.isEmpty ? p.partyId : p.partyName, style: const TextStyle(fontWeight: FontWeight.w800)),
-                          Text(trf(context, 'trpTripsCount', {'n': p.trips}), style: TextStyle(color: AppColors.muted, fontSize: 12)),
+                          Text(p.partyName.isEmpty ? p.partyId : p.partyName, style: DsStyle.w700),
+                          Text(trf(context, 'trpTripsCount', {'n': p.trips}), style: DsStyle.t12w400.copyWith(color: AppColors.muted)),
                         ]),
                       ),
-                      Text(formatPaise(p.duePaise), key: ValueKey('partyDue_${p.partyId}'), style: TextStyle(fontWeight: FontWeight.w800, color: p.duePaise > 0 ? AppColors.warning : AppColors.success)),
+                      Text(formatPaise(p.duePaise), key: ValueKey('partyDue_${p.partyId}'), style: DsStyle.w700.copyWith(color: p.duePaise > 0 ? AppColors.warning : AppColors.success)),
                       IconButton(
                         key: ValueKey('partyStatement_${p.partyId}'),
                         tooltip: tr(context, 'trpPartyStatement'),
@@ -187,7 +188,7 @@ class _PartyStatementSheetState extends State<_PartyStatementSheet> {
       child: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
         child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(trf(c, 'trpPartyStatementFor', {'party': st.party.partyName.isEmpty ? st.party.partyId : st.party.partyName}), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+          Text(trf(c, 'trpPartyStatementFor', {'party': st.party.partyName.isEmpty ? st.party.partyId : st.party.partyName}), style: DsStyle.t18w700),
           if (months.isNotEmpty) ...[
             const SizedBox(height: 8),
             Wrap(spacing: 6, runSpacing: 4, children: [

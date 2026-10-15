@@ -9,6 +9,8 @@ import '../core/l10n/language_widgets.dart';
 import 'start_resolvers.dart';
 import 'otp_verification_screen.dart';
 import '../core/widgets/common.dart';
+import '../core/theme/design_tokens.dart';
+import '../core/widgets/ds/app_button.dart';
 class DriverLoginScreen extends StatefulWidget {
   /// `driver` (default) or `fleet`: the same phone login with another door.
   final String role;
@@ -95,7 +97,7 @@ class _DriverLoginScreenState extends State<DriverLoginScreen> {
         elevation: 0,
         scrolledUnderElevation: 0,
         leading: IconButton(tooltip: tr(context, 'a11yBack'), icon: const Icon(Icons.arrow_back_rounded), onPressed: () => Navigator.of(context).pop()),
-        title: Text(tr(context, widget.role == 'fleet' ? 'fleetLoginTitle' : 'driverLoginTitle'), style: const TextStyle(fontWeight: FontWeight.w700)),
+        title: Text(tr(context, widget.role == 'fleet' ? 'fleetLoginTitle' : 'driverLoginTitle'), style: DsStyle.w700),
         actions: const [LanguageButton()],
       ),
       body: SafeArea(
@@ -112,19 +114,19 @@ class _DriverLoginScreenState extends State<DriverLoginScreen> {
                     width: 82,
                     height: 82,
                     decoration: BoxDecoration(color: AppColors.primaryLight, borderRadius: BorderRadius.circular(24)),
-                    child: const Icon(Icons.local_shipping_rounded, size: 45, color: Color(0xFF1565C0)),
+                    child: const Icon(Icons.local_shipping_rounded, size: 45, color: AppColors.primary),
                   ),
                 ),
                 const SizedBox(height: 28),
                 Center(
-                  child: Text(tr(context, widget.role == 'fleet' ? 'fleetLoginTitle' : 'driverLoginTitle'), textAlign: TextAlign.center, style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: AppColors.title)),
+                  child: Text(tr(context, widget.role == 'fleet' ? 'fleetLoginTitle' : 'driverLoginTitle'), textAlign: TextAlign.center, style: DsStyle.t28w700.copyWith(color: AppColors.title)),
                 ),
                 const SizedBox(height: 8),
                 Center(
-                  child: Text(tr(context, widget.role == 'fleet' ? 'fleetLoginSub' : 'driverLoginSub'), textAlign: TextAlign.center, style: TextStyle(fontSize: 15, color: AppColors.muted)),
+                  child: Text(tr(context, widget.role == 'fleet' ? 'fleetLoginSub' : 'driverLoginSub'), textAlign: TextAlign.center, style: DsStyle.t16w400.copyWith(color: AppColors.muted)),
                 ),
                 const SizedBox(height: 40),
-                Text(tr(context, 'mobile'), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.body)),
+                Text(tr(context, 'mobile'), style: DsStyle.t14w700.copyWith(color: AppColors.body)),
                 const SizedBox(height: 8),
                 TextFormField(
                   controller: _phoneController,
@@ -138,9 +140,9 @@ class _DriverLoginScreenState extends State<DriverLoginScreen> {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Text('🇮🇳', style: TextStyle(fontSize: 20)),
+                          Text('🇮🇳', style: DsStyle.t20w400),
                           SizedBox(width: 8),
-                          Text('+91', style: TextStyle(fontWeight: FontWeight.w600)),
+                          Text('+91', style: DsStyle.w600),
                         ],
                       ),
                     ),
@@ -154,27 +156,7 @@ class _DriverLoginScreenState extends State<DriverLoginScreen> {
                   },
                 ),
                 const SizedBox(height: 24),
-                SizedBox(
-                  width: double.infinity,
-                  height: 54,
-                  child: ElevatedButton(
-                    onPressed: _isLoading ? null : _continueWithPhone,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF1565C0),
-                      foregroundColor: Colors.white,
-                      disabledBackgroundColor: const Color(0xFF9DBCE5),
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                    ),
-                    child: _isLoading
-                        ? const SizedBox(
-                            width: 23,
-                            height: 23,
-                            child: CircularProgressIndicator(strokeWidth: 2.5, valueColor: AlwaysStoppedAnimation<Color>(Colors.white)),
-                          )
-                        : Text(tr(context, 'continueMobile'), textAlign: TextAlign.center, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
-                  ),
-                ),
+                AppButton(label: tr(context, 'continueMobile'), loading: _isLoading, onPressed: _continueWithPhone),
               ],
             ),
           ),

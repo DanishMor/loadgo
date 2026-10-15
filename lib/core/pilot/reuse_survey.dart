@@ -5,6 +5,7 @@ import '../l10n/l10n.dart';
 import '../models/booking.dart';
 import '../services/backend.dart';
 import '../widgets/common.dart';
+import '../theme/design_tokens.dart';
 
 /// "Would you use it again?" after a delivered trip (MASTER-6 Task 7), asked
 /// of both sides once: `trip_surveys/{bookingId}_{uid}`.
@@ -112,7 +113,7 @@ class _ReuseSurveyCardState extends State<ReuseSurveyCard> {
     return AppCard(
       key: const ValueKey('reuseSurvey'),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(tr(context, _answer == null ? 'svTitle' : 'svThanks'), style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+        Text(tr(context, _answer == null ? 'svTitle' : 'svThanks'), style: DsStyle.t16w700),
         if (_answer == null) ...[
           const SizedBox(height: 8),
           Wrap(spacing: 8, children: [

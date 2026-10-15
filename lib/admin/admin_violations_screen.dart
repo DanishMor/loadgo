@@ -7,6 +7,7 @@ import '../core/services/comm_admin_service.dart';
 import '../core/widgets/admin_phone.dart';
 import '../core/widgets/common.dart';
 import '../core/widgets/live_stream.dart';
+import '../core/theme/design_tokens.dart';
 
 /// Chat violations (a blocked phone number, UPI id or app mention) newest
 /// first, with each person's strikes and the buttons to extend or lift a
@@ -47,9 +48,9 @@ class _AdminViolationsScreenState extends State<AdminViolationsScreen> {
           child: AppCard(
             key: ValueKey('violUser_$uid'),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(name, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
-              Text(trf(context, 'pcStrikes', {'n': (u['chatStrikes'] as num?)?.toInt() ?? 0}), key: ValueKey('strikes_$uid'), style: const TextStyle(fontWeight: FontWeight.w700)),
-              AdminPhoneText(uid: uid, phone: (u['phone'] ?? '').toString(), style: TextStyle(color: AppColors.muted)),
+              Text(name, style: DsStyle.t16w700),
+              Text(trf(context, 'pcStrikes', {'n': (u['chatStrikes'] as num?)?.toInt() ?? 0}), key: ValueKey('strikes_$uid'), style: DsStyle.w700),
+              AdminPhoneText(uid: uid, phone: (u['phone'] ?? '').toString(), style: DsStyle.inherit.copyWith(color: AppColors.muted)),
               Wrap(spacing: 6, children: [
                 if (suspended) StatusChip(label: trf(context, 'pcSuspendedUntil', {'until': formatDateTime(until)}), color: Colors.red),
                 if (u['chatReview'] == true) StatusChip(label: tr(context, 'pcNeedsReview'), color: AppColors.warning),
@@ -60,7 +61,7 @@ class _AdminViolationsScreenState extends State<AdminViolationsScreen> {
                   padding: const EdgeInsets.only(top: 2),
                   child: Text(
                     '${tr(context, 'pcKind${r.data()['kind']}')} · “${r.data()['excerpt'] ?? ''}” · ${r.data()['createdAt'] is Timestamp ? formatDateTime((r.data()['createdAt'] as Timestamp).toDate()) : ''}',
-                    style: TextStyle(fontSize: 12, color: AppColors.body),
+                    style: DsStyle.t12w400.copyWith(color: AppColors.body),
                   ),
                 ),
               Wrap(spacing: 4, children: [

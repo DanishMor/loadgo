@@ -41,6 +41,7 @@ import '../core/documents/documents_center_screen.dart';
 import '../core/widgets/common.dart';
 import '../core/announcement/announcement.dart';
 import '../core/widgets/role_tour_card.dart';
+import '../core/theme/design_tokens.dart';
 
 // ============================================================
 // CUSTOMER HOME DASHBOARD
@@ -232,18 +233,18 @@ class _CustomerHomeContent extends StatelessWidget {
                   width: 48,
                   height: 48,
                   decoration: BoxDecoration(color: AppColors.primaryLight, borderRadius: BorderRadius.circular(15)),
-                  child: const Icon(Icons.person_rounded, color: Color(0xFF1565C0), size: 27),
+                  child: const Icon(Icons.person_rounded, color: AppColors.primary, size: 27),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(tr(context, 'welcomeBack'), style: TextStyle(fontSize: 13, color: AppColors.muted)),
+                      Text(tr(context, 'welcomeBack'), style: DsStyle.t14w400.copyWith(color: AppColors.muted)),
                       const SizedBox(height: 3),
                       Text(
                         displayPhone,
-                        style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: AppColors.title),
+                        style: DsStyle.t18w700.copyWith(color: AppColors.title),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ],
@@ -260,7 +261,7 @@ class _CustomerHomeContent extends StatelessWidget {
                   child: IconButton(tooltip: tr(context, 'language'), 
                     onPressed: () => showLanguageSelector(context),
                     icon: const Icon(Icons.language_rounded),
-                    color: const Color(0xFF1565C0),
+                    color: AppColors.primary,
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -307,7 +308,7 @@ class _CustomerHomeContent extends StatelessWidget {
                   border: InputBorder.none,
                   prefixIcon: Icon(Icons.search_rounded, color: AppColors.muted),
                   hintText: tr(context, 'search'),
-                  hintStyle: TextStyle(color: AppColors.faint, fontSize: 14),
+                  hintStyle: DsStyle.t14w400.copyWith(color: AppColors.faint),
                 ), inputFormatters: [LengthLimitingTextInputFormatter(100)]),
             ),
             RemindersBanner(isDriver: false, onOpen: (r) => _openReminder(context, r)),
@@ -319,7 +320,7 @@ class _CustomerHomeContent extends StatelessWidget {
               padding: const EdgeInsets.all(22),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [Color(0xFF0D47A1), Color(0xFF1976D2)],
+                  colors: DsHero.colors,
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -330,12 +331,12 @@ class _CustomerHomeContent extends StatelessWidget {
                 children: [
                   Text(
                     tr(context, 'heroTitle'),
-                    style: const TextStyle(color: Colors.white, fontSize: 26, height: 1.15, fontWeight: FontWeight.w800),
+                    style: DsStyle.t28w700.copyWith(color: Colors.white, height: 1.15),
                   ),
                   const SizedBox(height: 10),
                   Text(
                     tr(context, 'heroSub'),
-                    style: const TextStyle(color: Colors.white70, fontSize: 14, height: 1.45),
+                    style: DsStyle.t14w400.copyWith(color: Colors.white70, height: 1.45),
                   ),
                   const SizedBox(height: 20),
                   SizedBox(
@@ -343,10 +344,10 @@ class _CustomerHomeContent extends StatelessWidget {
                     child: ElevatedButton.icon(
                       onPressed: onPostLoad,
                       icon: const Icon(Icons.local_shipping_rounded, size: 20),
-                      label: Text(tr(context, 'bookTruck'), textAlign: TextAlign.center, style: const TextStyle(fontWeight: FontWeight.w700)),
+                      label: Text(tr(context, 'bookTruck'), textAlign: TextAlign.center, style: DsStyle.w700),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.card,
-                        foregroundColor: const Color(0xFF1565C0),
+                        foregroundColor: AppColors.primary,
                         elevation: 0,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(13)),
                       ),
@@ -356,7 +357,7 @@ class _CustomerHomeContent extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 28),
-            Text(tr(context, 'quickActions'), style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.title)),
+            Text(tr(context, 'quickActions'), style: DsStyle.t20w700.copyWith(color: AppColors.title)),
             const SizedBox(height: 14),
             Row(
               children: [
@@ -431,11 +432,11 @@ class _CustomerHomeContent extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 28),
-            Text(tr(context, 'moreForYou'), style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.title)),
+            Text(tr(context, 'moreForYou'), style: DsStyle.t20w700.copyWith(color: AppColors.title)),
             const SizedBox(height: 14),
             const _MoreForYou(),
             const SizedBox(height: 28),
-            Text(tr(context, 'services'), style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.title)),
+            Text(tr(context, 'services'), style: DsStyle.t20w700.copyWith(color: AppColors.title)),
             const SizedBox(height: 14),
             SizedBox(
               // Grows with the text size so big text is not cut off (MASTER-6 Task 40).
@@ -455,10 +456,10 @@ class _CustomerHomeContent extends StatelessWidget {
               alignment: WrapAlignment.spaceBetween,
               crossAxisAlignment: WrapCrossAlignment.center,
               children: [
-                Text(tr(context, 'recent'), style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.title)),
+                Text(tr(context, 'recent'), style: DsStyle.t20w700.copyWith(color: AppColors.title)),
                 TextButton(
                   onPressed: () {},
-                  child: Text(tr(context, 'viewAll'), style: const TextStyle(color: Color(0xFF1565C0), fontWeight: FontWeight.w700)),
+                  child: Text(tr(context, 'viewAll'), style: DsStyle.w700.copyWith(color: AppColors.primary)),
                 ),
               ],
             ),
@@ -480,12 +481,12 @@ class _CustomerHomeContent extends StatelessWidget {
                     child: Icon(Icons.inbox_outlined, size: 30, color: AppColors.muted),
                   ),
                   const SizedBox(height: 12),
-                  Text(tr(context, 'noActivity'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.body)),
+                  Text(tr(context, 'noActivity'), style: DsStyle.t16w700.copyWith(color: AppColors.body)),
                   const SizedBox(height: 5),
                   Text(
                     tr(context, 'activitySub'),
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 13, color: AppColors.faint),
+                    style: DsStyle.t14w400.copyWith(color: AppColors.faint),
                   ),
                 ],
               ),
@@ -506,8 +507,8 @@ class _MoreForYou extends StatelessWidget {
 
   Widget _chip(BuildContext context, String id, IconData icon, String titleKey, Widget Function(BuildContext) screen) => ActionChip(
         key: ValueKey('homeMore_$id'),
-        avatar: Icon(icon, size: 20, color: const Color(0xFF1565C0)),
-        label: Text(tr(context, titleKey), style: const TextStyle(fontWeight: FontWeight.w700)),
+        avatar: Icon(icon, size: 20, color: AppColors.primary),
+        label: Text(tr(context, titleKey), style: DsStyle.w700),
         onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: screen)),
       );
 
@@ -561,12 +562,12 @@ class _QuickActionCard extends StatelessWidget {
               width: 46,
               height: 46,
               decoration: BoxDecoration(color: AppColors.primaryLight, borderRadius: BorderRadius.circular(14)),
-              child: Icon(icon, color: const Color(0xFF1565C0), size: 25),
+              child: Icon(icon, color: AppColors.primary, size: 25),
             ),
             const SizedBox(height: 12),
-            Text(title, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.title)),
+            Text(title, maxLines: 1, overflow: TextOverflow.ellipsis, style: DsStyle.t16w700.copyWith(color: AppColors.title)),
             const SizedBox(height: 3),
-            Text(subtitle, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 11, color: AppColors.muted)),
+            Text(subtitle, maxLines: 1, overflow: TextOverflow.ellipsis, style: DsStyle.t12w400.copyWith(color: AppColors.muted)),
           ],
         ),
       ),
@@ -599,11 +600,11 @@ class _ServiceCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: const Color(0xFF1565C0), size: 32),
+          Icon(icon, color: AppColors.primary, size: 32),
           const Spacer(),
-          Text(title, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: AppColors.title)),
+          Text(title, maxLines: 1, overflow: TextOverflow.ellipsis, style: DsStyle.t14w700.copyWith(color: AppColors.title)),
           const SizedBox(height: 3),
-          Text(subtitle, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 11, color: AppColors.muted)),
+          Text(subtitle, maxLines: 1, overflow: TextOverflow.ellipsis, style: DsStyle.t12w400.copyWith(color: AppColors.muted)),
         ],
       ),
     );

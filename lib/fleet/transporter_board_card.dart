@@ -8,6 +8,7 @@ import '../core/models/vehicle.dart';
 import '../core/transporter/transporter_logic.dart';
 import '../core/widgets/common.dart';
 import '../core/widgets/logistics_labels.dart';
+import '../core/theme/design_tokens.dart';
 
 /// Trips by status, vehicle use, trips per driver and party-wise pending
 /// money on the transporter dashboard (MASTER-6 Task 28).
@@ -19,7 +20,7 @@ class TransporterBoardCard extends StatelessWidget {
   final DateTime now;
   const TransporterBoardCard({super.key, required this.vehicles, required this.bookings, required this.members, required this.accounts, required this.now});
 
-  Widget _title(BuildContext c, String key) => Padding(padding: const EdgeInsets.only(top: 12, bottom: 4), child: Text(tr(c, key), style: const TextStyle(fontWeight: FontWeight.w800)));
+  Widget _title(BuildContext c, String key) => Padding(padding: const EdgeInsets.only(top: 12, bottom: 4), child: Text(tr(c, key), style: DsStyle.w700));
 
   @override
   Widget build(BuildContext context) {
@@ -28,27 +29,27 @@ class TransporterBoardCard extends StatelessWidget {
     return AppCard(
       key: const ValueKey('transporterBoard'),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(tr(context, 'tbTitle'), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+        Text(tr(context, 'tbTitle'), style: DsStyle.t16w700),
         _title(context, 'tbStatus'),
-        if (shown.isEmpty) Text(tr(context, 'tbNoTrips'), key: const ValueKey('tbNoTrips'), style: TextStyle(color: AppColors.muted)),
+        if (shown.isEmpty) Text(tr(context, 'tbNoTrips'), key: const ValueKey('tbNoTrips'), style: DsStyle.inherit.copyWith(color: AppColors.muted)),
         Wrap(spacing: 6, runSpacing: 6, children: [
           for (final s in shown) Chip(key: ValueKey('tbStatus_$s'), label: Text('${bookingStatusLabel(context, s)}: ${b.tripsByStatus[s]}')),
         ]),
         _title(context, 'tbUse'),
         Text(trf(context, 'tbUtilisation', {'p': (b.utilisation * 100).round()}), key: const ValueKey('tbUtilisation')),
-        for (final v in b.leastUsed) Text('${v.vehicle.number}: ${trf(context, 'tbDaysOnRoad', {'d': v.daysOnRoad, 'w': 30})}', key: ValueKey('tbIdle_${v.vehicle.id}'), style: TextStyle(color: AppColors.muted, fontSize: 13)),
+        for (final v in b.leastUsed) Text('${v.vehicle.number}: ${trf(context, 'tbDaysOnRoad', {'d': v.daysOnRoad, 'w': 30})}', key: ValueKey('tbIdle_${v.vehicle.id}'), style: DsStyle.t14w400.copyWith(color: AppColors.muted)),
         if (b.drivers.isNotEmpty) ...[
           _title(context, 'tbDrivers'),
-          for (final d in b.drivers) Text('${d.driver}: ${trf(context, 'fleetTripsDone', {'n': d.trips})}', style: TextStyle(color: AppColors.muted, fontSize: 13)),
+          for (final d in b.drivers) Text('${d.driver}: ${trf(context, 'fleetTripsDone', {'n': d.trips})}', style: DsStyle.t14w400.copyWith(color: AppColors.muted)),
         ],
         _title(context, 'tbParties'),
-        if (b.parties.isEmpty) Text(tr(context, 'tbNoDue'), key: const ValueKey('tbNoDue'), style: TextStyle(color: AppColors.muted)),
+        if (b.parties.isEmpty) Text(tr(context, 'tbNoDue'), key: const ValueKey('tbNoDue'), style: DsStyle.inherit.copyWith(color: AppColors.muted)),
         for (final p in b.parties)
           Row(key: ValueKey('tbParty_${p.partyId}'), children: [
             Expanded(child: Text(p.partyName.isEmpty ? p.partyId : p.partyName, maxLines: 1, overflow: TextOverflow.ellipsis)),
-            Text(formatPaise(p.duePaise), style: TextStyle(fontWeight: FontWeight.w800, color: AppColors.warning)),
+            Text(formatPaise(p.duePaise), style: DsStyle.w700.copyWith(color: AppColors.warning)),
           ]),
-        if (b.parties.isNotEmpty) Text(trf(context, 'tbTotalDue', {'amount': formatPaise(b.totalDuePaise)}), key: const ValueKey('tbTotalDue'), style: const TextStyle(fontWeight: FontWeight.w700)),
+        if (b.parties.isNotEmpty) Text(trf(context, 'tbTotalDue', {'amount': formatPaise(b.totalDuePaise)}), key: const ValueKey('tbTotalDue'), style: DsStyle.w700),
       ]),
     );
   }

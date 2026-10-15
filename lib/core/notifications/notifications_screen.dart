@@ -14,6 +14,7 @@ import '../widgets/logistics_labels.dart';
 import '../reminders/reminders.dart';
 import '../services/reminder_service.dart';
 import '../widgets/reminder_widgets.dart';
+import '../theme/design_tokens.dart';
 
 /// Title for a notification in the current language.
 String notificationTitle(
@@ -176,7 +177,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         scrolledUnderElevation: 0,
         title: Text(
           tr(context, 'notifications'),
-          style: const TextStyle(fontWeight: FontWeight.w700),
+          style: DsStyle.w700,
         ),
         actions: [
           IconButton(
@@ -283,10 +284,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               children: [
                 Text(
                   tr(context, 'remindersTitle'),
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w800,
-                    fontSize: 16,
-                  ),
+                  style: DsStyle.t16w700,
                 ),
                 const SizedBox(height: 8),
                 for (final r in list)
@@ -352,7 +350,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 if (row is int) {
                   return Padding(
                     padding: const EdgeInsets.only(top: 6),
-                    child: Text(tr(context, NotifGroup.keys[row]), key: ValueKey('notifGroup_$row'), style: TextStyle(fontWeight: FontWeight.w800, color: AppColors.muted)),
+                    child: Text(tr(context, NotifGroup.keys[row]), key: ValueKey('notifGroup_$row'), style: DsStyle.w700.copyWith(color: AppColors.muted)),
                   );
                 }
                 final n = row as AppNotification;
@@ -378,28 +376,19 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                           children: [
                             Text(
                               notificationTitle(context, n),
-                              style: TextStyle(
-                                fontWeight: n.read
+                              style: DsStyle.inherit.copyWith(fontWeight: n.read
                                     ? FontWeight.w600
-                                    : FontWeight.w800,
-                                color: AppColors.title,
-                              ),
+                                    : FontWeight.w800, color: AppColors.title),
                             ),
                             const SizedBox(height: 2),
                             Text(
                               n.message,
-                              style: TextStyle(
-                                color: AppColors.muted,
-                                fontSize: 13,
-                              ),
+                              style: DsStyle.t14w400.copyWith(color: AppColors.muted),
                             ),
                             if (n.createdAt != null)
                               Text(
                                 formatDateTime(n.createdAt!.toDate()),
-                                style: TextStyle(
-                                  color: AppColors.faint,
-                                  fontSize: 12,
-                                ),
+                                style: DsStyle.t12w400.copyWith(color: AppColors.faint),
                               ),
                           ],
                         ),
@@ -458,7 +447,7 @@ class _NotifSettingsSheetState extends State<_NotifSettingsSheet> {
             ),
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
-            child: Text(tr(context, 'notifCriticalNote'), style: TextStyle(fontSize: 12, color: AppColors.faint)),
+            child: Text(tr(context, 'notifCriticalNote'), style: DsStyle.t12w400.copyWith(color: AppColors.faint)),
           ),
         ]),
       ),

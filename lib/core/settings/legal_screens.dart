@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../l10n/l10n.dart';
 import '../widgets/common.dart';
 import 'policy_links.dart';
+import '../theme/design_tokens.dart';
 
 /// A policy made of clauses. Each clause string is "Heading\nBody".
 class PolicyScreen extends StatelessWidget {
@@ -39,9 +40,9 @@ class PolicyScreen extends StatelessWidget {
             Builder(builder: (context) {
               final (head, body) = split(tr(context, '$clausePrefix$i'));
               return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(head, key: ValueKey('$clausePrefix$i'), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+                Text(head, key: ValueKey('$clausePrefix$i'), style: DsStyle.t16w700),
                 const SizedBox(height: 6),
-                Text(body, style: const TextStyle(fontSize: 15, height: 1.4)),
+                Text(body, style: DsStyle.t16w400.copyWith(height: 1.4)),
                 const SizedBox(height: 18),
               ]);
             }),
@@ -76,8 +77,8 @@ class _WebLink extends StatelessWidget {
           const Icon(Icons.public_rounded),
           const SizedBox(width: 12),
           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(tr(context, 'policyPublicPage'), style: const TextStyle(fontWeight: FontWeight.w700)),
-            Text(url, style: TextStyle(color: AppColors.muted, fontSize: 12)),
+            Text(tr(context, 'policyPublicPage'), style: DsStyle.w700),
+            Text(url, style: DsStyle.t12w400.copyWith(color: AppColors.muted)),
           ])),
         ]),
       ),

@@ -6,6 +6,7 @@ import '../core/geo/trip_watcher.dart';
 import '../core/l10n/l10n.dart';
 import '../core/services/location_service.dart';
 import '../core/widgets/common.dart';
+import '../core/theme/design_tokens.dart';
 
 /// Shown on the driver's trip while in transit: near the drop, drop reached
 /// and long halt alerts, worked out from the phone's position (in-app only).
@@ -64,7 +65,7 @@ class _TripGeofenceBannerState extends State<TripGeofenceBanner> {
           child: Row(children: [
             Icon(icon, color: color),
             const SizedBox(width: 12),
-            Expanded(child: Text(text, style: const TextStyle(fontWeight: FontWeight.w700))),
+            Expanded(child: Text(text, style: DsStyle.w700)),
           ]),
         ),
       );

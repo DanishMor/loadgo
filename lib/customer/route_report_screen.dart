@@ -6,6 +6,7 @@ import '../core/l10n/l10n.dart';
 import '../core/services/enterprise_service.dart';
 import '../core/widgets/common.dart';
 import '../core/widgets/live_stream.dart';
+import '../core/theme/design_tokens.dart';
 
 /// Loads, deliveries and spend per route and per branch, with CSV copy.
 class RouteReportScreen extends StatelessWidget {
@@ -34,7 +35,7 @@ class RouteReportScreen extends StatelessWidget {
               },
             ),
             const SizedBox(height: 16),
-            Text(tr(context, 'reportByRoute'), style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+            Text(tr(context, 'reportByRoute'), style: DsStyle.t16w700),
             if (r.routes.isEmpty) Padding(padding: const EdgeInsets.all(12), child: Text(tr(context, 'statNoData'))),
             for (final x in r.routes)
               ListTile(
@@ -44,7 +45,7 @@ class RouteReportScreen extends StatelessWidget {
                 subtitle: Text(line(x.loads, x.delivered, x.spendPaise)),
               ),
             const SizedBox(height: 16),
-            Text(tr(context, 'reportByBranch'), style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+            Text(tr(context, 'reportByBranch'), style: DsStyle.t16w700),
             if (r.branches.isEmpty) Padding(padding: const EdgeInsets.all(12), child: Text(tr(context, 'statNoData'))),
             for (final x in r.branches)
               ListTile(
@@ -54,7 +55,7 @@ class RouteReportScreen extends StatelessWidget {
                 subtitle: Text(line(x.loads, x.delivered, x.spendPaise)),
               ),
             const SizedBox(height: 16),
-            Text(tr(context, 'reportByDriver'), style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+            Text(tr(context, 'reportByDriver'), style: DsStyle.t16w700),
             if (r.drivers.isEmpty) Padding(padding: const EdgeInsets.all(12), child: Text(tr(context, 'statNoData'))),
             for (final x in r.drivers)
               ListTile(

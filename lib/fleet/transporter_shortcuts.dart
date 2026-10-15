@@ -15,6 +15,7 @@ import '../core/widgets/logistics_labels.dart';
 import 'fleet_analytics_screen.dart';
 import 'transporter_books_screen.dart';
 import 'transporter_profile_screen.dart';
+import '../core/theme/design_tokens.dart';
 
 /// Top of the transporter dashboard: the "finish your company profile" card,
 /// the papers that expire soon across the whole fleet (own and attached
@@ -122,7 +123,7 @@ class _TransporterShortcutsState extends State<TransporterShortcuts> {
                   Row(children: [
                     Icon(Icons.event_busy_outlined, color: (reminders.isNotEmpty && reminders.first.expired) || (licences.isNotEmpty && licences.first.expired) ? Colors.red : AppColors.warning),
                     const SizedBox(width: 8),
-                    Expanded(child: Text(tr(context, 'trpDocsTitle'), style: const TextStyle(fontWeight: FontWeight.w800))),
+                    Expanded(child: Text(tr(context, 'trpDocsTitle'), style: DsStyle.w700)),
                   ]),
                   for (final r in reminders.take(5))
                     Padding(

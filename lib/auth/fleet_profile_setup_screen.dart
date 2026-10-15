@@ -12,6 +12,7 @@ import '../core/transporter/transporter_logic.dart';
 import 'role_selection_screen.dart';
 import 'start_resolvers.dart';
 import '../core/widgets/common.dart';
+import '../core/theme/design_tokens.dart';
 
 /// Transporter onboarding: name, company, PAN (unique across accounts) and an
 /// optional GSTIN. Format checks only; nothing is verified (LATER(paid)).
@@ -96,9 +97,9 @@ class _FleetProfileSetupScreenState extends State<FleetProfileSetupScreen> {
             child: Form(
               key: _form,
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(tr(context, 'fleetProfileTitle'), style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: AppColors.title)),
+                Text(tr(context, 'fleetProfileTitle'), style: DsStyle.t28w700.copyWith(color: AppColors.title)),
                 const SizedBox(height: 8),
-                Text(tr(context, 'fleetProfileSub'), style: TextStyle(fontSize: 15, color: AppColors.muted)),
+                Text(tr(context, 'fleetProfileSub'), style: DsStyle.t16w400.copyWith(color: AppColors.muted)),
                 const SizedBox(height: 24),
                 TextFormField(
                   key: const ValueKey('fleetName'),

@@ -10,6 +10,8 @@ import '../core/l10n/language_widgets.dart';
 import '../customer/customer_home_screen.dart';
 import 'role_selection_screen.dart';
 import '../core/widgets/common.dart';
+import '../core/theme/design_tokens.dart';
+import '../core/widgets/ds/app_button.dart';
 
 class CustomerProfileSetupScreen extends StatefulWidget {
   final String phoneNumber;
@@ -89,7 +91,7 @@ class _CustomerProfileSetupScreenState extends State<CustomerProfileSetupScreen>
 
   Widget _label(String text) => Padding(
         padding: const EdgeInsets.only(bottom: 8),
-        child: Text(text, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.body)),
+        child: Text(text, style: DsStyle.t14w700.copyWith(color: AppColors.body)),
       );
 
   @override
@@ -116,9 +118,9 @@ class _CustomerProfileSetupScreenState extends State<CustomerProfileSetupScreen>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(tr(context, 'profileSetupTitle'), style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: AppColors.title)),
+                  Text(tr(context, 'profileSetupTitle'), style: DsStyle.t28w700.copyWith(color: AppColors.title)),
                   const SizedBox(height: 8),
-                  Text(tr(context, 'profileSetupSub'), style: TextStyle(fontSize: 15, color: AppColors.muted)),
+                  Text(tr(context, 'profileSetupSub'), style: DsStyle.t16w400.copyWith(color: AppColors.muted)),
                   const SizedBox(height: 30),
                   _label(tr(context, 'fullName')),
                   TextFormField(
@@ -160,27 +162,7 @@ class _CustomerProfileSetupScreenState extends State<CustomerProfileSetupScreen>
                     },
                   ),
                   const SizedBox(height: 30),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 54,
-                    child: ElevatedButton(
-                      onPressed: _saving ? null : _save,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF1565C0),
-                        foregroundColor: Colors.white,
-                        disabledBackgroundColor: const Color(0xFF9DBCE5),
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                      ),
-                      child: _saving
-                          ? const SizedBox(
-                              width: 23,
-                              height: 23,
-                              child: CircularProgressIndicator(strokeWidth: 2.5, valueColor: AlwaysStoppedAnimation<Color>(Colors.white)),
-                            )
-                          : Text(tr(context, 'saveContinue'), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
-                    ),
-                  ),
+                  AppButton(label: tr(context, 'saveContinue'), loading: _saving, onPressed: _save),
                 ],
               ),
             ),

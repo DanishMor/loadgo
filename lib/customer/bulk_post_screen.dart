@@ -8,6 +8,7 @@ import '../core/models/risk.dart';
 import '../core/services/enterprise_service.dart';
 import '../core/services/vehicle_type_service.dart';
 import '../core/widgets/common.dart';
+import '../core/theme/design_tokens.dart';
 
 /// Paste up to 10 lines (pickup, drop, cargo, weight, vehicle type[, budget])
 /// and post them all with one pickup date.
@@ -70,16 +71,16 @@ class _BulkPostScreenState extends State<BulkPostScreen> {
     return Scaffold(
       appBar: AppBar(title: Text(tr(context, 'bulkPost'))),
       body: ListView(padding: const EdgeInsets.all(16), children: [
-        Text(tr(context, 'bulkHelp'), style: TextStyle(color: AppColors.muted)),
+        Text(tr(context, 'bulkHelp'), style: DsStyle.inherit.copyWith(color: AppColors.muted)),
         const SizedBox(height: 4),
-        const Text('Delhi, Mumbai, FMCG, 8, 20ft, 25000', style: TextStyle(fontFamily: 'monospace', fontSize: 12)),
+        Text('Delhi, Mumbai, FMCG, 8, 20ft, 25000', style: DsStyle.t12w400.copyWith(fontFamily: 'monospace')),
         const SizedBox(height: 12),
         TextField(
           key: const ValueKey('bulkText'),
           controller: _text,
           minLines: 6,
           maxLines: 12,
-          style: const TextStyle(fontFamily: 'monospace', fontSize: 13),
+          style: DsStyle.t14w400.copyWith(fontFamily: 'monospace'),
           decoration: const InputDecoration(border: OutlineInputBorder()),
           onChanged: (_) => setState(() {}), inputFormatters: [LengthLimitingTextInputFormatter(5000)]),
         const SizedBox(height: 8),
@@ -91,11 +92,11 @@ class _BulkPostScreenState extends State<BulkPostScreen> {
           onTap: _pickDate,
         ),
         if (r.tooMany)
-          Text(tr(context, 'bulkTooMany'), key: const ValueKey('bulkTooMany'), style: const TextStyle(color: Colors.redAccent)),
+          Text(tr(context, 'bulkTooMany'), key: const ValueKey('bulkTooMany'), style: DsStyle.inherit.copyWith(color: Colors.redAccent)),
         for (final e in r.errors)
-          Text(trf(context, 'bulkLineError', {'n': e.line}), key: ValueKey('bulkError_${e.line}'), style: const TextStyle(color: Colors.redAccent)),
+          Text(trf(context, 'bulkLineError', {'n': e.line}), key: ValueKey('bulkError_${e.line}'), style: DsStyle.inherit.copyWith(color: Colors.redAccent)),
         if (r.rows.isNotEmpty && r.errors.isEmpty && !r.tooMany)
-          Text(trf(context, 'bulkReady', {'n': r.rows.length}), style: const TextStyle(color: AppColors.success)),
+          Text(trf(context, 'bulkReady', {'n': r.rows.length}), style: DsStyle.inherit.copyWith(color: AppColors.success)),
         const SizedBox(height: 12),
         FilledButton(
           key: const ValueKey('bulkSubmit'),

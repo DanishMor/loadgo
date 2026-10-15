@@ -5,6 +5,7 @@ import '../core/matching/load_ranker.dart';
 import '../core/models/load.dart';
 import '../core/services/match_service.dart';
 import '../core/widgets/common.dart';
+import '../core/theme/design_tokens.dart';
 
 String matchReasonLabel(BuildContext context, MatchReason r) => tr(context, switch (r) {
       MatchReason.nearPickup => 'matchNearPickup',
@@ -69,7 +70,7 @@ class _RecommendedLoadsState extends State<RecommendedLoads> {
                 const Icon(Icons.auto_awesome_rounded, size: 18, color: AppColors.primary),
                 const SizedBox(width: 6),
                 Text(tr(context, 'recommendedLoads'),
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.title)),
+                    style: DsStyle.t16w700.copyWith(color: AppColors.title)),
               ]),
             ),
             for (final m in top) ...[widget.cardBuilder(m), const SizedBox(height: 12)],

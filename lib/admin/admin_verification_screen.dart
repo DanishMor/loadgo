@@ -9,6 +9,7 @@ import '../core/widgets/common.dart';
 import '../core/widgets/live_stream.dart';
 import '../core/widgets/kyc_check_widgets.dart';
 import '../core/widgets/verification_badges.dart';
+import '../core/theme/design_tokens.dart';
 
 /// Driver verification queue for admins (opened from the admin panel; the
 /// `admins/{uid}` rules are the real gate).
@@ -55,7 +56,7 @@ class _AdminVerificationScreenState extends State<AdminVerificationScreen> {
         scrolledUnderElevation: 0,
         title: Text(
           tr(context, 'driverVerification'),
-          style: const TextStyle(fontWeight: FontWeight.w700),
+          style: DsStyle.w700,
         ),
       ),
       body: SafeArea(
@@ -132,19 +133,15 @@ class _DriverCardState extends State<_DriverCard> {
         children: [
           Text(
             d.name.isEmpty ? d.uid : d.name,
-            style: TextStyle(
-              fontWeight: FontWeight.w800,
-              fontSize: 16,
-              color: AppColors.title,
-            ),
+            style: DsStyle.t16w700.copyWith(color: AppColors.title),
           ),
           const SizedBox(height: 4),
-          AdminPhoneText(uid: d.uid, phone: d.phone, style: TextStyle(color: AppColors.muted)),
+          AdminPhoneText(uid: d.uid, phone: d.phone, style: DsStyle.inherit.copyWith(color: AppColors.muted)),
           Text(
             d.isTransporter
                 ? '${tr(context, 'fleetOwner')} • ${((d.data['fleet'] as Map?)?['officeCity'] ?? '')} • ${((d.data['fleet'] as Map?)?['vehicleCount'] ?? 0)} ${tr(context, 'fleetVehicles')}'
                 : '${d.vehicleNumber} • ${d.vehicleType}',
-            style: TextStyle(color: AppColors.muted),
+            style: DsStyle.inherit.copyWith(color: AppColors.muted),
           ),
           const SizedBox(height: 8),
           VerificationBadges(user: d.data, isDriver: true, reveal: _reveal),

@@ -5,6 +5,7 @@ import '../core/pilot/reuse_survey.dart';
 import '../core/services/admin_console_service.dart';
 import '../core/widgets/common.dart';
 import '../core/widgets/live_stream.dart';
+import '../core/theme/design_tokens.dart';
 
 /// Admin > Use-again survey (MASTER-6 Task 7): how many customers and drivers
 /// would use the app again after a delivered trip.
@@ -32,7 +33,7 @@ class _AdminSurveysScreenState extends State<AdminSurveysScreen> {
     return AppCard(
       key: ValueKey('survey_$role'),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(tr(context, titleKey), style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+        Text(tr(context, titleKey), style: DsStyle.t16w700),
         const SizedBox(height: 4),
         Text(s.total(role) == 0 ? tr(context, 'svNone') : trf(context, 'svLine', {'n': s.total(role), 'p': s.yesPercent(role)!, 'y': a['yes']!, 'm': a['maybe']!, 'x': a['no']!})),
       ]),
@@ -54,7 +55,7 @@ class _AdminSurveysScreenState extends State<AdminSurveysScreen> {
             const SizedBox(height: 8),
             _role(s, 'driver', 'svRoleDriver'),
             const SizedBox(height: 8),
-            Text(tr(context, 'svNote'), style: TextStyle(color: AppColors.faint, fontSize: 12)),
+            Text(tr(context, 'svNote'), style: DsStyle.t12w400.copyWith(color: AppColors.faint)),
           ]);
         },
       ),

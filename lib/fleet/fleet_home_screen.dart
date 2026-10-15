@@ -14,6 +14,7 @@ import 'transporter_trips_screen.dart';
 import '../core/widgets/common.dart';
 import '../core/announcement/announcement.dart';
 import '../core/widgets/role_tour_card.dart';
+import '../core/theme/design_tokens.dart';
 
 /// Transporter home: dashboard, vehicles, drivers, profile.
 class FleetHomeScreen extends StatefulWidget {
@@ -44,7 +45,7 @@ class _FleetHomeScreenState extends State<FleetHomeScreen> {
               backgroundColor: AppColors.background,
               scrolledUnderElevation: 0,
               automaticallyImplyLeading: false,
-              title: Text(tr(context, 'fleetOwner'), style: const TextStyle(fontWeight: FontWeight.w800)),
+              title: Text(tr(context, 'fleetOwner'), style: DsStyle.w700),
               actions: [const SahayakButton(role: 'fleet', actions: SahayakActions()), NotificationBell(onOpenBooking: (_) {})],
             ),
       body: IndexedStack(index: _index, children: pages),

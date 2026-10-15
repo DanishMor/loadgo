@@ -13,6 +13,7 @@ import 'call_provider.dart';
 import 'call_signaling.dart';
 import 'call_webrtc.dart';
 import 'mic_test.dart';
+import '../theme/design_tokens.dart';
 
 /// Builds the media side. Replaced in tests; the real one is WebRTC.
 CallProvider Function() callProviderFactory = WebRtcCallProvider.new;
@@ -109,7 +110,7 @@ class _CallScreenState extends State<CallScreen> {
     return PopScope(
       canPop: !live && !waiting,
       child: Scaffold(
-        backgroundColor: const Color(0xFF0B1B33),
+        backgroundColor: DsColors.dark.bg,
         body: SafeArea(
           child: LayoutBuilder(
             builder: (context, box) => SingleChildScrollView(
@@ -118,13 +119,13 @@ class _CallScreenState extends State<CallScreen> {
                 constraints: BoxConstraints(minHeight: box.maxHeight - 48),
                 child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
                   const SizedBox(height: 24),
-                  const CircleAvatar(radius: 44, backgroundColor: Color(0xFF1565C0), child: Icon(Icons.person_rounded, size: 52, color: Colors.white)),
+                  const CircleAvatar(radius: 44, backgroundColor: AppColors.primary, child: Icon(Icons.person_rounded, size: 52, color: Colors.white)),
                   const SizedBox(height: 20),
-                  Text(name, key: const ValueKey('callName'), style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w800), textAlign: TextAlign.center),
+                  Text(name, key: const ValueKey('callName'), style: DsStyle.t24w700.copyWith(color: Colors.white), textAlign: TextAlign.center),
                   if (incoming != null && incoming.vehicleNumber.isNotEmpty)
-                    Padding(padding: const EdgeInsets.only(top: 4), child: Text(incoming.vehicleNumber, style: const TextStyle(color: Colors.white70))),
+                    Padding(padding: const EdgeInsets.only(top: 4), child: Text(incoming.vehicleNumber, style: DsStyle.inherit.copyWith(color: Colors.white70))),
                   const SizedBox(height: 12),
-                  Text(_status(context), key: const ValueKey('callStatus'), style: const TextStyle(color: Colors.white70, fontSize: 16), textAlign: TextAlign.center),
+                  Text(_status(context), key: const ValueKey('callStatus'), style: DsStyle.t16w400.copyWith(color: Colors.white70), textAlign: TextAlign.center),
                   const SizedBox(height: 40),
                   if (waiting)
                     Wrap(alignment: WrapAlignment.center, spacing: 32, runSpacing: 20, children: [
@@ -195,7 +196,7 @@ class _CallScreenState extends State<CallScreen> {
           child: CircleAvatar(radius: 32, backgroundColor: color, child: Icon(icon, color: Colors.white, size: 30)),
         ),
         const SizedBox(height: 6),
-        SizedBox(width: 96, child: Text(label, style: const TextStyle(color: Colors.white70, fontSize: 12), textAlign: TextAlign.center)),
+        SizedBox(width: 96, child: Text(label, style: DsStyle.t12w400.copyWith(color: Colors.white70), textAlign: TextAlign.center)),
       ]);
 }
 

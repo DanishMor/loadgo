@@ -15,6 +15,7 @@ import '../core/services/admin_console_service.dart';
 import '../core/services/pricing_service.dart';
 import '../core/services/vehicle_type_service.dart';
 import '../core/widgets/common.dart';
+import '../core/theme/design_tokens.dart';
 
 /// Edit `config/pricing` and `config/vehicle_types` as JSON. Rules let only
 /// admins write; invalid JSON is refused here before anything is sent.
@@ -178,8 +179,8 @@ class _ConfigEditorScreenState extends State<ConfigEditorScreen> {
               Padding(
                 padding: const EdgeInsets.only(bottom: 8),
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text(ch.path, style: const TextStyle(fontWeight: FontWeight.w700)),
-                  Text('${ch.before ?? tr(c, 'cfgAdded')}  →  ${ch.after ?? tr(c, 'cfgRemoved')}', style: const TextStyle(fontFamily: 'monospace', fontSize: 12)),
+                  Text(ch.path, style: DsStyle.w700),
+                  Text('${ch.before ?? tr(c, 'cfgAdded')}  →  ${ch.after ?? tr(c, 'cfgRemoved')}', style: DsStyle.t12w400.copyWith(fontFamily: 'monospace')),
                 ]),
               ),
             if (changes.length > 20) Text(trf(c, 'cfgMore', {'n': changes.length - 20})),
@@ -220,7 +221,7 @@ class _ConfigEditorScreenState extends State<ConfigEditorScreen> {
         child: versions.isEmpty
             ? Padding(padding: const EdgeInsets.all(24), child: Text(tr(c, 'cfgHistoryEmpty'), key: const ValueKey('cfgHistoryEmpty')))
             : ListView(shrinkWrap: true, children: [
-                Padding(padding: const EdgeInsets.all(16), child: Text(tr(c, 'cfgHistory'), style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16))),
+                Padding(padding: const EdgeInsets.all(16), child: Text(tr(c, 'cfgHistory'), style: DsStyle.t16w700)),
                 for (final v in versions)
                   ListTile(
                     key: ValueKey('cfgVersion_${v.id}'),
@@ -251,7 +252,7 @@ class _ConfigEditorScreenState extends State<ConfigEditorScreen> {
                     controller: _text,
                     maxLines: null,
                     expands: true,
-                    style: const TextStyle(fontFamily: 'monospace', fontSize: 12),
+                    style: DsStyle.t12w400.copyWith(fontFamily: 'monospace'),
                     decoration: const InputDecoration(border: OutlineInputBorder()), inputFormatters: [LengthLimitingTextInputFormatter(20000)]),
                 ),
                 const SizedBox(height: 12),

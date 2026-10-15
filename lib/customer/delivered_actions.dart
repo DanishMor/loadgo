@@ -8,6 +8,7 @@ import '../core/models/support_ticket.dart';
 import '../core/support/support_screens.dart';
 import '../core/widgets/common.dart';
 import 'post_load_screen.dart';
+import '../core/theme/design_tokens.dart';
 
 /// A new Post Load form filled from a delivered trip: same places, goods,
 /// vehicle and notes, no date (MASTER-6 Task 20).
@@ -88,9 +89,9 @@ class _DeliveredWatcherState extends State<DeliveredWatcher> {
         child: Padding(
           padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
           child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-            Text(tr(c, 'deliveredTitle'), key: const ValueKey('deliveredSheet'), style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
+            Text(tr(c, 'deliveredTitle'), key: const ValueKey('deliveredSheet'), style: DsStyle.t20w700),
             const SizedBox(height: 4),
-            Text(tr(c, 'deliveredBody'), style: TextStyle(color: AppColors.muted)),
+            Text(tr(c, 'deliveredBody'), style: DsStyle.inherit.copyWith(color: AppColors.muted)),
             const SizedBox(height: 14),
             FilledButton.icon(
               key: const ValueKey('deliveredRate'),

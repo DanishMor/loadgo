@@ -11,6 +11,7 @@ import '../services/backend.dart';
 import '../services/payment_service.dart';
 import '../widgets/common.dart';
 import '../widgets/logistics_labels.dart';
+import '../theme/design_tokens.dart';
 
 String paymentModeLabel(BuildContext context, String mode) =>
     tr(context, mode == PaymentMode.upiDirect ? 'payUpiDirect' : 'payCash');
@@ -107,7 +108,7 @@ class _PaymentCardState extends State<PaymentCard> {
               const SizedBox(width: 8),
               Expanded(
                 child: Text('${tr(context, 'paymentLabel')} • ${paymentModeLabel(context, b.paymentMode)}',
-                    style: TextStyle(fontWeight: FontWeight.w800, color: AppColors.title)),
+                    style: DsStyle.w700.copyWith(color: AppColors.title)),
               ),
               StatusChip(label: paymentStatusLabel(context, b.paymentStatus), color: color),
             ],
@@ -116,7 +117,7 @@ class _PaymentCardState extends State<PaymentCard> {
             Padding(
               padding: const EdgeInsets.only(top: 6),
               child: Text(formatPaise(b.paidAmountPaise!),
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.title)),
+                  style: DsStyle.t18w700.copyWith(color: AppColors.title)),
             ),
           if (b.advancePaise != null && b.billAmountPaise != null)
             Padding(
@@ -124,7 +125,7 @@ class _PaymentCardState extends State<PaymentCard> {
               child: Text(
                 trf(context, 'advanceLine', {'amount': formatPaise(b.advancePaise!), 'balance': formatPaise(AdvanceSummary(advancePaise: b.advancePaise!, totalPaise: b.billAmountPaise!, confirmed: b.advanceConfirmedAt != null).balancePaise)}),
                 key: const ValueKey('advanceLine'),
-                style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.body),
+                style: DsStyle.w700.copyWith(color: AppColors.body),
               ),
             ),
           if (b.advancePaise != null)
@@ -132,7 +133,7 @@ class _PaymentCardState extends State<PaymentCard> {
               padding: const EdgeInsets.only(top: 4),
               child: b.advanceConfirmedAt != null
                   ? StatusChip(label: tr(context, 'advanceConfirmedChip'), color: AppColors.success)
-                  : Text(tr(context, 'advanceWaiting'), key: const ValueKey('advanceWaiting'), style: TextStyle(fontSize: 12, color: AppColors.muted)),
+                  : Text(tr(context, 'advanceWaiting'), key: const ValueKey('advanceWaiting'), style: DsStyle.t12w400.copyWith(color: AppColors.muted)),
             ),
           const SizedBox(height: 8),
           if (me == b.customerId && open && b.advancePaise == null)
@@ -178,7 +179,7 @@ class _PaymentCardState extends State<PaymentCard> {
               label: Text(tr(context, 'confirmReceived')),
             ),
           const SizedBox(height: 4),
-          Text(tr(context, 'recordsOnly'), style: TextStyle(fontSize: 12, color: AppColors.faint)),
+          Text(tr(context, 'recordsOnly'), style: DsStyle.t12w400.copyWith(color: AppColors.faint)),
         ],
       ),
     );

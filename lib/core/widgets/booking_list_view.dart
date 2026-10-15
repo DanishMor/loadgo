@@ -6,6 +6,7 @@ import 'common.dart';
 import 'live_stream.dart';
 import 'paged_live_stream.dart';
 import 'booking_widgets.dart';
+import '../theme/design_tokens.dart';
 
 /// Titled live list of bookings; used for the driver Trips tab and the
 /// customer Bookings tab.
@@ -33,7 +34,7 @@ class BookingListView extends StatelessWidget {
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 18, 20, 8),
-            child: Text(title, style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: AppColors.title)),
+            child: Text(title, style: DsStyle.t24w700.copyWith(color: AppColors.title)),
           ),
           Expanded(
             child: PagedLiveStream<Booking>(

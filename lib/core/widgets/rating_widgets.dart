@@ -7,7 +7,8 @@ import '../services/rating_service.dart';
 import 'common.dart';
 import 'live_stream.dart';
 import '../l10n/l10n.dart';
-const _starColor = Color(0xFFFDB022);
+import '../theme/design_tokens.dart';
+const _starColor = DsLegacy.star;
 
 /// Row of 1-5 stars; tappable when [onChanged] is given.
 class StarRow extends StatelessWidget {
@@ -62,9 +63,9 @@ class _RatingBadgeState extends State<RatingBadge> {
           children: [
             const Icon(Icons.star_rounded, color: _starColor, size: 20),
             const SizedBox(width: 4),
-            Text(s.average.toStringAsFixed(1), style: TextStyle(fontWeight: FontWeight.w800, color: AppColors.title)),
+            Text(s.average.toStringAsFixed(1), style: DsStyle.w700.copyWith(color: AppColors.title)),
             const SizedBox(width: 4),
-            Text('(${s.count} ${tr(context, 'ratings')})', style: TextStyle(color: AppColors.muted, fontSize: 13)),
+            Text('(${s.count} ${tr(context, 'ratings')})', style: DsStyle.t14w400.copyWith(color: AppColors.muted)),
           ],
         );
       },
@@ -125,19 +126,19 @@ class _RatingPromptState extends State<RatingPrompt> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(tr(context, mine == null ? widget.titleKey : 'yourRating'),
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.title)),
+                  style: DsStyle.t16w700.copyWith(color: AppColors.title)),
               const SizedBox(height: 8),
               if (mine != null) ...[
                 StarRow(stars: mine.stars, size: 24),
                 if (mine.cats.isNotEmpty) RatingCategoryRows(scores: {for (final e in mine.cats.entries) e.key: e.value.toDouble()}),
                 if (mine.comment.isNotEmpty) ...[
                   const SizedBox(height: 6),
-                  Text(mine.comment, style: TextStyle(color: AppColors.muted)),
+                  Text(mine.comment, style: DsStyle.inherit.copyWith(color: AppColors.muted)),
                 ],
               ] else ...[
                 StarRow(stars: _stars, onChanged: _saving ? null : (v) => setState(() => _stars = v)),
                 const SizedBox(height: 4),
-                Text(tr(context, 'rateInDetail'), style: TextStyle(fontSize: 13, color: AppColors.muted)),
+                Text(tr(context, 'rateInDetail'), style: DsStyle.t14w400.copyWith(color: AppColors.muted)),
                 for (final c in RatingCategory.all)
                   Row(children: [
                     Expanded(child: Text(tr(context, 'rating${c[0].toUpperCase()}${c.substring(1)}'))),
@@ -181,10 +182,10 @@ class RatingCategoryRows extends StatelessWidget {
       for (final c in RatingCategory.all)
         if (scores[c] != null)
           Row(children: [
-            Expanded(child: Text(tr(context, 'rating${c[0].toUpperCase()}${c.substring(1)}'), style: TextStyle(color: AppColors.muted, fontSize: 13))),
+            Expanded(child: Text(tr(context, 'rating${c[0].toUpperCase()}${c.substring(1)}'), style: DsStyle.t14w400.copyWith(color: AppColors.muted))),
             StarRow(stars: scores[c]!.round(), size: 16),
             const SizedBox(width: 6),
-            Text(scores[c]!.toStringAsFixed(1), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
+            Text(scores[c]!.toStringAsFixed(1), style: DsStyle.t14w700),
           ]),
     ]);
   }
@@ -209,7 +210,7 @@ class ReviewsScreen extends StatelessWidget {
             AppCard(
               child: Column(children: [
                 Row(children: [
-                  Text(s.average.toStringAsFixed(1), style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w800)),
+                  Text(s.average.toStringAsFixed(1), style: DsStyle.t32w700),
                   const SizedBox(width: 10),
                   StarRow(stars: s.average.round(), size: 22),
                   const SizedBox(width: 8),

@@ -23,6 +23,7 @@ import '../core/services/transporter_service.dart';
 import '../core/widgets/common.dart';
 import '../core/widgets/live_stream.dart';
 import '../core/widgets/logistics_labels.dart';
+import '../core/theme/design_tokens.dart';
 
 /// Open loads for a transporter: look, bid for the company (the vehicle and
 /// driver are assigned after the customer picks the bid), and post a load
@@ -145,22 +146,22 @@ class _TransporterLoadsScreenState extends State<TransporterLoadsScreen> {
           title: Text(tr(c, 'bbTitle')),
           content: SingleChildScrollView(
             child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(trf(c, 'bbMarkup', {'p': markup}), style: const TextStyle(fontWeight: FontWeight.w700)),
+              Text(trf(c, 'bbMarkup', {'p': markup}), style: DsStyle.w700),
               Wrap(spacing: 6, children: [
                 for (final m in BulkBid.markupChoices) ChoiceChip(key: ValueKey('bbMarkup_$m'), label: Text('$m%'), selected: markup == m, onSelected: (_) => set(() => markup = m)),
               ]),
               const SizedBox(height: 10),
-              Text(trf(c, 'bbMargin', {'p': margin}), style: const TextStyle(fontWeight: FontWeight.w700)),
+              Text(trf(c, 'bbMargin', {'p': margin}), style: DsStyle.w700),
               Wrap(spacing: 6, children: [
                 for (final m in BulkBid.marginChoices) ChoiceChip(key: ValueKey('bbMargin_$m'), label: Text('$m%'), selected: margin == m, onSelected: (_) => set(() => margin = m)),
               ]),
               const SizedBox(height: 12),
-              Text(trf(c, 'bbWillBid', {'n': will.length}), key: const ValueKey('bbWill'), style: TextStyle(fontWeight: FontWeight.w800, color: AppColors.success)),
-              for (final i in will) Text('${i.load.pickup} → ${i.load.drop}: ${formatPaise(i.pricePaise!)}', style: const TextStyle(fontSize: 13)),
+              Text(trf(c, 'bbWillBid', {'n': will.length}), key: const ValueKey('bbWill'), style: DsStyle.w700.copyWith(color: AppColors.success)),
+              for (final i in will) Text('${i.load.pickup} → ${i.load.drop}: ${formatPaise(i.pricePaise!)}', style: DsStyle.t14w400),
               if (skipped.isNotEmpty) ...[
                 const SizedBox(height: 8),
-                Text(trf(c, 'bbSkipped', {'n': skipped.length}), key: const ValueKey('bbSkipped'), style: TextStyle(fontWeight: FontWeight.w800, color: AppColors.warning)),
-                for (final i in skipped) Text('${i.load.pickup} → ${i.load.drop}: ${tr(c, 'bbWhy_${i.skip!.name}')}', style: TextStyle(fontSize: 13, color: AppColors.muted)),
+                Text(trf(c, 'bbSkipped', {'n': skipped.length}), key: const ValueKey('bbSkipped'), style: DsStyle.w700.copyWith(color: AppColors.warning)),
+                for (final i in skipped) Text('${i.load.pickup} → ${i.load.drop}: ${tr(c, 'bbWhy_${i.skip!.name}')}', style: DsStyle.t14w400.copyWith(color: AppColors.muted)),
               ],
             ]),
           ),
@@ -279,13 +280,13 @@ class _TransporterLoadsScreenState extends State<TransporterLoadsScreen> {
                         controlAffinity: ListTileControlAffinity.leading,
                         value: _selected.contains(l.id),
                         onChanged: (v) => setState(() => v == true ? (_selected.length < BulkBid.maxLoads ? _selected.add(l.id) : null) : _selected.remove(l.id)),
-                        title: Text('${l.pickup} → ${l.drop}', style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+                        title: Text('${l.pickup} → ${l.drop}', style: DsStyle.t16w700),
                       )
                     else
-                      Text('${l.pickup} → ${l.drop}', style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+                      Text('${l.pickup} → ${l.drop}', style: DsStyle.t16w700),
                     const SizedBox(height: 2),
-                    Text('${l.cargoType} • ${formatNum(l.weight)} T • ${vehicleTypeLabel(context, l.vehicleType)}', style: TextStyle(color: AppColors.muted)),
-                    if (l.estimate != null) Text(formatPaise(l.estimate!.total), style: const TextStyle(fontWeight: FontWeight.w800, color: AppColors.primary)),
+                    Text('${l.cargoType} • ${formatNum(l.weight)} T • ${vehicleTypeLabel(context, l.vehicleType)}', style: DsStyle.inherit.copyWith(color: AppColors.muted)),
+                    if (l.estimate != null) Text(formatPaise(l.estimate!.total), style: DsStyle.w700.copyWith(color: AppColors.primary)),
                     if (l.postedByTransporter || fit.route || fit.vehicleType)
                       Padding(
                         padding: const EdgeInsets.only(top: 4),

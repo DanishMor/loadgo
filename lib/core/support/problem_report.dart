@@ -12,6 +12,7 @@ import '../services/rate_limit_service.dart';
 import '../services/support_service.dart';
 import '../widgets/common.dart';
 import '../widgets/feature_gate.dart';
+import '../theme/design_tokens.dart';
 
 /// The kinds of problem a person can report in two taps.
 enum ProblemKind { appBroke, slow, wrongInfo, payment, otherPerson, safety, other }
@@ -132,9 +133,9 @@ class _ProblemSheetState extends State<_ProblemSheet> {
       padding: EdgeInsets.fromLTRB(20, 16, 20, 20 + MediaQuery.of(context).viewInsets.bottom),
       child: SingleChildScrollView(
         child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(tr(context, 'prTitle'), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+          Text(tr(context, 'prTitle'), style: DsStyle.t18w700),
           const SizedBox(height: 4),
-          Text(tr(context, 'prNote'), style: TextStyle(color: AppColors.muted, fontSize: 12)),
+          Text(tr(context, 'prNote'), style: DsStyle.t12w400.copyWith(color: AppColors.muted)),
           const SizedBox(height: 12),
           Wrap(spacing: 8, runSpacing: 8, children: [
             for (final k in ProblemKind.values)

@@ -11,7 +11,8 @@ import 'dart:convert';
 import 'dart:io';
 
 final _color = RegExp(r'Color\(\s*0x[0-9A-Fa-f]+\s*\)');
-final _style = RegExp(r'(?<![A-Za-z_])TextStyle\(');
+// pw.TextStyle( is the PDF library's own style (the PDF carries its own fonts): not counted.
+final _style = RegExp(r'(?<![A-Za-z_.])TextStyle\(');
 
 class Count {
   final int colors;
@@ -53,6 +54,7 @@ void main(List<String> args) {
       ..writeln()
       ..writeln('Total: **$totalColors** colours, **$totalStyles** text styles in **${now.length}** files.')
       ..writeln()
+      ..writeln(now.isEmpty ? 'The table is empty: every screen is on the design system. Keep it empty (the test fails on any new hard-coded colour or text style).' : 'Screens still to move are listed below.')      ..writeln()
       ..writeln('| File | `Color(0x...)` | `TextStyle(` |')
       ..writeln('|---|---|---|');
     for (final e in now.entries) {

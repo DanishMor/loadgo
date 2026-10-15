@@ -4,6 +4,7 @@ import '../core/l10n/l10n.dart';
 import '../core/services/demo_service.dart';
 import '../core/widgets/common.dart';
 import '../core/widgets/live_stream.dart';
+import '../core/theme/design_tokens.dart';
 
 /// Admin > Demo data (super admin): create or remove sample users, vehicles,
 /// loads and bookings, all flagged `demo: true`.
@@ -63,14 +64,14 @@ class _AdminDemoScreenState extends State<AdminDemoScreen> {
     return Scaffold(
       appBar: AppBar(title: Text(tr(context, 'adminDemo'))),
       body: ListView(padding: const EdgeInsets.all(16), children: [
-        Text(tr(context, 'demoIntro'), style: TextStyle(color: AppColors.muted)),
+        Text(tr(context, 'demoIntro'), style: DsStyle.inherit.copyWith(color: AppColors.muted)),
         const SizedBox(height: 16),
         FutureBuilder<int>(
           future: _count,
           builder: (context, snap) {
             if (snap.hasError) return ErrorRetry(messageKey: 'somethingWrong', onRetry: _refresh, compact: true);
             if (!snap.hasData) return const Center(child: CircularProgressIndicator());
-            return AppCard(child: Text(trf(context, 'demoCount', {'n': snap.data!}), key: const ValueKey('demoCount'), style: const TextStyle(fontWeight: FontWeight.w700)));
+            return AppCard(child: Text(trf(context, 'demoCount', {'n': snap.data!}), key: const ValueKey('demoCount'), style: DsStyle.w700));
           },
         ),
         const SizedBox(height: 16),

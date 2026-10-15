@@ -9,6 +9,7 @@ import '../services/rate_limit_service.dart';
 import '../widgets/common.dart';
 import '../widgets/live_stream.dart';
 import 'network_logic.dart';
+import '../theme/design_tokens.dart';
 
 /// Chat of a driver connection ([kind] `link`, CH2) or a group (`group`, CH3).
 /// A message can carry a load card (CH7).
@@ -25,7 +26,7 @@ class NetworkChatScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: AppColors.background,
         scrolledUnderElevation: 0,
-        title: Text(title, style: const TextStyle(fontWeight: FontWeight.w700)),
+        title: Text(title, style: DsStyle.w700),
       ),
       body: NetworkChatBody(kind: kind, id: id),
     );
@@ -87,15 +88,15 @@ class _NetworkChatBodyState extends State<NetworkChatBody> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (!mine && m.senderName.isNotEmpty)
-              Text(m.senderName, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.primary)),
+              Text(m.senderName, style: DsStyle.t12w700.copyWith(color: AppColors.primary)),
             if (m.loadCard != null) SharedLoadCardView(card: m.loadCard!),
-            if (m.text.isNotEmpty) Text(m.text, style: TextStyle(color: fg)),
+            if (m.text.isNotEmpty) Text(m.text, style: DsStyle.inherit.copyWith(color: fg)),
             if (m.flagged)
               Padding(
                 padding: const EdgeInsets.only(top: 4),
-                child: Text(tr(context, 'flaggedMessage'), style: TextStyle(fontSize: 11, color: mine ? Colors.white70 : AppColors.warning)),
+                child: Text(tr(context, 'flaggedMessage'), style: DsStyle.t12w400.copyWith(color: mine ? Colors.white70 : AppColors.warning)),
               ),
-            if (m.createdAt != null) Text(formatDateTime(m.createdAt!), style: TextStyle(fontSize: 10, color: mine ? Colors.white60 : AppColors.faint)),
+            if (m.createdAt != null) Text(formatDateTime(m.createdAt!), style: DsStyle.t12w400.copyWith(color: mine ? Colors.white60 : AppColors.faint)),
           ],
         ),
       ),
@@ -111,7 +112,7 @@ class _NetworkChatBodyState extends State<NetworkChatBody> {
               width: double.infinity,
               color: AppColors.warnBg,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              child: Text(tr(context, 'offPlatformWarning'), style: TextStyle(fontSize: 12, color: AppColors.body)),
+              child: Text(tr(context, 'offPlatformWarning'), style: DsStyle.t12w400.copyWith(color: AppColors.body)),
             ),
             Expanded(
               child: LiveStream<List<NetworkMessage>>(
@@ -171,11 +172,11 @@ class SharedLoadCardView extends StatelessWidget {
           Row(mainAxisSize: MainAxisSize.min, children: [
             Icon(Icons.inventory_2_outlined, size: 16, color: AppColors.primary),
             const SizedBox(width: 6),
-            Flexible(child: Text('${card.pickup} → ${card.drop}', style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.title))),
+            Flexible(child: Text('${card.pickup} → ${card.drop}', style: DsStyle.w700.copyWith(color: AppColors.title))),
           ]),
           const SizedBox(height: 4),
-          Text('${card.cargoType} · ${formatNum(card.weight)} T · ${card.vehicleType}', style: TextStyle(fontSize: 12, color: AppColors.body)),
-          if (card.budgetPaise != null) Text(formatPaise(card.budgetPaise!), style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.title)),
+          Text('${card.cargoType} · ${formatNum(card.weight)} T · ${card.vehicleType}', style: DsStyle.t12w400.copyWith(color: AppColors.body)),
+          if (card.budgetPaise != null) Text(formatPaise(card.budgetPaise!), style: DsStyle.t12w700.copyWith(color: AppColors.title)),
         ],
       ),
     );

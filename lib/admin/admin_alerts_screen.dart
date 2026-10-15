@@ -10,6 +10,7 @@ import 'admin_lists.dart';
 import 'admin_signals_screen.dart';
 import 'admin_violations_screen.dart';
 import 'flagged_users_screen.dart';
+import '../core/theme/design_tokens.dart';
 
 /// Admin > Alerts (MASTER-6 Task 14): what needs a person now, most urgent
 /// first, for this staff role. Tap an alert to open the screen that works on it.
@@ -53,7 +54,7 @@ class _AdminAlertsScreenState extends State<AdminAlertsScreen> {
         _ => trf(context, 'alDocs', {'n': a.count, 'day': a.peakDay == null ? '' : '${a.peakDay!.day}/${a.peakDay!.month}', 'm': a.peakCount}),
       };
 
-  Color _color(AlertLevel l) => switch (l) { AlertLevel.critical => const Color(0xFFD92D20), AlertLevel.warning => AppColors.warning, AlertLevel.info => AppColors.primary };
+  Color _color(AlertLevel l) => switch (l) { AlertLevel.critical => DsLegacy.danger, AlertLevel.warning => AppColors.warning, AlertLevel.info => AppColors.primary };
 
   @override
   Widget build(BuildContext context) {
@@ -73,7 +74,7 @@ class _AdminAlertsScreenState extends State<AdminAlertsScreen> {
                 child: ListTile(
                   contentPadding: EdgeInsets.zero,
                   leading: Icon(a.level == AlertLevel.info ? Icons.info_outline_rounded : Icons.warning_amber_rounded, color: _color(a.level)),
-                  title: Text(_text(a), style: TextStyle(fontWeight: FontWeight.w700, color: _color(a.level))),
+                  title: Text(_text(a), style: DsStyle.w700.copyWith(color: _color(a.level))),
                   trailing: const Icon(Icons.chevron_right_rounded),
                   onTap: () {
                     final w = _screenFor(a.area);
@@ -82,7 +83,7 @@ class _AdminAlertsScreenState extends State<AdminAlertsScreen> {
                 ),
               ),
             const SizedBox(height: 8),
-            Text(tr(context, 'alFootnote'), style: TextStyle(color: AppColors.faint, fontSize: 12)),
+            Text(tr(context, 'alFootnote'), style: DsStyle.t12w400.copyWith(color: AppColors.faint)),
           ]);
         },
       ),

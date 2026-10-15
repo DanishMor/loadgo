@@ -11,6 +11,7 @@ import '../core/services/device_service.dart';
 import '../core/services/user_service.dart';
 import 'start_resolvers.dart';
 import '../core/widgets/common.dart';
+import '../core/theme/design_tokens.dart';
 
 
 // OTP (shared by Customer + Driver)
@@ -189,7 +190,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
           icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: Text(tr(context, 'verifyMobile'), style: const TextStyle(fontWeight: FontWeight.w700)),
+        title: Text(tr(context, 'verifyMobile'), style: DsStyle.w700),
         actions: const [LanguageButton()],
       ),
       body: SafeArea(
@@ -201,19 +202,19 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                 width: 82,
                 height: 82,
                 decoration: BoxDecoration(color: AppColors.primaryLight, borderRadius: BorderRadius.circular(24)),
-                child: const Icon(Icons.sms_rounded, size: 42, color: Color(0xFF1565C0)),
+                child: const Icon(Icons.sms_rounded, size: 42, color: AppColors.primary),
               ),
               const SizedBox(height: 28),
               Text(
                 tr(context, 'verifyTitle'),
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: AppColors.title),
+                style: DsStyle.t28w700.copyWith(color: AppColors.title),
               ),
               const SizedBox(height: 10),
               Text(
                 '${tr(context, 'otpText')}\n${maskPhone('+91${widget.phoneNumber}')}',
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 15, height: 1.5, color: AppColors.muted),
+                style: DsStyle.t16w400.copyWith(height: 1.5, color: AppColors.muted),
               ),
               const SizedBox(height: 35),
               TextField(
@@ -222,7 +223,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                 maxLength: 6,
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                 textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w700, letterSpacing: 10),
+                style: DsStyle.t28w700.copyWith(letterSpacing: 10),
                 decoration: const InputDecoration(counterText: '', hintText: '••••••'),
               ),
               const SizedBox(height: 24),
@@ -232,7 +233,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                 child: ElevatedButton(
                   onPressed: _isLoading ? null : _verifyOtp,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF1565C0),
+                    backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,
                     elevation: 0,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
@@ -249,7 +250,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                       : Text(
                           tr(context, 'verifyOtp'),
                           textAlign: TextAlign.center,
-                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                          style: DsStyle.t16w700,
                         ),
                 ),
               ),
@@ -259,10 +260,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                 onPressed: _secondsLeft > 0 || _resending ? null : _resend,
                 child: Text(
                   _secondsLeft > 0 ? trf(context, 'resendIn', {'s': _secondsLeft}) : tr(context, 'resendOtp'),
-                  style: TextStyle(
-                    color: _secondsLeft > 0 ? AppColors.faint : const Color(0xFF1565C0),
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: DsStyle.w700.copyWith(color: _secondsLeft > 0 ? AppColors.faint : AppColors.primary),
                 ),
               ),
             ],

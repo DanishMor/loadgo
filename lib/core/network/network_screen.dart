@@ -10,6 +10,7 @@ import '../widgets/common.dart';
 import '../widgets/live_stream.dart';
 import 'network_chat_screen.dart';
 import 'network_logic.dart';
+import '../theme/design_tokens.dart';
 
 /// Driver network: nearby drivers (D11) with a location privacy mode and an
 /// expiring share (CH13, CH14), connections (D12) and groups (D13).
@@ -112,7 +113,7 @@ class _NearbyTabState extends State<_NearbyTab> {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(tr(context, 'netPrivacy'), style: const TextStyle(fontWeight: FontWeight.w800)),
+                  Text(tr(context, 'netPrivacy'), style: DsStyle.w700),
                   const SizedBox(height: 8),
                   Wrap(spacing: 8, runSpacing: 8, children: [
                     for (final m in LocationMode.all)
@@ -136,12 +137,12 @@ class _NearbyTabState extends State<_NearbyTab> {
                   if (active) ...[
                     const SizedBox(height: 8),
                     Row(children: [
-                      Expanded(child: Text(trf(context, 'netSharingUntil', {'when': formatDateTime(until)}), style: TextStyle(color: AppColors.muted, fontSize: 12))),
+                      Expanded(child: Text(trf(context, 'netSharingUntil', {'when': formatDateTime(until)}), style: DsStyle.t12w400.copyWith(color: AppColors.muted))),
                       TextButton(key: const ValueKey('netStop'), onPressed: NetworkService.stopSharing, child: Text(tr(context, 'netStop'))),
                     ]),
                   ],
                   const SizedBox(height: 4),
-                  Text(tr(context, 'netPrivacyNote'), style: TextStyle(color: AppColors.faint, fontSize: 11)),
+                  Text(tr(context, 'netPrivacyNote'), style: DsStyle.t12w400.copyWith(color: AppColors.faint)),
                 ],
               );
             },
@@ -149,7 +150,7 @@ class _NearbyTabState extends State<_NearbyTab> {
         ),
         const SizedBox(height: 12),
         if (_located && _here == null)
-          Padding(padding: const EdgeInsets.all(16), child: Text(tr(context, 'netNeedLocation'), style: TextStyle(color: AppColors.muted)))
+          Padding(padding: const EdgeInsets.all(16), child: Text(tr(context, 'netNeedLocation'), style: DsStyle.inherit.copyWith(color: AppColors.muted)))
         else if (_nearby != null)
           StreamBuilder<List<DriverLink>>(
             stream: NetworkService.watchLinks(),
@@ -159,7 +160,7 @@ class _NearbyTabState extends State<_NearbyTab> {
                 if (snap.hasError) return ErrorState(error: snap.error);
                 final linked = {for (final l in links.data ?? const <DriverLink>[]) l.otherUid(me)};
                 final list = nearbyDrivers(snap.data ?? const [], lat: _here!.lat, lng: _here!.lng, myUid: me, now: DateTime.now());
-                if (list.isEmpty) return Padding(padding: const EdgeInsets.all(16), child: Text(tr(context, 'netNoNearby'), style: TextStyle(color: AppColors.muted)));
+                if (list.isEmpty) return Padding(padding: const EdgeInsets.all(16), child: Text(tr(context, 'netNoNearby'), style: DsStyle.inherit.copyWith(color: AppColors.muted)));
                 return Column(children: [
                   for (final e in list)
                     ListTile(
@@ -169,7 +170,7 @@ class _NearbyTabState extends State<_NearbyTab> {
                       title: Text(e.driver.name),
                       subtitle: Text(trf(context, 'netAway', {'km': e.km.round()})),
                       trailing: linked.contains(e.driver.uid) || _requested.contains(e.driver.uid)
-                          ? Text(tr(context, 'netRequested'), style: TextStyle(color: AppColors.muted, fontSize: 12))
+                          ? Text(tr(context, 'netRequested'), style: DsStyle.t12w400.copyWith(color: AppColors.muted))
                           : OutlinedButton(key: ValueKey('connect_${e.driver.uid}'), onPressed: () => _connect(e.driver), child: Text(tr(context, 'netConnect'))),
                     ),
                 ]);
@@ -197,7 +198,7 @@ class _ConnectionsTab extends StatelessWidget {
         final rest = [for (final l in links) if (!l.incomingFor(me)) l];
         return ListView(padding: const EdgeInsets.all(16), children: [
           if (incoming.isNotEmpty) ...[
-            Text(tr(context, 'netIncoming'), style: const TextStyle(fontWeight: FontWeight.w800)),
+            Text(tr(context, 'netIncoming'), style: DsStyle.w700),
             for (final l in incoming)
               ListTile(
                 key: ValueKey('request_${l.id}'),

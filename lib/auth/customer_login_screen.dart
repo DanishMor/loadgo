@@ -11,6 +11,8 @@ import '../core/services/user_service.dart';
 import 'start_resolvers.dart';
 import 'otp_verification_screen.dart';
 import '../core/widgets/common.dart';
+import '../core/theme/design_tokens.dart';
+import '../core/widgets/ds/app_button.dart';
 
 
 // CUSTOMER LOGIN
@@ -106,7 +108,7 @@ class _CustomerLoginScreenState extends State<CustomerLoginScreen> {
           icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: Text(tr(context, 'login'), style: const TextStyle(fontWeight: FontWeight.w700)),
+        title: Text(tr(context, 'login'), style: DsStyle.w700),
         actions: const [LanguageButton()],
       ),
       body: SafeArea(
@@ -123,7 +125,7 @@ class _CustomerLoginScreenState extends State<CustomerLoginScreen> {
                     width: 82,
                     height: 82,
                     decoration: BoxDecoration(color: AppColors.primaryLight, borderRadius: BorderRadius.circular(24)),
-                    child: const Icon(Icons.person_rounded, size: 45, color: Color(0xFF1565C0)),
+                    child: const Icon(Icons.person_rounded, size: 45, color: AppColors.primary),
                   ),
                 ),
                 const SizedBox(height: 28),
@@ -131,7 +133,7 @@ class _CustomerLoginScreenState extends State<CustomerLoginScreen> {
                   child: Text(
                     tr(context, 'welcome'),
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: AppColors.title),
+                    style: DsStyle.t28w700.copyWith(color: AppColors.title),
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -139,13 +141,13 @@ class _CustomerLoginScreenState extends State<CustomerLoginScreen> {
                   child: Text(
                     tr(context, 'loginSub'),
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 15, color: AppColors.muted),
+                    style: DsStyle.t16w400.copyWith(color: AppColors.muted),
                   ),
                 ),
                 const SizedBox(height: 40),
                 Text(
                   tr(context, 'mobile'),
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.body),
+                  style: DsStyle.t14w700.copyWith(color: AppColors.body),
                 ),
                 const SizedBox(height: 8),
                 TextFormField(
@@ -160,9 +162,9 @@ class _CustomerLoginScreenState extends State<CustomerLoginScreen> {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Text('🇮🇳', style: TextStyle(fontSize: 20)),
+                          Text('🇮🇳', style: DsStyle.t20w400),
                           SizedBox(width: 8),
-                          Text('+91', style: TextStyle(fontWeight: FontWeight.w600)),
+                          Text('+91', style: DsStyle.w600),
                         ],
                       ),
                     ),
@@ -176,34 +178,7 @@ class _CustomerLoginScreenState extends State<CustomerLoginScreen> {
                   },
                 ),
                 const SizedBox(height: 24),
-                SizedBox(
-                  width: double.infinity,
-                  height: 54,
-                  child: ElevatedButton(
-                    onPressed: _isLoading ? null : _continueWithPhone,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF1565C0),
-                      foregroundColor: Colors.white,
-                      disabledBackgroundColor: const Color(0xFF9DBCE5),
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                    ),
-                    child: _isLoading
-                        ? const SizedBox(
-                            width: 23,
-                            height: 23,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2.5,
-                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                            ),
-                          )
-                        : Text(
-                            tr(context, 'continueMobile'),
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-                          ),
-                  ),
-                ),
+                AppButton(label: tr(context, 'continueMobile'), loading: _isLoading, onPressed: _continueWithPhone),
                 const SizedBox(height: 24),
                 Row(
                   children: [
@@ -212,7 +187,7 @@ class _CustomerLoginScreenState extends State<CustomerLoginScreen> {
                       padding: const EdgeInsets.symmetric(horizontal: 12),
                       child: Text(
                         tr(context, 'or'),
-                        style: TextStyle(color: AppColors.faint, fontWeight: FontWeight.w600, fontSize: 12),
+                        style: DsStyle.t12w600.copyWith(color: AppColors.faint),
                       ),
                     ),
                     Expanded(child: Divider(color: AppColors.border)),
@@ -229,10 +204,10 @@ class _CustomerLoginScreenState extends State<CustomerLoginScreen> {
                       );
                     },
                     icon: const Icon(Icons.g_mobiledata_rounded, size: 30),
-                    label: Text(tr(context, 'google'), style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
+                    label: Text(tr(context, 'google'), style: DsStyle.t16w700),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: AppColors.body,
-                      side: const BorderSide(color: Color(0xFFD0D5DD)),
+                      side: BorderSide(color: AppColors.border),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                     ),
                   ),
@@ -242,7 +217,7 @@ class _CustomerLoginScreenState extends State<CustomerLoginScreen> {
                   child: Text(
                     tr(context, 'terms'),
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 12, height: 1.4, color: AppColors.faint),
+                    style: DsStyle.t12w400.copyWith(height: 1.4, color: AppColors.faint),
                   ),
                 ),
               ],

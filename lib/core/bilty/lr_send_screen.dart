@@ -15,6 +15,7 @@ import 'lr_model.dart';
 import 'lr_pdf.dart';
 import 'lr_service.dart';
 import 'lr_visibility.dart';
+import '../theme/design_tokens.dart';
 
 /// Pick a copy type, see exactly what the receiver gets, then send it: to the
 /// driver in the app, as a PDF (WhatsApp), or as a link that can be revoked.
@@ -92,10 +93,10 @@ class _LrSendScreenState extends State<LrSendScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(backgroundColor: AppColors.background, scrolledUnderElevation: 0, title: Text(tr(context, 'blSend'), style: const TextStyle(fontWeight: FontWeight.w700))),
+      appBar: AppBar(backgroundColor: AppColors.background, scrolledUnderElevation: 0, title: Text(tr(context, 'blSend'), style: DsStyle.w700)),
       body: SafeArea(
         child: ListView(padding: const EdgeInsets.fromLTRB(20, 10, 20, 30), children: [
-          Text(tr(context, 'blCopyKind'), style: const TextStyle(fontWeight: FontWeight.w700)),
+          Text(tr(context, 'blCopyKind'), style: DsStyle.w700),
           const SizedBox(height: 6),
           SegmentedButton<String>(
             key: const ValueKey('lrCopyPicker'),
@@ -113,7 +114,7 @@ class _LrSendScreenState extends State<LrSendScreen> {
               onChanged: (v) => setState(() => _showRate = v),
             ),
           const SizedBox(height: 12),
-          Text(tr(context, 'blPreview'), style: const TextStyle(fontWeight: FontWeight.w700)),
+          Text(tr(context, 'blPreview'), style: DsStyle.w700),
           const SizedBox(height: 6),
           LrCopyCard(key: ValueKey('lrPreview_$_copy$_showRate'), fields: _fields, copy: _copy, issuerRole: _lr.issuerRole),
           const SizedBox(height: 14),
@@ -124,7 +125,7 @@ class _LrSendScreenState extends State<LrSendScreen> {
           const SizedBox(height: 8),
           OutlinedButton.icon(key: const ValueKey('lrCreateLink'), onPressed: _busy ? null : _createLink, icon: const Icon(Icons.link_rounded), label: Text(tr(context, 'blCreateLink'))),
           const SizedBox(height: 18),
-          Text(tr(context, 'blLinks'), style: const TextStyle(fontWeight: FontWeight.w700)),
+          Text(tr(context, 'blLinks'), style: DsStyle.w700),
           LiveStream<List<LrShare>>(
             compact: true,
             stream: () => LrService.watchShares(_lr.id),

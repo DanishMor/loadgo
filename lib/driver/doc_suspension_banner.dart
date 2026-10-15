@@ -5,6 +5,7 @@ import '../core/l10n/l10n.dart';
 import '../core/models/vehicle.dart';
 import '../core/widgets/common.dart';
 import '../core/widgets/logistics_labels.dart';
+import '../core/theme/design_tokens.dart';
 
 /// Driver Home: red card when the licence is expired (no loads) and one line
 /// per vehicle held back by an expired insurance / permit / fitness paper.
@@ -41,7 +42,7 @@ class DocSuspensionBanner extends StatelessWidget {
                 child: Row(children: [
                   const Icon(Icons.block_rounded, color: Colors.redAccent, size: 28),
                   const SizedBox(width: 12),
-                  Expanded(child: Text(tr(context, 'licenceExpiredBanner'), style: const TextStyle(fontWeight: FontWeight.w700))),
+                  Expanded(child: Text(tr(context, 'licenceExpiredBanner'), style: DsStyle.w700)),
                 ]),
               ),
             for (final v in held)
@@ -57,7 +58,7 @@ class DocSuspensionBanner extends StatelessWidget {
                         'number': v.number,
                         'docs': v.blockingExpired(now).map((k) => vehicleDocLabel(context, k)).join(', '),
                       }),
-                      style: const TextStyle(fontWeight: FontWeight.w700),
+                      style: DsStyle.w700,
                     ),
                   ),
                 ]),

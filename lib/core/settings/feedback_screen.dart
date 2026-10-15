@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import '../l10n/l10n.dart';
 import '../services/feedback_service.dart';
 import '../widgets/common.dart';
+import '../theme/design_tokens.dart';
 
 /// Help > Send feedback: stars, a category and a short note.
 class FeedbackScreen extends StatefulWidget {
@@ -54,7 +55,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
     return Scaffold(
       appBar: AppBar(title: Text(tr(context, 'fbTitle'))),
       body: ListView(padding: const EdgeInsets.all(20), children: [
-        Text(tr(context, 'fbIntro'), style: TextStyle(color: AppColors.muted)),
+        Text(tr(context, 'fbIntro'), style: DsStyle.inherit.copyWith(color: AppColors.muted)),
         const SizedBox(height: 16),
         FieldLabel(tr(context, 'fbRating')),
         Row(children: [
@@ -64,7 +65,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
               tooltip: '$i',
               iconSize: 34,
               onPressed: () => setState(() => _rating = i),
-              icon: Icon(i <= _rating ? Icons.star_rounded : Icons.star_border_rounded, color: const Color(0xFFF59E0B)),
+              icon: Icon(i <= _rating ? Icons.star_rounded : Icons.star_border_rounded, color: DsLegacy.star),
             ),
         ]),
         const SizedBox(height: 12),

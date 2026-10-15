@@ -9,6 +9,7 @@ import '../core/services/rewards_service.dart';
 import '../core/widgets/offers_gate.dart';
 import '../core/widgets/common.dart';
 import '../core/widgets/live_stream.dart';
+import '../core/theme/design_tokens.dart';
 
 String creditKindLabel(BuildContext context, String kind) => tr(context, switch (kind) {
       'spend' => 'creditSpend',
@@ -102,19 +103,19 @@ class _OffersScreenState extends State<OffersScreen> {
               return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
                 AppCard(
                   child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Text(tr(context, 'creditBalance'), style: TextStyle(color: AppColors.muted)),
+                    Text(tr(context, 'creditBalance'), style: DsStyle.inherit.copyWith(color: AppColors.muted)),
                     Text(formatPaise(balance),
                         key: const ValueKey('creditBalance'),
-                        style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: AppColors.title)),
+                        style: DsStyle.t28w700.copyWith(color: AppColors.title)),
                     const SizedBox(height: 4),
-                    Text(tr(context, 'offersRecordNote'), style: TextStyle(color: AppColors.faint, fontSize: 12)),
+                    Text(tr(context, 'offersRecordNote'), style: DsStyle.t12w400.copyWith(color: AppColors.faint)),
                   ]),
                 ),
                 OffersGate(test: (s) => s.referral, child: Padding(padding: const EdgeInsets.only(bottom: 16), child: _referralCard())),
                 const SizedBox(height: 16),
-                Text(tr(context, 'creditHistory'), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+                Text(tr(context, 'creditHistory'), style: DsStyle.t18w700),
                 const SizedBox(height: 8),
-                if (lines.isEmpty) Text(tr(context, 'noCreditLines'), style: TextStyle(color: AppColors.muted)),
+                if (lines.isEmpty) Text(tr(context, 'noCreditLines'), style: DsStyle.inherit.copyWith(color: AppColors.muted)),
                 for (final l in lines)
                   ListTile(
                     contentPadding: EdgeInsets.zero,
@@ -123,7 +124,7 @@ class _OffersScreenState extends State<OffersScreen> {
                     title: Text(creditKindLabel(context, l.kind)),
                     subtitle: l.note.isEmpty ? null : Text(l.note),
                     trailing: Text('${l.amountPaise >= 0 ? '+' : '-'}${formatPaise(l.amountPaise.abs())}',
-                        style: const TextStyle(fontWeight: FontWeight.w800)),
+                        style: DsStyle.w700),
                   ),
               ]);
             },
@@ -136,12 +137,12 @@ class _OffersScreenState extends State<OffersScreen> {
   Widget _referralCard() {
     return AppCard(
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(tr(context, 'yourReferralCode'), style: TextStyle(color: AppColors.muted)),
+        Text(tr(context, 'yourReferralCode'), style: DsStyle.inherit.copyWith(color: AppColors.muted)),
         Row(children: [
           Expanded(
             child: Text(_myCode ?? '…',
                 key: const ValueKey('myReferralCode'),
-                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800, letterSpacing: 2, color: AppColors.primary)),
+                style: DsStyle.t24w700.copyWith(letterSpacing: 2, color: AppColors.primary)),
           ),
           if (_myCode != null)
             IconButton(
@@ -153,7 +154,7 @@ class _OffersScreenState extends State<OffersScreen> {
               },
             ),
         ]),
-        Text(tr(context, 'referralExplain'), style: TextStyle(color: AppColors.muted, fontSize: 13)),
+        Text(tr(context, 'referralExplain'), style: DsStyle.t14w400.copyWith(color: AppColors.muted)),
         if (!_referred) ...[
           const SizedBox(height: 12),
           Row(children: [

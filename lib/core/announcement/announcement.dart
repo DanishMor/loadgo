@@ -6,6 +6,7 @@ import '../services/backend.dart';
 import '../services/server_clock.dart';
 import '../services/ttl_cache.dart';
 import '../widgets/common.dart';
+import '../theme/design_tokens.dart';
 
 /// `config/announcement`, written by an admin in Admin > Config (MASTER-5 Task 40):
 ///
@@ -143,7 +144,7 @@ class _AnnouncementBannerState extends State<AnnouncementBanner> {
             child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Icon(a.level == 'info' ? Icons.campaign_outlined : Icons.warning_amber_rounded, color: color),
               const SizedBox(width: 10),
-              Expanded(child: Text(a.textFor(LanguageScope.of(context)), key: const ValueKey('announcementText'), style: TextStyle(color: AppColors.title, height: 1.35))),
+              Expanded(child: Text(a.textFor(LanguageScope.of(context)), key: const ValueKey('announcementText'), style: DsStyle.inherit.copyWith(color: AppColors.title, height: 1.35))),
               if (a.dismissible)
                 IconButton(
                   key: const ValueKey('announcementClose'),

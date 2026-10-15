@@ -7,6 +7,7 @@ import '../services/booking_service.dart';
 import '../services/location_service.dart';
 import 'common.dart';
 import '../l10n/l10n.dart';
+import '../theme/design_tokens.dart';
 /// Minimum gap between Firestore writes so sharing stays lightweight.
 const _minWriteGap = Duration(seconds: 15);
 
@@ -73,7 +74,7 @@ class _LocationSharingCardState extends State<LocationSharingCard> {
           Expanded(
             child: Text(
               tr(context, _denied ? 'locationSharingOff' : 'locationSharingOn'),
-              style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.body),
+              style: DsStyle.w700.copyWith(color: AppColors.body),
             ),
           ),
         ],
@@ -102,16 +103,16 @@ class DriverLocationCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(tr(context, 'driverLocation'), style: TextStyle(fontWeight: FontWeight.w800, color: AppColors.title)),
+                Text(tr(context, 'driverLocation'), style: DsStyle.w700.copyWith(color: AppColors.title)),
                 const SizedBox(height: 2),
                 if (loc == null)
-                  Text(tr(context, 'locationNotShared'), style: TextStyle(color: AppColors.muted))
+                  Text(tr(context, 'locationNotShared'), style: DsStyle.inherit.copyWith(color: AppColors.muted))
                 else ...[
                   Text('${loc.latitude.toStringAsFixed(5)}, ${loc.longitude.toStringAsFixed(5)}',
-                      style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.body)),
+                      style: DsStyle.w700.copyWith(color: AppColors.body)),
                   if (at != null)
                     Text('${tr(context, 'updatedAt')}: ${formatDateTime(at)}',
-                        style: TextStyle(fontSize: 12, color: AppColors.muted)),
+                        style: DsStyle.t12w400.copyWith(color: AppColors.muted)),
                 ],
               ],
             ),

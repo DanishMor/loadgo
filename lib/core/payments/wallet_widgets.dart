@@ -8,6 +8,7 @@ import '../support/support_screens.dart';
 import '../widgets/common.dart';
 import 'payment_timeline.dart';
 import 'wallet_insight.dart';
+import '../theme/design_tokens.dart';
 
 /// "Money on its way": the delivered trips whose payment is not confirmed, who
 /// has to move next, and the steps in one line (MASTER-6 Task 25).
@@ -27,7 +28,7 @@ class WalletWaitingCard extends StatelessWidget {
       child: AppCard(
         key: const ValueKey('walletWaiting'),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(trf(context, 'wlWaitTitle', {'amount': formatPaise(WalletInsight.waitingTotal(w))}), style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+          Text(trf(context, 'wlWaitTitle', {'amount': formatPaise(WalletInsight.waitingTotal(w))}), style: DsStyle.t16w700),
           const SizedBox(height: 6),
           for (final t in w.take(5))
             InkWell(
@@ -40,15 +41,15 @@ class WalletWaitingCard extends StatelessWidget {
                   const SizedBox(width: 10),
                   Expanded(
                     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      Text('${t.booking.pickup} → ${t.booking.drop}${t.amountPaise > 0 ? ' · ${formatPaise(t.amountPaise)}' : ''}', maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w700)),
-                      Text(tr(context, t.next == PaymentNext.confirmReceived ? 'wlWaitYou' : 'wlWaitCustomer'), style: TextStyle(color: AppColors.muted, fontSize: 12)),
+                      Text('${t.booking.pickup} → ${t.booking.drop}${t.amountPaise > 0 ? ' · ${formatPaise(t.amountPaise)}' : ''}', maxLines: 1, overflow: TextOverflow.ellipsis, style: DsStyle.w700),
+                      Text(tr(context, t.next == PaymentNext.confirmReceived ? 'wlWaitYou' : 'wlWaitCustomer'), style: DsStyle.t12w400.copyWith(color: AppColors.muted)),
                     ]),
                   ),
                 ]),
               ),
             ),
           const SizedBox(height: 6),
-          Text(tr(context, 'wlWaitSteps'), style: TextStyle(color: AppColors.faint, fontSize: 12)),
+          Text(tr(context, 'wlWaitSteps'), style: DsStyle.t12w400.copyWith(color: AppColors.faint)),
         ]),
       ),
     );
@@ -70,8 +71,8 @@ Future<void> showLedgerLine(BuildContext context, LedgerEntry e, Iterable<Ledger
       child: Padding(
         padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
         child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          Text('${tr(c, ledgerKindKey(e))} · ${formatPaise(e.amountPaise)}', key: const ValueKey('ledgerSheetTitle'), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
-          Text([trip, if (e.createdAt != null) formatDateTime(e.createdAt!)].join(' • '), style: TextStyle(color: AppColors.muted)),
+          Text('${tr(c, ledgerKindKey(e))} · ${formatPaise(e.amountPaise)}', key: const ValueKey('ledgerSheetTitle'), style: DsStyle.t18w700),
+          Text([trip, if (e.createdAt != null) formatDateTime(e.createdAt!)].join(' • '), style: DsStyle.inherit.copyWith(color: AppColors.muted)),
           const SizedBox(height: 10),
           Text(
             e.type == LedgerType.tripEarning

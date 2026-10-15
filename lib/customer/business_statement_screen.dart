@@ -8,6 +8,7 @@ import '../core/models/business.dart';
 import '../core/services/business_service.dart';
 import '../core/widgets/common.dart';
 import '../core/widgets/live_stream.dart';
+import '../core/theme/design_tokens.dart';
 
 /// Monthly record of the company's delivered trips, split by cost centre.
 /// The owner can save it (a record, not an invoice) or copy it as CSV.
@@ -50,28 +51,28 @@ class _BusinessStatementScreenState extends State<BusinessStatementScreen> {
           return ListView(padding: const EdgeInsets.all(16), children: [
             Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
               IconButton(tooltip: tr(context, 'a11yPrev'), key: const ValueKey('stmtPrev'), onPressed: () => _shift(-1), icon: const Icon(Icons.chevron_left_rounded)),
-              Text(s.month, key: const ValueKey('stmtMonth'), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+              Text(s.month, key: const ValueKey('stmtMonth'), style: DsStyle.t18w700),
               IconButton(tooltip: tr(context, 'a11yNext'), key: const ValueKey('stmtNext'), onPressed: () => _shift(1), icon: const Icon(Icons.chevron_right_rounded)),
             ]),
             AppCard(
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(tr(context, 'statementTotal'), style: TextStyle(color: AppColors.muted)),
-                Text(formatPaise(s.totalPaise), key: const ValueKey('stmtTotal'), style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800)),
-                Text(trf(context, 'fleetTripsDone', {'n': s.trips}), style: TextStyle(color: AppColors.muted)),
+                Text(tr(context, 'statementTotal'), style: DsStyle.inherit.copyWith(color: AppColors.muted)),
+                Text(formatPaise(s.totalPaise), key: const ValueKey('stmtTotal'), style: DsStyle.t28w700),
+                Text(trf(context, 'fleetTripsDone', {'n': s.trips}), style: DsStyle.inherit.copyWith(color: AppColors.muted)),
               ]),
             ),
             const SizedBox(height: 12),
-            Text(tr(context, 'byCostCenter'), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+            Text(tr(context, 'byCostCenter'), style: DsStyle.t16w700),
             if (s.trips == 0) Padding(padding: const EdgeInsets.all(12), child: Text(tr(context, 'statementEmpty'))),
             for (final e in s.sortedCenters)
               ListTile(
                 key: ValueKey('center_${e.key}'),
                 contentPadding: EdgeInsets.zero,
                 title: Text(e.key.isEmpty ? tr(context, 'noCostCenter') : e.key),
-                trailing: Text(formatPaise(e.value), style: const TextStyle(fontWeight: FontWeight.w800)),
+                trailing: Text(formatPaise(e.value), style: DsStyle.w700),
               ),
             const SizedBox(height: 8),
-            Text(tr(context, 'statementNote'), style: TextStyle(color: AppColors.faint, fontSize: 12)),
+            Text(tr(context, 'statementNote'), style: DsStyle.t12w400.copyWith(color: AppColors.faint)),
             const SizedBox(height: 12),
             Row(children: [
               Expanded(

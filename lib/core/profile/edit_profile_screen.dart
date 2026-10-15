@@ -6,6 +6,7 @@ import '../identity/profile_extras.dart';
 import '../services/user_service.dart';
 import '../widgets/common.dart';
 import '../l10n/l10n.dart';
+import '../theme/design_tokens.dart';
 final _emailPattern = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
 
 /// Edit name, email and company after the first-time setup. Pops `true`
@@ -81,7 +82,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       appBar: AppBar(
         backgroundColor: AppColors.background,
         scrolledUnderElevation: 0,
-        title: Text(tr(context, 'editProfile'), style: const TextStyle(fontWeight: FontWeight.w700)),
+        title: Text(tr(context, 'editProfile'), style: DsStyle.w700),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -163,7 +164,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     decoration: const InputDecoration(prefixIcon: Icon(Icons.badge_outlined)), inputFormatters: [LengthLimitingTextInputFormatter(80)]),
                   Padding(
                     padding: const EdgeInsets.only(top: 6),
-                    child: Text(tr(context, 'payoutNote'), style: TextStyle(fontSize: 12, color: AppColors.muted)),
+                    child: Text(tr(context, 'payoutNote'), style: DsStyle.t12w400.copyWith(color: AppColors.muted)),
                   ),
                 ],
                 const SizedBox(height: 30),

@@ -6,6 +6,7 @@ import '../core/services/rating_service.dart';
 import '../core/widgets/common.dart';
 import '../core/widgets/live_stream.dart';
 import 'admin_user_screen.dart';
+import '../core/theme/design_tokens.dart';
 
 /// Admin > Rating bursts: users who gave 5 or more 1-star ratings in the last 24 hours.
 class AdminRatingBurstScreen extends StatefulWidget {
@@ -53,8 +54,8 @@ class _AdminRatingBurstScreenState extends State<AdminRatingBurstScreen> {
                 key: ValueKey('burst_${e.raterId}'),
                 onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => AdminUserScreen(uid: e.raterId))),
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text(trf(context, 'burstLine', {'n': e.oneStarCount, 'm': e.distinctRated}), style: const TextStyle(fontWeight: FontWeight.w700)),
-                  Text(e.raterId, style: TextStyle(color: AppColors.muted, fontSize: 12)),
+                  Text(trf(context, 'burstLine', {'n': e.oneStarCount, 'm': e.distinctRated}), style: DsStyle.w700),
+                  Text(e.raterId, style: DsStyle.t12w400.copyWith(color: AppColors.muted)),
                 ]),
               );
             },

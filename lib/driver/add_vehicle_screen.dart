@@ -12,6 +12,7 @@ import '../core/widgets/common.dart';
 import '../core/l10n/l10n.dart';
 import '../core/services/vehicle_type_service.dart';
 import '../core/widgets/logistics_labels.dart';
+import '../core/theme/design_tokens.dart';
 
 /// Lets the driver pick an RC photo from camera or gallery (compressed).
 Future<Uint8List?> pickRcImageFromDevice(BuildContext context) async {
@@ -219,7 +220,7 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
       appBar: AppBar(
         backgroundColor: AppColors.background,
         scrolledUnderElevation: 0,
-        title: Text(tr(context, _isEdit ? 'editVehicle' : 'addVehicle'), style: const TextStyle(fontWeight: FontWeight.w700)),
+        title: Text(tr(context, _isEdit ? 'editVehicle' : 'addVehicle'), style: DsStyle.w700),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -254,7 +255,7 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
                 if (VehicleTypeService.byId(_type) case final info?)
                   Padding(
                     padding: const EdgeInsets.only(top: 6, left: 4),
-                    child: Text(vehicleTypeRange(context, info), style: TextStyle(color: AppColors.muted, fontSize: 12)),
+                    child: Text(vehicleTypeRange(context, info), style: DsStyle.t12w400.copyWith(color: AppColors.muted)),
                   ),
                 const SizedBox(height: 18),
                 FieldLabel(tr(context, 'capacityTons')),

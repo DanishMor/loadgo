@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 
 import '../core/l10n/l10n.dart';
 import '../core/services/admin_console_service.dart';
+import '../core/theme/design_tokens.dart';
 
 /// Colour of the Admin mode banner; no other part of the app uses it.
-const adminModeColor = Color(0xFF6A1B9A);
+const adminModeColor = DsLegacy.purple;
 
 /// Route guard for the whole admin area (Task 69). It watches `admins/{uid}`
 /// live: while the answer is unknown, or when the user is not an admin, the
@@ -75,7 +76,7 @@ class AdminModeBanner extends StatelessWidget {
         const Icon(Icons.admin_panel_settings_rounded, color: Colors.white, size: 16),
         const SizedBox(width: 6),
         Text(tr(context, 'adminModeBanner'),
-            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 12, decoration: TextDecoration.none)),
+            style: DsStyle.t12w700.copyWith(color: Colors.white, decoration: TextDecoration.none)),
       ]),
     );
   }

@@ -6,6 +6,7 @@ import 'package:speech_to_text/speech_to_text.dart';
 
 import '../l10n/l10n.dart';
 import '../widgets/common.dart';
+import '../theme/design_tokens.dart';
 
 /// What opening the microphone gave.
 enum MicResult { ok, denied, unavailable }
@@ -142,20 +143,20 @@ class _MicTestScreenState extends State<MicTestScreen> {
     final listening = _stage == _Stage.listening;
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(backgroundColor: AppColors.background, scrolledUnderElevation: 0, title: Text(tr(context, 'mtTitle'), style: const TextStyle(fontWeight: FontWeight.w700))),
+      appBar: AppBar(backgroundColor: AppColors.background, scrolledUnderElevation: 0, title: Text(tr(context, 'mtTitle'), style: DsStyle.w700)),
       body: SafeArea(
         child: ListView(padding: const EdgeInsets.all(20), children: [
           Text(tr(context, 'mtIntro')),
           const SizedBox(height: 16),
           if (listening) ...[
-            Text(tr(context, 'mtSpeak'), key: const ValueKey('mtSpeak'), style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+            Text(tr(context, 'mtSpeak'), key: const ValueKey('mtSpeak'), style: DsStyle.t16w700),
             const SizedBox(height: 8),
-            if (_meter) LinearProgressIndicator(key: const ValueKey('mtLevel'), value: _level, minHeight: 14, borderRadius: BorderRadius.circular(7)) else Text(tr(context, 'mtNoMeter'), key: const ValueKey('mtNoMeter'), style: TextStyle(color: AppColors.muted)),
+            if (_meter) LinearProgressIndicator(key: const ValueKey('mtLevel'), value: _level, minHeight: 14, borderRadius: BorderRadius.circular(7)) else Text(tr(context, 'mtNoMeter'), key: const ValueKey('mtNoMeter'), style: DsStyle.inherit.copyWith(color: AppColors.muted)),
             const SizedBox(height: 8),
-            if (_heard) Text(tr(context, 'mtHeard'), key: const ValueKey('mtHeard'), style: TextStyle(fontWeight: FontWeight.w800, color: AppColors.success)),
+            if (_heard) Text(tr(context, 'mtHeard'), key: const ValueKey('mtHeard'), style: DsStyle.w700.copyWith(color: AppColors.success)),
           ],
-          if (_stage == _Stage.denied) Text(tr(context, 'mtDenied'), key: const ValueKey('mtDenied'), style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.warning)),
-          if (_stage == _Stage.unavailable) Text(tr(context, 'mtUnavailable'), key: const ValueKey('mtUnavailable'), style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.warning)),
+          if (_stage == _Stage.denied) Text(tr(context, 'mtDenied'), key: const ValueKey('mtDenied'), style: DsStyle.w700.copyWith(color: AppColors.warning)),
+          if (_stage == _Stage.unavailable) Text(tr(context, 'mtUnavailable'), key: const ValueKey('mtUnavailable'), style: DsStyle.w700.copyWith(color: AppColors.warning)),
           const SizedBox(height: 16),
           FilledButton.icon(
             key: const ValueKey('mtStart'),
@@ -163,7 +164,7 @@ class _MicTestScreenState extends State<MicTestScreen> {
             icon: Icon(listening ? Icons.replay_rounded : Icons.mic_rounded),
             label: Text(tr(context, listening ? 'mtAgain' : 'mtStart')),
           ),
-          if (listening && !_heard) Padding(padding: const EdgeInsets.only(top: 12), child: Text(tr(context, 'mtTips'), key: const ValueKey('mtTips'), style: TextStyle(color: AppColors.muted, fontSize: 13))),
+          if (listening && !_heard) Padding(padding: const EdgeInsets.only(top: 12), child: Text(tr(context, 'mtTips'), key: const ValueKey('mtTips'), style: DsStyle.t14w400.copyWith(color: AppColors.muted))),
         ]),
       ),
     );

@@ -8,6 +8,7 @@ import '../services/auth_helpers.dart';
 import '../services/backend.dart';
 import '../services/push_service.dart';
 import '../widgets/common.dart';
+import '../theme/design_tokens.dart';
 
 /// Permanent, in-app account deletion (Play Store requirement): explains what
 /// goes and what stays, blocks while trips are active, asks for the word
@@ -131,7 +132,7 @@ class _AccountDeletionScreenState extends State<AccountDeletionScreen> {
         child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Icon(icon, color: color, size: 22),
           const SizedBox(width: 10),
-          Expanded(child: Text(text, key: key, style: const TextStyle(height: 1.35))),
+          Expanded(child: Text(text, key: key, style: DsStyle.inherit.copyWith(height: 1.35))),
         ]),
       );
 
@@ -148,7 +149,7 @@ class _AccountDeletionScreenState extends State<AccountDeletionScreen> {
                   OutlinedButton(onPressed: _check, child: Text(tr(context, 'retry'))),
                 ]))
               : ListView(padding: const EdgeInsets.all(20), children: [
-                  Text(tr(context, 'delAccIntro'), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+                  Text(tr(context, 'delAccIntro'), style: DsStyle.t18w700),
                   const SizedBox(height: 16),
                   _note(Icons.delete_outline_rounded, Colors.redAccent, tr(context, 'delAccDeleted')),
                   _note(Icons.inventory_2_outlined, Colors.blueGrey, tr(context, 'delAccKept')),
@@ -278,7 +279,7 @@ class _ReauthDialogState extends State<_ReauthDialog> {
             decoration: const InputDecoration(border: OutlineInputBorder(), counterText: ''),
           ),
         ],
-        if (_error != null) Padding(padding: const EdgeInsets.only(top: 8), child: Text(tr(context, _error!), style: const TextStyle(color: Colors.redAccent))),
+        if (_error != null) Padding(padding: const EdgeInsets.only(top: 8), child: Text(tr(context, _error!), style: DsStyle.inherit.copyWith(color: Colors.redAccent))),
       ]),
       actions: [
         TextButton(onPressed: _busy ? null : () => Navigator.pop(context, false), child: Text(tr(context, 'cancel'))),

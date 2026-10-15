@@ -9,6 +9,7 @@ import 'lr_copy_screen.dart';
 import 'lr_model.dart';
 import 'lr_register.dart';
 import 'lr_service.dart';
+import '../theme/design_tokens.dart';
 
 /// All the LRs a person issued: search, status filter, and the state of every
 /// share link (active, expired, revoked) with a way to stop one
@@ -64,13 +65,13 @@ class _LrRegisterScreenState extends State<LrRegisterScreen> {
           child: SingleChildScrollView(
             padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
             child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text('${r.lr.lrNo} · ${tr(c, _statusKey(r.lr.status))}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
-              Text(r.lr.route.isEmpty ? '${r.lr.pickup} → ${r.lr.drop}' : r.lr.route, style: TextStyle(color: AppColors.muted)),
+              Text('${r.lr.lrNo} · ${tr(c, _statusKey(r.lr.status))}', style: DsStyle.t18w700),
+              Text(r.lr.route.isEmpty ? '${r.lr.pickup} → ${r.lr.drop}' : r.lr.route, style: DsStyle.inherit.copyWith(color: AppColors.muted)),
               const SizedBox(height: 8),
               OutlinedButton.icon(key: const ValueKey('lrOpenCopy'), onPressed: () => _open(r), icon: const Icon(Icons.description_outlined), label: Text(tr(c, 'lrrOpen'))),
               const SizedBox(height: 12),
-              Text(tr(c, 'lrrLinks'), style: const TextStyle(fontWeight: FontWeight.w800)),
-              if (r.shares.isEmpty) Text(tr(c, 'lrrNoLinks'), key: const ValueKey('lrrNoLinks'), style: TextStyle(color: AppColors.muted)),
+              Text(tr(c, 'lrrLinks'), style: DsStyle.w700),
+              if (r.shares.isEmpty) Text(tr(c, 'lrrNoLinks'), key: const ValueKey('lrrNoLinks'), style: DsStyle.inherit.copyWith(color: AppColors.muted)),
               for (final s in r.shares.where((s) => s.copyType != 'verify'))
                 ListTile(
                   key: ValueKey('lrLink_${s.token}'),
@@ -101,7 +102,7 @@ class _LrRegisterScreenState extends State<LrRegisterScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(backgroundColor: AppColors.background, scrolledUnderElevation: 0, title: Text(tr(context, 'lrrTitle'), style: const TextStyle(fontWeight: FontWeight.w700))),
+      appBar: AppBar(backgroundColor: AppColors.background, scrolledUnderElevation: 0, title: Text(tr(context, 'lrrTitle'), style: DsStyle.w700)),
       body: SafeArea(
         child: LiveStream<List<LrPublic>>(
           stream: () => _lrs,
@@ -137,13 +138,13 @@ class _LrRegisterScreenState extends State<LrRegisterScreen> {
                       onTap: () => _links(r),
                       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                         Row(children: [
-                          Expanded(child: Text(r.lr.lrNo, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16))),
+                          Expanded(child: Text(r.lr.lrNo, style: DsStyle.t16w700)),
                           StatusChip(label: tr(context, _statusKey(r.lr.status)), color: _statusColor(r.lr.status)),
                         ]),
-                        Text(r.lr.route.isEmpty ? '${r.lr.pickup} → ${r.lr.drop}' : r.lr.route, style: TextStyle(color: AppColors.muted)),
-                        if (r.lr.date != null || r.lr.goods.isNotEmpty) Text([if (r.lr.date != null) formatDate(r.lr.date!), if (r.lr.goods.isNotEmpty) r.lr.goods].join(' · '), style: TextStyle(color: AppColors.faint, fontSize: 12)),
+                        Text(r.lr.route.isEmpty ? '${r.lr.pickup} → ${r.lr.drop}' : r.lr.route, style: DsStyle.inherit.copyWith(color: AppColors.muted)),
+                        if (r.lr.date != null || r.lr.goods.isNotEmpty) Text([if (r.lr.date != null) formatDate(r.lr.date!), if (r.lr.goods.isNotEmpty) r.lr.goods].join(' · '), style: DsStyle.t12w400.copyWith(color: AppColors.faint)),
                         const SizedBox(height: 4),
-                        Text(trf(context, 'lrrLinkCounts', {'a': r.active(now), 'e': r.expired(now), 'r': r.revoked()}), key: ValueKey('lrLinks_${r.lr.lrNo}'), style: const TextStyle(fontSize: 12)),
+                        Text(trf(context, 'lrrLinkCounts', {'a': r.active(now), 'e': r.expired(now), 'r': r.revoked()}), key: ValueKey('lrLinks_${r.lr.lrNo}'), style: DsStyle.t12w400),
                       ]),
                     ),
                   ),

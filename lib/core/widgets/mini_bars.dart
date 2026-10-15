@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'common.dart';
+import '../theme/design_tokens.dart';
 
 class MiniBar {
   /// Short text under the bar (day number, month).
@@ -51,7 +52,7 @@ class MiniBars extends StatelessWidget {
       const SizedBox(height: 4),
       Row(children: [
         for (final b in bars)
-          Expanded(child: Text(b.label, textAlign: TextAlign.center, maxLines: 1, overflow: TextOverflow.clip, style: TextStyle(fontSize: 11, color: AppColors.muted))),
+          Expanded(child: Text(b.label, textAlign: TextAlign.center, maxLines: 1, overflow: TextOverflow.clip, style: DsStyle.t12w400.copyWith(color: AppColors.muted))),
       ]),
     ]);
   }

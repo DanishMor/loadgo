@@ -9,6 +9,7 @@ import '../models/trip_evidence.dart';
 import '../services/trip_evidence_service.dart';
 import 'common.dart';
 import 'signature_pad.dart';
+import '../theme/design_tokens.dart';
 
 String cargoDocLabel(BuildContext context, String type) => tr(context, 'cargoDoc_$type');
 
@@ -74,12 +75,12 @@ class _DriverEvidenceCardState extends State<DriverEvidenceCard> {
     return AppCard(
       key: const ValueKey('evidenceCard'),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(tr(context, 'tripEvidence'), style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+        Text(tr(context, 'tripEvidence'), style: DsStyle.t16w700),
         const SizedBox(height: 6),
         if (_b.odometerStart != null) Text(trf(context, 'odometerStartIs', {'km': _b.odometerStart!}), key: const ValueKey('odoStart')),
         if (_b.odometerEnd != null) Text(trf(context, 'odometerEndIs', {'km': _b.odometerEnd!}), key: const ValueKey('odoEnd')),
         if (_b.odometerStart != null && _b.odometerEnd != null)
-          Text(trf(context, 'odometerDistance', {'km': _b.odometerEnd! - _b.odometerStart!}), key: const ValueKey('odoDistance'), style: const TextStyle(fontWeight: FontWeight.w700)),
+          Text(trf(context, 'odometerDistance', {'km': _b.odometerEnd! - _b.odometerStart!}), key: const ValueKey('odoDistance'), style: DsStyle.w700),
         if (_canStart || _canEnd)
           Row(children: [
             Expanded(
@@ -168,7 +169,7 @@ class _CargoDocsCardState extends State<CargoDocsCard> {
     return AppCard(
       key: const ValueKey('cargoDocsCard'),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(tr(context, 'cargoDocsTitle'), style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+        Text(tr(context, 'cargoDocsTitle'), style: DsStyle.t16w700),
         StreamBuilder<List<CargoDoc>>(
           stream: _docs,
           builder: (context, snap) {
@@ -182,7 +183,7 @@ class _CargoDocsCardState extends State<CargoDocsCard> {
                   child: Text(
                     '${cargoDocLabel(context, d.type)}${d.leg == null ? '' : ' (${trf(context, 'legN', {'n': d.leg!})})'}: ${d.number}'
                     '${all.where((x) => x.type == d.type && x.leg == d.leg).length > 1 ? ' · ${trf(context, 'cargoDocVersions', {'n': all.where((x) => x.type == d.type && x.leg == d.leg).length})}' : ''}',
-                    style: const TextStyle(fontWeight: FontWeight.w600),
+                    style: DsStyle.w600,
                   ),
                 ),
             ]);
@@ -205,7 +206,7 @@ class _CargoDocsCardState extends State<CargoDocsCard> {
           ]),
         FilledButton.tonal(key: const ValueKey('cargoDocAdd'), onPressed: _add, child: Text(tr(context, 'cargoDocAdd'))),
         const SizedBox(height: 4),
-        Text(tr(context, 'cargoDocsNote'), style: TextStyle(color: AppColors.faint, fontSize: 12)),
+        Text(tr(context, 'cargoDocsNote'), style: DsStyle.t12w400.copyWith(color: AppColors.faint)),
       ]),
     );
   }

@@ -50,6 +50,7 @@ void main() {
 final a = Color(0xFF112233);
 final b = const TextStyle(fontSize: 12);
 final c = DefaultTextStyle(style: x);
+final pdf = pw.TextStyle(fontSize: 9);
 final d = Theme.of(context).textTheme.bodyLarge!.copyWith(color: p.text);
 ''');
     File('${dir.path}/lib/core/theme/t.dart').writeAsStringSync('final a = Color(0xFF112233); final b = TextStyle();');

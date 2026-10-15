@@ -8,6 +8,7 @@ import '../core/services/pricing_service.dart';
 import '../core/widgets/booking_widgets.dart';
 import '../core/widgets/common.dart';
 import '../core/widgets/live_stream.dart';
+import '../core/theme/design_tokens.dart';
 
 /// The driver's advance bookings that are not due yet, soonest first.
 List<Booking> upcomingTrips(Iterable<Booking> all, DateTime now, ScheduleRules rules) {
@@ -55,7 +56,7 @@ class UpcomingTripsScreen extends StatelessWidget {
                   child: Text(
                     '${formatDateTime(list[i].scheduledAt!)} · ${countdownText(context, list[i].scheduledAt!, now())}',
                     key: ValueKey('countdown_${list[i].id}'),
-                    style: const TextStyle(fontWeight: FontWeight.w800, color: AppColors.primary),
+                    style: DsStyle.w700.copyWith(color: AppColors.primary),
                   ),
                 ),
                 BookingCard(booking: list[i], onTap: () => onOpen(list[i].id)),
@@ -92,13 +93,13 @@ class UpcomingTripsCard extends StatelessWidget {
               Row(children: [
                 const Icon(Icons.event_available_rounded, color: AppColors.primary),
                 const SizedBox(width: 8),
-                Expanded(child: Text(trf(context, 'upcomingCount', {'n': list.length}), style: const TextStyle(fontWeight: FontWeight.w800))),
+                Expanded(child: Text(trf(context, 'upcomingCount', {'n': list.length}), style: DsStyle.w700)),
                 Icon(Icons.chevron_right_rounded, color: AppColors.faint),
               ]),
               for (final b in list.take(2))
                 Padding(
                   padding: const EdgeInsets.only(top: 6),
-                  child: Text('${b.pickup} → ${b.drop} · ${countdownText(context, b.scheduledAt!, now())}', style: TextStyle(color: AppColors.muted)),
+                  child: Text('${b.pickup} → ${b.drop} · ${countdownText(context, b.scheduledAt!, now())}', style: DsStyle.inherit.copyWith(color: AppColors.muted)),
                 ),
             ]),
           ),

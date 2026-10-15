@@ -8,6 +8,7 @@ import '../core/l10n/l10n.dart';
 import '../core/models/booking.dart';
 import '../core/services/admin_console_service.dart';
 import '../core/widgets/common.dart';
+import '../core/theme/design_tokens.dart';
 
 /// Admin > Analytics: bookings per day, GMV record, cancellation rate, top
 /// routes, active drivers and pickup cities, for 7 / 30 / 90 days, with a CSV
@@ -29,8 +30,8 @@ class _AdminTrendsSectionState extends State<AdminTrendsSection> {
 
   Widget _stat(String label, String value, {Key? key}) => Expanded(
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(label, style: TextStyle(fontSize: 12, color: AppColors.muted)),
-          Text(value, key: key, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+          Text(label, style: DsStyle.t12w400.copyWith(color: AppColors.muted)),
+          Text(value, key: key, style: DsStyle.t16w700),
         ]),
       );
 
@@ -71,7 +72,7 @@ class _AdminTrendsSectionState extends State<AdminTrendsSection> {
               ),
             ),
             const SizedBox(width: 8),
-            Text('${r.$2}', key: ValueKey('${keyPrefix}_${r.$1}'), style: const TextStyle(fontWeight: FontWeight.w700)),
+            Text('${r.$2}', key: ValueKey('${keyPrefix}_${r.$1}'), style: DsStyle.w700),
           ]),
         ),
     ]);
@@ -87,7 +88,7 @@ class _AdminTrendsSectionState extends State<AdminTrendsSection> {
         final t = AdminTrends.from(snap.data!, now: (widget.clock ?? DateTime.now)(), days: _days);
         return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(children: [
-            Expanded(child: Text(tr(context, 'adminTrends'), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800))),
+            Expanded(child: Text(tr(context, 'adminTrends'), style: DsStyle.t18w700)),
             TextButton.icon(
               key: const ValueKey('trendsCsv'),
               onPressed: () async {
@@ -110,7 +111,7 @@ class _AdminTrendsSectionState extends State<AdminTrendsSection> {
           ),
           const SizedBox(height: 12),
           if (t.bookings == 0)
-            Padding(padding: const EdgeInsets.all(12), child: Text(tr(context, 'trendNone'), key: const ValueKey('trendNone'), style: TextStyle(color: AppColors.muted)))
+            Padding(padding: const EdgeInsets.all(12), child: Text(tr(context, 'trendNone'), key: const ValueKey('trendNone'), style: DsStyle.inherit.copyWith(color: AppColors.muted)))
           else ...[
             AppCard(
               child: Column(children: [
@@ -129,7 +130,7 @@ class _AdminTrendsSectionState extends State<AdminTrendsSection> {
             const SizedBox(height: 12),
             AppCard(
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(tr(context, 'trendDaily'), style: const TextStyle(fontWeight: FontWeight.w800)),
+                Text(tr(context, 'trendDaily'), style: DsStyle.w700),
                 const SizedBox(height: 8),
                 _dailyBars(t),
               ]),
@@ -137,7 +138,7 @@ class _AdminTrendsSectionState extends State<AdminTrendsSection> {
             const SizedBox(height: 12),
             AppCard(
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(tr(context, 'trendTopRoutes'), style: const TextStyle(fontWeight: FontWeight.w800)),
+                Text(tr(context, 'trendTopRoutes'), style: DsStyle.w700),
                 const SizedBox(height: 6),
                 _hBars([for (final r in t.topRoutes) (r.route, r.count)], keyPrefix: 'route'),
               ]),
@@ -145,7 +146,7 @@ class _AdminTrendsSectionState extends State<AdminTrendsSection> {
             const SizedBox(height: 12),
             AppCard(
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(tr(context, 'trendCities'), style: const TextStyle(fontWeight: FontWeight.w800)),
+                Text(tr(context, 'trendCities'), style: DsStyle.w700),
                 const SizedBox(height: 6),
                 _hBars([for (final c in t.cities) (c.city, c.count)], keyPrefix: 'city'),
               ]),

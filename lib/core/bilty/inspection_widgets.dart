@@ -14,6 +14,7 @@ import '../widgets/common.dart';
 import 'inspection_service.dart';
 import 'lr_model.dart';
 import 'lr_service.dart';
+import '../theme/design_tokens.dart';
 
 String _hm(DateTime d) => '${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}';
 
@@ -49,10 +50,10 @@ class InspectionRequestsList extends StatelessWidget {
                 Text(
                   trf(context, 'inCtxLine', {'lr': lr.lrNo, 'route': booking.route.join(' → '), 'vehicle': booking.vehicleNumber.isEmpty ? '-' : booking.vehicleNumber, 'status': bookingStatusLabel(context, booking.status)}),
                   key: ValueKey('inCtx_${r.driverId}'),
-                  style: TextStyle(color: AppColors.muted, fontSize: 13),
+                  style: DsStyle.t14w400.copyWith(color: AppColors.muted),
                 ),
-                if (r.requestedAt != null) Text(trf(context, 'inCtxAsked', {'t': _hm(r.requestedAt!)}), style: TextStyle(color: AppColors.muted, fontSize: 13)),
-                Text(tr(context, 'inCtxSees'), key: ValueKey('inSees_${r.driverId}'), style: TextStyle(color: AppColors.faint, fontSize: 12)),
+                if (r.requestedAt != null) Text(trf(context, 'inCtxAsked', {'t': _hm(r.requestedAt!)}), style: DsStyle.t14w400.copyWith(color: AppColors.muted)),
+                Text(tr(context, 'inCtxSees'), key: ValueKey('inSees_${r.driverId}'), style: DsStyle.t12w400.copyWith(color: AppColors.faint)),
                 const SizedBox(height: 6),
                 Wrap(spacing: 8, runSpacing: 6, children: [
                   FilledButton(key: ValueKey('inApprove_${r.driverId}'), onPressed: () => _answer(context, r, true), child: Text(tr(context, 'inApprove'))),
@@ -85,11 +86,11 @@ class InspectionHistory extends StatelessWidget {
         return Padding(
           padding: const EdgeInsets.only(top: 10),
           child: Column(key: const ValueKey('inHistory'), crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(tr(context, 'inHistory'), style: const TextStyle(fontWeight: FontWeight.w700)),
+            Text(tr(context, 'inHistory'), style: DsStyle.w700),
             for (final e in list)
               Padding(
                 padding: const EdgeInsets.only(top: 3),
-                child: Text('${e.at == null ? '' : '${_day(e.at!)} · '}${trf(context, 'inLog_${e.kind}', {'h': e.hours ?? 0})}', key: ValueKey('inLog_${e.id}'), style: TextStyle(color: AppColors.muted, fontSize: 13)),
+                child: Text('${e.at == null ? '' : '${_day(e.at!)} · '}${trf(context, 'inLog_${e.kind}', {'h': e.hours ?? 0})}', key: ValueKey('inLog_${e.id}'), style: DsStyle.t14w400.copyWith(color: AppColors.muted)),
               ),
           ]),
         );
@@ -114,7 +115,7 @@ class InspectionOwnerPanel extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(top: 12),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(tr(context, 'inRequestsTitle'), style: const TextStyle(fontWeight: FontWeight.w700)),
+        Text(tr(context, 'inRequestsTitle'), style: DsStyle.w700),
         InspectionRequestsList(booking: booking, lr: lr),
         InspectionHistory(lr: lr),
         if (canGrant) ...[
@@ -139,7 +140,7 @@ class InspectionOwnerPanel extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                 child: Row(mainAxisSize: MainAxisSize.min, children: [
-                  Flexible(child: Text(tr(context, 'inPreHours'), style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600))),
+                  Flexible(child: Text(tr(context, 'inPreHours'), style: DsStyle.w600.copyWith(color: AppColors.primary))),
                   const Icon(Icons.arrow_drop_down, color: AppColors.primary),
                 ]),
               ),
@@ -151,7 +152,7 @@ class InspectionOwnerPanel extends StatelessWidget {
               final g = snap.data;
               if (g == null || !g.isValid(InspectionService.now())) return const SizedBox.shrink();
               return Row(children: [
-                Expanded(child: Text(trf(context, 'inAllowedUntil', {'t': _hm(g.expiresAt)}), key: const ValueKey('inGrantInfo'), style: TextStyle(color: AppColors.muted, fontSize: 13))),
+                Expanded(child: Text(trf(context, 'inAllowedUntil', {'t': _hm(g.expiresAt)}), key: const ValueKey('inGrantInfo'), style: DsStyle.t14w400.copyWith(color: AppColors.muted))),
                 TextButton(key: const ValueKey('inRevoke'), onPressed: () => InspectionService.revoke(lr, driver), child: Text(tr(context, 'blRevoke'))),
               ]);
             },
@@ -258,16 +259,16 @@ class _InspectionDriverPanelState extends State<InspectionDriverPanel> {
     final r = widget.request;
     return AppCard(
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        if (valid) Text(trf(context, 'inAllowedUntil', {'t': _hm(g.expiresAt)}), key: const ValueKey('inAllowedLabel'), style: const TextStyle(fontWeight: FontWeight.w700)),
+        if (valid) Text(trf(context, 'inAllowedUntil', {'t': _hm(g.expiresAt)}), key: const ValueKey('inAllowedLabel'), style: DsStyle.w700),
         if (!widget.complianceShown) ...[
           Row(children: [
             const Icon(Icons.lock_outline_rounded, size: 18),
             const SizedBox(width: 8),
-            Expanded(child: Text(tr(context, 'inNeedApproval'), key: const ValueKey('inNeedApprovalLabel'), style: const TextStyle(fontWeight: FontWeight.w700))),
+            Expanded(child: Text(tr(context, 'inNeedApproval'), key: const ValueKey('inNeedApprovalLabel'), style: DsStyle.w700)),
           ]),
-          if (g != null && !valid) Padding(padding: const EdgeInsets.only(top: 6), child: Text(tr(context, 'inExpired'), key: const ValueKey('inExpiredLabel'), style: TextStyle(color: AppColors.muted))),
-          if (r != null && r.pending) Padding(padding: const EdgeInsets.only(top: 6), child: Text(tr(context, 'inPending'), key: const ValueKey('inPendingLabel'), style: TextStyle(color: AppColors.muted))),
-          if (r != null && r.status == 'denied') Padding(padding: const EdgeInsets.only(top: 6), child: Text(tr(context, 'inDenied'), key: const ValueKey('inDeniedLabel'), style: TextStyle(color: AppColors.muted))),
+          if (g != null && !valid) Padding(padding: const EdgeInsets.only(top: 6), child: Text(tr(context, 'inExpired'), key: const ValueKey('inExpiredLabel'), style: DsStyle.inherit.copyWith(color: AppColors.muted))),
+          if (r != null && r.pending) Padding(padding: const EdgeInsets.only(top: 6), child: Text(tr(context, 'inPending'), key: const ValueKey('inPendingLabel'), style: DsStyle.inherit.copyWith(color: AppColors.muted))),
+          if (r != null && r.status == 'denied') Padding(padding: const EdgeInsets.only(top: 6), child: Text(tr(context, 'inDenied'), key: const ValueKey('inDeniedLabel'), style: DsStyle.inherit.copyWith(color: AppColors.muted))),
           const SizedBox(height: 8),
           FilledButton.icon(
             key: const ValueKey('inRequest'),

@@ -7,6 +7,7 @@ import '../core/models/fraud_case.dart';
 import '../core/services/fraud_case_service.dart';
 import '../core/widgets/common.dart';
 import '../core/widgets/live_stream.dart';
+import '../core/theme/design_tokens.dart';
 
 String caseStatusLabel(BuildContext context, String s) => tr(context, 'case_$s');
 
@@ -90,8 +91,8 @@ class _AdminFraudCasesScreenState extends State<AdminFraudCasesScreen> {
                       child: Row(children: [
                         Expanded(
                           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                            Text(c.summary, style: const TextStyle(fontWeight: FontWeight.w800)),
-                            Text(c.userId, style: TextStyle(color: AppColors.muted, fontSize: 12)),
+                            Text(c.summary, style: DsStyle.w700),
+                            Text(c.userId, style: DsStyle.t12w400.copyWith(color: AppColors.muted)),
                           ]),
                         ),
                         StatusChip(label: caseStatusLabel(context, c.status), color: _statusColor(c.status)),
@@ -151,10 +152,10 @@ class _FraudCaseScreenState extends State<FraudCaseScreen> {
         builder: (context, c) {
           if (c == null) return EmptyState(icon: Icons.search_off_rounded, title: tr(context, 'noCases'));
           return ListView(padding: const EdgeInsets.all(16), children: [
-            Text(c.summary, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+            Text(c.summary, style: DsStyle.t18w700),
             const SizedBox(height: 4),
-            Text('${tr(context, 'userId')}: ${c.userId}', style: TextStyle(color: AppColors.muted)),
-            if (c.reportIds.isNotEmpty) Text(trf(context, 'caseReports', {'n': c.reportIds.length}), style: TextStyle(color: AppColors.muted)),
+            Text('${tr(context, 'userId')}: ${c.userId}', style: DsStyle.inherit.copyWith(color: AppColors.muted)),
+            if (c.reportIds.isNotEmpty) Text(trf(context, 'caseReports', {'n': c.reportIds.length}), style: DsStyle.inherit.copyWith(color: AppColors.muted)),
             const SizedBox(height: 10),
             Row(children: [
               StatusChip(label: caseStatusLabel(context, c.status), color: _statusColor(c.status)),
@@ -172,7 +173,7 @@ class _FraudCaseScreenState extends State<FraudCaseScreen> {
                   ),
               ]),
               const SizedBox(height: 16),
-              Text(tr(context, 'caseDecision'), style: const TextStyle(fontWeight: FontWeight.w800)),
+              Text(tr(context, 'caseDecision'), style: DsStyle.w700),
               Wrap(spacing: 8, runSpacing: 4, children: [
                 for (final o in FraudCase.outcomes)
                   OutlinedButton(
@@ -183,7 +184,7 @@ class _FraudCaseScreenState extends State<FraudCaseScreen> {
               ]),
             ],
             const Divider(height: 32),
-            Text(tr(context, 'caseNotes'), style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+            Text(tr(context, 'caseNotes'), style: DsStyle.t16w700),
             StreamBuilder<List<CaseNote>>(
               stream: _notes,
               builder: (context, ns) => Column(children: [

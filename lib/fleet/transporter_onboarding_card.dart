@@ -10,6 +10,7 @@ import '../core/services/vehicle_service.dart';
 import '../core/widgets/common.dart';
 import 'fleet_vehicles_screen.dart';
 import 'transporter_profile_screen.dart';
+import '../core/theme/design_tokens.dart';
 
 /// Progress of a new transporter: profile, company details, a vehicle, a
 /// driver, and the review by the team; with the reason after a rejection
@@ -58,7 +59,7 @@ class _TransporterOnboardingCardState extends State<TransporterOnboardingCard> {
           child: AppCard(
             key: const ValueKey('trOnboarding'),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(trf(context, 'obTitle', {'done': o.doneCount, 'total': o.steps.length}), style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+              Text(trf(context, 'obTitle', {'done': o.doneCount, 'total': o.steps.length}), style: DsStyle.t16w700),
               const SizedBox(height: 8),
               LinearProgressIndicator(key: const ValueKey('trObBar'), value: o.fraction, minHeight: 8, borderRadius: BorderRadius.circular(4)),
               const SizedBox(height: 8),
@@ -70,9 +71,9 @@ class _TransporterOnboardingCardState extends State<TransporterOnboardingCard> {
                 ]),
               if (o.isRejected) ...[
                 const SizedBox(height: 10),
-                Text(tr(context, 'trObRejected'), key: const ValueKey('trObRejected'), style: TextStyle(fontWeight: FontWeight.w800, color: AppColors.warning)),
+                Text(tr(context, 'trObRejected'), key: const ValueKey('trObRejected'), style: DsStyle.w700.copyWith(color: AppColors.warning)),
                 if (o.rejectReason.isNotEmpty) Text(tr(context, RejectReason.labelKey(o.rejectReason)), key: const ValueKey('trObReason')),
-                if (o.rejectNote.isNotEmpty) Text(o.rejectNote, key: const ValueKey('trObNote'), style: TextStyle(color: AppColors.muted)),
+                if (o.rejectNote.isNotEmpty) Text(o.rejectNote, key: const ValueKey('trObNote'), style: DsStyle.inherit.copyWith(color: AppColors.muted)),
               ],
               const SizedBox(height: 8),
               Wrap(spacing: 8, children: [

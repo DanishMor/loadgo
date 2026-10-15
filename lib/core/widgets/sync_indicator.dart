@@ -4,6 +4,7 @@ import '../l10n/l10n.dart';
 import '../services/connectivity_service.dart';
 import '../services/trip_action_queue.dart';
 import 'common.dart';
+import '../theme/design_tokens.dart';
 
 /// "N updates waiting to send" with a Send now button (MASTER-6 Task 23).
 /// Hidden when nothing waits. Sends by itself when the phone gets online.
@@ -58,7 +59,7 @@ class _SyncIndicatorState extends State<SyncIndicator> {
             child: Row(children: [
               Icon(Icons.cloud_upload_outlined, color: AppColors.warning),
               const SizedBox(width: 10),
-              Expanded(child: Text(trf(context, 'syncWaiting', {'n': n}), key: const ValueKey('syncText'), style: const TextStyle(fontWeight: FontWeight.w700))),
+              Expanded(child: Text(trf(context, 'syncWaiting', {'n': n}), key: const ValueKey('syncText'), style: DsStyle.w700)),
               TextButton(key: const ValueKey('syncNow'), onPressed: _busy ? null : _send, child: Text(tr(context, 'syncNow'))),
             ]),
           ),

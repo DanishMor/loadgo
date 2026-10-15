@@ -5,6 +5,7 @@ import '../core/features/features.dart';
 import '../core/l10n/l10n.dart';
 import '../core/services/features_service.dart';
 import '../core/widgets/common.dart';
+import '../core/theme/design_tokens.dart';
 
 /// Admin > Features (super admin): pilot mode and one switch per feature
 /// (Default / On / Off). Saved to `config/features` and audited.
@@ -62,7 +63,7 @@ class _AdminFeaturesScreenState extends State<AdminFeaturesScreen> {
               SwitchListTile(
                 key: const ValueKey('featPilot'),
                 contentPadding: EdgeInsets.zero,
-                title: Text(tr(context, 'featPilotMode'), style: const TextStyle(fontWeight: FontWeight.w800)),
+                title: Text(tr(context, 'featPilotMode'), style: DsStyle.w700),
                 subtitle: Text(tr(context, 'featPilotNote')),
                 value: _f.pilotMode,
                 onChanged: _saving ? null : (v) => _save(_f.withPilot(v)),
@@ -74,7 +75,7 @@ class _AdminFeaturesScreenState extends State<AdminFeaturesScreen> {
                   padding: const EdgeInsets.symmetric(vertical: 8),
                   child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                     Row(children: [
-                      Expanded(child: Text(tr(context, 'feat_${spec.key}'), style: const TextStyle(fontWeight: FontWeight.w700))),
+                      Expanded(child: Text(tr(context, 'feat_${spec.key}'), style: DsStyle.w700)),
                       StatusChip(
                         label: _f.isOn(spec.key) ? tr(context, 'featOn') : tr(context, 'featOff'),
                         color: _f.isOn(spec.key) ? AppColors.success : AppColors.muted,
@@ -82,7 +83,7 @@ class _AdminFeaturesScreenState extends State<AdminFeaturesScreen> {
                     ]),
                     Padding(
                       padding: const EdgeInsets.only(top: 2),
-                      child: Text(tr(context, 'featHelp_${spec.key}'), key: ValueKey('featHelp_${spec.key}'), style: TextStyle(fontSize: 12, color: AppColors.muted)),
+                      child: Text(tr(context, 'featHelp_${spec.key}'), key: ValueKey('featHelp_${spec.key}'), style: DsStyle.t12w400.copyWith(color: AppColors.muted)),
                     ),
                     const SizedBox(height: 6),
                     SegmentedButton<int>(

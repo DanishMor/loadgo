@@ -7,6 +7,7 @@ import '../core/services/backend.dart';
 import '../core/services/transporter_service.dart';
 import '../core/transporter/transporter_logic.dart';
 import '../core/widgets/common.dart';
+import '../core/theme/design_tokens.dart';
 
 /// Company profile of a transporter: company, GST, office city, routes,
 /// vehicle types and count. The PAN is shown but locked (it is tied to the
@@ -96,7 +97,7 @@ class _TransporterProfileScreenState extends State<TransporterProfileScreen> {
       appBar: AppBar(
         backgroundColor: AppColors.background,
         scrolledUnderElevation: 0,
-        title: Text(tr(context, 'trpTitle'), style: const TextStyle(fontWeight: FontWeight.w700)),
+        title: Text(tr(context, 'trpTitle'), style: DsStyle.w700),
       ),
       body: SafeArea(
         child: _loading
@@ -114,7 +115,7 @@ class _TransporterProfileScreenState extends State<TransporterProfileScreen> {
                   if (!_verified)
                     Padding(
                       padding: const EdgeInsets.only(top: 6),
-                      child: Text(tr(context, 'trpNotVerified'), style: TextStyle(color: AppColors.muted, fontSize: 13)),
+                      child: Text(tr(context, 'trpNotVerified'), style: DsStyle.t14w400.copyWith(color: AppColors.muted)),
                     ),
                   const SizedBox(height: 16),
                   TextFormField(

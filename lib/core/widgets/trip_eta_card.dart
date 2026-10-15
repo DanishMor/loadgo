@@ -8,6 +8,7 @@ import '../services/pricing_service.dart';
 import '../trip/arrival_eta.dart';
 import '../trip/trip_eta.dart';
 import 'common.dart';
+import '../theme/design_tokens.dart';
 
 /// "35 min", "2 h 10 min" or "1 d 4 h".
 String durationText(BuildContext context, Duration d) {
@@ -72,10 +73,10 @@ class TripEtaCard extends StatelessWidget {
         Row(children: [
           Icon(late ? Icons.warning_amber_rounded : Icons.schedule_rounded, color: late ? AppColors.warning : AppColors.primary),
           const SizedBox(width: 10),
-          Expanded(child: Text(line, key: const ValueKey('tripEtaLine'), style: TextStyle(fontWeight: FontWeight.w800, color: late ? AppColors.warning : AppColors.title))),
+          Expanded(child: Text(line, key: const ValueKey('tripEtaLine'), style: DsStyle.w700.copyWith(color: late ? AppColors.warning : AppColors.title))),
         ]),
         if (late && why != null) Padding(padding: const EdgeInsets.only(top: 6), child: Text(_whyText(context, why), key: const ValueKey('tripDelayWhy'))),
-        if (took == null) Padding(padding: const EdgeInsets.only(top: 6), child: Text(tr(context, 'etaNote'), style: TextStyle(fontSize: 12, color: AppColors.faint))),
+        if (took == null) Padding(padding: const EdgeInsets.only(top: 6), child: Text(tr(context, 'etaNote'), style: DsStyle.t12w400.copyWith(color: AppColors.faint))),
       ]),
     );
   }
@@ -102,7 +103,7 @@ class ArrivalEtaCard extends StatelessWidget {
           child: Text(
             eta.arrived ? tr(context, 'arrivalAtPickup') : trf(context, 'arrivalEtaLine', {'km': eta.km, 'time': durationText(context, eta.time)}),
             key: const ValueKey('arrivalEtaLine'),
-            style: TextStyle(fontWeight: FontWeight.w800, color: AppColors.title),
+            style: DsStyle.w700.copyWith(color: AppColors.title),
           ),
         ),
       ]),

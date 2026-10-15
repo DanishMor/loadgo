@@ -5,6 +5,7 @@ import '../constants/logistics.dart';
 import '../models/booking.dart';
 import '../payments/payment_logic.dart';
 import '../widgets/common.dart';
+import '../theme/design_tokens.dart';
 
 /// E-way bill validity warning (DOC4): nothing without a bill number, a hint
 /// without a date, a warning when the bill expires soon or has expired. The
@@ -32,7 +33,7 @@ class EwayStatusLine extends StatelessWidget {
       child: Row(children: [
         Icon(view.$1, size: 18, color: view.$2),
         const SizedBox(width: 8),
-        Expanded(child: Text(view.$3, key: ValueKey('eway_${st.state.name}'), style: TextStyle(fontSize: 12, color: view.$2, fontWeight: FontWeight.w600))),
+        Expanded(child: Text(view.$3, key: ValueKey('eway_${st.state.name}'), style: DsStyle.t12w600.copyWith(color: view.$2))),
       ]),
     );
   }

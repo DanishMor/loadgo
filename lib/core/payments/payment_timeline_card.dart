@@ -7,6 +7,7 @@ import '../models/ledger_entry.dart';
 import '../services/backend.dart';
 import '../widgets/common.dart';
 import 'payment_timeline.dart';
+import '../theme/design_tokens.dart';
 
 /// On the driver's trip screen: four steps from "trip delivered" to "money in
 /// my wallet", the amount that lands there and what happens next.
@@ -53,16 +54,16 @@ class _PaymentTimelineCardState extends State<PaymentTimelineCard> {
         return AppCard(
           key: const ValueKey('paymentTimeline'),
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(tr(context, 'ptTitle'), style: TextStyle(fontWeight: FontWeight.w800, color: AppColors.title)),
+            Text(tr(context, 'ptTitle'), style: DsStyle.w700.copyWith(color: AppColors.title)),
             const SizedBox(height: 10),
             for (var i = 0; i < t.steps.length; i++) _stepRow(context, t.steps[i], current: i == firstOpen),
             if (t.commissionPaise != null)
               Padding(
                 padding: const EdgeInsets.only(top: 6),
-                child: Text(trf(context, 'ptCommission', {'amount': formatPaise(t.commissionPaise!)}), key: const ValueKey('ptCommission'), style: TextStyle(color: AppColors.muted, fontSize: 12)),
+                child: Text(trf(context, 'ptCommission', {'amount': formatPaise(t.commissionPaise!)}), key: const ValueKey('ptCommission'), style: DsStyle.t12w400.copyWith(color: AppColors.muted)),
               ),
             const SizedBox(height: 8),
-            Text(tr(context, 'ptNext_${t.next.name}'), key: const ValueKey('ptNext'), style: const TextStyle(fontWeight: FontWeight.w700)),
+            Text(tr(context, 'ptNext_${t.next.name}'), key: const ValueKey('ptNext'), style: DsStyle.w700),
           ]),
         );
       },
@@ -83,8 +84,8 @@ class _PaymentTimelineCardState extends State<PaymentTimelineCard> {
         const SizedBox(width: 10),
         Expanded(
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(tr(context, 'ptStep_${s.step.name}'), style: TextStyle(fontWeight: current ? FontWeight.w800 : FontWeight.w600)),
-            if (parts.isNotEmpty) Text(parts.join(' · '), style: TextStyle(color: AppColors.muted, fontSize: 12)),
+            Text(tr(context, 'ptStep_${s.step.name}'), style: DsStyle.inherit.copyWith(fontWeight: current ? FontWeight.w800 : FontWeight.w600)),
+            if (parts.isNotEmpty) Text(parts.join(' · '), style: DsStyle.t12w400.copyWith(color: AppColors.muted)),
           ]),
         ),
       ]),

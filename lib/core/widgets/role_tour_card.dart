@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../l10n/l10n.dart';
 import 'common.dart';
+import '../theme/design_tokens.dart';
 
 /// The three first-time steps of a role (MASTER-5 Task 27).
 class RoleTour {
@@ -66,11 +67,11 @@ class _RoleTourCardState extends State<RoleTourCard> {
               Row(children: [
                 Icon(Icons.lightbulb_outline_rounded, color: AppColors.primary),
                 const SizedBox(width: 8),
-                Expanded(child: Text(tr(context, title), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.title))),
+                Expanded(child: Text(tr(context, title), style: DsStyle.t16w700.copyWith(color: AppColors.title))),
               ]),
               const SizedBox(height: 8),
               for (final k in steps)
-                Padding(padding: const EdgeInsets.only(bottom: 6), child: Text(tr(context, k), style: TextStyle(color: AppColors.body, height: 1.35))),
+                Padding(padding: const EdgeInsets.only(bottom: 6), child: Text(tr(context, k), style: DsStyle.inherit.copyWith(color: AppColors.body, height: 1.35))),
               Align(
                 alignment: AlignmentDirectional.centerEnd,
                 child: TextButton(

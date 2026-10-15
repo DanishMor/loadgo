@@ -5,6 +5,7 @@ import '../pricing/trip_cost.dart';
 import '../services/pricing_service.dart';
 import '../services/vehicle_type_service.dart';
 import 'common.dart';
+import '../theme/design_tokens.dart';
 
 /// Builds the preview for a route and vehicle type with the admin diesel price.
 TripCostPreview tripCostFor({required int farePaise, required int km, required String vehicleType, required String from, required String to}) {
@@ -22,8 +23,8 @@ TripCostPreview tripCostFor({required int farePaise, required int km, required S
 Widget _line(String label, int paise, {bool bold = false, Key? key}) => Padding(
       padding: const EdgeInsets.symmetric(vertical: 3),
       child: Row(children: [
-        Expanded(child: Text(label, style: TextStyle(color: bold ? AppColors.title : AppColors.muted, fontWeight: bold ? FontWeight.w800 : null))),
-        Text(formatPaise(paise), key: key, style: TextStyle(fontWeight: bold ? FontWeight.w800 : FontWeight.w600, color: AppColors.title)),
+        Expanded(child: Text(label, style: DsStyle.inherit.copyWith(color: bold ? AppColors.title : AppColors.muted, fontWeight: bold ? FontWeight.w800 : null))),
+        Text(formatPaise(paise), key: key, style: DsStyle.inherit.copyWith(fontWeight: bold ? FontWeight.w800 : FontWeight.w600, color: AppColors.title)),
       ]),
     );
 
@@ -37,7 +38,7 @@ class TripCostCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(tr(context, 'tcTitle'), style: const TextStyle(fontWeight: FontWeight.w800)),
+            Text(tr(context, 'tcTitle'), style: DsStyle.w700),
             const SizedBox(height: 6),
             _line(tr(context, 'tcFare'), cost.farePaise),
             _line(tr(context, 'tcToll'), cost.tollPaise),
@@ -45,7 +46,7 @@ class TripCostCard extends StatelessWidget {
             const Divider(),
             _line(tr(context, 'tcTotal'), cost.total, bold: true, key: const ValueKey('tripCostTotal')),
             const SizedBox(height: 4),
-            Text(tr(context, 'tcNote'), style: TextStyle(color: AppColors.faint, fontSize: 12)),
+            Text(tr(context, 'tcNote'), style: DsStyle.t12w400.copyWith(color: AppColors.faint)),
           ],
         ),
       );
@@ -70,13 +71,13 @@ class BidMarginPanel extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 3),
             child: Row(children: [
-              Expanded(child: Text(tr(context, 'tcNet'), style: const TextStyle(fontWeight: FontWeight.w800))),
+              Expanded(child: Text(tr(context, 'tcNet'), style: DsStyle.w700)),
               Text(formatPaise(net),
                   key: const ValueKey('bidNet'),
-                  style: TextStyle(fontWeight: FontWeight.w800, color: net < 0 ? Colors.redAccent : AppColors.success)),
+                  style: DsStyle.w700.copyWith(color: net < 0 ? Colors.redAccent : AppColors.success)),
             ]),
           ),
-        Text(tr(context, 'tcNote'), style: TextStyle(color: AppColors.faint, fontSize: 12)),
+        Text(tr(context, 'tcNote'), style: DsStyle.t12w400.copyWith(color: AppColors.faint)),
       ],
     );
   }

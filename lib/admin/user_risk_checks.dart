@@ -6,6 +6,7 @@ import '../core/risk/risk_rules.dart';
 import '../core/services/risk_service.dart';
 import '../core/widgets/common.dart';
 import 'admin_user_screen.dart';
+import '../core/theme/design_tokens.dart';
 
 /// Admin > Users > one user: accounts that look like the same person (F1)
 /// and vehicle / RC checks (F3). Hints for an admin, never automatic action.
@@ -26,12 +27,12 @@ class _UserRiskChecksState extends State<UserRiskChecks> {
   @override
   Widget build(BuildContext context) {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text(tr(context, 'riskDupTitle'), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+      Text(tr(context, 'riskDupTitle'), style: DsStyle.t16w700),
       FutureBuilder<List<DuplicateCandidate>>(
         future: _dups,
         builder: (context, snap) {
           if (!snap.hasData) return const SizedBox.shrink();
-          if (snap.data!.isEmpty) return Text(tr(context, 'riskDupNone'), key: const ValueKey('dupNone'), style: TextStyle(color: AppColors.muted));
+          if (snap.data!.isEmpty) return Text(tr(context, 'riskDupNone'), key: const ValueKey('dupNone'), style: DsStyle.inherit.copyWith(color: AppColors.muted));
           return Column(children: [
             for (final c in snap.data!)
               ListTile(
@@ -49,7 +50,7 @@ class _UserRiskChecksState extends State<UserRiskChecks> {
       ),
       if (widget.isDriver) ...[
         const SizedBox(height: 12),
-        Text(tr(context, 'riskVehTitle'), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+        Text(tr(context, 'riskVehTitle'), style: DsStyle.t16w700),
         FutureBuilder<List<({Vehicle vehicle, List<String> reasons})>>(
           future: _veh,
           builder: (context, snap) => Column(children: [
@@ -67,7 +68,7 @@ class _UserRiskChecksState extends State<UserRiskChecks> {
         FutureBuilder<bool>(
           future: _many,
           builder: (context, snap) => snap.data == true
-              ? Padding(padding: const EdgeInsets.only(top: 4), child: Text(tr(context, 'riskVehMany'), key: const ValueKey('vehMany'), style: TextStyle(color: AppColors.warning)))
+              ? Padding(padding: const EdgeInsets.only(top: 4), child: Text(tr(context, 'riskVehMany'), key: const ValueKey('vehMany'), style: DsStyle.inherit.copyWith(color: AppColors.warning)))
               : const SizedBox.shrink(),
         ),
       ],

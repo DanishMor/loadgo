@@ -19,6 +19,7 @@ import '../core/widgets/common.dart';
 import '../core/widgets/live_stream.dart';
 import '../core/widgets/logistics_labels.dart';
 import 'transporter_books_screen.dart';
+import '../core/theme/design_tokens.dart';
 
 /// Trips of the company: my bids (confirm a selected one), late-trip alerts,
 /// and every trip with its status, assigned vehicle and driver (assign or
@@ -130,14 +131,14 @@ class _TransporterTripsScreenState extends State<TransporterTripsScreen> {
       child: AppCard(
         key: const ValueKey('trpBids'),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(tr(context, 'trpMyBids'), style: const TextStyle(fontWeight: FontWeight.w800)),
+          Text(tr(context, 'trpMyBids'), style: DsStyle.w700),
           for (final o in mine)
             Padding(
               padding: const EdgeInsets.only(top: 8),
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text('${o.pickup} → ${o.drop}', style: const TextStyle(fontWeight: FontWeight.w700)),
+                Text('${o.pickup} → ${o.drop}', style: DsStyle.w700),
                 Wrap(spacing: 8, runSpacing: 4, crossAxisAlignment: WrapCrossAlignment.center, children: [
-                  Text(formatPaise(o.pricePaise), style: const TextStyle(fontWeight: FontWeight.w800, color: AppColors.primary)),
+                  Text(formatPaise(o.pricePaise), style: DsStyle.w700.copyWith(color: AppColors.primary)),
                   StatusChip(label: offerStatusLabel(context, o.status), color: offerStatusColor(o.status)),
                   if (o.status == OfferStatus.selected) FilledButton(key: ValueKey('trpConfirm_${o.id}'), onPressed: () => _confirm(o), child: Text(tr(context, 'trpConfirmJob'))),
                 ]),
@@ -159,7 +160,7 @@ class _TransporterTripsScreenState extends State<TransporterTripsScreen> {
           Row(children: [
             const Icon(Icons.schedule_rounded, color: AppColors.warning),
             const SizedBox(width: 8),
-            Expanded(child: Text(tr(context, 'trpDelayTitle'), style: const TextStyle(fontWeight: FontWeight.w800))),
+            Expanded(child: Text(tr(context, 'trpDelayTitle'), style: DsStyle.w700)),
           ]),
           for (final a in alerts)
             Padding(
@@ -178,11 +179,11 @@ class _TransporterTripsScreenState extends State<TransporterTripsScreen> {
       child: AppCard(
         key: ValueKey('trpTrip_${b.id}'),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text('${b.pickup} → ${b.drop}', style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+          Text('${b.pickup} → ${b.drop}', style: DsStyle.t16w700),
           const SizedBox(height: 4),
           StatusChip(label: bookingStatusLabel(context, b.status), color: bookingStatusColor(b.status)),
           const SizedBox(height: 2),
-          Text('${b.cargoType} • ${formatNum(b.weight)} T${b.billAmountPaise == null ? '' : ' • ${formatPaise(b.billAmountPaise!)}'}', style: TextStyle(color: AppColors.muted)),
+          Text('${b.cargoType} • ${formatNum(b.weight)} T${b.billAmountPaise == null ? '' : ' • ${formatPaise(b.billAmountPaise!)}'}', style: DsStyle.inherit.copyWith(color: AppColors.muted)),
           if (b.isCompanyBooking)
             Padding(
               padding: const EdgeInsets.only(top: 4),
@@ -191,7 +192,7 @@ class _TransporterTripsScreenState extends State<TransporterTripsScreen> {
                     ? tr(context, 'trpNotAssigned')
                     : trf(context, 'trpAssignedTo', {'driver': b.assignedDriverName, 'vehicle': b.assignedVehicleNumber}),
                 key: ValueKey('trpAssignedLine_${b.id}'),
-                style: TextStyle(color: b.assignedDriverId == null ? AppColors.warning : AppColors.title, fontWeight: FontWeight.w600),
+                style: DsStyle.w600.copyWith(color: b.assignedDriverId == null ? AppColors.warning : AppColors.title),
               ),
             ),
           Wrap(spacing: 4, children: [

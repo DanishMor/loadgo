@@ -4,6 +4,7 @@ import '../core/l10n/l10n.dart';
 import '../core/services/feedback_service.dart';
 import '../core/widgets/common.dart';
 import '../core/widgets/live_stream.dart';
+import '../core/theme/design_tokens.dart';
 
 /// Admin > Feedback: what people sent from Help, newest first.
 class AdminFeedbackScreen extends StatelessWidget {
@@ -27,13 +28,13 @@ class AdminFeedbackScreen extends StatelessWidget {
                 key: ValueKey('fb_${f.id}'),
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   Row(children: [
-                    for (var s = 1; s <= 5; s++) Icon(s <= f.rating ? Icons.star_rounded : Icons.star_border_rounded, size: 18, color: const Color(0xFFF59E0B)),
+                    for (var s = 1; s <= 5; s++) Icon(s <= f.rating ? Icons.star_rounded : Icons.star_border_rounded, size: 18, color: DsLegacy.star),
                     const SizedBox(width: 8),
-                    Expanded(child: Text(tr(context, 'fbCat_${f.category}'), style: const TextStyle(fontWeight: FontWeight.w700))),
+                    Expanded(child: Text(tr(context, 'fbCat_${f.category}'), style: DsStyle.w700)),
                   ]),
                   if (f.text.isNotEmpty) Padding(padding: const EdgeInsets.only(top: 6), child: Text(f.text)),
                   const SizedBox(height: 4),
-                  Text('${f.role} · ${f.appVersion} · ${formatDate(f.createdAt)}', style: TextStyle(color: AppColors.muted, fontSize: 12)),
+                  Text('${f.role} · ${f.appVersion} · ${formatDate(f.createdAt)}', style: DsStyle.t12w400.copyWith(color: AppColors.muted)),
                 ]),
               );
             },

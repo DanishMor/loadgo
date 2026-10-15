@@ -5,6 +5,7 @@ import '../reminders/reminders.dart';
 import '../services/reminder_service.dart';
 import 'common.dart';
 import 'trip_eta_card.dart' show durationText;
+import '../theme/design_tokens.dart';
 
 /// Translated sentence for a reminder.
 String reminderText(BuildContext context, Reminder r) => switch (r.kind) {
@@ -47,7 +48,7 @@ class ReminderTile extends StatelessWidget {
       child: Row(children: [
         Icon(reminderIcon(reminder.kind), color: AppColors.warning),
         const SizedBox(width: 12),
-        Expanded(child: Text(reminderText(context, reminder), style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.title))),
+        Expanded(child: Text(reminderText(context, reminder), style: DsStyle.w700.copyWith(color: AppColors.title))),
         if (onTap != null) Icon(Icons.chevron_right_rounded, color: AppColors.faint),
       ]),
     );
@@ -89,7 +90,7 @@ class _RemindersBannerState extends State<RemindersBanner> {
                 child: KeyedSubtree(key: ValueKey('reminder_${r.id}'), child: ReminderTile(reminder: r, onTap: () => widget.onOpen(r))),
               ),
             if (list.length > widget.max)
-              Text(trf(context, 'remMore', {'n': list.length - widget.max}), style: TextStyle(color: AppColors.muted, fontSize: 12)),
+              Text(trf(context, 'remMore', {'n': list.length - widget.max}), style: DsStyle.t12w400.copyWith(color: AppColors.muted)),
           ]),
         );
       },

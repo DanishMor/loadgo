@@ -9,6 +9,7 @@ import '../core/services/offers_switch_service.dart';
 import '../core/services/rewards_service.dart';
 import '../core/widgets/common.dart';
 import '../core/widgets/live_stream.dart';
+import '../core/theme/design_tokens.dart';
 
 int? _rupeesToPaise(String s) {
   final n = double.tryParse(s.trim());
@@ -96,8 +97,8 @@ class _AdminOffersScreenState extends State<AdminOffersScreen> {
             valueListenable: OffersSwitchService.notifier,
             builder: (context, sw, _) => AppCard(
               child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-                Text(tr(context, 'offersSwitches'), style: const TextStyle(fontWeight: FontWeight.w800)),
-                Text(tr(context, 'offersSwitchesNote'), style: TextStyle(color: AppColors.muted, fontSize: 12)),
+                Text(tr(context, 'offersSwitches'), style: DsStyle.w700),
+                Text(tr(context, 'offersSwitchesNote'), style: DsStyle.t12w400.copyWith(color: AppColors.muted)),
                 SwitchListTile(
                   key: const ValueKey('switchPromo'),
                   contentPadding: EdgeInsets.zero,
@@ -125,7 +126,7 @@ class _AdminOffersScreenState extends State<AdminOffersScreen> {
           const SizedBox(height: 12),
           AppCard(
             child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-              Text(tr(context, 'referralBonus'), style: const TextStyle(fontWeight: FontWeight.w800)),
+              Text(tr(context, 'referralBonus'), style: DsStyle.w700),
               const SizedBox(height: 8),
               Row(children: [
                 Expanded(
@@ -143,7 +144,7 @@ class _AdminOffersScreenState extends State<AdminOffersScreen> {
           const SizedBox(height: 12),
           AppCard(
             child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-              Text(tr(context, 'grantCredits'), style: const TextStyle(fontWeight: FontWeight.w800)),
+              Text(tr(context, 'grantCredits'), style: DsStyle.w700),
               const SizedBox(height: 8),
               TextField(key: const ValueKey('grantUid'), controller: _uidCtrl, decoration: InputDecoration(labelText: tr(context, 'userId')), inputFormatters: [LengthLimitingTextInputFormatter(128)]),
               const SizedBox(height: 8),
@@ -158,7 +159,7 @@ class _AdminOffersScreenState extends State<AdminOffersScreen> {
             ]),
           ),
           const SizedBox(height: 16),
-          Text(tr(context, 'promoCodes'), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+          Text(tr(context, 'promoCodes'), style: DsStyle.t18w700),
           LiveStream<List<Promo>>(
             stream: () => _promos,
             builder: (context, promos) => Column(children: [
@@ -167,7 +168,7 @@ class _AdminOffersScreenState extends State<AdminOffersScreen> {
                 ListTile(
                   key: ValueKey('promo_${p.code}'),
                   contentPadding: EdgeInsets.zero,
-                  title: Text(p.code, style: const TextStyle(fontWeight: FontWeight.w800)),
+                  title: Text(p.code, style: DsStyle.w700),
                   subtitle: Text(_promoSummary(context, p)),
                   trailing: Switch(
                     value: p.active,

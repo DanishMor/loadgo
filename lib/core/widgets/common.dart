@@ -11,7 +11,7 @@ import 'ds/status_badge.dart';
 /// Colors follow the palette already used across the app.
 class AppColors {
   AppColors._();
-  static const primary = Color(0xFF1565C0);
+  static const primary = DsLegacy.primary;
   static Color get primaryLight => AppPalette.current.tint;
   static Color get background => AppPalette.current.bg;
   static Color get border => AppPalette.current.border;
@@ -22,10 +22,10 @@ class AppColors {
   static Color get card => AppPalette.current.card;
   static Color get chip => AppPalette.current.chip;
   static Color get warnBg => AppPalette.current.warnBg;
-  static const success = Color(0xFF12B76A);
+  static const success = DsLegacy.success;
   /// Soft green behind "online" and other good states; dark in dark mode so the text stays readable.
-  static Color get successBg => identical(AppPalette.current, AppPalette.dark) ? const Color(0xFF12301F) : const Color(0xFFE7F8EF);
-  static const warning = Color(0xFFF79009);
+  static Color get successBg => identical(AppPalette.current, AppPalette.dark) ? DsColors.dark.successBg : DsColors.light.successBg;
+  static const warning = DsLegacy.warning;
 }
 
 const _months = [
@@ -164,11 +164,7 @@ class RouteText extends StatelessWidget {
       '$pickup → $drop',
       maxLines: 2,
       overflow: TextOverflow.ellipsis,
-      style: TextStyle(
-        fontSize: fontSize,
-        fontWeight: FontWeight.w800,
-        color: AppColors.title,
-      ),
+      style: DsStyle.w700.copyWith(fontSize: fontSize, color: AppColors.title),
     );
   }
 }
@@ -257,11 +253,7 @@ class FieldLabel extends StatelessWidget {
     padding: const EdgeInsets.only(bottom: 8),
     child: Text(
       text,
-      style: TextStyle(
-        fontSize: 14,
-        fontWeight: FontWeight.w700,
-        color: AppColors.body,
-      ),
+      style: DsStyle.t14w700.copyWith(color: AppColors.body),
     ),
   );
 }

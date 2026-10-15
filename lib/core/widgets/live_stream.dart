@@ -200,7 +200,7 @@ class ErrorRetry extends StatelessWidget {
             Expanded(
               child: Text(
                 tr(context, messageKey),
-                style: TextStyle(color: AppColors.muted),
+                style: DsStyle.inherit.copyWith(color: AppColors.muted),
               ),
             ),
             retry,
@@ -234,7 +234,7 @@ class ErrorState extends StatelessWidget {
       return AppCard(child: Row(children: [
         Icon(Icons.cloud_off_rounded, color: AppColors.faint),
         const SizedBox(width: 12),
-        Expanded(child: Text(tr(context, key), style: TextStyle(color: AppColors.muted))),
+        Expanded(child: Text(tr(context, key), style: DsStyle.inherit.copyWith(color: AppColors.muted))),
       ]));
     }
     return EmptyState(icon: Icons.cloud_off_rounded, illustration: _isOffline(key) ? IllustrationKind.noNetwork : IllustrationKind.error, title: tr(context, key));

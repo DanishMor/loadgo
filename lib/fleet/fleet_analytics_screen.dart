@@ -11,6 +11,7 @@ import '../core/services/fleet_service.dart';
 import '../core/services/vehicle_service.dart';
 import '../core/widgets/common.dart';
 import '../core/widgets/live_stream.dart';
+import '../core/theme/design_tokens.dart';
 
 /// Utilisation, idle days, revenue, expenses, maintenance due and who the fleet
 /// works for, over the last 30 days (N13, BIZ12). Money is a record.
@@ -36,9 +37,9 @@ class _FleetAnalyticsScreenState extends State<FleetAnalyticsScreen> {
   Widget _stat(String label, String value, Key key) => Expanded(
         child: AppCard(
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(label, style: TextStyle(color: AppColors.muted, fontSize: 12)),
+            Text(label, style: DsStyle.t12w400.copyWith(color: AppColors.muted)),
             const SizedBox(height: 4),
-            Text(value, key: key, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.title)),
+            Text(value, key: key, style: DsStyle.t18w700.copyWith(color: AppColors.title)),
           ]),
         ),
       );
@@ -78,7 +79,7 @@ class _FleetAnalyticsScreenState extends State<FleetAnalyticsScreen> {
                   _stat(tr(context, 'faRepeat'), '${a.repeatCustomers}', const ValueKey('faRepeat')),
                 ]),
                 const SizedBox(height: 14),
-                Text(tr(context, 'faUtilisation'), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+                Text(tr(context, 'faUtilisation'), style: DsStyle.t16w700),
                 const SizedBox(height: 8),
                 for (final r in a.vehicles)
                   Padding(
@@ -87,24 +88,24 @@ class _FleetAnalyticsScreenState extends State<FleetAnalyticsScreen> {
                       key: ValueKey('faVehicle_${r.vehicle.id}'),
                       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                         Row(children: [
-                          Expanded(child: Text(r.vehicle.number, style: const TextStyle(fontWeight: FontWeight.w800))),
-                          Text('${r.daysOnRoad} / ${FleetAnalytics.window}', key: ValueKey('faDays_${r.vehicle.id}'), style: const TextStyle(fontWeight: FontWeight.w800)),
+                          Expanded(child: Text(r.vehicle.number, style: DsStyle.w700)),
+                          Text('${r.daysOnRoad} / ${FleetAnalytics.window}', key: ValueKey('faDays_${r.vehicle.id}'), style: DsStyle.w700),
                         ]),
                         const SizedBox(height: 6),
                         LinearProgressIndicator(value: r.utilisation, minHeight: 6, borderRadius: BorderRadius.circular(3)),
                         const SizedBox(height: 4),
-                        Text('${tr(context, 'faIdleDays')}: ${r.idleDays} · ${tr(context, 'faNet')}: ${formatPaise(r.netPaise)}', style: TextStyle(color: AppColors.muted, fontSize: 12)),
+                        Text('${tr(context, 'faIdleDays')}: ${r.idleDays} · ${tr(context, 'faNet')}: ${formatPaise(r.netPaise)}', style: DsStyle.t12w400.copyWith(color: AppColors.muted)),
                       ]),
                     ),
                   ),
                 if (a.topCustomers.isNotEmpty) ...[
                   const SizedBox(height: 10),
-                  Text(tr(context, 'faTopCustomers'), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+                  Text(tr(context, 'faTopCustomers'), style: DsStyle.t16w700),
                   for (final c in a.topCustomers) ListTile(dense: true, contentPadding: EdgeInsets.zero, key: ValueKey('faTop_${c.customerId}'), title: Text(c.customerId), trailing: Text(trf(context, 'faTrips', {'n': c.trips}))),
                 ],
                 if (a.tripsPerDriver.isNotEmpty) ...[
                   const SizedBox(height: 10),
-                  Text(tr(context, 'faDriverTrips'), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+                  Text(tr(context, 'faDriverTrips'), style: DsStyle.t16w700),
                   for (final e in a.tripsPerDriver.entries)
                     ListTile(dense: true, contentPadding: EdgeInsets.zero, key: ValueKey('faDriver_${e.key}'), title: Text((a.driverNames[e.key] ?? '').isEmpty ? e.key : a.driverNames[e.key]!), trailing: Text(trf(context, 'faTrips', {'n': e.value}))),
                 ],

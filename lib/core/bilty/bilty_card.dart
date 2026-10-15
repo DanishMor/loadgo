@@ -15,6 +15,7 @@ import 'lr_form_screen.dart';
 import 'lr_model.dart';
 import 'lr_send_screen.dart';
 import 'lr_service.dart';
+import '../theme/design_tokens.dart';
 
 /// Whether [uid] is the person on the road for [b]: the driver a transporter
 /// assigned, or the driver of a booking without a transporter.
@@ -45,10 +46,10 @@ class BiltyCard extends StatelessWidget {
           padding: const EdgeInsets.only(bottom: 12),
           child: AppCard(
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(tr(context, 'blCardTitle'), style: const TextStyle(fontWeight: FontWeight.w800)),
+              Text(tr(context, 'blCardTitle'), style: DsStyle.w700),
               const SizedBox(height: 8),
               if (lr == null) ...[
-                Text(tr(context, 'blNone'), style: TextStyle(color: AppColors.muted)),
+                Text(tr(context, 'blNone'), style: DsStyle.inherit.copyWith(color: AppColors.muted)),
                 const SizedBox(height: 8),
                 FilledButton(
                   key: const ValueKey('biltyCreate'),
@@ -58,9 +59,9 @@ class BiltyCard extends StatelessWidget {
                   child: Text(tr(context, 'blCreate')),
                 ),
               ] else ...[
-                Text('${tr(context, lrHeadingKey(lr.issuerRole))}: ${lr.lrNo}', key: const ValueKey('biltyNo'), style: const TextStyle(fontWeight: FontWeight.w700)),
-                Text('${trf(context, 'blVersion', {'n': lr.version})} · ${tr(context, lrStatusKey(lr.status))}', style: TextStyle(color: AppColors.muted, fontSize: 13)),
-                if (lr.isCancelled) Text(trf(context, 'blCancelledNote', {'reason': lr.cancelReason}), style: const TextStyle(color: Colors.red)),
+                Text('${tr(context, lrHeadingKey(lr.issuerRole))}: ${lr.lrNo}', key: const ValueKey('biltyNo'), style: DsStyle.w700),
+                Text('${trf(context, 'blVersion', {'n': lr.version})} · ${tr(context, lrStatusKey(lr.status))}', style: DsStyle.t14w400.copyWith(color: AppColors.muted)),
+                if (lr.isCancelled) Text(trf(context, 'blCancelledNote', {'reason': lr.cancelReason}), style: DsStyle.inherit.copyWith(color: Colors.red)),
                 const SizedBox(height: 8),
                 Wrap(spacing: 8, runSpacing: 8, children: [
                   if (isDriver)
@@ -96,7 +97,7 @@ class BiltyCard extends StatelessWidget {
                 if (canIssue && lr.issuerId == uid && lr.isCurrent) ...[_ModePicker(lr: lr), InspectionOwnerPanel(booking: booking, lr: lr)],
                 if (all.where((l) => l.id != lr.id && l.seq == lr.seq).isNotEmpty) ...[
                   const SizedBox(height: 10),
-                  Text(tr(context, 'blHistory'), style: const TextStyle(fontWeight: FontWeight.w700)),
+                  Text(tr(context, 'blHistory'), style: DsStyle.w700),
                   for (final old in all.where((l) => l.id != lr.id && l.seq == lr.seq))
                     ListTile(
                       key: ValueKey('biltyOld_${old.version}'),
@@ -150,14 +151,14 @@ class _ModePicker extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(top: 10),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(tr(context, 'blComplianceMode'), style: TextStyle(color: AppColors.muted, fontSize: 13)),
+        Text(tr(context, 'blComplianceMode'), style: DsStyle.t14w400.copyWith(color: AppColors.muted)),
         const SizedBox(height: 4),
         SegmentedButton<String>(
           key: const ValueKey('biltyModePicker'),
           showSelectedIcon: false,
           segments: [
             for (final (m, k) in const [(ComplianceMode.hide, 'blModeHide'), (ComplianceMode.show, 'blModeShow'), (ComplianceMode.inspectionOnRequest, 'blModeInspection')])
-              ButtonSegment(value: m, label: Text(tr(context, k), key: ValueKey('biltyMode_$m'), maxLines: 3, textAlign: TextAlign.center, style: const TextStyle(fontSize: 12))),
+              ButtonSegment(value: m, label: Text(tr(context, k), key: ValueKey('biltyMode_$m'), maxLines: 3, textAlign: TextAlign.center, style: DsStyle.t12w400)),
           ],
           selected: {lr.complianceMode},
           onSelectionChanged: (s) => LrService.setComplianceMode(lr, s.first),

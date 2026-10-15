@@ -17,6 +17,7 @@ import '../services/push_service.dart';
 import '../services/settings_service.dart';
 import '../widgets/common.dart';
 import 'simple_mode.dart';
+import '../theme/design_tokens.dart';
 
 /// Settings for both roles: language, notification preferences, consent
 /// center, help and policies, account deletion, app version
@@ -111,7 +112,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Widget _header(String key) => Padding(
         padding: const EdgeInsets.fromLTRB(16, 20, 16, 4),
-        child: Text(tr(context, key), style: const TextStyle(fontWeight: FontWeight.w800, color: AppColors.primary)),
+        child: Text(tr(context, key), style: DsStyle.w700.copyWith(color: AppColors.primary)),
       );
 
   Widget _switch(String key, String labelKey, bool value, ValueChanged<bool> onChanged) => SwitchListTile(
@@ -251,7 +252,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ListTile(
                 key: const ValueKey('deleteAccount'),
                 leading: const Icon(Icons.delete_forever_outlined, color: Colors.redAccent),
-                title: Text(tr(context, 'deleteAccount'), style: const TextStyle(color: Colors.redAccent)),
+                title: Text(tr(context, 'deleteAccount'), style: DsStyle.inherit.copyWith(color: Colors.redAccent)),
                 trailing: const Icon(Icons.chevron_right_rounded),
                 onTap: () => _open(const AccountDeletionScreen()),
               ),

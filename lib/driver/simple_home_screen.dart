@@ -18,6 +18,7 @@ import '../core/widgets/live_stream.dart';
 import 'available_loads_view.dart';
 import 'driver_trip_screen.dart';
 import 'wallet_screen.dart';
+import '../core/theme/design_tokens.dart';
 
 /// Driver home in Simple Mode: four big icon buttons, at most three words
 /// on each (strings `simpleFindLoads`, `simpleMyTrips`, `simpleMoney`,
@@ -44,7 +45,7 @@ class SimpleDriverHome extends StatelessWidget {
                   children: [
                     Icon(icon, size: 56, color: Colors.white),
                     const SizedBox(height: 12),
-                    Text(label, textAlign: TextAlign.center, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: Colors.white)),
+                    Text(label, textAlign: TextAlign.center, style: DsStyle.t20w700.copyWith(color: Colors.white)),
                   ],
                 ),
               ),
@@ -84,13 +85,13 @@ class SimpleDriverHome extends StatelessWidget {
                       key: const ValueKey('simpleFindLoads'),
                       icon: Icons.search_rounded,
                       label: tr(context, 'simpleFindLoads'),
-                      color: const Color(0xFF1565C0),
+                      color: AppColors.primary,
                       onTap: () => _push(context, const SimpleLoadsScreen())),
                   _big(context,
                       key: const ValueKey('simpleMyTrips'),
                       icon: Icons.route_rounded,
                       label: tr(context, 'simpleMyTrips'),
-                      color: const Color(0xFF2E7D32),
+                      color: DsColors.light.success,
                       onTap: () => _push(context, const SimpleTripsScreen())),
                   ]),
                 ),
@@ -104,13 +105,13 @@ class SimpleDriverHome extends StatelessWidget {
                       key: const ValueKey('simpleMoney'),
                       icon: Icons.currency_rupee_rounded,
                       label: tr(context, 'simpleMoney'),
-                      color: const Color(0xFFEF6C00),
+                      color: DsColors.light.accentStrong,
                       onTap: () => _push(context, const SimpleMoneyScreen())),
                   _big(context,
                       key: const ValueKey('simpleHelp'),
                       icon: Icons.help_outline_rounded,
                       label: tr(context, 'simpleHelp'),
-                      color: const Color(0xFF6A1B9A),
+                      color: DsColors.light.roleDriver,
                       onTap: () => _push(context, const HelpScreen(role: 'driver'))),
                   ]),
                 ),
@@ -161,8 +162,8 @@ class SimpleMoneyScreen extends StatelessWidget {
   Widget _line(BuildContext context, String label, int paise, Color color, Key key) => Padding(
         padding: const EdgeInsets.symmetric(vertical: 10),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(label, style: TextStyle(fontSize: 18, color: AppColors.muted)),
-          Text(formatPaise(paise), key: key, style: TextStyle(fontSize: 36, fontWeight: FontWeight.w800, color: color)),
+          Text(label, style: DsStyle.t18w400.copyWith(color: AppColors.muted)),
+          Text(formatPaise(paise), key: key, style: DsStyle.t32w700.copyWith(color: color)),
         ]),
       );
 
@@ -192,7 +193,7 @@ class SimpleMoneyScreen extends StatelessWidget {
                           key: const ValueKey('simpleAskMoney'),
                           onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const WalletScreen())),
                           icon: const Icon(Icons.account_balance_outlined, size: 28),
-                          label: Text(tr(context, 'simpleAskMoney'), style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
+                          label: Text(tr(context, 'simpleAskMoney'), style: DsStyle.t20w700),
                         ),
                       ),
                     ],

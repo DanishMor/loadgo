@@ -6,6 +6,7 @@ import '../services/server_clock.dart';
 import '../services/strike_appeal_service.dart';
 import '../widgets/common.dart';
 import '../widgets/live_stream.dart';
+import '../theme/design_tokens.dart';
 
 /// A person's own strikes and a way to appeal one (MASTER-6 Task 34).
 class StrikeAppealScreen extends StatefulWidget {
@@ -56,7 +57,7 @@ class _StrikeAppealScreenState extends State<StrikeAppealScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(backgroundColor: AppColors.background, scrolledUnderElevation: 0, title: Text(tr(context, 'apTitle'), style: const TextStyle(fontWeight: FontWeight.w700))),
+      appBar: AppBar(backgroundColor: AppColors.background, scrolledUnderElevation: 0, title: Text(tr(context, 'apTitle'), style: DsStyle.w700)),
       body: SafeArea(
         child: FutureBuilder<List<MyStrike>>(
           future: _data,
@@ -67,22 +68,22 @@ class _StrikeAppealScreenState extends State<StrikeAppealScreen> {
             if (list.isEmpty) return EmptyState(icon: Icons.verified_outlined, title: tr(context, 'apNone'));
             final now = ServerClock.now();
             return ListView(padding: const EdgeInsets.all(16), children: [
-              Text(trf(context, 'apIntro', {'d': 14}), style: TextStyle(color: AppColors.muted)),
+              Text(trf(context, 'apIntro', {'d': 14}), style: DsStyle.inherit.copyWith(color: AppColors.muted)),
               const SizedBox(height: 8),
               for (final s in list)
                 AppCard(
                   key: ValueKey('strike_${s.id}'),
                   child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Text(tr(context, _kind(s.kind)), style: const TextStyle(fontWeight: FontWeight.w800)),
-                    if (s.at != null) Text(formatDateTime(s.at!), style: TextStyle(color: AppColors.muted, fontSize: 12)),
-                    if (s.excerpt.isNotEmpty) Text('“${s.excerpt}”', style: TextStyle(color: AppColors.faint, fontSize: 12)),
+                    Text(tr(context, _kind(s.kind)), style: DsStyle.w700),
+                    if (s.at != null) Text(formatDateTime(s.at!), style: DsStyle.t12w400.copyWith(color: AppColors.muted)),
+                    if (s.excerpt.isNotEmpty) Text('“${s.excerpt}”', style: DsStyle.t12w400.copyWith(color: AppColors.faint)),
                     const SizedBox(height: 6),
                     if (s.appeal != null)
-                      Text(tr(context, 'apStatus_${s.appeal!.status}') + (s.appeal!.note.isEmpty ? '' : ': ${s.appeal!.note}'), key: ValueKey('apStatus_${s.id}'), style: TextStyle(fontWeight: FontWeight.w700, color: s.appeal!.status == 'granted' ? AppColors.success : s.appeal!.status == 'rejected' ? AppColors.warning : AppColors.muted))
+                      Text(tr(context, 'apStatus_${s.appeal!.status}') + (s.appeal!.note.isEmpty ? '' : ': ${s.appeal!.note}'), key: ValueKey('apStatus_${s.id}'), style: DsStyle.w700.copyWith(color: s.appeal!.status == 'granted' ? AppColors.success : s.appeal!.status == 'rejected' ? AppColors.warning : AppColors.muted))
                     else if (s.canAppeal(now))
                       OutlinedButton(key: ValueKey('apAppeal_${s.id}'), onPressed: () => _appeal(s), child: Text(tr(context, 'apAppeal')))
                     else
-                      Text(tr(context, 'apClosed'), style: TextStyle(color: AppColors.faint, fontSize: 12)),
+                      Text(tr(context, 'apClosed'), style: DsStyle.t12w400.copyWith(color: AppColors.faint)),
                   ]),
                 ),
             ]);

@@ -7,6 +7,7 @@ import '../core/constants/cancel_reasons.dart';
 import '../core/services/admin_console_service.dart';
 import '../core/widgets/common.dart';
 import '../core/widgets/live_stream.dart';
+import '../core/theme/design_tokens.dart';
 
 /// Admin > Pilot cohorts (MASTER-6 Task 6): per week of posting, time to the
 /// first bid and to a driver, customers who came back, cancel reasons; CSV.
@@ -41,7 +42,7 @@ class _AdminCohortsScreenState extends State<AdminCohortsScreen> {
     return AppCard(
       key: ValueKey('cohort_${_date(r.week)}'),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(trf(context, 'pcohWeek', {'date': _date(r.week)}), style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+        Text(trf(context, 'pcohWeek', {'date': _date(r.week)}), style: DsStyle.t16w700),
         const SizedBox(height: 6),
         Text(trf(context, 'pcohLoads', {'n': r.loads})),
         Text(trf(context, 'pcohFirstBid', {'t': _time(r.medianFirstBidMinutes), 'n': r.withBid})),
@@ -49,7 +50,7 @@ class _AdminCohortsScreenState extends State<AdminCohortsScreen> {
         Text(trf(context, 'pcohRepeat', {'r': r.repeatCustomers, 'c': r.customers})),
         if (reasons.isNotEmpty) ...[
           const SizedBox(height: 6),
-          Text(tr(context, 'pcohCancels'), style: const TextStyle(fontWeight: FontWeight.w700)),
+          Text(tr(context, 'pcohCancels'), style: DsStyle.w700),
           for (final e in reasons) Text('${e.key == PilotCohorts.noReason ? tr(context, 'pcohNoReason') : tr(context, CancelReasons.labelKey(e.key))}: ${e.value}'),
         ],
       ]),
@@ -79,7 +80,7 @@ class _AdminCohortsScreenState extends State<AdminCohortsScreen> {
             ),
             const SizedBox(height: 8),
             for (final r in rows) ...[_card(r), const SizedBox(height: 8)],
-            Text(tr(context, 'pcohFootnote'), style: TextStyle(color: AppColors.faint, fontSize: 12)),
+            Text(tr(context, 'pcohFootnote'), style: DsStyle.t12w400.copyWith(color: AppColors.faint)),
           ]);
         },
       ),

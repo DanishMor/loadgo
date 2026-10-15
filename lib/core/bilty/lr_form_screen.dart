@@ -7,6 +7,7 @@ import '../models/booking.dart';
 import '../widgets/common.dart';
 import 'lr_model.dart';
 import 'lr_service.dart';
+import '../theme/design_tokens.dart';
 
 int _paise(String s) {
   final n = double.tryParse(s.trim());
@@ -147,7 +148,7 @@ class _LrFormScreenState extends State<LrFormScreen> {
       appBar: AppBar(
         backgroundColor: AppColors.background,
         scrolledUnderElevation: 0,
-        title: Text(tr(context, widget.editing == null ? 'blCreate' : 'blEdit'), style: const TextStyle(fontWeight: FontWeight.w700)),
+        title: Text(tr(context, widget.editing == null ? 'blCreate' : 'blEdit'), style: DsStyle.w700),
       ),
       body: SafeArea(
         child: ListView(padding: const EdgeInsets.fromLTRB(20, 10, 20, 30), children: [
@@ -177,9 +178,9 @@ class _LrFormScreenState extends State<LrFormScreen> {
             icon: const Icon(Icons.event_rounded, size: 18),
             label: Text(_ewayUntil == null ? tr(context, 'blPickDate') : '${tr(context, 'blPickDate')}: ${formatDate(_ewayUntil)}'),
           ),
-          Text(tr(context, 'blEwayNote'), style: TextStyle(color: AppColors.muted, fontSize: 12)),
+          Text(tr(context, 'blEwayNote'), style: DsStyle.t12w400.copyWith(color: AppColors.muted)),
           const SizedBox(height: 14),
-          Text(tr(context, 'blComplianceMode'), style: const TextStyle(fontWeight: FontWeight.w700)),
+          Text(tr(context, 'blComplianceMode'), style: DsStyle.w700),
           const SizedBox(height: 6),
           RadioGroup<String>(
             groupValue: _mode,

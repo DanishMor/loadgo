@@ -10,6 +10,7 @@ import '../core/services/location_service.dart';
 import '../core/services/notification_service.dart';
 import '../core/trip/trip_alerts.dart';
 import '../core/widgets/common.dart';
+import '../core/theme/design_tokens.dart';
 
 /// Position samples for the driver's trip widgets: the injected stream in
 /// tests, the device position otherwise (nothing without permission).
@@ -85,7 +86,7 @@ class _PickupGeofenceBannerState extends State<PickupGeofenceBanner> {
         Expanded(
           child: Text(
             reached ? tr(context, 'geoPickupReached') : trf(context, 'geoPickupNear', {'km': s.kmToDrop!.round()}),
-            style: const TextStyle(fontWeight: FontWeight.w700),
+            style: DsStyle.w700,
           ),
         ),
       ]),
@@ -140,7 +141,7 @@ class _StopProgressCardState extends State<StopProgressCard> {
     return AppCard(
       key: const ValueKey('stopProgress'),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(trf(context, 'stopsProgress', {'done': _tracker.reachedCount, 'total': _stops.length}), style: const TextStyle(fontWeight: FontWeight.w800)),
+        Text(trf(context, 'stopsProgress', {'done': _tracker.reachedCount, 'total': _stops.length}), style: DsStyle.w700),
         const SizedBox(height: 8),
         for (var i = 0; i < _stops.length; i++)
           Row(children: [
@@ -152,12 +153,12 @@ class _StopProgressCardState extends State<StopProgressCard> {
         if (_justReached != null)
           Padding(
             padding: const EdgeInsets.only(top: 8),
-            child: Text(trf(context, 'stopReachedAlert', {'place': _stops[_justReached!]}), key: const ValueKey('stopAlert'), style: TextStyle(color: AppColors.success, fontWeight: FontWeight.w700)),
+            child: Text(trf(context, 'stopReachedAlert', {'place': _stops[_justReached!]}), key: const ValueKey('stopAlert'), style: DsStyle.w700.copyWith(color: AppColors.success)),
           ),
         if (next != null && km != null)
           Padding(
             padding: const EdgeInsets.only(top: 4),
-            child: Text(trf(context, 'stopNext', {'place': _stops[next], 'km': km.round()}), style: TextStyle(color: AppColors.muted)),
+            child: Text(trf(context, 'stopNext', {'place': _stops[next], 'km': km.round()}), style: DsStyle.inherit.copyWith(color: AppColors.muted)),
           ),
       ]),
     );

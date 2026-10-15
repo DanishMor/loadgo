@@ -10,6 +10,8 @@ import '../core/services/user_service.dart';
 import '../core/settings/onboarding_screen.dart';
 import 'start_resolvers.dart';
 import 'role_selection_screen.dart';
+import '../core/theme/design_tokens.dart';
+import '../core/widgets/common.dart';
 
 
 // ============================================================
@@ -81,7 +83,7 @@ class _SplashScreenState extends State<SplashScreen> {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [Color(0xFF0D47A1), Color(0xFF1976D2)],
+            colors: DsHero.colors,
           ),
         ),
         child: SafeArea(
@@ -102,22 +104,17 @@ class _SplashScreenState extends State<SplashScreen> {
                     ),
                   ],
                 ),
-                child: const Icon(Icons.local_shipping_rounded, size: 70, color: Color(0xFF1565C0)),
+                child: const Icon(Icons.local_shipping_rounded, size: 70, color: AppColors.primary),
               ),
               const SizedBox(height: 28),
               Text(
                 AppInfo.name,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 42,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 0.5,
-                ),
+                style: DsStyle.t32w700.copyWith(color: Colors.white, letterSpacing: 0.5),
               ),
               const SizedBox(height: 8),
               Text(
                 tr(context, 'tagline'),
-                style: const TextStyle(color: Colors.white70, fontSize: 17, fontWeight: FontWeight.w500),
+                style: DsStyle.t18w400.copyWith(color: Colors.white70),
               ),
               const SizedBox(height: 50),
               const SizedBox(

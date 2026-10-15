@@ -7,6 +7,7 @@ import '../models/vehicle_expense.dart';
 import '../services/expense_service.dart';
 import '../widgets/common.dart';
 import '../widgets/live_stream.dart';
+import '../theme/design_tokens.dart';
 
 String expenseKindLabel(BuildContext context, String kind) => tr(context, switch (kind) {
       ExpenseKind.fuel => 'exFuel',
@@ -92,9 +93,9 @@ class _VehicleExpensesScreenState extends State<VehicleExpensesScreen> {
           return ListView(padding: const EdgeInsets.fromLTRB(16, 8, 16, 90), children: [
             AppCard(
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text('${tr(context, 'exTotal')}: ${formatPaise(ExpenseSummary.total(list))}', key: const ValueKey('exTotalText'), style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 18)),
+                Text('${tr(context, 'exTotal')}: ${formatPaise(ExpenseSummary.total(list))}', key: const ValueKey('exTotalText'), style: DsStyle.t18w700),
                 const SizedBox(height: 6),
-                Text(tr(context, 'exByMonth'), style: TextStyle(color: AppColors.muted)),
+                Text(tr(context, 'exByMonth'), style: DsStyle.inherit.copyWith(color: AppColors.muted)),
                 for (final m in months.entries) Text('${m.key}: ${formatPaise(m.value)}', key: ValueKey('exMonth_${m.key}')),
               ]),
             ),

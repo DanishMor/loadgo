@@ -5,6 +5,7 @@ import '../core/l10n/l10n.dart';
 import '../core/services/admin_user_service.dart';
 import '../core/widgets/common.dart';
 import '../core/widgets/live_stream.dart';
+import '../core/theme/design_tokens.dart';
 
 /// The 360 summary at the top of Admin > Users > person (MASTER-6 Task 11).
 class UserOverviewCard extends StatefulWidget {
@@ -42,7 +43,7 @@ class _UserOverviewCardState extends State<UserOverviewCard> {
           if (o == null) return const Padding(padding: EdgeInsets.all(8), child: Center(child: CircularProgressIndicator()));
           return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Row(children: [
-              Expanded(child: Text(tr(context, 'uoTitle'), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800))),
+              Expanded(child: Text(tr(context, 'uoTitle'), style: DsStyle.t16w700)),
               IconButton(key: const ValueKey('uoRefresh'), tooltip: tr(context, 'retry'), onPressed: _refresh, icon: const Icon(Icons.refresh_rounded)),
             ]),
             Text(trf(context, 'uoTrips', {'c': o.tripsAsCustomer, 'd': o.tripsAsDriver, 'del': o.delivered, 'can': o.cancelled}), key: const ValueKey('uoTrips')),
@@ -52,10 +53,10 @@ class _UserOverviewCardState extends State<UserOverviewCard> {
             if (o.vehicles > 0) Text(trf(context, 'uoVehicles', {'n': o.vehicles, 'e': o.vehiclesWithExpiredPapers}), key: const ValueKey('uoVehicles')),
             Text(trf(context, 'uoVerified', {'v': _yn(o.verified), 'k': _yn(o.kycComplete)}), key: const ValueKey('uoVerified')),
             const SizedBox(height: 8),
-            Text(tr(context, 'uoTrail'), style: const TextStyle(fontWeight: FontWeight.w700)),
-            if (o.trail.isEmpty) Text(tr(context, 'uoNoTrail'), style: TextStyle(color: AppColors.muted)),
+            Text(tr(context, 'uoTrail'), style: DsStyle.w700),
+            if (o.trail.isEmpty) Text(tr(context, 'uoNoTrail'), style: DsStyle.inherit.copyWith(color: AppColors.muted)),
             for (final e in o.trail)
-              Text('${e.at == null ? '' : '${formatDateTime(e.at!)} · '}${e.type}${e.action.isEmpty ? '' : ' · ${e.action}'}', style: TextStyle(color: AppColors.muted, fontSize: 12)),
+              Text('${e.at == null ? '' : '${formatDateTime(e.at!)} · '}${e.type}${e.action.isEmpty ? '' : ' · ${e.action}'}', style: DsStyle.t12w400.copyWith(color: AppColors.muted)),
           ]);
         },
       ),

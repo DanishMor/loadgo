@@ -6,6 +6,7 @@ import '../support/support_screens.dart';
 import '../widgets/common.dart';
 import 'assistant_engine.dart';
 import 'assistant_log_service.dart';
+import '../theme/design_tokens.dart';
 
 /// What the role's home can open for the assistant's action buttons. A null
 /// callback hides that button. The ticket form is in core and needs none.
@@ -144,7 +145,7 @@ class _SahayakScreenState extends State<SahayakScreen> {
           margin: const EdgeInsets.only(bottom: 10, left: 48),
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
           decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.circular(16)),
-          child: Text(m.text!, style: const TextStyle(color: Colors.white)),
+          child: Text(m.text!, style: DsStyle.inherit.copyWith(color: Colors.white)),
         ),
       );
     }
@@ -157,7 +158,7 @@ class _SahayakScreenState extends State<SahayakScreen> {
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(color: AppColors.card, borderRadius: BorderRadius.circular(16), border: Border.all(color: AppColors.border)),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(tr(context, r.textKey), style: TextStyle(color: AppColors.title)),
+          Text(tr(context, r.textKey), style: DsStyle.inherit.copyWith(color: AppColors.title)),
           if (label != null) ...[
             const SizedBox(height: 10),
             FilledButton(
@@ -243,7 +244,7 @@ class SahayakButton extends StatelessWidget {
   Widget build(BuildContext context) => IconButton(
         key: const ValueKey('sahayakButton'),
         tooltip: tr(context, 'asTitle'),
-        color: const Color(0xFF1565C0),
+        color: AppColors.primary,
         icon: const Icon(Icons.support_agent_rounded),
         onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => SahayakScreen(role: role, actions: actions))),
       );

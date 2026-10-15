@@ -4,6 +4,7 @@ import '../core/assistant/assistant_log_service.dart';
 import '../core/l10n/l10n.dart';
 import '../core/widgets/common.dart';
 import '../core/widgets/live_stream.dart';
+import '../core/theme/design_tokens.dart';
 
 /// Admin > Sahayak questions: what the assistant did not understand.
 class AdminAssistantScreen extends StatelessWidget {
@@ -25,12 +26,12 @@ class AdminAssistantScreen extends StatelessWidget {
               final q = list[i];
               return AppCard(
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text(q.text, style: const TextStyle(fontWeight: FontWeight.w700)),
+                  Text(q.text, style: DsStyle.w700),
                   const SizedBox(height: 2),
-                  Text(trf(context, 'asAdminMeta', {'role': q.role, 'language': q.language}), style: TextStyle(color: AppColors.muted, fontSize: 12)),
+                  Text(trf(context, 'asAdminMeta', {'role': q.role, 'language': q.language}), style: DsStyle.t12w400.copyWith(color: AppColors.muted)),
                   const SizedBox(height: 6),
                   if (q.resolved)
-                    Text(tr(context, 'asAdminResolved'), key: ValueKey('asResolved_${q.id}'), style: TextStyle(color: AppColors.muted))
+                    Text(tr(context, 'asAdminResolved'), key: ValueKey('asResolved_${q.id}'), style: DsStyle.inherit.copyWith(color: AppColors.muted))
                   else
                     Align(
                       alignment: Alignment.centerLeft,

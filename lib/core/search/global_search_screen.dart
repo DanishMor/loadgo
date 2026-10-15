@@ -19,6 +19,7 @@ import '../support/support_screens.dart';
 import '../widgets/common.dart';
 import 'global_search.dart';
 import 'recent_searches.dart';
+import '../theme/design_tokens.dart';
 
 /// App-wide search (both apps): the user's bookings, loads, tickets, saved
 /// places, cities and help topics in sections, recent searches, and a pasted
@@ -175,7 +176,7 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
     }
     return ListView(padding: const EdgeInsets.all(16), children: [
       Row(children: [
-        Expanded(child: Text(tr(context, 'gsRecent'), style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16))),
+        Expanded(child: Text(tr(context, 'gsRecent'), style: DsStyle.t16w700)),
         TextButton(
           key: const ValueKey('clearRecent'),
           onPressed: () async {
@@ -246,7 +247,7 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
                   ? EmptyState(icon: Icons.search_off_rounded, title: trf(context, 'searchNoResults', {'q': q}))
                   : ListView(padding: const EdgeInsets.all(16), children: [
                       for (final s in sections) ...[
-                        Text(_sectionTitle(s.kind), style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+                        Text(_sectionTitle(s.kind), style: DsStyle.t16w700),
                         const SizedBox(height: 8),
                         for (final h in _expanded.contains(s.kind) ? search.all(q, s.kind) : s.hits) Padding(padding: const EdgeInsets.only(bottom: 8), child: _hit(h.entry)),
                         if (s.total > s.hits.length && !_expanded.contains(s.kind))

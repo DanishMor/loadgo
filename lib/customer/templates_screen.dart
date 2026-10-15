@@ -6,6 +6,7 @@ import '../core/services/repeat_service.dart';
 import '../core/widgets/common.dart';
 import '../core/widgets/live_stream.dart';
 import 'post_load_screen.dart';
+import '../core/theme/design_tokens.dart';
 
 /// Saved loads the customer posts again and again. "Use" opens Post Load
 /// filled in (no date); the pickup date is always chosen fresh.
@@ -38,7 +39,7 @@ class _TemplatesScreenState extends State<TemplatesScreen> {
               return Card(
                 child: ListTile(
                   key: ValueKey('template_${t.id}'),
-                  title: Text(t.name, style: const TextStyle(fontWeight: FontWeight.w700)),
+                  title: Text(t.name, style: DsStyle.w700),
                   subtitle: Text('${t.pickup} → ${t.drop}\n${t.cargoType} · ${t.vehicleType}'),
                   isThreeLine: true,
                   onTap: () => Navigator.of(context)

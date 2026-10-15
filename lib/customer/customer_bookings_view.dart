@@ -8,6 +8,7 @@ import '../core/widgets/paged_live_stream.dart';
 import '../core/widgets/booking_widgets.dart';
 import '../core/models/repeat.dart';
 import 'post_load_screen.dart';
+import '../core/theme/design_tokens.dart';
 
 /// Customer "Bookings" tab split into active and past (delivered/cancelled).
 /// Delivered bookings open their invoice; everything else opens tracking.
@@ -39,7 +40,7 @@ class _CustomerBookingsViewState extends State<CustomerBookingsView> {
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 18, 20, 8),
             child: Text(tr(context, 'bookings'),
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: AppColors.title)),
+                style: DsStyle.t24w700.copyWith(color: AppColors.title)),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
