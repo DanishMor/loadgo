@@ -1,6 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import '../core/services/auth_helpers.dart';
 import '../core/services/user_service.dart';
@@ -8,8 +7,9 @@ import '../core/l10n/l10n.dart';
 import '../core/l10n/language_widgets.dart';
 import 'start_resolvers.dart';
 import 'otp_verification_screen.dart';
-import '../core/widgets/common.dart';
 import '../core/theme/design_tokens.dart';
+import '../core/widgets/ds/app_top_bar.dart';
+import 'login_widgets.dart';
 import '../core/widgets/ds/app_button.dart';
 class DriverLoginScreen extends StatefulWidget {
   /// `driver` (default) or `fleet`: the same phone login with another door.
@@ -90,73 +90,24 @@ class _DriverLoginScreenState extends State<DriverLoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final fleet = widget.role == 'fleet';
+    final role = fleet ? 'transporter' : 'driver';
+    final title = tr(context, fleet ? 'fleetLoginTitle' : 'driverLoginTitle');
     return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.background,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        leading: IconButton(tooltip: tr(context, 'a11yBack'), icon: const Icon(Icons.arrow_back_rounded), onPressed: () => Navigator.of(context).pop()),
-        title: Text(tr(context, widget.role == 'fleet' ? 'fleetLoginTitle' : 'driverLoginTitle'), style: DsStyle.w700),
-        actions: const [LanguageButton()],
-      ),
+      appBar: AppTopBar(title: title, role: role, actions: const [LanguageButton()]),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 30),
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 30),
           child: Form(
             key: _formKey,
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const SizedBox(height: 20),
-                Center(
-                  child: Container(
-                    width: 82,
-                    height: 82,
-                    decoration: BoxDecoration(color: AppColors.primaryLight, borderRadius: BorderRadius.circular(24)),
-                    child: const Icon(Icons.local_shipping_rounded, size: 45, color: AppColors.primary),
-                  ),
-                ),
-                const SizedBox(height: 28),
-                Center(
-                  child: Text(tr(context, widget.role == 'fleet' ? 'fleetLoginTitle' : 'driverLoginTitle'), textAlign: TextAlign.center, style: DsStyle.t28w700.copyWith(color: AppColors.title)),
-                ),
-                const SizedBox(height: 8),
-                Center(
-                  child: Text(tr(context, widget.role == 'fleet' ? 'fleetLoginSub' : 'driverLoginSub'), textAlign: TextAlign.center, style: DsStyle.t16w400.copyWith(color: AppColors.muted)),
-                ),
-                const SizedBox(height: 40),
-                Text(tr(context, 'mobile'), style: DsStyle.t14w700.copyWith(color: AppColors.body)),
-                const SizedBox(height: 8),
-                TextFormField(
-                  controller: _phoneController,
-                  keyboardType: TextInputType.phone,
-                  maxLength: 10,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  decoration: InputDecoration(
-                    counterText: '',
-                    prefixIcon: const Padding(
-                      padding: EdgeInsets.only(left: 16, right: 8),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text('🇮🇳', style: DsStyle.t20w400),
-                          SizedBox(width: 8),
-                          Text('+91', style: DsStyle.w600),
-                        ],
-                      ),
-                    ),
-                    hintText: tr(context, 'mobileHint'),
-                  ),
-                  validator: (value) {
-                    final phone = value?.trim() ?? '';
-                    if (phone.isEmpty) return tr(context, 'required');
-                    if (!RegExp(r'^[6-9]\d{9}$').hasMatch(phone)) return tr(context, 'invalidMobile');
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 24),
-                AppButton(label: tr(context, 'continueMobile'), loading: _isLoading, onPressed: _continueWithPhone),
+                LoginHeader(role: role, icon: fleet ? Icons.warehouse_rounded : Icons.local_shipping_rounded, title: title, subtitle: tr(context, fleet ? 'fleetLoginSub' : 'driverLoginSub')),
+                const SizedBox(height: DsSpace.s8),
+                PhoneFormField(controller: _phoneController),
+                const SizedBox(height: DsSpace.s6),
+                AppButton(key: const ValueKey('loginContinue'), label: tr(context, 'continueMobile'), loading: _isLoading, onPressed: _continueWithPhone),
               ],
             ),
           ),

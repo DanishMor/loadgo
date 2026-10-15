@@ -1,8 +1,5 @@
-import 'dart:async';
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import '../core/l10n/l10n.dart';
 import '../core/l10n/language_widgets.dart';
@@ -10,8 +7,12 @@ import '../core/services/auth_helpers.dart';
 import '../core/services/device_service.dart';
 import '../core/services/user_service.dart';
 import 'start_resolvers.dart';
-import '../core/widgets/common.dart';
 import '../core/theme/design_tokens.dart';
+import '../core/widgets/ds/app_button.dart';
+import '../core/widgets/ds/app_top_bar.dart';
+import '../core/widgets/ds/haptics.dart';
+import '../core/widgets/ds/otp_field.dart';
+import 'login_widgets.dart';
 
 
 // OTP (shared by Customer + Driver)
@@ -46,9 +47,9 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
   bool _isLoading = false;
   late String _verificationId = widget.verificationId;
   late int? _resendToken = widget.resendToken;
-  int _secondsLeft = resendSeconds;
+  final _countdown = CountdownController();
   bool _resending = false;
-  Timer? _timer;
+  bool _codeWrong = false;
 
   @override
   void initState() {
@@ -56,19 +57,11 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     _startTimer();
   }
 
-  void _startTimer() {
-    _timer?.cancel();
-    setState(() => _secondsLeft = resendSeconds);
-    _timer = Timer.periodic(const Duration(seconds: 1), (t) {
-      if (!mounted) return;
-      setState(() => _secondsLeft--);
-      if (_secondsLeft <= 0) t.cancel();
-    });
-  }
+  void _startTimer() => _countdown.start(resendSeconds);
 
   @override
   void dispose() {
-    _timer?.cancel();
+    _countdown.dispose();
     _otpController.dispose();
     super.dispose();
   }
@@ -108,6 +101,8 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     final otp = _otpController.text.trim();
 
     if (otp.length != 6) {
+      setState(() => _codeWrong = true);
+      Haptics.warning();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(tr(context, 'invalidOtp')), behavior: SnackBarBehavior.floating),
       );
@@ -166,8 +161,11 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
       );
     } on FirebaseAuthException catch (e) {
       if (!mounted) return;
-      setState(() => _isLoading = false);
-
+      setState(() {
+        _isLoading = false;
+        _codeWrong = e.code == 'invalid-verification-code' || e.code == 'invalid-credential';
+      });
+      if (_codeWrong) Haptics.warning();
       _snack(authErrorKey(e.code));
     } catch (_) {
       if (!mounted) return;
@@ -180,89 +178,40 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.ds;
+    final role = widget.role ?? (widget.isDriver ? 'driver' : 'customer');
+    final accentRole = role == 'fleet' ? 'transporter' : role;
     return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.background,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        leading: IconButton(tooltip: tr(context, 'a11yBack'), 
-          icon: const Icon(Icons.arrow_back_rounded),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-        title: Text(tr(context, 'verifyMobile'), style: DsStyle.w700),
-        actions: const [LanguageButton()],
-      ),
+      appBar: AppTopBar(title: tr(context, 'verifyMobile'), role: accentRole, actions: const [LanguageButton()]),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(20, 35, 20, 30),
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 30),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Container(
-                width: 82,
-                height: 82,
-                decoration: BoxDecoration(color: AppColors.primaryLight, borderRadius: BorderRadius.circular(24)),
-                child: const Icon(Icons.sms_rounded, size: 42, color: AppColors.primary),
+              LoginHeader(
+                role: accentRole,
+                icon: Icons.sms_rounded,
+                title: tr(context, 'verifyTitle'),
+                subtitle: '${tr(context, 'otpText')}\n${maskPhone('+91${widget.phoneNumber}')}',
               ),
-              const SizedBox(height: 28),
-              Text(
-                tr(context, 'verifyTitle'),
-                textAlign: TextAlign.center,
-                style: DsStyle.t28w700.copyWith(color: AppColors.title),
-              ),
-              const SizedBox(height: 10),
-              Text(
-                '${tr(context, 'otpText')}\n${maskPhone('+91${widget.phoneNumber}')}',
-                textAlign: TextAlign.center,
-                style: DsStyle.t16w400.copyWith(height: 1.5, color: AppColors.muted),
-              ),
-              const SizedBox(height: 35),
-              TextField(
+              const SizedBox(height: DsSpace.s8),
+              OtpField(
+                fieldKey: const ValueKey('otpField'),
                 controller: _otpController,
-                keyboardType: TextInputType.number,
-                maxLength: 6,
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                textAlign: TextAlign.center,
-                style: DsStyle.t28w700.copyWith(letterSpacing: 10),
-                decoration: const InputDecoration(counterText: '', hintText: '••••••'),
+                error: _codeWrong,
+                autofocus: true,
+                enabled: !_isLoading,
+                onChanged: (_) {
+                  if (_codeWrong) setState(() => _codeWrong = false);
+                },
               ),
-              const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                height: 54,
-                child: ElevatedButton(
-                  onPressed: _isLoading ? null : _verifyOtp,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                  ),
-                  child: _isLoading
-                      ? const SizedBox(
-                          width: 23,
-                          height: 23,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2.5,
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                          ),
-                        )
-                      : Text(
-                          tr(context, 'verifyOtp'),
-                          textAlign: TextAlign.center,
-                          style: DsStyle.t16w700,
-                        ),
-                ),
-              ),
-              const SizedBox(height: 20),
-              TextButton(
-                key: const Key('resendOtp'),
-                onPressed: _secondsLeft > 0 || _resending ? null : _resend,
-                child: Text(
-                  _secondsLeft > 0 ? trf(context, 'resendIn', {'s': _secondsLeft}) : tr(context, 'resendOtp'),
-                  style: DsStyle.w700.copyWith(color: _secondsLeft > 0 ? AppColors.faint : AppColors.primary),
-                ),
-              ),
+              const SizedBox(height: DsSpace.s6),
+              AppButton(key: const ValueKey('otpVerify'), label: tr(context, 'verifyOtp'), loading: _isLoading, onPressed: _verifyOtp),
+              const SizedBox(height: DsSpace.s4),
+              Center(child: OtpResendButton(buttonKey: const Key('resendOtp'), countdown: _countdown, busy: _resending, onPressed: _resend)),
+              const SizedBox(height: DsSpace.s2),
+              Text(tr(context, 'terms'), textAlign: TextAlign.center, style: DsType.caption.copyWith(height: 1.4, color: c.textMuted)),
             ],
           ),
         ),
@@ -270,4 +219,3 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     );
   }
 }
-

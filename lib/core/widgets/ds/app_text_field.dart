@@ -26,6 +26,9 @@ class AppTextField extends StatelessWidget {
   final String? prefixText;
   final Widget? suffix;
   final IconData? prefixIcon;
+
+  /// Any widget in front of the text (a flag and +91). Wins over [prefixIcon].
+  final Widget? prefix;
   final ValueChanged<String>? onChanged;
   final ValueChanged<String>? onSubmitted;
   final Iterable<String>? autofillHints;
@@ -51,6 +54,7 @@ class AppTextField extends StatelessWidget {
     this.prefixText,
     this.suffix,
     this.prefixIcon,
+    this.prefix,
     this.onChanged,
     this.onSubmitted,
     this.autofillHints,
@@ -91,7 +95,7 @@ class AppTextField extends StatelessWidget {
             counterText: '',
             prefixText: prefixText,
             prefixStyle: DsType.body.copyWith(color: c.textStrong),
-            prefixIcon: prefixIcon == null ? null : Icon(prefixIcon, color: c.textMuted),
+            prefixIcon: prefix ?? (prefixIcon == null ? null : Icon(prefixIcon, color: c.textMuted)),
             suffixIcon: suffix,
             errorText: null,
             enabledBorder: hasError ? _border(c.error, 2) : null,
@@ -114,4 +118,52 @@ class AppTextField extends StatelessWidget {
   }
 
   OutlineInputBorder _border(Color color, double w) => OutlineInputBorder(borderRadius: DsRadius.all(DsRadius.md), borderSide: BorderSide(color: color, width: w));
+}
+
+/// [AppTextField] inside a `Form`: it runs [validator] on `formKey.currentState!.validate()`
+/// and shows the message under the box with the error icon. The text is read from
+/// [controller], so setting the controller from code works too.
+class AppTextFormField extends FormField<String> {
+  AppTextFormField({
+    super.key,
+    required String label,
+    required TextEditingController controller,
+    String? hint,
+    String? helper,
+    Widget? prefix,
+    String? prefixText,
+    TextInputType? keyboardType,
+    TextInputAction? textInputAction,
+    List<TextInputFormatter>? inputFormatters,
+    int? maxLength,
+    FormFieldValidator<String>? validator,
+    super.autovalidateMode,
+    Iterable<String>? autofillHints,
+    ValueChanged<String>? onSubmitted,
+    Key? fieldKey,
+    bool autofocus = false,
+  }) : super(
+          initialValue: controller.text,
+          validator: validator == null ? null : (_) => validator(controller.text),
+          builder: (state) => AppTextField(
+            fieldKey: fieldKey,
+            label: label,
+            controller: controller,
+            hint: hint,
+            helper: helper,
+            prefix: prefix,
+            prefixText: prefixText,
+            keyboardType: keyboardType,
+            textInputAction: textInputAction,
+            inputFormatters: inputFormatters,
+            maxLength: maxLength,
+            autofillHints: autofillHints,
+            autofocus: autofocus,
+            error: state.errorText,
+            onChanged: (v) {
+              state.didChange(v);
+            },
+            onSubmitted: onSubmitted,
+          ),
+        );
 }
