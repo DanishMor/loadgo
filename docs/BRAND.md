@@ -33,7 +33,7 @@ Niyam:
 8. 12 bhashaon mein naya text ek saath (`docs/NAMING.md` ke tokens `{app}`), Urdu/Kashmiri RTL.
 
 ## 4. Logo
-Logo mark + wordmark vector (CustomPainter) mein banega (L13), kisi aur brand jaisa ya copyrighted nahi. Placeholder abhi: safed truck, neele background par (`tool/make_placeholder_icon.dart`). **Final logo designer se approve karwana hai** (aur assignment of rights likhwana: `docs/LEGAL_QUESTIONS.md` E2).
+Logo mark + wordmark vector (CustomPainter) mein banega (L13), kisi aur brand jaisa ya copyrighted nahi. Mark: navy tile par safed "L" jiska paer tir banta hai, upar saffron dot (`LogoMark` in `lib/core/widgets/ds/brand_logo.dart`; icon files `docs/ICON_AND_SPLASH.md`). **Final logo designer se approve karwana hai** (aur assignment of rights likhwana: `docs/LEGAL_QUESTIONS.md` E2).
 * Chhoti jagah (icon, favicon): sirf mark. Bade (splash, hosting header): mark + wordmark.
 * Saaf jagah (clear space): mark ki oonchai ka aadha chaaron taraf. Minimum size 24 dp (mark), 96 dp (wordmark).
 * Sirf do rang version: gehra navy par safed, ya safed par gehra navy. Accent (amber) sirf mark ke ek chhote hisse mein.
