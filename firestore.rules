@@ -1384,7 +1384,17 @@ service cloud.firestore {
 
     // One status step by the assigned driver. Pickup and delivery carry the
     // customer's OTP, which must equal the secret only the customer can read.
-    // TODO(functions): rate-limit wrong OTP attempts.
+    // Wrong guesses are limited by otp_attempts (F2); a server-side second check comes with Functions.
+    // A guess stored in otp_attempts/{kind} (counted, F2) that equals the secret,
+    // not older than 10 minutes, with the counter reset in the same batch.
+    function guessCommitted(bookingId, kind) {
+      let p = /databases/$(database)/documents/bookings/$(bookingId)/otp_attempts/$(kind);
+      return exists(p)
+          && get(p).data.guess == tripOtps(bookingId)[kind + 'Otp']
+          && get(p).data.guessAt > request.time - duration.value(10, 'm')
+          && existsAfter(p) && getAfter(p).data.count == 0;
+    }
+
     function driverStep(bookingId) {
       let before = resource.data.status;
       let after = request.resource.data;
@@ -1394,10 +1404,12 @@ service cloud.firestore {
               || (after.status == 'picked_up'
                   && changedKeys().hasOnly(['status', 'timeline', 'updatedAt', 'pickupOtp', 'pickupProof'])
                   && after.pickupOtp == tripOtps(bookingId).pickupOtp
+                  && guessCommitted(bookingId, 'pickup')
                   && validPickupProof(after.pickupProof))
               || (after.status == 'delivered'
                   && changedKeys().hasOnly(['status', 'timeline', 'updatedAt', 'deliveryOtp', 'deliveryProof'])
                   && after.deliveryOtp == tripOtps(bookingId).deliveryOtp
+                  && guessCommitted(bookingId, 'delivery')
                   && validDeliveryProof(after.deliveryProof)));
     }
 
@@ -1790,6 +1802,51 @@ service cloud.firestore {
 
       // secrets/otp: pickup and delivery codes. Only the customer creates and
       // reads them; nobody can change them afterwards.
+      // otp_attempts/{pickup|delivery}: every guess at a trip code is written
+      // here first (counter + 1, the guess itself), because rules cannot count
+      // requests they refuse. The 5th guess locks the code entry for 15 minutes.
+      // The booking step then only passes with a stored guess equal to the
+      // secret, and resets the counter in the same batch. Customer and driver read.
+      match /otp_attempts/{kind} {
+        function attemptDriver() {
+          let b = get(docPath('bookings', bookingId)).data;
+          return request.auth.uid == b.driverId || request.auth.uid == b.get('assignedDriverId', '');
+        }
+        function attemptKeysOk(d) {
+          return d.keys().hasOnly(['count', 'guess', 'guessAt', 'actorId'])
+              && d.keys().hasAll(['count', 'guess', 'guessAt', 'actorId'])
+              && d.count is int && d.guess is string && d.guess.matches('^[0-9]{6}$')
+              && d.actorId == request.auth.uid;
+        }
+        // The next guess: +1. Count 5 means locked until guessAt + 15 minutes
+        // (no client clock involved); after that counting restarts at 1.
+        function attemptNext(prevExists) {
+          let d = request.resource.data;
+          let full = prevExists && resource.data.count >= 5;
+          let expired = full && resource.data.guessAt + duration.value(15, 'm') <= request.time;
+          let prevCount = (!prevExists || expired) ? 0 : resource.data.count;
+          return attemptKeysOk(d)
+              && (!full || expired)
+              && d.count == prevCount + 1 && d.count <= 5
+              && d.guessAt == request.time;
+        }
+        // After the right code: clear the counter. Only possible while the stored guess is the secret.
+        function attemptReset() {
+          let d = request.resource.data;
+          return attemptKeysOk(d)
+              && d.count == 0
+              && d.guess == resource.data.guess && d.guessAt == resource.data.guessAt
+              && d.guess == get(/databases/$(database)/documents/bookings/$(bookingId)/secrets/otp).data[kind + 'Otp'];
+        }
+        allow get: if signedIn()
+            && kind in ['pickup', 'delivery']
+            && (attemptDriver() || get(docPath('bookings', bookingId)).data.customerId == request.auth.uid);
+        allow list, delete: if false;
+        allow create: if signedIn() && kind in ['pickup', 'delivery'] && attemptDriver() && attemptNext(false);
+        allow update: if signedIn() && kind in ['pickup', 'delivery'] && attemptDriver()
+            && (attemptNext(true) || attemptReset());
+      }
+
       match /secrets/{secretId} {
         allow get: if signedIn() && get(docPath('bookings', bookingId)).data.customerId == request.auth.uid;
         allow create: if signedIn()
@@ -2559,7 +2616,7 @@ service cloud.firestore {
       allow create: if signedIn()
           && request.resource.data.keys().hasOnly(['type', 'actorId', 'targetId', 'bookingId', 'loadId', 'data', 'createdAt'])
           && request.resource.data.actorId == request.auth.uid
-          && request.resource.data.type in ['verification', 'accept', 'status_change', 'cancel', 'risk_change', 'reassign', 'config_change', 'user_action', 'evidence', 'doc_view', 'assign', 'contact_view', 'chat_view', 'lr_issue', 'lr_version', 'lr_cancel', 'lr_share', 'lr_revoke', 'lr_mode', 'inspection_request', 'inspection_approve', 'inspection_deny', 'inspection_expire']
+          && request.resource.data.type in ['verification', 'accept', 'status_change', 'cancel', 'risk_change', 'reassign', 'config_change', 'user_action', 'evidence', 'doc_view', 'assign', 'contact_view', 'chat_view', 'lr_issue', 'lr_version', 'lr_cancel', 'lr_share', 'lr_revoke', 'lr_mode', 'inspection_request', 'inspection_approve', 'inspection_deny', 'inspection_expire', 'otp_lock']
           && request.resource.data.data is map
           && request.resource.data.createdAt == request.time
           && (!(request.resource.data.type in ['verification', 'risk_change', 'reassign', 'config_change', 'user_action', 'contact_view', 'chat_view']) || isAdmin())
@@ -2569,6 +2626,9 @@ service cloud.firestore {
           && (!(request.resource.data.type in ['lr_issue', 'lr_version', 'lr_cancel', 'lr_share', 'lr_revoke', 'lr_mode', 'inspection_request', 'inspection_approve', 'inspection_deny', 'inspection_expire'])
               || (request.resource.data.bookingId is string
                   && lrAuditParty(get(docPath('bookings', request.resource.data.bookingId)).data)))
+          && (request.resource.data.type != 'otp_lock'
+              || (request.resource.data.bookingId is string
+                  && request.auth.uid in [get(docPath('bookings', request.resource.data.bookingId)).data.driverId, get(docPath('bookings', request.resource.data.bookingId)).data.get('assignedDriverId', '')]))
           && (!(request.resource.data.type in ['evidence', 'doc_view'])
               || (request.resource.data.bookingId is string
                   && request.auth.uid in [get(docPath('bookings', request.resource.data.bookingId)).data.driverId, get(docPath('bookings', request.resource.data.bookingId)).data.customerId]));

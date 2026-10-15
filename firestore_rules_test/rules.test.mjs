@@ -202,6 +202,30 @@ async function seedOpenLoad() {
 }
 
 const OTPS = { pickupOtp: '482913', deliveryOtp: '771204' };
+// F2: a guess at a trip code is stored first (counted); the booking step then
+// resets the counter in the same batch.
+const attemptRef = (db, id, kind) => doc(db, 'bookings', id, 'otp_attempts', kind);
+async function storeGuess(db, uid, id, kind, guess) {
+  const snap = await getDoc(attemptRef(db, id, kind));
+  const prev = snap.exists() ? snap.data() : null;
+  const expired = prev && prev.count >= 5 && prev.guessAt.toMillis() + 15 * 60 * 1000 <= Date.now();
+  const count = prev && !expired ? prev.count + 1 : 1;
+  return setDoc(attemptRef(db, id, kind), { count, guess, guessAt: serverTimestamp(), actorId: uid });
+}
+async function addReset(batch, db, uid, id, kind) {
+  const snap = await getDoc(attemptRef(db, id, kind));
+  if (!snap.exists()) return;
+  const d = snap.data();
+  batch.update(attemptRef(db, id, kind), { count: 0, guess: d.guess, guessAt: d.guessAt, actorId: uid });
+}
+// A booking step with the counter reset in the same batch.
+async function stepWithReset(db, uid, id, kind, status, extra = {}) {
+  const b = writeBatch(db);
+  b.update(doc(db, 'bookings', id), { status, [`timeline.${status}`]: serverTimestamp(), updatedAt: serverTimestamp(), ...extra });
+  if (status === 'delivered') b.update(doc(db, 'loads', id), { status: 'closed', closedAt: serverTimestamp() });
+  await addReset(b, db, uid, id, kind);
+  return b.commit();
+}
 const PICKUP = { packages: 40, weightTons: 7.5, sealNumber: 'SL-9', damageNote: '' };
 const DELIVERY = { receiverName: 'Anil', receiverPhone: '+919811111111', damageNote: '' };
 
@@ -1596,17 +1620,22 @@ describe('transporter (Task 67)', () => {
       await setDoc(doc(db, 'bookings', 'B1', 'secrets', 'otp'), { pickupOtp: '482913', deliveryOtp: '771204' });
     });
     const d = as('driver1');
-    const close = (db, extra) => {
+    const close = async (db, uid, extra) => {
       const b = writeBatch(db);
       b.update(doc(db, 'bookings', 'B1'), { status: 'delivered', 'timeline.delivered': serverTimestamp(), updatedAt: serverTimestamp(), ...extra });
       b.update(doc(db, 'loads', 'L1'), { status: 'closed', closedAt: serverTimestamp() });
       b.set(doc(db, 'notifications', 'n1'), { userId: 'customer1', type: 'status_changed', message: 'A -> B', relatedId: 'B1', status: 'delivered', read: false, createdAt: serverTimestamp() });
+      await addReset(b, db, uid, 'B1', 'delivery');
       return b.commit();
     };
     const proof = { receiverName: 'Anil', receiverPhone: '+919811111111', damageNote: '' };
-    await assertFails(close(as('driver2'), { deliveryOtp: '771204', deliveryProof: proof }), 'not on this trip');
-    await assertFails(close(d, { deliveryOtp: '000000', deliveryProof: proof }), 'wrong OTP');
-    await assertSucceeds(close(d, { deliveryOtp: '771204', deliveryProof: proof }));
+    await assertFails(storeGuess(as('driver2'), 'driver2', 'B1', 'delivery', '771204'), 'not on this trip');
+    await assertFails(close(as('driver2'), 'driver2', { deliveryOtp: '771204', deliveryProof: proof }), 'not on this trip');
+    await assertFails(close(d, 'driver1', { deliveryOtp: '771204', deliveryProof: proof }), 'no counted guess stored');
+    await assertSucceeds(storeGuess(d, 'driver1', 'B1', 'delivery', '000000'));
+    await assertFails(close(d, 'driver1', { deliveryOtp: '000000', deliveryProof: proof }), 'wrong OTP');
+    await assertSucceeds(storeGuess(d, 'driver1', 'B1', 'delivery', '771204'));
+    await assertSucceeds(close(d, 'driver1', { deliveryOtp: '771204', deliveryProof: proof }));
     // The transporter then frees the vehicle (it is theirs).
     await assertSucceeds(updateDoc(doc(as('tr1'), 'vehicles', 'tv1'), { availability: 'available' }));
   });
@@ -2134,7 +2163,8 @@ describe('bookings', () => {
     await assertSucceeds(step(as('driver1'), 'loading'));
     await seed((db) => setDoc(doc(db, 'bookings', 'L1', 'secrets', 'otp'), OTPS));
     await assertFails(step(as('driver1'), 'picked_up'), 'needs OTP');
-    await assertSucceeds(step(as('driver1'), 'picked_up', { pickupOtp: OTPS.pickupOtp, pickupProof: PICKUP }));
+    await assertSucceeds(storeGuess(as('driver1'), 'driver1', 'L1', 'pickup', OTPS.pickupOtp));
+    await assertSucceeds(stepWithReset(as('driver1'), 'driver1', 'L1', 'pickup', 'picked_up', { pickupOtp: OTPS.pickupOtp, pickupProof: PICKUP }));
     await assertSucceeds(step(as('driver1'), 'in_transit'));
     await assertFails(updateDoc(doc(as('driver1'), 'bookings', 'L1'), { budget: 1 }));
     await assertFails(deleteDoc(doc(as('driver1'), 'bookings', 'L1')));
@@ -2162,13 +2192,8 @@ describe('bookings', () => {
     await seed((s) => setDoc(doc(s, 'bookings', 'L1', 'secrets', 'otp'), OTPS));
     const db = as('driver1');
     await assertFails(updateDoc(doc(db, 'loads', 'L1'), { status: 'closed', closedAt: serverTimestamp() }));
-    const b = writeBatch(db);
-    b.update(doc(db, 'bookings', 'L1'), {
-      status: 'delivered', 'timeline.delivered': serverTimestamp(), updatedAt: serverTimestamp(),
-      deliveryOtp: OTPS.deliveryOtp, deliveryProof: DELIVERY,
-    });
-    b.update(doc(db, 'loads', 'L1'), { status: 'closed', closedAt: serverTimestamp() });
-    await assertSucceeds(b.commit());
+    await assertSucceeds(storeGuess(db, 'driver1', 'L1', 'delivery', OTPS.deliveryOtp));
+    await assertSucceeds(stepWithReset(db, 'driver1', 'L1', 'delivery', 'delivered', { deliveryOtp: OTPS.deliveryOtp, deliveryProof: DELIVERY }));
     await assertFails(updateDoc(doc(as('customer1'), 'loads', 'L1'), { status: 'open' }));
   });
 });
@@ -2514,28 +2539,86 @@ describe('trip OTPs, proof of delivery and e-way bill', () => {
     await seedBooking('loading');
     await seed((s) => setDoc(otpRef(s), OTPS));
     const d = as('driver1');
-    await assertFails(step(d, 'picked_up', { pickupOtp: '000000', pickupProof: PICKUP }));
-    await assertFails(step(d, 'picked_up', { pickupOtp: OTPS.deliveryOtp, pickupProof: PICKUP }));
-    await assertFails(step(d, 'picked_up', { pickupOtp: OTPS.pickupOtp, pickupProof: { ...PICKUP, packages: 0 } }));
-    await assertFails(step(d, 'picked_up', { pickupOtp: OTPS.pickupOtp, pickupProof: { ...PICKUP, extra: 1 } }));
-    await assertFails(step(d, 'picked_up', { pickupOtp: OTPS.pickupOtp, pickupProof: PICKUP, budget: 1 }));
-    await assertSucceeds(step(d, 'picked_up', { pickupOtp: OTPS.pickupOtp, pickupProof: PICKUP }));
+    const go = (extra) => stepWithReset(d, 'driver1', 'L1', 'pickup', 'picked_up', extra);
+    await assertSucceeds(storeGuess(d, 'driver1', 'L1', 'pickup', '000000'));
+    await assertFails(go({ pickupOtp: '000000', pickupProof: PICKUP }));
+    await assertSucceeds(storeGuess(d, 'driver1', 'L1', 'pickup', OTPS.deliveryOtp));
+    await assertFails(go({ pickupOtp: OTPS.deliveryOtp, pickupProof: PICKUP }));
+    await assertSucceeds(storeGuess(d, 'driver1', 'L1', 'pickup', OTPS.pickupOtp));
+    await assertFails(go({ pickupOtp: OTPS.pickupOtp, pickupProof: { ...PICKUP, packages: 0 } }));
+    await assertFails(go({ pickupOtp: OTPS.pickupOtp, pickupProof: { ...PICKUP, extra: 1 } }));
+    await assertFails(go({ pickupOtp: OTPS.pickupOtp, pickupProof: PICKUP, budget: 1 }));
+    await assertSucceeds(go({ pickupOtp: OTPS.pickupOtp, pickupProof: PICKUP }));
   });
 
   test('delivery needs the delivery OTP and a receiver name', async () => {
     await seedBooking('unloading');
     await seed((s) => setDoc(otpRef(s), OTPS));
     const d = as('driver1');
-    const close = (extra) => {
-      const b = writeBatch(d);
-      b.update(doc(d, 'bookings', 'L1'), { status: 'delivered', 'timeline.delivered': serverTimestamp(), updatedAt: serverTimestamp(), ...extra });
-      b.update(doc(d, 'loads', 'L1'), { status: 'closed', closedAt: serverTimestamp() });
-      return b.commit();
-    };
+    const close = (extra) => stepWithReset(d, 'driver1', 'L1', 'delivery', 'delivered', extra);
+    await assertSucceeds(storeGuess(d, 'driver1', 'L1', 'delivery', OTPS.pickupOtp));
     await assertFails(close({ deliveryOtp: OTPS.pickupOtp, deliveryProof: DELIVERY }));
+    await assertSucceeds(storeGuess(d, 'driver1', 'L1', 'delivery', OTPS.deliveryOtp));
     await assertFails(close({ deliveryOtp: OTPS.deliveryOtp, deliveryProof: { ...DELIVERY, receiverName: '' } }));
     await assertFails(close({ deliveryOtp: OTPS.deliveryOtp, deliveryProof: { ...DELIVERY, receiverPhone: 'abc' } }));
     await assertSucceeds(close({ deliveryOtp: OTPS.deliveryOtp, deliveryProof: DELIVERY }));
+  });
+
+  test('F2: five guesses lock the entry for 15 minutes; the counter cannot be skipped, lowered or forged', async () => {
+    await seedBooking('loading');
+    await seed((s) => setDoc(otpRef(s), OTPS));
+    const d = as('driver1');
+    const ref = (db) => attemptRef(db, 'L1', 'pickup');
+    const raw = (db, uid, count, guess, extra = {}) => setDoc(ref(db), { count, guess, guessAt: serverTimestamp(), actorId: uid, ...extra });
+    await assertFails(stepWithReset(d, 'driver1', 'L1', 'pickup', 'picked_up', { pickupOtp: OTPS.pickupOtp, pickupProof: PICKUP }), 'no stored guess');
+    await assertFails(raw(d, 'driver1', 3, '111111'), 'cannot start at 3');
+    await assertFails(raw(d, 'driver2', 1, '111111'), 'actor must be me');
+    await assertFails(raw(as('driver2'), 'driver2', 1, '111111'), 'not this trip');
+    await assertFails(raw(as('customer1'), 'customer1', 1, '111111'), 'the customer does not guess');
+    await assertFails(raw(d, 'driver1', 1, '12345'), 'six digits');
+    await assertSucceeds(storeGuess(d, 'driver1', 'L1', 'pickup', '111111'));
+    await assertFails(raw(d, 'driver1', 1, '222222'), 'count must go up by one');
+    await assertFails(raw(d, 'driver1', 3, '222222'), 'no skipping');
+    await assertFails(raw(d, 'driver1', 0, '222222'), 'no lowering');
+    await assertFails(deleteDoc(ref(d)), 'no delete');
+    const wrong = (await getDoc(ref(d))).data();
+    await assertFails(updateDoc(ref(d), { count: 0, guess: wrong.guess, guessAt: wrong.guessAt, actorId: 'driver1' }), 'reset only after the right code');
+    for (const g of ['222222', '333333', '444444']) await assertSucceeds(storeGuess(d, 'driver1', 'L1', 'pickup', g));
+    await assertSucceeds(storeGuess(d, 'driver1', 'L1', 'pickup', '555555'));
+    await assertFails(raw(d, 'driver1', 5, '666666'));
+    await assertFails(raw(d, 'driver1', 1, '666666'), 'locked');
+    await assertSucceeds(getDoc(ref(as('customer1'))));
+    await assertSucceeds(getDoc(ref(d)));
+    await assertFails(getDoc(ref(as('driver2'))));
+    await assertSucceeds(storeGuess(d, 'driver1', 'L1', 'delivery', '123123'));
+    const audit = (db, uid) => addDoc(collection(db, 'audit_events'), { type: 'otp_lock', actorId: uid, targetId: 'customer1', bookingId: 'L1', data: { kind: 'pickup' }, createdAt: serverTimestamp() });
+    await assertSucceeds(audit(d, 'driver1'));
+    await assertFails(audit(as('driver2'), 'driver2'));
+    await assertFails(audit(as('customer1'), 'customer1'));
+  });
+
+  test('F2: after the lock runs out counting restarts at 1; a right code resets the counter', async () => {
+    await seedBooking('loading');
+    await seed(async (s) => {
+      await setDoc(otpRef(s), OTPS);
+      await setDoc(attemptRef(s, 'L1', 'pickup'), { count: 5, guess: '999999', guessAt: Timestamp.fromMillis(Date.now() - 16 * 60000), actorId: 'driver1' });
+    });
+    const d = as('driver1');
+    const raw = (count, guess) => setDoc(attemptRef(d, 'L1', 'pickup'), { count, guess, guessAt: serverTimestamp(), actorId: 'driver1' });
+    await assertFails(raw(6, '111111'), 'never above 5');
+    await assertFails(raw(2, '111111'), 'restart is at 1');
+    await assertSucceeds(storeGuess(d, 'driver1', 'L1', 'pickup', OTPS.pickupOtp));
+    await assertSucceeds(stepWithReset(d, 'driver1', 'L1', 'pickup', 'picked_up', { pickupOtp: OTPS.pickupOtp, pickupProof: PICKUP }));
+    assert.equal((await getDoc(attemptRef(d, 'L1', 'pickup'))).data().count, 0);
+  });
+
+  test('F2: a stored guess older than 10 minutes cannot be used for the step', async () => {
+    await seedBooking('loading');
+    await seed(async (s) => {
+      await setDoc(otpRef(s), OTPS);
+      await setDoc(attemptRef(s, 'L1', 'pickup'), { count: 1, guess: OTPS.pickupOtp, guessAt: Timestamp.fromMillis(Date.now() - 11 * 60000), actorId: 'driver1' });
+    });
+    await assertFails(stepWithReset(as('driver1'), 'driver1', 'L1', 'pickup', 'picked_up', { pickupOtp: OTPS.pickupOtp, pickupProof: PICKUP }));
   });
 
   test('without the customer secret nobody can pick up', async () => {

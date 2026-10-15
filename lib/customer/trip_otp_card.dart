@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../core/constants/logistics.dart';
 import '../core/l10n/l10n.dart';
 import '../core/models/booking.dart';
+import '../core/services/trip_otp_attempts.dart';
 import '../core/services/trip_otp_service.dart';
 import '../core/widgets/common.dart';
 import '../core/theme/design_tokens.dart';
@@ -74,6 +75,24 @@ class _TripOtpCardState extends State<TripOtpCard> {
               ),
               if (beforePickup) _code(tr(context, 'pickupOtp'), o.pickupOtp, big: true),
               _code(tr(context, 'deliveryOtp'), o.deliveryOtp, big: !beforePickup),
+              StreamBuilder<Duration?>(
+                stream: TripOtpAttempts.watchLock(widget.booking.id, beforePickup ? TripOtpAttempts.pickup : TripOtpAttempts.delivery),
+                builder: (context, lock) {
+                  if (lock.data == null) return const SizedBox.shrink();
+                  final c = context.ds;
+                  return Container(
+                    key: const ValueKey('otpLockNotice'),
+                    margin: const EdgeInsets.only(top: DsSpace.s3),
+                    padding: const EdgeInsets.all(DsSpace.s3),
+                    decoration: BoxDecoration(color: c.errorBg, borderRadius: DsRadius.all(DsRadius.md)),
+                    child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      Icon(Icons.lock_clock_rounded, color: c.error),
+                      const SizedBox(width: DsSpace.s2),
+                      Expanded(child: Text(tr(context, 'tripOtpLockNotice'), style: DsStyle.inherit.copyWith(color: c.text))),
+                    ]),
+                  );
+                },
+              ),
               const SizedBox(height: 8),
               Text(tr(context, 'otpShareNote'), style: DsStyle.t12w400.copyWith(color: AppColors.faint)),
             ],

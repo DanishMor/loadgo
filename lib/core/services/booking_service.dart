@@ -16,6 +16,7 @@ import 'server_clock.dart';
 import '../documents/doc_expiry.dart';
 import 'notification_service.dart';
 import 'risk_service.dart';
+import 'trip_otp_attempts.dart';
 
 /// Thrown when a load was taken by another driver, closed, or never existed.
 class LoadUnavailableException implements Exception {
@@ -27,7 +28,12 @@ class LoadUnavailableException implements Exception {
 class OtpRequiredException implements Exception {}
 
 /// The rules rejected the OTP (it does not match the customer's code).
-class WrongOtpException implements Exception {}
+class WrongOtpException implements Exception {
+  /// Guesses left before the entry locks (null when unknown), and the lock if this one caused it.
+  final int? attemptsLeft;
+  final Duration? lockedFor;
+  WrongOtpException({this.attemptsLeft, this.lockedFor});
+}
 
 /// The driver's licence or the vehicle's insurance/permit/fitness paper is expired
 /// (no admin override). [what] is 'licence' or 'vehicle'.
@@ -216,12 +222,20 @@ class BookingService {
   static Future<String> advance(String bookingId, {String? otp, PickupProof? pickup, DeliveryProof? delivery}) async {
     final uid = Backend.requireUid();
     final ref = _col.doc(bookingId);
+    // F2: a guess at a trip code is stored and counted first (5 wrong ones lock it for 15 minutes).
+    final kind = pickup != null ? TripOtpAttempts.pickup : (delivery != null ? TripOtpAttempts.delivery : null);
+    GuessState? guess;
     try {
+      if (kind != null && otp != null && RegExp(r'^\d{6}$').hasMatch(otp)) {
+        guess = await TripOtpAttempts.recordGuess(bookingId, kind, otp);
+      }
       final next = await _advance(ref, uid, otp: otp, pickup: pickup, delivery: delivery);
       TripShareService.syncStatus(bookingId, next);
       return next;
     } on FirebaseException catch (e) {
-      if (e.code == 'permission-denied' && otp != null) throw WrongOtpException();
+      if (e.code == 'permission-denied' && otp != null) {
+        throw WrongOtpException(attemptsLeft: guess?.attemptsLeft, lockedFor: guess?.lockedFor);
+      }
       rethrow;
     }
   }
@@ -243,6 +257,10 @@ class BookingService {
       // An assigned driver does not own the vehicle: the transporter frees it
       // (TransporterService.releaseFinished) when the trip is delivered.
       final freeVehicle = next == BookingStatus.delivered && holder ? await _freeVehicleLater(tx, booking.vehicleId) : () {};
+      // The stored guess is cleared in the same batch (the rules require it).
+      final attemptsKind = next == BookingStatus.pickedUp ? TripOtpAttempts.pickup : (next == BookingStatus.delivered ? TripOtpAttempts.delivery : null);
+      final attemptsRef = attemptsKind == null ? null : TripOtpAttempts.ref(booking.id, attemptsKind);
+      final attemptsData = attemptsRef == null ? null : (await tx.get(attemptsRef)).data();
 
       // Starting an advance booking is the moment the vehicle becomes busy.
       void Function()? markBusy;
@@ -260,6 +278,9 @@ class BookingService {
       }
 
       markBusy?.call();
+      if (attemptsRef != null && attemptsData != null) {
+        tx.update(attemptsRef, {'count': 0, 'guess': attemptsData['guess'], 'guessAt': attemptsData['guessAt'], 'actorId': uid});
+      }
       tx.update(ref, {
         'status': next,
         'timeline.$next': FieldValue.serverTimestamp(),

@@ -41,7 +41,10 @@ class AuditType {
   static const inspectionApprove = 'inspection_approve';
   static const inspectionDeny = 'inspection_deny';
   static const inspectionExpire = 'inspection_expire';
-  static const all = [verification, accept, statusChange, cancel, riskChange, reassign, configChange, userAction, evidence, docView, assign, contactView, chatView, lrIssue, lrVersion, lrCancel, lrShare, lrRevoke, lrMode, inspectionRequest, inspectionApprove, inspectionDeny, inspectionExpire];
+
+  /// Trip code entry locked after 5 wrong guesses (F2).
+  static const otpLock = 'otp_lock';
+  static const all = [verification, accept, statusChange, cancel, riskChange, reassign, configChange, userAction, evidence, docView, assign, contactView, chatView, lrIssue, lrVersion, lrCancel, lrShare, lrRevoke, lrMode, inspectionRequest, inspectionApprove, inspectionDeny, inspectionExpire, otpLock];
 }
 
 class AuditService {

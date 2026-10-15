@@ -10,7 +10,9 @@ import 'package:flutter/material.dart';
 import '../core/claims/claim_screens.dart';
 import '../core/constants/logistics.dart';
 import '../core/models/booking.dart';
+import '../core/security/otp_limits.dart' show minutesLeft;
 import '../core/services/booking_service.dart';
+import '../core/services/trip_otp_attempts.dart';
 import '../core/share/share_widgets.dart';
 import '../core/widgets/cancel_reason_picker.dart';
 import '../core/widgets/common.dart';
@@ -223,9 +225,18 @@ class _NextStatusButtonState extends State<_NextStatusButton> {
         TripEvidenceService.saveGps(widget.booking.id, pickup: next == BookingStatus.pickedUp, place: next == BookingStatus.pickedUp ? widget.booking.pickup : widget.booking.drop).then((_) {}, onError: (_) {});
       }
       if (mounted) showSnack(context, tr(context, 'statusUpdated'));
-    } on WrongOtpException {
+    } on OtpLockedException catch (e) {
+      if (mounted) showSnack(context, trf(context, 'tripOtpLockedMin', {'m': minutesLeft(e.remaining)}));
+    } on WrongOtpException catch (e) {
       // Try again goes back to the code and proof form (the customer can read the code out again).
-      if (mounted) showRetrySnack(context, tr(context, 'wrongOtp'), () => _advance(next));
+      if (!mounted) return;
+      if (e.lockedFor != null) {
+        showSnack(context, trf(context, 'tripOtpLockedMin', {'m': minutesLeft(e.lockedFor!)}));
+      } else {
+        final left = e.attemptsLeft;
+        final text = left == null ? tr(context, 'wrongOtp') : '${tr(context, 'wrongOtp')} ${trf(context, 'otpAttemptsLeft', {'n': left})}';
+        showRetrySnack(context, text, () => _advance(next));
+      }
     } catch (e) {
       if (TripActionQueue.isNetworkError(e)) {
         await _queue(next, otp, pickup, delivery);
