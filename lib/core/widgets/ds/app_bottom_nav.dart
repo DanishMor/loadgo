@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../l10n/l10n.dart';
 import '../../theme/design_tokens.dart';
+import 'haptics.dart';
 
 /// One tab of the bottom bar. [badge] is a count of new things (0 = none).
 class AppNavItem {
@@ -39,7 +40,10 @@ class AppBottomNav extends StatelessWidget {
   Widget build(BuildContext context) {
     return NavigationBar(
       selectedIndex: index.clamp(0, items.length - 1),
-      onDestinationSelected: onChanged,
+      onDestinationSelected: (i) {
+        if (i != index) Haptics.tap();
+        onChanged(i);
+      },
       height: DsSpace.tapMin + DsSpace.s6,
       labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
       destinations: [

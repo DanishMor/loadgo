@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../theme/design_tokens.dart';
+import 'haptics.dart';
 
 /// Which button. One [primary] (saffron) action per screen; the rest are quieter.
 enum AppButtonKind {
@@ -53,6 +54,19 @@ class AppButton extends StatelessWidget {
     final height = big ? DsSpace.tapBig : DsSpace.tapMin + DsSpace.s1; // 64 or 52
     final textStyle = (big ? DsType.subtitle.copyWith(fontSize: 18) : DsType.label.copyWith(fontSize: 16));
     final disabled = loading || onPressed == null;
+    // A small buzz on every press; a firmer one before something destructive.
+    final press = onPressed == null
+        ? null
+        : () {
+            if (kind == AppButtonKind.danger) {
+              Haptics.warning();
+            } else if (kind == AppButtonKind.tertiary) {
+              Haptics.tap();
+            } else {
+              Haptics.press();
+            }
+            onPressed!();
+          };
     final fgOnFilled = switch (kind) {
       AppButtonKind.primary => scheme.onSecondary,
       AppButtonKind.strong => scheme.onPrimary,
@@ -79,27 +93,27 @@ class AppButton extends StatelessWidget {
     final shape = RoundedRectangleBorder(borderRadius: DsRadius.all(big ? DsRadius.lg : DsRadius.md));
     final button = switch (kind) {
       AppButtonKind.primary => ElevatedButton(
-          onPressed: disabled ? null : onPressed,
+          onPressed: disabled ? null : press,
           style: ElevatedButton.styleFrom(backgroundColor: scheme.secondary, foregroundColor: scheme.onSecondary, elevation: DsElevation.none, minimumSize: minSize, shape: shape, textStyle: textStyle),
           child: child,
         ),
       AppButtonKind.strong => ElevatedButton(
-          onPressed: disabled ? null : onPressed,
+          onPressed: disabled ? null : press,
           style: ElevatedButton.styleFrom(backgroundColor: scheme.primary, foregroundColor: scheme.onPrimary, elevation: DsElevation.none, minimumSize: minSize, shape: shape, textStyle: textStyle),
           child: child,
         ),
       AppButtonKind.danger => ElevatedButton(
-          onPressed: disabled ? null : onPressed,
+          onPressed: disabled ? null : press,
           style: ElevatedButton.styleFrom(backgroundColor: scheme.error, foregroundColor: scheme.onError, elevation: DsElevation.none, minimumSize: minSize, shape: shape, textStyle: textStyle),
           child: child,
         ),
       AppButtonKind.secondary => OutlinedButton(
-          onPressed: disabled ? null : onPressed,
+          onPressed: disabled ? null : press,
           style: OutlinedButton.styleFrom(minimumSize: minSize, shape: shape, textStyle: textStyle),
           child: child,
         ),
       AppButtonKind.tertiary => TextButton(
-          onPressed: disabled ? null : onPressed,
+          onPressed: disabled ? null : press,
           style: TextButton.styleFrom(minimumSize: Size(DsSpace.tapMin, height), shape: shape, textStyle: textStyle),
           child: child,
         ),
@@ -110,7 +124,7 @@ class AppButton extends StatelessWidget {
       enabled: !disabled,
       label: label,
       excludeSemantics: true,
-      onTap: disabled ? null : onPressed,
+      onTap: disabled ? null : press,
       child: expand ? SizedBox(width: double.infinity, child: button) : button,
     );
   }

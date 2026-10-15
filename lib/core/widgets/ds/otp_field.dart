@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 
 import '../../l10n/l10n.dart';
 import '../../theme/design_tokens.dart';
+import 'haptics.dart';
 
 /// A one-time-code input: [length] boxes (6 by default), one real text field
 /// underneath. Because it is one field the phone's SMS code suggestion, paste,
@@ -69,7 +70,10 @@ class _OtpFieldState extends State<OtpField> {
     _last = t;
     setState(() {});
     widget.onChanged?.call(t);
-    if (t.length == widget.length) widget.onCompleted?.call(t);
+    if (t.length == widget.length) {
+      Haptics.tap();
+      widget.onCompleted?.call(t);
+    }
   }
 
   @override
@@ -187,7 +191,10 @@ class OtpResendButton extends StatelessWidget {
   final bool busy;
   final VoidCallback onPressed;
 
-  const OtpResendButton({super.key, required this.countdown, required this.onPressed, this.busy = false});
+  /// The key of the button itself (tests and screens that look for it).
+  final Key? buttonKey;
+
+  const OtpResendButton({super.key, required this.countdown, required this.onPressed, this.busy = false, this.buttonKey});
 
   @override
   Widget build(BuildContext context) {
@@ -196,6 +203,7 @@ class OtpResendButton extends StatelessWidget {
       builder: (context, _) {
         final waiting = countdown.running;
         return TextButton(
+          key: buttonKey,
           onPressed: waiting || busy ? null : onPressed,
           child: Text(waiting ? trf(context, 'resendIn', {'s': countdown.secondsLeft}) : tr(context, 'resendOtp')),
         );

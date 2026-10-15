@@ -18,6 +18,7 @@ import '../services/settings_service.dart';
 import '../widgets/common.dart';
 import 'simple_mode.dart';
 import '../theme/design_tokens.dart';
+import '../widgets/ds/haptics.dart';
 
 /// Settings for both roles: language, notification preferences, consent
 /// center, help and policies, account deletion, app version
@@ -157,6 +158,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   subtitle: Text(tr(context, 'lowEndHint')),
                   value: on,
                   onChanged: LowEndMode.set,
+                ),
+              ),
+              ValueListenableBuilder<bool>(
+                valueListenable: Haptics.enabled,
+                builder: (context, on, _) => SwitchListTile(
+                  key: const ValueKey('settingsHaptics'),
+                  secondary: const Icon(Icons.vibration_rounded),
+                  title: Text(tr(context, 'hapticsTitle')),
+                  subtitle: Text(tr(context, 'hapticsHint')),
+                  value: on,
+                  onChanged: Haptics.set,
                 ),
               ),
               _header('notificationPrefs'),

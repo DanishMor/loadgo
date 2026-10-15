@@ -27,6 +27,7 @@ import 'core/services/session_watcher.dart';
 import 'core/settings/simple_mode.dart';
 import 'core/theme/app_theme.dart';
 import 'core/widgets/app_control_gate.dart';
+import 'core/widgets/ds/haptics.dart';
 import 'core/widgets/live_stream.dart' show OfflineBanner;
 import 'firebase_options.dart';
 import 'route_hooks.dart';
@@ -59,6 +60,7 @@ Future<void> main() async {
     ThemeStore.load(),
     SimpleMode.load(),
     LowEndMode.load(),
+    Haptics.load(),
   ]);
   applyLanguageName(results[0] as String?);
   // Register for push whenever a user is signed in (also after app restarts).

@@ -11,7 +11,8 @@ import '../core/settings/onboarding_screen.dart';
 import 'start_resolvers.dart';
 import 'role_selection_screen.dart';
 import '../core/theme/design_tokens.dart';
-import '../core/widgets/common.dart';
+import '../core/widgets/ds/brand_logo.dart';
+import '../core/widgets/ds/motion.dart';
 
 
 // ============================================================
@@ -75,62 +76,60 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   @override
+  Widget build(BuildContext context) => const SplashView();
+}
+
+/// What the splash screen shows (separate from the start-up logic so it can be tested).
+class SplashView extends StatelessWidget {
+  const SplashView({super.key});
+
+  @override
   Widget build(BuildContext context) {
+    // The brand on its deep-navy gradient: the mark pops in, then the name and
+    // the tagline arrive one after the other, with a thin progress bar below.
+    // With "remove animations" or Low-end mode all of it is simply there.
     return Scaffold(
       body: Container(
         width: double.infinity,
         decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: DsHero.colors,
-          ),
+          gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: DsHero.colors),
         ),
         child: SafeArea(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                width: 120,
-                height: 120,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(30),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.15),
-                      blurRadius: 25,
-                      offset: const Offset(0, 12),
-                    ),
-                  ],
-                ),
-                child: const Icon(Icons.local_shipping_rounded, size: 70, color: AppColors.primary),
-              ),
-              const SizedBox(height: 28),
-              Text(
-                AppInfo.name,
-                style: DsStyle.t32w700.copyWith(color: Colors.white, letterSpacing: 0.5),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                tr(context, 'tagline'),
-                style: DsStyle.t18w400.copyWith(color: Colors.white70),
-              ),
-              const SizedBox(height: 50),
-              const SizedBox(
-                width: 28,
-                height: 28,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2.5,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(DsSpace.s6),
+              child: Semantics(
+                container: true,
+                label: '${AppInfo.name}. ${tr(context, 'tagline')}',
+                child: ExcludeSemantics(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const PopIn(child: LogoMark(size: 112, variant: LogoVariant.reversed)),
+                      const SizedBox(height: DsSpace.s6),
+                      const FadeSlideIn(delay: Duration(milliseconds: 150), child: Wordmark(height: 40, onDark: true)),
+                      const SizedBox(height: DsSpace.s2),
+                      FadeSlideIn(
+                        delay: const Duration(milliseconds: 300),
+                        child: Text(tr(context, 'tagline'), textAlign: TextAlign.center, style: DsStyle.t18w400.copyWith(color: DsBrand.white)),
+                      ),
+                      const SizedBox(height: DsSpace.s12),
+                      SizedBox(
+                        width: 140,
+                        child: ClipRRect(
+                          borderRadius: DsRadius.all(DsRadius.pill),
+                          child: LinearProgressIndicator(minHeight: 4, color: DsBrand.saffron, backgroundColor: DsBrand.white.withValues(alpha: 0.25)),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ],
+            ),
           ),
         ),
       ),
     );
   }
 }
-
 // ============================================================
