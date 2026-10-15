@@ -5,6 +5,7 @@ import '../constants/logistics.dart';
 import '../models/booking.dart';
 import '../models/driver_extras.dart';
 import '../models/ledger_entry.dart';
+import '../money/money.dart';
 import '../identity/profile_extras.dart';
 import '../payments/payment_logic.dart';
 import 'backend.dart';
@@ -27,7 +28,8 @@ class PaymentService {
   static int commissionFor(int amountPaise, {bool pro = false}) {
     final c = PricingService.config;
     final percent = pro ? c.proCommissionPercent : c.commissionPercent;
-    return -(amountPaise * (percent * 100).round() / 10000).round();
+    // Integer basis points (F7): same result, no floating point, safe on the web.
+    return -Money(amountPaise).applyBp((percent * 100).round()).paise;
   }
 
   /// Customer: "I have paid [amountPaise]".
