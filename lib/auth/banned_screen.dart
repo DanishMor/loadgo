@@ -13,17 +13,39 @@ class BannedScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(28),
-          child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-            const Icon(Icons.block_rounded, size: 72, color: Colors.redAccent),
-            const SizedBox(height: 20),
-            Text(tr(context, 'auBannedTitle'), key: const ValueKey('bannedTitle'), textAlign: TextAlign.center, style: DsStyle.t24w700),
-            const SizedBox(height: 10),
-            Text(tr(context, 'auBannedBody'), textAlign: TextAlign.center, style: DsStyle.inherit.copyWith(color: AppColors.muted)),
-            const SizedBox(height: 24),
-            OutlinedButton(key: const ValueKey('bannedLogout'), onPressed: () => AppRoutes.logout(context), child: Text(tr(context, 'logout'))),
-          ]),
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(28),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Icons.block_rounded,
+                  size: 72,
+                  color: Colors.redAccent,
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  tr(context, 'auBannedTitle'),
+                  key: const ValueKey('bannedTitle'),
+                  textAlign: TextAlign.center,
+                  style: DsStyle.t24w700,
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  tr(context, 'auBannedBody'),
+                  textAlign: TextAlign.center,
+                  style: DsStyle.inherit.copyWith(color: AppColors.muted),
+                ),
+                const SizedBox(height: 24),
+                OutlinedButton(
+                  key: const ValueKey('bannedLogout'),
+                  onPressed: () => AppRoutes.logout(context),
+                  child: Text(tr(context, 'logout')),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );

@@ -4,5 +4,7 @@ Outside `lib/core/theme/` nothing should spell a colour (`Color(0x...)`) or buil
 
 Total: **0** colours, **0** text styles in **0** files.
 
+The table is empty: every screen is on the design system. Keep it empty (the test fails on any new hard-coded colour or text style).
+
 | File | `Color(0x...)` | `TextStyle(` |
 |---|---|---|

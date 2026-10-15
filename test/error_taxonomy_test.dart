@@ -55,11 +55,13 @@ void main() {
       for (var i = 0; i < lines.length; i++) {
         final l = lines[i];
         if (l.trimLeft().startsWith('//') || l.contains('debugPrint')) continue;
-        if (RegExp(r"(showSnack|SnackBar|Text)\([^;]*(\$e\b|\$\{e\}|\$error\b|e\.toString\(\)|error\.toString\(\)|\be\.message\b)").hasMatch(l)) bad.add('${f.path.replaceAll('\\', '/')}:${i + 1}');
+        if (RegExp(r"(showSnack|SnackBar|Text)\([^;]*(\$e\b|\$\{e\}|\$error\b|e\.toString\(\)|error\.toString\(\)|\be\.message\b)").hasMatch(l)) {
+          // The admin health screen shows a stored log line for the owner, not a live exception (that one line only).
+          if (f.path.replaceAll('\\', '/').endsWith('lib/admin/admin_health_screen.dart') && l.contains('Text(e.message, maxLines: 4')) continue;
+          bad.add('${f.path.replaceAll('\\', '/')}:${i + 1}');
+        }
       }
     }
-    // The admin health screen shows a stored log line for the owner, not a live exception.
-    bad.remove('lib/admin/admin_health_screen.dart:79');
     // Two admin lists join their own field values (`where((e) => e.toString()...)`), not errors.
     bad.removeWhere((b) => b.startsWith('lib/admin/admin_lists.dart:'));
     expect(bad, isEmpty, reason: 'use errorText(context, error): $bad');
