@@ -1,5 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 
+import '../security/otp_limits.dart';
+
 /// Translation key for a Firebase Auth error code (phone sign-in).
 String authErrorKey(String code) {
   switch (code) {
@@ -52,7 +54,14 @@ class OtpCallbacks {
 
 /// Starts (or, with [resendToken], resends) the SMS code for an Indian
 /// 10-digit [localNumber].
-Future<void> sendPhoneOtp(String localNumber, OtpCallbacks cb, {int? resendToken}) async {
+Future<void> sendPhoneOtp(String localNumber, OtpCallbacks cb, {int? resendToken, OtpLimiter? limiter}) async {
+  final lim = limiter ?? OtpLimiter.instance;
+  // Hourly cap and wrong-code lock per number (F1). Checked here so every caller is covered.
+  if (await lim.sendBlockedFor(localNumber) != null) {
+    cb.onError('otpSendCap');
+    return;
+  }
+  await lim.recordSend(localNumber);
   try {
     await FirebaseAuth.instance.verifyPhoneNumber(
       phoneNumber: '+91$localNumber',

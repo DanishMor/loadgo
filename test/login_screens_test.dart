@@ -8,7 +8,6 @@ import 'package:transport_app/auth/otp_verification_screen.dart';
 import 'package:transport_app/core/l10n/l10n.dart';
 import 'package:transport_app/core/theme/app_theme.dart';
 import 'package:transport_app/core/theme/design_tokens.dart';
-import 'package:transport_app/core/widgets/ds/app_button.dart';
 import 'package:transport_app/core/widgets/ds/haptics.dart';
 import 'package:transport_app/core/widgets/ds/otp_field.dart';
 

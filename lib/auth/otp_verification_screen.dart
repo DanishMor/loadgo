@@ -5,6 +5,7 @@ import '../core/l10n/l10n.dart';
 import '../core/l10n/language_widgets.dart';
 import '../core/services/auth_helpers.dart';
 import '../core/services/device_service.dart';
+import '../core/security/otp_limits.dart';
 import '../core/services/user_service.dart';
 import 'start_resolvers.dart';
 import '../core/theme/design_tokens.dart';
@@ -41,7 +42,7 @@ class OtpVerificationScreen extends StatefulWidget {
 }
 
 class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
-  static const resendSeconds = 60;
+  static const resendSeconds = OtpPolicy.resendSeconds;
 
   final _otpController = TextEditingController();
   bool _isLoading = false;
@@ -109,7 +110,30 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
       return;
     }
 
+    final locked = await OtpLimiter.instance.lockedFor(widget.phoneNumber);
+    if (locked != null) {
+      if (!mounted) return;
+      setState(() => _codeWrong = true);
+      _snackText(trf(context, 'otpLockedMin', {'m': minutesLeft(locked)}));
+      return;
+    }
     await _signIn(PhoneAuthProvider.credential(verificationId: _verificationId, smsCode: otp));
+  }
+
+  void _snackText(String text) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text), behavior: SnackBarBehavior.floating));
+  }
+
+  /// A wrong code from Firebase: count it; the 5th locks this number for 15 minutes.
+  Future<void> _countWrong() async {
+    final f = await OtpLimiter.instance.recordWrong(widget.phoneNumber);
+    if (!mounted) return;
+    if (f.lockedFor != null) {
+      _snackText(trf(context, 'otpLockedMin', {'m': minutesLeft(f.lockedFor!)}));
+    } else {
+      _snackText(trf(context, 'otpAttemptsLeft', {'n': f.attemptsLeft}));
+    }
   }
 
   /// Records this device (new-device signals for admins). Never blocks login.
@@ -124,6 +148,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
 
     try {
       await FirebaseAuth.instance.signInWithCredential(credential);
+      await OtpLimiter.instance.recordSuccess(widget.phoneNumber);
       if (!mounted) return;
       await syncLanguageAfterLogin();
 
@@ -165,8 +190,12 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
         _isLoading = false;
         _codeWrong = e.code == 'invalid-verification-code' || e.code == 'invalid-credential';
       });
-      if (_codeWrong) Haptics.warning();
-      _snack(authErrorKey(e.code));
+      if (_codeWrong) {
+        Haptics.warning();
+        await _countWrong();
+      } else {
+        _snack(authErrorKey(e.code));
+      }
     } catch (_) {
       if (!mounted) return;
       setState(() => _isLoading = false);
