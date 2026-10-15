@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../models/payout.dart';
+import '../money/money.dart';
 import 'backend.dart';
 import 'audit_service.dart';
 import 'booking_service.dart';
@@ -56,11 +57,23 @@ class PayoutService {
     if (b.requested > 0) throw const PayoutException('open_request');
     if (amountPaise > b.available) throw const PayoutException('too_much');
     final ref = _col.doc();
-    await ref.set({
-      'driverId': uid,
-      'amountPaise': amountPaise,
-      'status': Payout.requested,
-      'createdAt': FieldValue.serverTimestamp(),
+    // The request and the day's counter go together (F11): the rules use the
+    // counter for the daily limit when the walletLimits flag is on. The day is
+    // the UTC day, the same one the rules use.
+    final now = DateTime.now().toUtc();
+    final counter = Backend.db.collection('payout_counters').doc('${uid}_${now.year * 10000 + now.month * 100 + now.day}');
+    await Backend.db.runTransaction((tx) async {
+      final prev = (await tx.get(counter)).data();
+      final count = (prev?['count'] is int ? prev!['count'] as int : 0) + 1;
+      final total = Money.parse(prev?['totalPaise']).paise + amountPaise;
+      tx.set(ref, {
+        'driverId': uid,
+        'amountPaise': amountPaise,
+        'status': Payout.requested,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+      tx.set(counter, {'count': count, 'totalPaise': total, 'lastPayoutId': ref.id, 'updatedAt': FieldValue.serverTimestamp()});
+      AuditService.inTransaction(tx, AuditType.walletAction, targetId: ref.id, data: {'action': 'payout_request', 'amountPaise': amountPaise});
     });
     return ref.id;
   }

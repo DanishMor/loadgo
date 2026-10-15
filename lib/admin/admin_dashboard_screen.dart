@@ -36,6 +36,7 @@ import 'admin_rating_flags_screen.dart';
 import 'admin_trends_section.dart';
 import 'admin_lists.dart';
 import 'admin_offers_screen.dart';
+import 'admin_finance_screen.dart';
 import 'admin_payouts_screen.dart';
 import 'admin_signals_screen.dart';
 import 'admin_verification_screen.dart';
@@ -105,6 +106,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       ('adminAudit', 'adminAudit', Icons.history_rounded, const AdminAuditScreen()),
       ('adminDriverRewards', 'adminDriverRewards', Icons.emoji_events_outlined, const AdminDriverRewardsScreen()),
       ('adminPayouts', 'adminPayouts', Icons.account_balance_outlined, const AdminPayoutsScreen()),
+      ('adminFinance', 'adminFinance', Icons.payments_outlined, const AdminFinanceScreen()),
       ('adminOffers', 'adminOffers', Icons.local_offer_outlined, const AdminOffersScreen()),
       ('adminConfig', 'adminConfig', Icons.tune_rounded, const AdminConfigScreen()),
     ];

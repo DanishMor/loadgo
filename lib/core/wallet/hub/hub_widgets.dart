@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../l10n/l10n.dart';
+import '../../security/app_lock.dart';
 import '../../security/secure_screen.dart';
 import '../../theme/design_tokens.dart';
 import '../../widgets/common.dart';
@@ -47,7 +48,8 @@ class _HubFrameState extends State<HubFrame> {
   @override
   Widget build(BuildContext context) {
     return SecureScope(
-      child: Scaffold(
+      child: AppLockGate(
+        child: Scaffold(
         appBar: AppTopBar(
           title: tr(context, 'hubTitle'),
           role: widget.role,
@@ -65,7 +67,7 @@ class _HubFrameState extends State<HubFrame> {
           ]),
         ),
       ),
-    );
+    ));
   }
 }
 

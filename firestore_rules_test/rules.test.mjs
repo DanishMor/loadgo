@@ -5873,6 +5873,126 @@ describe('wallet data model (F8)', () => {
   });
 });
 
+describe('wallet security (F11)', () => {
+  const nowSec = () => Math.floor(Date.now() / 1000);
+  const withAuth = (uid, authTime) => {
+    const db = env.authenticatedContext(uid, authTime === undefined ? {} : { auth_time: authTime }).firestore();
+    db.__uid = uid;
+    return db;
+  };
+  const dayKey = () => {
+    const d = new Date();
+    return d.getUTCFullYear() * 10000 + (d.getUTCMonth() + 1) * 100 + d.getUTCDate();
+  };
+  const flags = (obj) => seed((db) => setDoc(doc(db, 'config', 'features'), { pilotMode: true, flags: obj }));
+  const P = (over = {}) => ({ driverId: 'd1', amountPaise: 5000, status: 'requested', createdAt: serverTimestamp(), ...over });
+
+  describe('step-up: a fresh code before a payout or a change of payout details', () => {
+    test('flag off: nothing is asked (old behaviour)', async () => {
+      await assertSucceeds(addDoc(collection(withAuth('d1'), 'payouts'), P()));
+    });
+
+    test('flag on: the sign-in must be less than 5 minutes old', async () => {
+      await flags({ walletStepUp: true });
+      await assertFails(addDoc(collection(withAuth('d1'), 'payouts'), P()), 'no auth_time at all');
+      await assertFails(addDoc(collection(withAuth('d1', nowSec() - 600), 'payouts'), P()), '10 minutes old');
+      await assertSucceeds(addDoc(collection(withAuth('d1', nowSec() - 30), 'payouts'), P()));
+    });
+
+    test('flag on: changing the payout UPI id needs it, other profile edits do not', async () => {
+      await seed((db) => setDoc(doc(db, 'users', 'd1'), { role: 'driver', selectedRole: 'driver', driverName: 'Ravi' }));
+      await flags({ walletStepUp: true });
+      await assertSucceeds(updateDoc(doc(withAuth('d1'), 'users', 'd1'), { driverName: 'Ravi K' }));
+      await assertFails(updateDoc(doc(withAuth('d1'), 'users', 'd1'), { payoutProfile: { upiId: 'ravi@okaxis', holder: 'Ravi' } }));
+      await assertFails(updateDoc(doc(withAuth('d1', nowSec() - 900), 'users', 'd1'), { payoutProfile: { upiId: 'ravi@okaxis', holder: 'Ravi' } }));
+      await assertSucceeds(updateDoc(doc(withAuth('d1', nowSec() - 20), 'users', 'd1'), { payoutProfile: { upiId: 'ravi@okaxis', holder: 'Ravi' } }));
+    });
+  });
+
+  describe('limits: waiting time after a change, and per-day count and total', () => {
+    beforeEach(async () => {
+      await flags({ walletLimits: true });
+      await seed((db) => setDoc(doc(db, 'config', 'wallet'), { coolingHours: 24, dailyLimitPaise: 100000, maxPerDay: 2 }));
+      await seed((db) => setDoc(doc(db, 'users', 'd1'), { role: 'driver', selectedRole: 'driver', driverName: 'Ravi' }));
+    });
+
+    // One request = the payout and its counter in one batch.
+    const request = async (db, amount, { count, total, wrongTotal = false, skipCounter = false, id = 'pay' + Math.random().toString(36).slice(2, 10) } = {}) => {
+      const b = writeBatch(db);
+      b.set(doc(db, 'payouts', id), P({ amountPaise: amount }));
+      if (!skipCounter) {
+        b.set(doc(db, 'payout_counters', 'd1_' + dayKey()), { count, totalPaise: wrongTotal ? total + 1 : total, lastPayoutId: id, updatedAt: serverTimestamp() });
+      }
+      return b.commit();
+    };
+
+    test('a request without its counter, or with a counter that does not add up, is refused', async () => {
+      const d = as('d1');
+      await assertFails(request(d, 5000, { skipCounter: true }));
+      await assertFails(request(d, 5000, { count: 2, total: 5000 }), 'first request must count 1');
+      await assertFails(request(d, 5000, { count: 1, total: 5000, wrongTotal: true }), 'total must be exactly the amount');
+      await assertSucceeds(request(d, 5000, { count: 1, total: 5000 }));
+    });
+
+    test('at most maxPerDay requests and dailyLimitPaise in total per day', async () => {
+      const d = as('d1');
+      await assertSucceeds(request(d, 60000, { count: 1, total: 60000 }));
+      await assertFails(request(d, 50000, { count: 2, total: 110000 }), 'over the daily total');
+      await assertFails(request(d, 10000, { count: 1, total: 70000 }), 'the counter cannot be set back');
+      await assertSucceeds(request(d, 30000, { count: 2, total: 90000 }));
+      await assertFails(request(d, 1000, { count: 3, total: 91000 }), 'third request of the day');
+    });
+
+    test('the counter is private and cannot be edited or deleted on its own', async () => {
+      const d = as('d1');
+      await assertSucceeds(request(d, 5000, { count: 1, total: 5000 }));
+      await assertSucceeds(getDoc(doc(d, 'payout_counters', 'd1_' + dayKey())));
+      await assertSucceeds(getDoc(doc(asAdmin(), 'payout_counters', 'd1_' + dayKey())));
+      await assertFails(getDoc(doc(as('d2'), 'payout_counters', 'd1_' + dayKey())));
+      await assertFails(setDoc(doc(d, 'payout_counters', 'd1_' + dayKey()), { count: 0, totalPaise: 0, lastPayoutId: 'x', updatedAt: serverTimestamp() }));
+      await assertFails(deleteDoc(doc(d, 'payout_counters', 'd1_' + dayKey())));
+      await assertFails(setDoc(doc(as('d2'), 'payout_counters', 'd1_' + dayKey()), { count: 1, totalPaise: 1, lastPayoutId: 'x', updatedAt: serverTimestamp() }));
+    });
+
+    test('waiting time: no payout until payoutChangedAt is old enough', async () => {
+      const d = as('d1');
+      await seed((db) => updateDoc(doc(db, 'users', 'd1'), { payoutChangedAt: Timestamp.fromMillis(Date.now() - 3600 * 1000) }));
+      await assertFails(request(d, 5000, { count: 1, total: 5000 }), 'changed 1 hour ago');
+      await seed((db) => updateDoc(doc(db, 'users', 'd1'), { payoutChangedAt: Timestamp.fromMillis(Date.now() - 25 * 3600 * 1000) }));
+      await assertSucceeds(request(d, 5000, { count: 1, total: 5000 }));
+    });
+
+    test('changing payout details stamps payoutChangedAt with the server time; it cannot be set alone or back-dated', async () => {
+      const ref = doc(as('d1'), 'users', 'd1');
+      const prof = { upiId: 'ravi@okaxis', holder: 'Ravi' };
+      await assertFails(updateDoc(ref, { payoutProfile: prof }), 'details without the stamp');
+      await assertFails(updateDoc(ref, { payoutProfile: prof, payoutChangedAt: Timestamp.fromMillis(1000) }), 'back-dated');
+      await assertSucceeds(updateDoc(ref, { payoutProfile: prof, payoutChangedAt: serverTimestamp() }));
+      await assertFails(updateDoc(ref, { payoutChangedAt: serverTimestamp() }), 'the stamp alone');
+      await assertFails(updateDoc(ref, { payoutChangedAt: deleteField() }), 'cannot remove the waiting time');
+      await assertSucceeds(updateDoc(ref, { driverName: 'Ravi K' }), 'other edits are not affected');
+    });
+  });
+
+  test('wallet_action audit lines: anyone signed in writes their own, with only a short action', async () => {
+    const ev = (db, uid, data, over = {}) => addDoc(collection(db, 'audit_events'), { type: 'wallet_action', actorId: uid, targetId: 'p1', data, createdAt: serverTimestamp(), ...over });
+    await assertSucceeds(ev(as('d1'), 'd1', { action: 'payout_request', amountPaise: 5000 }));
+    await assertSucceeds(ev(as('d1'), 'd1', { action: 'payout_details_changed' }));
+    await assertSucceeds(ev(as('d1'), 'd1', { action: 'step_up_ok' }));
+    await assertFails(ev(as('d1'), 'd1', { action: 'payout_request', upiId: 'ravi@okaxis' }), 'no account details in the log');
+    await assertFails(ev(as('d1'), 'd1', { action: 'something_else' }));
+    await assertFails(ev(as('d1'), 'd1', { action: 'payout_request', amountPaise: '5000' }));
+    await assertFails(ev(as('d1'), 'd2', { action: 'step_up_ok' }), 'the actor must be me');
+    await assertFails(updateDoc(doc(asAdmin(), 'audit_events', 'x'), { type: 'wallet_action' }), 'append only');
+  });
+
+  test('both flags off: a normal request without a counter still works and old profile edits are unchanged', async () => {
+    await seed((db) => setDoc(doc(db, 'users', 'd1'), { role: 'driver', selectedRole: 'driver', driverName: 'Ravi' }));
+    await assertSucceeds(addDoc(collection(as('d1'), 'payouts'), P()));
+    await assertSucceeds(updateDoc(doc(as('d1'), 'users', 'd1'), { payoutProfile: { upiId: 'ravi@okaxis', holder: 'Ravi' } }));
+  });
+});
+
 describe('config history (M6-13)', () => {
   const H = (over = {}) => ({ docId: 'support', json: '{"phone":"1"}', by: 'admin1', createdAt: serverTimestamp(), ...over });
 

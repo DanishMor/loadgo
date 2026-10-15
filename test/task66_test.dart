@@ -28,6 +28,8 @@ void main() {
       FeatureKey.walletHub: 'Earnings and accounts hub',
       FeatureKey.walletMakerChecker: 'Two admins for payouts',
       FeatureKey.walletStepUp: 'Fresh code before payouts',
+      FeatureKey.walletLimits: 'Payout limits and waiting time',
+      FeatureKey.appLock: 'Fingerprint lock for earnings',
     };
     expect(labels.keys.toSet(), Features.registry.map((s) => s.key).toSet(), reason: 'a new feature needs a row in ADDON_PILOT.md');
     for (final s in Features.registry) {

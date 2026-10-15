@@ -21,6 +21,8 @@ force any flag On or Off; a forced value always wins. A flag that is OFF hides i
 | `walletHub` | New earnings and accounts hub for every role (records only) | OFF | OFF | Admin > Features > Earnings and accounts hub |
 | `walletMakerChecker` | A payout is approved by one finance admin and paid by another (rules enforce it) | OFF | OFF | Admin > Features > Two admins for payouts |
 | `walletStepUp` | A fresh SMS code before a payout request or a change of payout details | OFF | OFF | Admin > Features > Fresh code before payouts |
+| `walletLimits` | Waiting time after payout details change and a daily payout count and total limit (config/wallet) | OFF | OFF | Admin > Features > Payout limits and waiting time |
+| `appLock` | Optional fingerprint / screen lock on the earnings screens | OFF | OFF | Admin > Features > Fingerprint lock for earnings; Settings |
 | `secureScreens` | No screenshots or screen recording on the login code, documents, private LR copy, earnings and trip code screens (Android release builds) | OFF | OFF | Admin > Features > Block screenshots on private screens |
 
 Other switches that are not in the list above:
@@ -150,6 +152,7 @@ Admin Panel: **Profile > Admin** (only for accounts in `admins/{uid}`). The pane
 | Deletion requests | account deletions | super, support |
 | Audit log | who did what (includes number views and chat opens) | super, ops |
 | Driver rewards, Payouts, Offers, Config | money records and settings; Config also has the **Announcement banner** (text per language, level, last day, roles) | super |
+| Finance | payout queue with two admins (one approves, a different one marks paid with the bank or UPI reference), reversal, daily check of ledger against payouts and summaries, warnings for big or repeated payouts, freeze and correction tools, CSV copy | super, finance |
 
 Every admin list (tickets, SOS, reports, audit log, vehicles, deletion requests ...) has a search box, saved filters (kept on the device), "Show 50 more" and **Export CSV** of what is on screen (no phone numbers, e-mail, KYC or free text). Every admin change also writes an audit event.
 

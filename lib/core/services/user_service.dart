@@ -6,6 +6,7 @@ import '../identity/identity_index.dart';
 import '../location/geohash.dart';
 import '../identity/kyc_validators.dart';
 import '../identity/profile_extras.dart';
+import 'audit_service.dart';
 import 'backend.dart';
 import 'push_service.dart';
 import 'session_watcher.dart';
@@ -291,6 +292,10 @@ class UserService {
     String? businessType,
     String? upiId,
     String? holder,
+
+    /// True when the payout details were changed: the server time is stamped on
+    /// the profile and starts the waiting time before the next payout (F11).
+    bool payoutChanged = false,
   }) async {
     final uid = Backend.requireUid();
     String? clean(String? v) => (v ?? '').trim().isEmpty ? null : v!.trim();
@@ -298,7 +303,8 @@ class UserService {
     final upi = clean(upiId);
     if (upi != null && !isValidUpiId(upi)) throw ArgumentError.value(upi, 'upiId');
     final pay = {'upiId': ?upi, 'holder': ?clean(holder)};
-    await _db.collection('users').doc(uid).update({
+    final batch = _db.batch();
+    batch.update(_db.collection('users').doc(uid), {
       isDriver ? 'driverName' : 'name': name.trim(),
       'email': clean(email) ?? FieldValue.delete(),
       'companyName': clean(companyName) ?? FieldValue.delete(),
@@ -306,8 +312,12 @@ class UserService {
       if (currentAddress != null || permanentAddress != null) 'addresses': addr.isEmpty ? FieldValue.delete() : addr,
       if (businessType != null) 'businessType': BusinessType.all.contains(businessType) ? businessType : FieldValue.delete(),
       if (upiId != null || holder != null) 'payoutProfile': pay.isEmpty ? FieldValue.delete() : pay,
+      if (payoutChanged) 'payoutChangedAt': FieldValue.serverTimestamp(),
       'updatedAt': FieldValue.serverTimestamp(),
     });
+    // The change itself is logged (never the UPI id or the holder name).
+    if (payoutChanged) AuditService.inBatch(batch, AuditType.walletAction, data: {'action': 'payout_details_changed'});
+    await batch.commit();
   }
 
   static Future<void> logout() async {

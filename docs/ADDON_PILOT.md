@@ -14,6 +14,8 @@ Goal: put LoadGo in front of a small, known group (one or two corridors, tens of
 | Earnings and accounts hub | OFF | Features > Earnings and accounts hub |
 | Two admins for payouts | OFF | Features > Two admins for payouts |
 | Fresh code before payouts | OFF | Features > Fresh code before payouts |
+| Payout limits and waiting time | OFF | Features > Payout limits and waiting time |
+| Fingerprint lock for earnings | OFF | Features > Fingerprint lock for earnings |
 | Promo codes, credits, referral | OFF | Offers (three switches, default OFF) |
 | Surge pricing | OFF | `config/pricing.surge.enabled` |
 | Driver network and groups | OFF | Features |

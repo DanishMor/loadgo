@@ -31,6 +31,12 @@ class FeatureKey {
 
   /// F11: asking for a payout or changing payout details needs a fresh OTP (last 5 minutes).
   static const walletStepUp = 'walletStepUp';
+
+  /// F11: waiting time after changing payout details, and a daily payout limit (count and total).
+  static const walletLimits = 'walletLimits';
+
+  /// F11: an optional fingerprint / screen lock on the money screens.
+  static const appLock = 'appLock';
 }
 
 /// `config/features`: {pilotMode: bool, flags: {key: bool}}. A missing
@@ -60,6 +66,8 @@ class Features {
     FeatureSpec(FeatureKey.walletHub, pilotOn: false, normalOn: false),
     FeatureSpec(FeatureKey.walletMakerChecker, pilotOn: false, normalOn: false),
     FeatureSpec(FeatureKey.walletStepUp, pilotOn: false, normalOn: false),
+    FeatureSpec(FeatureKey.walletLimits, pilotOn: false, normalOn: false),
+    FeatureSpec(FeatureKey.appLock, pilotOn: false, normalOn: false),
   ];
 
   static final _byKey = {for (final s in registry) s.key: s};

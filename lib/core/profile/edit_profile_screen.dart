@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 
 import '../identity/profile_extras.dart';
 import '../services/user_service.dart';
+import '../wallet/step_up.dart';
 import '../widgets/common.dart';
 import '../l10n/l10n.dart';
 import '../theme/design_tokens.dart';
@@ -52,6 +53,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
+    // Changed payout details need a fresh SMS code (when the walletStepUp flag is on).
+    final payoutChanged = _getsPaid &&
+        (_upiCtrl.text.trim() != _extras.upiId.trim() || _holderCtrl.text.trim() != _extras.holder.trim());
+    if (payoutChanged && !await StepUp.ensure(context)) return;
+    if (!mounted) return;
     setState(() => _saving = true);
     try {
       await UserService.updateProfile(
@@ -64,6 +70,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         businessType: widget.isDriver ? null : (_businessType ?? ''),
         upiId: _getsPaid ? _upiCtrl.text : null,
         holder: _getsPaid ? _holderCtrl.text : null,
+        payoutChanged: payoutChanged,
       );
       if (!mounted) return;
       showSnack(context, tr(context, 'profileUpdated'));

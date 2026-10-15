@@ -25,6 +25,14 @@ String maskUpiId(String? upi) {
   return '${maskId(v.substring(0, at))}${v.substring(at)}';
 }
 
+/// `123456789012` -> `••••••••9012` (only the last four digits show).
+String maskAccountNumber(String? n) {
+  final v = (n ?? '').replaceAll(RegExp(r'\s'), '');
+  if (v.isEmpty) return '';
+  if (v.length <= 4) return '•' * v.length;
+  return '${'•' * (v.length - 4)}${v.substring(v.length - 4)}';
+}
+
 /// Address shown to admins and in lists: first words only.
 String maskAddress(String? a, {int keep = 14}) {
   final v = (a ?? '').trim();

@@ -1,4 +1,7 @@
 import '../errors/error_text.dart';
+import '../features/features.dart';
+import '../security/app_lock.dart';
+import '../widgets/feature_gate.dart';
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../call/mic_test.dart';
@@ -169,6 +172,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   subtitle: Text(tr(context, 'hapticsHint')),
                   value: on,
                   onChanged: Haptics.set,
+                ),
+              ),
+              FeatureGate(
+                featureKey: FeatureKey.appLock,
+                child: ValueListenableBuilder<bool>(
+                  valueListenable: AppLock.enabled,
+                  builder: (context, on, _) => SwitchListTile(
+                    key: const ValueKey('settingsAppLock'),
+                    secondary: const Icon(Icons.fingerprint_rounded),
+                    title: Text(tr(context, 'appLockTitle')),
+                    subtitle: Text(tr(context, 'appLockHint')),
+                    value: on,
+                    onChanged: (v) async {
+                      final ok = await AppLock.set(v);
+                      if (!ok && context.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(tr(context, 'appLockUnavailable'))));
+                    },
+                  ),
                 ),
               ),
               _header('notificationPrefs'),

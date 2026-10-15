@@ -82,23 +82,12 @@ void main() {
     }
   });
 
-  test('old documents with only some fields still read', () {
-    expect(LedgerEntry.fromDoc(_Snap('x', {'amountPaise': 500})).amountPaise, 500);
+  test('old documents with only some fields still read', () async {
+    final db = FakeFirebaseFirestore();
+    await db.collection('ledger').doc('x').set({'amountPaise': 500});
+    expect(LedgerEntry.fromDoc(await db.collection('ledger').doc('x').get()).amountPaise, 500);
     expect(CreditLine.fromDoc('c', const {}).amountPaise, 0);
     expect(TripAccount.fromMap('t', const {}).revenuePaise, 0);
     expect(Payout.fromDoc('p', const {}).status, Payout.requested);
   });
-}
-
-class _Snap implements DocumentSnapshot<Map<String, dynamic>> {
-  @override
-  final String id;
-  final Map<String, dynamic> _data;
-  _Snap(this.id, this._data);
-
-  @override
-  Map<String, dynamic>? data() => _data;
-
-  @override
-  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }

@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart' show FirebaseException;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -7,6 +8,7 @@ import '../models/payout.dart';
 import '../models/risk.dart';
 import '../services/payout_service.dart';
 import '../widgets/common.dart';
+import 'step_up.dart';
 
 /// The "request a payout" steps shared by the older Wallet screen and the new
 /// hub (F9): ask for an amount, send the request, say what happened. Records
@@ -36,6 +38,8 @@ Future<void> startPayoutRequest(BuildContext context, WalletBalances b) async {
   );
   // The dialog is still animating out, so the controller is not disposed here.
   if (rupees == null || !context.mounted) return;
+  // A fresh SMS code first (only when the walletStepUp flag is on).
+  if (!await StepUp.ensure(context) || !context.mounted) return;
   try {
     await PayoutService.request((rupees * 100).round());
     if (context.mounted) showSnack(context, tr(context, 'payoutRequested'));
@@ -49,6 +53,9 @@ Future<void> startPayoutRequest(BuildContext context, WalletBalances b) async {
     }
   } on AccountRestrictedException {
     if (context.mounted) showSnack(context, tr(context, 'accountRestricted'));
+  } on FirebaseException catch (error) {
+    // The rules said no: frozen wallet, waiting time, daily limit or an old sign-in.
+    if (context.mounted) showSnack(context, error.code == 'permission-denied' ? tr(context, 'payoutBlocked') : errorText(context, error));
   } catch (error) {
     if (context.mounted) showSnack(context, errorText(context, error));
   }

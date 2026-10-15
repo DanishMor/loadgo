@@ -65,6 +65,7 @@ void main() {
       'adminAudit': 'Audit log',
       'adminDriverRewards': 'Driver rewards',
       'adminPayouts': 'Payouts',
+      'adminFinance': 'Finance',
       'adminOffers': 'Offers',
       'adminConfig': 'Config',
     };

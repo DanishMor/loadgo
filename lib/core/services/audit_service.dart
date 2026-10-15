@@ -50,7 +50,10 @@ class AuditType {
   static const walletFreeze = 'wallet_freeze';
   static const payoutDecision = 'payout_decision';
   static const walletAdjust = 'wallet_adjust';
-  static const all = [verification, accept, statusChange, cancel, riskChange, reassign, configChange, userAction, evidence, docView, assign, contactView, chatView, lrIssue, lrVersion, lrCancel, lrShare, lrRevoke, lrMode, inspectionRequest, inspectionApprove, inspectionDeny, inspectionExpire, otpLock, walletFreeze, payoutDecision, walletAdjust];
+
+  /// A person's own money step (payout request, payout details changed, fresh code passed). No numbers or ids of accounts.
+  static const walletAction = 'wallet_action';
+  static const all = [verification, accept, statusChange, cancel, riskChange, reassign, configChange, userAction, evidence, docView, assign, contactView, chatView, lrIssue, lrVersion, lrCancel, lrShare, lrRevoke, lrMode, inspectionRequest, inspectionApprove, inspectionDeny, inspectionExpire, otpLock, walletFreeze, payoutDecision, walletAdjust, walletAction];
 }
 
 class AuditService {

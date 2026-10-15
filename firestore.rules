@@ -362,6 +362,30 @@ service cloud.firestore {
               && request.resource.data.get('selectedRole', before) == before);
     }
 
+    // Wallet security switches in config/features.flags (F11). Both default OFF.
+    function walletFlag(name) {
+      let p = /databases/$(database)/documents/config/features;
+      return exists(p) && get(p).data.get('flags', {}).get(name, false) == true;
+    }
+
+    // walletStepUp: the sign-in used must be fresh (a code entered in the last 5 minutes).
+    // auth_time is the time of the last full sign-in, refreshed by re-authenticating.
+    function stepUpOk() {
+      return !walletFlag('walletStepUp')
+          || request.auth.token.get('auth_time', 0) >= request.time.toMillis() / 1000 - 300;
+    }
+
+    // Changing payout details needs a fresh code; payoutChangedAt (server time) starts the waiting time.
+    function payoutChangeOk() {
+      return !changedKeys().hasAny(['payoutProfile', 'payoutChangedAt'])
+          || (stepUpOk()
+              && (!changedKeys().hasAny(['payoutChangedAt'])
+                  || (changedKeys().hasAny(['payoutProfile']) && request.resource.data.payoutChangedAt == request.time))
+              && (!walletFlag('walletLimits')
+                  || !changedKeys().hasAny(['payoutProfile'])
+                  || request.resource.data.get('payoutChangedAt', null) == request.time));
+    }
+
     match /users/{userId} {
       allow read: if isUser(userId) || isAdmin();
       allow create: if isUser(userId) && verificationInitOk(request.resource.data)
@@ -377,7 +401,7 @@ service cloud.firestore {
           && roleLockOk() && validKyc(request.resource.data) && validProfileText(request.resource.data) && !changedKeys().hasAny(['plan', 'planUntil', 'verificationMeta', 'docOverrideUntil']) && referralCodeOk(request.resource.data) && referralCodeKept() && validIdentityHashes(request.resource.data) && validLastLocation(request.resource.data)
           && validEmergencyContacts(request.resource.data) && validProfileExtras(request.resource.data) && validFleetProfile(request.resource.data)
           && validPrefs(request.resource.data) && validBusiness(request.resource.data)
-          && ownerRiskFieldsUntouched() && chatFieldsOk()
+          && ownerRiskFieldsUntouched() && chatFieldsOk() && payoutChangeOk()
           && (!changedKeys().hasAny(['verified', 'verificationStatus'])
               || (resource.data.get('verificationStatus', null) == null
                   && verificationInitOk(request.resource.data))
@@ -2652,7 +2676,7 @@ service cloud.firestore {
       allow create: if signedIn()
           && request.resource.data.keys().hasOnly(['type', 'actorId', 'targetId', 'bookingId', 'loadId', 'data', 'createdAt'])
           && request.resource.data.actorId == request.auth.uid
-          && request.resource.data.type in ['verification', 'accept', 'status_change', 'cancel', 'risk_change', 'reassign', 'config_change', 'user_action', 'evidence', 'doc_view', 'assign', 'contact_view', 'chat_view', 'lr_issue', 'lr_version', 'lr_cancel', 'lr_share', 'lr_revoke', 'lr_mode', 'inspection_request', 'inspection_approve', 'inspection_deny', 'inspection_expire', 'otp_lock', 'wallet_freeze', 'payout_decision', 'wallet_adjust']
+          && request.resource.data.type in ['verification', 'accept', 'status_change', 'cancel', 'risk_change', 'reassign', 'config_change', 'user_action', 'evidence', 'doc_view', 'assign', 'contact_view', 'chat_view', 'lr_issue', 'lr_version', 'lr_cancel', 'lr_share', 'lr_revoke', 'lr_mode', 'inspection_request', 'inspection_approve', 'inspection_deny', 'inspection_expire', 'otp_lock', 'wallet_freeze', 'payout_decision', 'wallet_adjust', 'wallet_action']
           && request.resource.data.data is map
           && request.resource.data.createdAt == request.time
           && (!(request.resource.data.type in ['verification', 'risk_change', 'reassign', 'config_change', 'user_action', 'contact_view', 'chat_view', 'wallet_freeze', 'payout_decision', 'wallet_adjust']) || isAdmin())
@@ -2662,6 +2686,10 @@ service cloud.firestore {
           && (!(request.resource.data.type in ['lr_issue', 'lr_version', 'lr_cancel', 'lr_share', 'lr_revoke', 'lr_mode', 'inspection_request', 'inspection_approve', 'inspection_deny', 'inspection_expire'])
               || (request.resource.data.bookingId is string
                   && lrAuditParty(get(docPath('bookings', request.resource.data.bookingId)).data)))
+          && (request.resource.data.type != 'wallet_action'
+              || (request.resource.data.data.keys().hasOnly(['action', 'amountPaise'])
+                  && request.resource.data.data.action in ['payout_request', 'payout_details_changed', 'step_up_ok']
+                  && request.resource.data.data.get('amountPaise', 0) is int))
           && (request.resource.data.type != 'otp_lock'
               || (request.resource.data.bookingId is string
                   && request.auth.uid in [get(docPath('bookings', request.resource.data.bookingId)).data.driverId, get(docPath('bookings', request.resource.data.bookingId)).data.get('assignedDriverId', '')]))
@@ -3243,9 +3271,52 @@ service cloud.firestore {
       return !exists(p) || !(get(p).data.get('availablePaise', null) is int) || amount <= get(p).data.availablePaise;
     }
 
+    // walletLimits (F11): a waiting time after the payout details changed, and a
+    // limit per day on the number and the total of payouts. The rules cannot sum
+    // earlier payouts, so every request also moves a per-day counter in the same
+    // batch (payout_counters/{uid}_{yyyymmdd}). Limits live in config/wallet.
+    function payoutDay() {
+      return request.time.year() * 10000 + request.time.month() * 100 + request.time.day();
+    }
+
+    function payoutLimitsOk(payoutId) {
+      let cfgP = /databases/$(database)/documents/config/wallet;
+      let cfg = exists(cfgP) ? get(cfgP).data : {};
+      let u = get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+      let changed = u.get('payoutChangedAt', null);
+      let cp = /databases/$(database)/documents/payout_counters/$(request.auth.uid + '_' + string(payoutDay()));
+      return !walletFlag('walletLimits')
+          || ((changed == null || changed + duration.value(cfg.get('coolingHours', 24), 'h') <= request.time)
+              && existsAfter(cp)
+              && getAfter(cp).data.lastPayoutId == payoutId
+              && getAfter(cp).data.totalPaise <= cfg.get('dailyLimitPaise', 5000000)
+              && getAfter(cp).data.count <= cfg.get('maxPerDay', 3));
+    }
+
+    match /payout_counters/{counterId} {
+      function counterKeys(t) {
+        return t.keys().hasOnly(['count', 'totalPaise', 'lastPayoutId', 'updatedAt'])
+            && t.count is int && t.totalPaise is int && t.lastPayoutId is string && t.updatedAt == request.time
+            && counterId == request.auth.uid + '_' + string(payoutDay())
+            && !exists(/databases/$(database)/documents/payouts/$(t.lastPayoutId))
+            && existsAfter(/databases/$(database)/documents/payouts/$(t.lastPayoutId))
+            && getAfter(/databases/$(database)/documents/payouts/$(t.lastPayoutId)).data.driverId == request.auth.uid;
+      }
+      allow read: if signedIn() && (counterId.matches(request.auth.uid + '_[0-9]{8}') || isAdmin());
+      allow create: if signedIn() && counterKeys(request.resource.data)
+          && request.resource.data.count == 1
+          && request.resource.data.totalPaise == getAfter(/databases/$(database)/documents/payouts/$(request.resource.data.lastPayoutId)).data.amountPaise;
+      allow update: if signedIn() && counterKeys(request.resource.data)
+          && request.resource.data.count == resource.data.count + 1
+          && request.resource.data.totalPaise == resource.data.totalPaise + getAfter(/databases/$(database)/documents/payouts/$(request.resource.data.lastPayoutId)).data.amountPaise;
+      allow delete: if false;
+    }
+
     match /payouts/{payoutId} {
       allow read: if signedIn() && (resource.data.driverId == request.auth.uid || isAdmin());
       allow create: if signedIn()
+          && stepUpOk()
+          && payoutLimitsOk(payoutId)
           && !walletFrozen(request.auth.uid)
           && summaryAllows(request.auth.uid, request.resource.data.get('amountPaise', 0))
           && request.resource.data.keys().hasOnly(['driverId', 'amountPaise', 'status', 'createdAt'])

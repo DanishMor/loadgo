@@ -28,3 +28,11 @@ Nothing moved into the free stack: every item above still needs a paid service, 
 | Item | Why blocked | What is needed |
 |---|---|---|
 | Run the app on the emulator | The debug APK builds (216 MB) but `emulator-5554` (Android 16, 2 GB RAM) crashes system_server / package service while installing it (`DeadSystemException`, `Broken pipe`). It is an emulator problem, not an app error. | Owner: cold boot or wipe the AVD and raise its RAM to 4 GB, or connect a real phone with USB debugging. |
+
+## Part 2 (2026-10-15)
+
+| Item | Why blocked | What is needed |
+|---|---|---|
+| Fingerprint / screen lock on the earnings screens (F11 `appLock`) | The lock logic, the Settings switch and the gate are built and tested with a fake. The real prompt needs the `local_auth` plugin, the `USE_BIOMETRIC` permission and `MainActivity` as a `FlutterFragmentActivity`, and a test on a real phone (no emulator or phone run is allowed here). | Owner: on a real phone add `local_auth`, switch `MainActivity`, plug an adapter into `AppLock.authenticator`, then try. Until then the Settings switch says the phone has no lock and stays off; the flag is OFF anyway. |
+| Real fresh-code check (F11 `walletStepUp`) | The code path (SMS to the signed-in number, re-authentication, token refresh, rules check of `auth_time`) is tested with fakes and the rules emulator. A real SMS needs the Firebase project and a phone. | Owner: turn the flag on in a test project with a test number, then a real phone. |
+| Screenshot block (F4 `secureScreens`) | `FLAG_SECURE` is a window flag set from `MainActivity`; only a real phone shows that it works. | Owner: release build on a phone, open the login code screen, try a screenshot. |
