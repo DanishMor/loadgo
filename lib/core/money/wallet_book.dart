@@ -1,4 +1,5 @@
 import '../models/ledger_entry.dart';
+import '../models/payout.dart';
 import 'money.dart';
 
 /// The kinds of line in a person's earnings book (F7). Each line moves money
@@ -128,6 +129,29 @@ class WalletBook {
       b._apply(e, force: true);
     }
     return b;
+  }
+
+  /// The book of one person from what is stored: the ledger lines and the
+  /// payout requests. A payout turns into lines by its status (the keys are
+  /// fixed, so loading twice never counts twice): open = hold, paid = hold +
+  /// paid, rejected = hold + release, reversed = hold + paid + reversal.
+  factory WalletBook.fromSources({Iterable<LedgerEntry> ledger = const [], Iterable<Payout> payouts = const []}) {
+    final lines = <WalletEntry>[for (final l in ledger) WalletEntry.fromLedger(l)];
+    for (final p in payouts) {
+      final a = Money(p.amountPaise).clamped;
+      WalletEntry line(String suffix, String kind) => WalletEntry(key: '${p.id}_$suffix', kind: kind, amount: a, at: p.createdAt);
+      lines.add(line('hold', WalletKind.payoutHold));
+      switch (p.status) {
+        case Payout.paid:
+          lines.add(line('paid', WalletKind.payoutPaid));
+        case Payout.rejected:
+          lines.add(line('release', WalletKind.payoutRelease));
+        case Payout.reversed:
+          lines.add(line('paid', WalletKind.payoutPaid));
+          lines.add(line('reversal', WalletKind.payoutReversal));
+      }
+    }
+    return WalletBook.of(lines);
   }
 
   List<WalletEntry> get entries => List.unmodifiable(_entries);

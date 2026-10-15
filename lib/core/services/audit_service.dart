@@ -44,7 +44,13 @@ class AuditType {
 
   /// Trip code entry locked after 5 wrong guesses (F2).
   static const otpLock = 'otp_lock';
-  static const all = [verification, accept, statusChange, cancel, riskChange, reassign, configChange, userAction, evidence, docView, assign, contactView, chatView, lrIssue, lrVersion, lrCancel, lrShare, lrRevoke, lrMode, inspectionRequest, inspectionApprove, inspectionDeny, inspectionExpire, otpLock];
+
+  /// Money actions by finance or super admins (F8, F12): freeze or unfreeze a
+  /// wallet, approve / pay / reject / reverse a payout, add a correction line.
+  static const walletFreeze = 'wallet_freeze';
+  static const payoutDecision = 'payout_decision';
+  static const walletAdjust = 'wallet_adjust';
+  static const all = [verification, accept, statusChange, cancel, riskChange, reassign, configChange, userAction, evidence, docView, assign, contactView, chatView, lrIssue, lrVersion, lrCancel, lrShare, lrRevoke, lrMode, inspectionRequest, inspectionApprove, inspectionDeny, inspectionExpire, otpLock, walletFreeze, payoutDecision, walletAdjust];
 }
 
 class AuditService {

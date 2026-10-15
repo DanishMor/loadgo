@@ -25,6 +25,9 @@ void main() {
       FeatureKey.transporter: 'Transporter accounts',
       FeatureKey.bilty: 'Bilty (LR)',
       FeatureKey.secureScreens: 'Block screenshots on private screens',
+      FeatureKey.walletHub: 'Earnings and accounts hub',
+      FeatureKey.walletMakerChecker: 'Two admins for payouts',
+      FeatureKey.walletStepUp: 'Fresh code before payouts',
     };
     expect(labels.keys.toSet(), Features.registry.map((s) => s.key).toSet(), reason: 'a new feature needs a row in ADDON_PILOT.md');
     for (final s in Features.registry) {

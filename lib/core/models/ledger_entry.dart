@@ -21,6 +21,9 @@ class LedgerType {
   LedgerType._();
   static const tripEarning = 'trip_earning';
   static const platformCommission = 'platform_commission';
+
+  /// A signed correction by finance or super, with a reason (F8).
+  static const adjustment = 'adjustment';
 }
 
 /// `ledger/{bookingId}_{type}`: append-only driver wallet line (paise).
@@ -59,16 +62,20 @@ class LedgerEntry {
 class WalletSummary {
   final int earnings;
   final int commission;
-  const WalletSummary(this.earnings, this.commission);
 
-  int get net => earnings + commission;
+  /// Admin corrections (signed).
+  final int adjustments;
+  const WalletSummary(this.earnings, this.commission, [this.adjustments = 0]);
+
+  int get net => earnings + commission + adjustments;
 
   factory WalletSummary.of(Iterable<LedgerEntry> entries) {
-    var e = 0, c = 0;
+    var e = 0, c = 0, a = 0;
     for (final x in entries) {
       if (x.type == LedgerType.tripEarning) e += x.amountPaise;
       if (x.type == LedgerType.platformCommission) c += x.amountPaise;
+      if (x.type == LedgerType.adjustment) a += x.amountPaise;
     }
-    return WalletSummary(e, c);
+    return WalletSummary(e, c, a);
   }
 }

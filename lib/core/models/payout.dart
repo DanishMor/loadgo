@@ -1,3 +1,4 @@
+import '../money/money.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../constants/logistics.dart';
@@ -14,11 +15,35 @@ class Payout {
   final String status;
   final DateTime? createdAt;
 
-  const Payout({required this.id, required this.driverId, required this.amountPaise, required this.status, this.createdAt});
+  /// Who approved (maker) and who paid (checker), and the bank or UPI reference. Null until then.
+  final String? approvedBy;
+  final String? paidBy;
+  final String? reference;
+
+  const Payout({
+    required this.id,
+    required this.driverId,
+    required this.amountPaise,
+    required this.status,
+    this.createdAt,
+    this.approvedBy,
+    this.paidBy,
+    this.reference,
+  });
 
   static const requested = 'requested';
+  static const approved = 'approved';
   static const paid = 'paid';
   static const rejected = 'rejected';
+
+  /// A paid payout that came back (the transfer failed).
+  static const reversed = 'reversed';
+
+  /// Statuses in the order a payout normally moves.
+  static const all = [requested, approved, paid, rejected, reversed];
+
+  /// The money is held for this payout: asked for or approved, not yet paid.
+  bool get isOpen => status == requested || status == approved;
 
   /// Smallest and largest request, in paise (Rs 1 to Rs 10,00,000).
   static const minPaise = 100;
@@ -26,10 +51,13 @@ class Payout {
 
   factory Payout.fromDoc(String id, Map<String, dynamic> d) => Payout(
         id: id,
-        driverId: d['driverId'] as String? ?? '',
-        amountPaise: (d['amountPaise'] as num?)?.toInt() ?? 0,
-        status: d['status'] as String? ?? requested,
-        createdAt: (d['createdAt'] as Timestamp?)?.toDate(),
+        driverId: d['driverId'] is String ? d['driverId'] as String : '',
+        amountPaise: Money.parse(d['amountPaise']).paise,
+        status: all.contains(d['status']) ? d['status'] as String : requested,
+        createdAt: d['createdAt'] is Timestamp ? (d['createdAt'] as Timestamp).toDate() : null,
+        approvedBy: d['approvedBy'] is String ? d['approvedBy'] as String : null,
+        paidBy: d['paidBy'] is String ? d['paidBy'] as String : null,
+        reference: d['reference'] is String ? d['reference'] as String : null,
       );
 }
 
@@ -67,7 +95,8 @@ class WalletBalances {
         pending += b.billAmountPaise ?? 0;
       }
     }
-    int total(String status) => payouts.where((p) => p.status == status).fold(0, (a, p) => a + p.amountPaise);
-    return WalletBalances(pending: pending, net: sum.net, requested: total(Payout.requested), paidOut: total(Payout.paid));
+    int total(bool Function(Payout) test) => payouts.where(test).fold(0, (a, p) => a + p.amountPaise);
+    // Approved payouts are still waiting for payment: they stay in "requested".
+    return WalletBalances(pending: pending, net: sum.net, requested: total((p) => p.isOpen), paidOut: total((p) => p.status == Payout.paid));
   }
 }

@@ -22,6 +22,15 @@ class FeatureKey {
 
   /// F4: no screenshots or screen recording on sensitive screens (release builds).
   static const secureScreens = 'secureScreens';
+
+  /// F9: the earnings and accounts hub for every role (the old Wallet screen stays when OFF).
+  static const walletHub = 'walletHub';
+
+  /// F8, F12: a payout is approved by one finance admin and paid by another.
+  static const walletMakerChecker = 'walletMakerChecker';
+
+  /// F11: asking for a payout or changing payout details needs a fresh OTP (last 5 minutes).
+  static const walletStepUp = 'walletStepUp';
 }
 
 /// `config/features`: {pilotMode: bool, flags: {key: bool}}. A missing
@@ -48,6 +57,9 @@ class Features {
     FeatureSpec(FeatureKey.bilty, pilotOn: true),
     // F4: OFF until the owner has tried it on a real phone.
     FeatureSpec(FeatureKey.secureScreens, pilotOn: false, normalOn: false),
+    FeatureSpec(FeatureKey.walletHub, pilotOn: false, normalOn: false),
+    FeatureSpec(FeatureKey.walletMakerChecker, pilotOn: false, normalOn: false),
+    FeatureSpec(FeatureKey.walletStepUp, pilotOn: false, normalOn: false),
   ];
 
   static final _byKey = {for (final s in registry) s.key: s};

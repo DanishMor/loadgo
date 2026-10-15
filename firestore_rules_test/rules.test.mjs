@@ -5718,6 +5718,161 @@ describe('finance staff role (M6-9)', () => {
   });
 });
 
+describe('wallet data model (F8)', () => {
+  const staff = (uid) => env.authenticatedContext(uid).firestore();
+  const P = (over = {}) => ({ driverId: 'd1', amountPaise: 5000, status: 'requested', createdAt: serverTimestamp(), ...over });
+
+  beforeEach(async () => {
+    await seed(async (db) => {
+      for (const [uid, role] of [['fin1', 'finance'], ['fin2', 'finance'], ['sup1', 'support'], ['ops1', 'ops']]) await setDoc(doc(db, 'admins', uid), { role });
+    });
+  });
+
+  test('wallets/{uid}: the owner and admins read, nobody writes from a client', async () => {
+    await seed((db) => setDoc(doc(db, 'wallets', 'd1'), { availablePaise: 1000, updatedAt: Timestamp.now() }));
+    await assertSucceeds(getDoc(doc(as('d1'), 'wallets', 'd1')));
+    await assertSucceeds(getDoc(doc(staff('fin1'), 'wallets', 'd1')));
+    await assertSucceeds(getDoc(doc(asAdmin(), 'wallets', 'd1')));
+    await assertFails(getDoc(doc(as('d2'), 'wallets', 'd1')));
+    await assertFails(getDocs(collection(as('d1'), 'wallets')));
+    for (const db of [as('d1'), staff('fin1'), asAdmin()]) {
+      await assertFails(setDoc(doc(db, 'wallets', 'd1'), { availablePaise: 99999999 }));
+      await assertFails(updateDoc(doc(db, 'wallets', 'd1'), { availablePaise: 99999999 }));
+      await assertFails(deleteDoc(doc(db, 'wallets', 'd1')));
+    }
+    await assertFails(setDoc(doc(as('d1'), 'wallets', 'd1'), { availablePaise: 5 }), 'a client cannot create it either');
+  });
+
+  test('wallet_freezes: finance and super freeze with a reason; others cannot; the owner can read', async () => {
+    const F = (over = {}) => ({ frozen: true, reason: 'Disputed trip B7', by: 'fin1', updatedAt: serverTimestamp(), ...over });
+    await assertSucceeds(setDoc(doc(staff('fin1'), 'wallet_freezes', 'd1'), F()));
+    await assertFails(setDoc(doc(staff('fin1'), 'wallet_freezes', 'd2'), F({ reason: 'x' })), 'reason needed');
+    await assertFails(setDoc(doc(staff('fin1'), 'wallet_freezes', 'd2'), F({ by: 'fin2' })), 'by must be me');
+    await assertFails(setDoc(doc(staff('fin1'), 'wallet_freezes', 'd2'), F({ frozen: 'yes' })));
+    await assertFails(setDoc(doc(staff('fin1'), 'wallet_freezes', 'd2'), F({ extra: 1 })));
+    await assertFails(setDoc(doc(staff('sup1'), 'wallet_freezes', 'd2'), F({ by: 'sup1' })));
+    await assertFails(setDoc(doc(staff('ops1'), 'wallet_freezes', 'd2'), F({ by: 'ops1' })));
+    await assertFails(setDoc(doc(as('d1'), 'wallet_freezes', 'd1'), F({ by: 'd1', frozen: false })), 'a frozen person cannot unfreeze themselves');
+    await assertSucceeds(getDoc(doc(as('d1'), 'wallet_freezes', 'd1')));
+    await assertFails(getDoc(doc(as('d2'), 'wallet_freezes', 'd1')));
+    await assertSucceeds(updateDoc(doc(asAdmin(), 'wallet_freezes', 'd1'), { frozen: false, reason: 'Cleared after review', by: 'admin1', updatedAt: serverTimestamp() }));
+    await assertFails(deleteDoc(doc(staff('fin1'), 'wallet_freezes', 'd1')));
+  });
+
+  test('a frozen wallet cannot ask for a payout; unfreezing opens it again; others are not affected', async () => {
+    await seed((db) => setDoc(doc(db, 'wallet_freezes', 'd1'), { frozen: true, reason: 'Review', by: 'fin1', updatedAt: Timestamp.now() }));
+    await assertFails(addDoc(collection(as('d1'), 'payouts'), P()));
+    await assertSucceeds(addDoc(collection(as('d2'), 'payouts'), P({ driverId: 'd2' })));
+    await assertSucceeds(updateDoc(doc(staff('fin1'), 'wallet_freezes', 'd1'), { frozen: false, reason: 'Cleared', by: 'fin1', updatedAt: serverTimestamp() }));
+    await assertSucceeds(addDoc(collection(as('d1'), 'payouts'), P()));
+  });
+
+  test('when the server wrote a summary, a payout may not exceed the available amount', async () => {
+    await seed((db) => setDoc(doc(db, 'wallets', 'd1'), { availablePaise: 6000, updatedAt: Timestamp.now() }));
+    await assertFails(addDoc(collection(as('d1'), 'payouts'), P({ amountPaise: 6001 })));
+    await assertSucceeds(addDoc(collection(as('d1'), 'payouts'), P({ amountPaise: 6000 })));
+    await seed((db) => setDoc(doc(db, 'wallets', 'd2'), { note: 'summary without a number' }));
+    await assertSucceeds(addDoc(collection(as('d2'), 'payouts'), P({ driverId: 'd2', amountPaise: 99999 })), 'no number in the summary: no extra limit');
+  });
+
+  describe('maker-checker (flag walletMakerChecker on)', () => {
+    const upd = (db, over) => updateDoc(doc(db, 'payouts', 'p1'), over);
+    beforeEach(async () => {
+      await seed(async (db) => {
+        await setDoc(doc(db, 'config', 'features'), { pilotMode: true, flags: { walletMakerChecker: true } });
+        await setDoc(doc(db, 'payouts', 'p1'), { driverId: 'd1', amountPaise: 5000, status: 'requested', createdAt: Timestamp.now() });
+      });
+    });
+
+    test('the old one-step payment is closed; approve then pay by another admin with a reference', async () => {
+      await assertFails(upd(staff('fin1'), { status: 'paid', handledBy: 'fin1', handledAt: serverTimestamp() }), 'one step is closed');
+      await assertFails(upd(staff('fin1'), { status: 'approved', approvedBy: 'fin2', approvedAt: serverTimestamp() }), 'approvedBy must be me');
+      await assertFails(upd(staff('sup1'), { status: 'approved', approvedBy: 'sup1', approvedAt: serverTimestamp() }));
+      await assertFails(upd(as('d1'), { status: 'approved', approvedBy: 'd1', approvedAt: serverTimestamp() }));
+      await assertSucceeds(upd(staff('fin1'), { status: 'approved', approvedBy: 'fin1', approvedAt: serverTimestamp() }));
+      await assertFails(upd(staff('fin1'), { status: 'paid', paidBy: 'fin1', paidAt: serverTimestamp(), reference: 'UTR123456' }), 'the approver cannot also pay');
+      await assertFails(upd(staff('fin2'), { status: 'paid', paidBy: 'fin2', paidAt: serverTimestamp() }), 'reference needed');
+      await assertFails(upd(staff('fin2'), { status: 'paid', paidBy: 'fin2', paidAt: serverTimestamp(), reference: 'ab' }), 'reference too short');
+      await assertFails(upd(staff('fin2'), { status: 'paid', paidBy: 'fin1', paidAt: serverTimestamp(), reference: 'UTR123456' }), 'paidBy must be me');
+      await assertFails(upd(staff('fin2'), { status: 'paid', paidBy: 'fin2', paidAt: serverTimestamp(), reference: 'UTR123456', amountPaise: 1 }), 'amount cannot change');
+      await assertSucceeds(upd(staff('fin2'), { status: 'paid', paidBy: 'fin2', paidAt: serverTimestamp(), reference: 'UTR123456' }));
+      await assertFails(upd(staff('fin2'), { status: 'rejected', handledBy: 'fin2', handledAt: serverTimestamp(), reason: 'Too late' }), 'paid cannot be rejected');
+    });
+
+    test('a super admin approves and a finance admin pays, and the other way round', async () => {
+      await assertSucceeds(upd(asAdmin(), { status: 'approved', approvedBy: 'admin1', approvedAt: serverTimestamp() }));
+      await assertFails(upd(asAdmin(), { status: 'paid', paidBy: 'admin1', paidAt: serverTimestamp(), reference: 'UTR000111' }));
+      await assertSucceeds(upd(staff('fin1'), { status: 'paid', paidBy: 'fin1', paidAt: serverTimestamp(), reference: 'UTR000111' }));
+    });
+
+    test('reject needs a reason, works before and after approval, never after payment', async () => {
+      await assertFails(upd(staff('fin1'), { status: 'rejected', handledBy: 'fin1', handledAt: serverTimestamp() }));
+      await assertFails(upd(staff('fin1'), { status: 'rejected', handledBy: 'fin1', handledAt: serverTimestamp(), reason: 'no' }));
+      await assertSucceeds(upd(staff('fin1'), { status: 'rejected', handledBy: 'fin1', handledAt: serverTimestamp(), reason: 'Name does not match' }));
+      await seed((db) => setDoc(doc(db, 'payouts', 'p1'), { driverId: 'd1', amountPaise: 5000, status: 'approved', approvedBy: 'fin1', createdAt: Timestamp.now() }));
+      await assertSucceeds(upd(staff('fin2'), { status: 'rejected', handledBy: 'fin2', handledAt: serverTimestamp(), reason: 'Bank details unclear' }));
+      await assertFails(upd(staff('fin2'), { status: 'approved', approvedBy: 'fin2', approvedAt: serverTimestamp() }), 'a rejected payout stays rejected');
+    });
+
+    test('reversal of a paid payout needs a reason; nobody else can; the status is final', async () => {
+      await seed((db) => setDoc(doc(db, 'payouts', 'p1'), { driverId: 'd1', amountPaise: 5000, status: 'paid', approvedBy: 'fin1', paidBy: 'fin2', reference: 'UTR123456', createdAt: Timestamp.now() }));
+      await assertFails(upd(staff('fin1'), { status: 'reversed', reversedBy: 'fin1', reversedAt: serverTimestamp() }));
+      await assertFails(upd(staff('sup1'), { status: 'reversed', reversedBy: 'sup1', reversedAt: serverTimestamp(), reason: 'Transfer bounced' }));
+      await assertFails(upd(as('d1'), { status: 'reversed', reversedBy: 'd1', reversedAt: serverTimestamp(), reason: 'Transfer bounced' }));
+      await assertSucceeds(upd(staff('fin1'), { status: 'reversed', reversedBy: 'fin1', reversedAt: serverTimestamp(), reason: 'Transfer bounced' }));
+      await assertFails(upd(staff('fin1'), { status: 'paid', paidBy: 'fin2', paidAt: serverTimestamp(), reference: 'UTR999999' }), 'reversed is final');
+      await assertFails(deleteDoc(doc(staff('fin1'), 'payouts', 'p1')));
+    });
+  });
+
+  test('maker-checker flag off: the old one-step payment still works (nothing weakened)', async () => {
+    await seed((db) => setDoc(doc(db, 'payouts', 'p1'), { driverId: 'd1', amountPaise: 5000, status: 'requested', createdAt: Timestamp.now() }));
+    await assertSucceeds(updateDoc(doc(staff('fin1'), 'payouts', 'p1'), { status: 'paid', handledBy: 'fin1', handledAt: serverTimestamp() }));
+  });
+
+  describe('ledger corrections', () => {
+    const A = (over = {}) => ({ driverId: 'd1', type: 'adjustment', amountPaise: -2500, reason: 'Wrong commission on B7', by: 'fin1', createdAt: serverTimestamp(), ...over });
+
+    test('finance and super add a signed correction with a reason; nobody edits or deletes a line', async () => {
+      await assertSucceeds(setDoc(doc(staff('fin1'), 'ledger', 'adj_ab12cd34ef'), A()));
+      await assertSucceeds(setDoc(doc(asAdmin(), 'ledger', 'adj_zz99yy88xx'), A({ by: 'admin1', amountPaise: 100 })));
+      await assertFails(setDoc(doc(staff('sup1'), 'ledger', 'adj_ab12cd34e1'), A({ by: 'sup1' })));
+      await assertFails(setDoc(doc(staff('ops1'), 'ledger', 'adj_ab12cd34e2'), A({ by: 'ops1' })));
+      await assertFails(setDoc(doc(as('d1'), 'ledger', 'adj_ab12cd34e3'), A({ by: 'd1', amountPaise: 99999 })), 'a driver cannot credit themselves');
+      await assertFails(updateDoc(doc(staff('fin1'), 'ledger', 'adj_ab12cd34ef'), { amountPaise: 1 }));
+      await assertFails(deleteDoc(doc(staff('fin1'), 'ledger', 'adj_ab12cd34ef')));
+      await assertFails(setDoc(doc(staff('fin1'), 'ledger', 'adj_ab12cd34ef'), A({ amountPaise: 5 })), 'overwrite is an update');
+      await assertSucceeds(getDoc(doc(as('d1'), 'ledger', 'adj_ab12cd34ef')));
+      await assertFails(getDoc(doc(as('d2'), 'ledger', 'adj_ab12cd34ef')));
+    });
+
+    test('shape: id, amount, reason, author and time are checked', async () => {
+      const w = (id, over) => setDoc(doc(staff('fin1'), 'ledger', id), A(over));
+      await assertFails(w('anything', {}), 'id must start adj_');
+      await assertFails(w('adj_short', {}));
+      await assertFails(w('adj_ab12cd34e4', { amountPaise: 0 }));
+      await assertFails(w('adj_ab12cd34e5', { amountPaise: 1.5 }));
+      await assertFails(w('adj_ab12cd34e6', { amountPaise: 100000000001 }));
+      await assertFails(w('adj_ab12cd34e7', { amountPaise: -100000000001 }));
+      await assertFails(w('adj_ab12cd34e8', { reason: 'ok' }));
+      await assertFails(w('adj_ab12cd34e9', { reason: 'x'.repeat(201) }));
+      await assertFails(w('adj_ab12cd34f0', { by: 'fin2' }));
+      await assertFails(w('adj_ab12cd34f1', { type: 'trip_earning' }));
+      await assertFails(w('adj_ab12cd34f2', { extra: 1 }));
+      await assertFails(w('adj_ab12cd34f3', { createdAt: Timestamp.fromMillis(1000) }));
+      await assertSucceeds(w('adj_ab12cd34f4', { amountPaise: 100000000000 }));
+    });
+  });
+
+  test('audit lines for money actions are admin only', async () => {
+    const ev = (db, uid, type) => addDoc(collection(db, 'audit_events'), { type, actorId: uid, targetId: 'd1', data: { reason: 'x' }, createdAt: serverTimestamp() });
+    for (const t of ['wallet_freeze', 'payout_decision', 'wallet_adjust']) {
+      await assertSucceeds(ev(staff('fin1'), 'fin1', t));
+      await assertFails(ev(as('d1'), 'd1', t));
+    }
+  });
+});
+
 describe('config history (M6-13)', () => {
   const H = (over = {}) => ({ docId: 'support', json: '{"phone":"1"}', by: 'admin1', createdAt: serverTimestamp(), ...over });
 

@@ -1959,10 +1959,46 @@ service cloud.firestore {
               || (e.type == 'platform_commission' && e.amountPaise <= 0 && e.amountPaise * -2 <= b.paidAmountPaise));
     }
 
+    // A correction by finance or super (F8): the ledger is never edited, a
+    // mistake is answered by a signed line with a reason.
+    function validAdjustment(entryId) {
+      let e = request.resource.data;
+      return adminIn(['super', 'finance'])
+          && e.keys().hasOnly(['driverId', 'type', 'amountPaise', 'reason', 'by', 'createdAt'])
+          && e.type == 'adjustment'
+          && entryId.matches('^adj_[A-Za-z0-9]{8,40}$')
+          && e.driverId is string && e.driverId.size() >= 1 && e.driverId.size() <= 60
+          && e.amountPaise is int && e.amountPaise != 0
+          && e.amountPaise <= 100000000000 && e.amountPaise >= -100000000000
+          && e.reason is string && e.reason.size() >= 5 && e.reason.size() <= 200
+          && e.by == request.auth.uid
+          && e.createdAt == request.time;
+    }
+
     match /ledger/{entryId} {
       allow read: if signedIn() && (resource.data.driverId == request.auth.uid || isAdmin());
-      allow create: if signedIn() && validLedgerLine(entryId);
+      allow create: if signedIn() && (validAdjustment(entryId) || validLedgerLine(entryId));
       allow update, delete: if false;
+    }
+
+    // wallets/{uid}: the summary of the lines. Only the server writes it (Cloud
+    // Functions, Phase C); until then the app computes the balance from the
+    // ledger. The owner and admins read.
+    match /wallets/{uid} {
+      allow read: if signedIn() && (request.auth.uid == uid || isAdmin());
+      allow write: if false;
+    }
+
+    // wallet_freezes/{uid}: finance or super stops payouts for one person, with a reason.
+    match /wallet_freezes/{uid} {
+      allow read: if signedIn() && (request.auth.uid == uid || isAdmin());
+      allow create, update: if adminIn(['super', 'finance'])
+          && request.resource.data.keys().hasOnly(['frozen', 'reason', 'by', 'updatedAt'])
+          && request.resource.data.frozen is bool
+          && request.resource.data.reason is string && request.resource.data.reason.size() >= 3 && request.resource.data.reason.size() <= 200
+          && request.resource.data.by == request.auth.uid
+          && request.resource.data.updatedAt == request.time;
+      allow delete: if false;
     }
 
     // ------------------------------------------------------------------
@@ -2616,10 +2652,10 @@ service cloud.firestore {
       allow create: if signedIn()
           && request.resource.data.keys().hasOnly(['type', 'actorId', 'targetId', 'bookingId', 'loadId', 'data', 'createdAt'])
           && request.resource.data.actorId == request.auth.uid
-          && request.resource.data.type in ['verification', 'accept', 'status_change', 'cancel', 'risk_change', 'reassign', 'config_change', 'user_action', 'evidence', 'doc_view', 'assign', 'contact_view', 'chat_view', 'lr_issue', 'lr_version', 'lr_cancel', 'lr_share', 'lr_revoke', 'lr_mode', 'inspection_request', 'inspection_approve', 'inspection_deny', 'inspection_expire', 'otp_lock']
+          && request.resource.data.type in ['verification', 'accept', 'status_change', 'cancel', 'risk_change', 'reassign', 'config_change', 'user_action', 'evidence', 'doc_view', 'assign', 'contact_view', 'chat_view', 'lr_issue', 'lr_version', 'lr_cancel', 'lr_share', 'lr_revoke', 'lr_mode', 'inspection_request', 'inspection_approve', 'inspection_deny', 'inspection_expire', 'otp_lock', 'wallet_freeze', 'payout_decision', 'wallet_adjust']
           && request.resource.data.data is map
           && request.resource.data.createdAt == request.time
-          && (!(request.resource.data.type in ['verification', 'risk_change', 'reassign', 'config_change', 'user_action', 'contact_view', 'chat_view']) || isAdmin())
+          && (!(request.resource.data.type in ['verification', 'risk_change', 'reassign', 'config_change', 'user_action', 'contact_view', 'chat_view', 'wallet_freeze', 'payout_decision', 'wallet_adjust']) || isAdmin())
           && (request.resource.data.type != 'assign'
               || (request.resource.data.bookingId is string
                   && get(docPath('bookings', request.resource.data.bookingId)).data.get('fleetOwnerId', '') == request.auth.uid))
@@ -3189,9 +3225,29 @@ service cloud.firestore {
     // sum the ledger, so the balance and the one-open-request limit are
     // checked in the app. TODO(functions): check them on the server.
     // ------------------------------------------------------------------
+    function walletFrozen(uid) {
+      let p = /databases/$(database)/documents/wallet_freezes/$(uid);
+      return exists(p) && get(p).data.get('frozen', false) == true;
+    }
+
+    // Maker-checker is switched on in config/features (flag walletMakerChecker,
+    // default OFF): then a payout is approved by one finance admin and paid by another.
+    function makerCheckerOn() {
+      let p = /databases/$(database)/documents/config/features;
+      return exists(p) && get(p).data.get('flags', {}).get('walletMakerChecker', false) == true;
+    }
+
+    // When the server has written a summary, a request may not exceed what it says is available.
+    function summaryAllows(uid, amount) {
+      let p = /databases/$(database)/documents/wallets/$(uid);
+      return !exists(p) || !(get(p).data.get('availablePaise', null) is int) || amount <= get(p).data.availablePaise;
+    }
+
     match /payouts/{payoutId} {
       allow read: if signedIn() && (resource.data.driverId == request.auth.uid || isAdmin());
       allow create: if signedIn()
+          && !walletFrozen(request.auth.uid)
+          && summaryAllows(request.auth.uid, request.resource.data.get('amountPaise', 0))
           && request.resource.data.keys().hasOnly(['driverId', 'amountPaise', 'status', 'createdAt'])
           && request.resource.data.driverId == request.auth.uid
           && request.resource.data.status == 'requested'
@@ -3200,11 +3256,46 @@ service cloud.firestore {
           && request.resource.data.createdAt == request.time
           && canTransact(request.auth.uid);
       allow update: if adminIn(['super', 'finance'])
-          && resource.data.status == 'requested'
-          && changedKeys().hasOnly(['status', 'handledBy', 'handledAt'])
-          && request.resource.data.status in ['paid', 'rejected']
-          && request.resource.data.handledBy == request.auth.uid
-          && request.resource.data.handledAt == request.time;
+          && (
+              // The old single step, only while maker-checker is off.
+              (!makerCheckerOn()
+                  && resource.data.status == 'requested'
+                  && changedKeys().hasOnly(['status', 'handledBy', 'handledAt'])
+                  && request.resource.data.status in ['paid', 'rejected']
+                  && request.resource.data.handledBy == request.auth.uid
+                  && request.resource.data.handledAt == request.time)
+              // Maker: approve.
+              || (resource.data.status == 'requested'
+                  && changedKeys().hasOnly(['status', 'approvedBy', 'approvedAt'])
+                  && request.resource.data.status == 'approved'
+                  && request.resource.data.approvedBy == request.auth.uid
+                  && request.resource.data.approvedAt == request.time)
+              // Checker: pay, with the bank or UPI reference, by someone other than the approver.
+              || (resource.data.status == 'approved'
+                  && resource.data.get('approvedBy', request.auth.uid) != request.auth.uid
+                  && changedKeys().hasOnly(['status', 'paidBy', 'paidAt', 'reference'])
+                  && request.resource.data.status == 'paid'
+                  && request.resource.data.paidBy == request.auth.uid
+                  && request.resource.data.paidAt == request.time
+                  && request.resource.data.reference is string
+                  && request.resource.data.reference.size() >= 4 && request.resource.data.reference.size() <= 60)
+              // Reject at either stage, with a reason.
+              || (resource.data.status in ['requested', 'approved']
+                  && changedKeys().hasOnly(['status', 'handledBy', 'handledAt', 'reason'])
+                  && request.resource.data.status == 'rejected'
+                  && request.resource.data.handledBy == request.auth.uid
+                  && request.resource.data.handledAt == request.time
+                  && request.resource.data.reason is string
+                  && request.resource.data.reason.size() >= 3 && request.resource.data.reason.size() <= 200)
+              // Reverse a paid payout (the transfer failed or came back), with a reason.
+              || (resource.data.status == 'paid'
+                  && changedKeys().hasOnly(['status', 'reversedBy', 'reversedAt', 'reason'])
+                  && request.resource.data.status == 'reversed'
+                  && request.resource.data.reversedBy == request.auth.uid
+                  && request.resource.data.reversedAt == request.time
+                  && request.resource.data.reason is string
+                  && request.resource.data.reason.size() >= 5 && request.resource.data.reason.size() <= 200)
+          );
       allow delete: if false;
     }
 
