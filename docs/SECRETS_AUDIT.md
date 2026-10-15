@@ -33,3 +33,6 @@ git log --all --name-only --pretty=format: | Select-String "\.jks|\.keystore|key
 flutter test test/security_doc_test.dart test/signing_ignore_test.dart
 ```
 Agar kuch mile: pehle us key ko rotate/revoke karo (Console se), phir history se hatao; sirf file delete karna kaafi nahi.
+
+## Re-run 2026-10-15 (F6)
+Same commands as above on the current tree: 0 private-key or token hits outside docs and tests, 0 keystore-like files in history or tracked, only the public Firebase client keys in lib/firebase_options.dart look like keys. Result: clean.

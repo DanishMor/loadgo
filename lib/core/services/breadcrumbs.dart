@@ -2,20 +2,30 @@ import 'package:flutter/widgets.dart';
 
 /// Removes personal data from text that goes into a log (MASTER-6 Task 42):
 /// e-mail and UPI ids, links, phone numbers, Aadhaar, PAN, GST, vehicle
-/// numbers, OTP codes, coordinates, long digit runs and Firebase user ids.
+/// numbers, OTP codes, coordinates, long digit runs, bank branch codes, tokens
+/// and Firebase user ids.
 class Redactor {
   Redactor._();
 
+  /// A cleaned one-line text for any error or object, for debug output and crash reports.
+  static String safe(Object? error, {int maxLength = 500}) => clean('$error', maxLength: maxLength);
+
   static final _rules = <(RegExp, String)>[
+    (RegExp(r'upi://\S+', caseSensitive: false), ' '), // UPI payment links
     (RegExp(r'\S+@\S+'), ' '), // e-mail and UPI ids
     (RegExp(r'https?://\S+|www\.\S+', caseSensitive: false), ' '), // links
+    (RegExp(r'\beyJ[\w-]+\.[\w-]+\.[\w-]*'), '#token'), // sign-in tokens (JWT)
+    (RegExp(r'\b[\w-]{16,}(?::[\w-]{16,})+'), '#token'), // push tokens (id:key)
+    (RegExp(r'\b[A-Z]{4}0[A-Z0-9]{6}\b'), '#ifsc'), // bank branch codes
     (RegExp(r'\b[A-Z]{5}\d{4}[A-Z]\b'), '#pan'),
     (RegExp(r'\b\d{2}[A-Z]{5}\d{4}[A-Z][A-Z\d]Z[A-Z\d]\b'), '#gst'),
     (RegExp(r'\b[A-Z]{2}[ -]?\d{1,2}[ -]?[A-Z]{1,3}[ -]?\d{4}\b'), '#vehicle'),
     (RegExp(r'(otp|code|pin)\W{0,3}\d{4,8}', caseSensitive: false), r'$1 #'),
     (RegExp(r'[-+]?\d{1,3}\.\d{4,}\s*,\s*[-+]?\d{1,3}\.\d{4,}'), '#geo'),
     (RegExp(r'(?:\+?\d[\s-]?){7,}\d'), '#'), // phones, Aadhaar with spaces, long ids
+    (RegExp(r'\b\d{6}\b'), '#'), // a bare 6-digit code (login or trip code, PIN code)
     (RegExp(r'\b[A-Za-z0-9]{28}\b'), '#uid'), // Firebase user ids
+    (RegExp(r'\b(?=[\w-]*\d)[\w-]{32,}'), '#token'), // other long ids with digits (verification ids, keys)
   ];
 
   static String clean(String text, {int maxLength = 300}) {

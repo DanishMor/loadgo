@@ -1,3 +1,4 @@
+import 'breadcrumbs.dart';
 import 'dart:async';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
@@ -20,7 +21,7 @@ class ConnectivityService {
       online.value = _hasNetwork(await connectivity.checkConnectivity());
       _sub ??= connectivity.onConnectivityChanged.listen((r) => online.value = _hasNetwork(r));
     } catch (e) {
-      debugPrint('Connectivity tracking unavailable: $e');
+      debugPrint('Connectivity tracking unavailable: ${Redactor.safe(e)}');
     }
   }
 }

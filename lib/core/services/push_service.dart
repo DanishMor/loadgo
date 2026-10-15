@@ -1,3 +1,4 @@
+import 'breadcrumbs.dart';
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -25,7 +26,7 @@ class PushService {
       if (token != null) await saveToken(token);
       _refreshSub ??= messaging.onTokenRefresh.listen(saveToken);
     } catch (e) {
-      debugPrint('Push registration skipped: $e');
+      debugPrint('Push registration skipped: ${Redactor.safe(e)}');
     }
   }
 
@@ -49,7 +50,7 @@ class PushService {
         'fcmTokens': FieldValue.arrayRemove([token]),
       }, SetOptions(merge: true));
     } catch (e) {
-      debugPrint('Push unregister skipped: $e');
+      debugPrint('Push unregister skipped: ${Redactor.safe(e)}');
     }
   }
 }

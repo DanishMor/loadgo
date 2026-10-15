@@ -1,3 +1,4 @@
+import 'breadcrumbs.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -27,7 +28,7 @@ class Backend {
     try {
       FirebaseFirestore.instance.settings = firestoreSettings;
     } catch (e) {
-      debugPrint('Firestore settings not applied: $e');
+      debugPrint('Firestore settings not applied: ${Redactor.safe(e)}');
     }
   }
 

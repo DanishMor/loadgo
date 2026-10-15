@@ -97,7 +97,7 @@ Not counted, and why: one-off or naturally unique documents (ratings = one per b
 Everything here needs a server (Cloud Functions, Blaze) before it can be trusted with real money or real abuse. Each is marked `TODO(functions)` in code.
 1. Chat contact filter and strike counting (rules refuse plain 10-digit numbers and `@`; spelled-out numbers and "call me" pass if the app is modified).
 2. Fare, commission, GST, cancel charge and payout amounts (rules check shape and limits, not the maths).
-3. Pickup/delivery OTP guess limit (an attacker with a valid session can keep guessing 6 digits).
+3. Pickup/delivery OTP guess limit: FIXED in F2 for rules (every guess is stored and counted first, 5 guesses lock the entry for 15 minutes, `otp_attempts`). Open: a server-side second check and alerting (Phase C).
 4. Invite code rules for "open sign-up when the switch is off": the gate is in the app; a modified app can still create a profile. Rules protect the codes, not the sign-up.
 5. Trust numbers on the driver's own screen are computed on the phone; showing them to others needs a server-written summary.
 6. Rate limits per hour are counted in the app and checked by rules only where a `rate_limits` document exists.
@@ -112,7 +112,7 @@ Do this on a test project, with test accounts, never on real users. Write each r
 2. **Role lock:** change `role` on your own profile through a REST call. Must be denied.
 3. **Booking tamper:** as a driver set `pickupOtpVerified: true` or a `delivered` step without the code. Must be denied.
 4. **Numbers:** send a chat message with a 10-digit number through the REST API (skip the app). Must be denied by rules; then send "nau aath saat..." (spelled digits): this passes today (known gap 1).
-5. **OTP guessing:** count how many wrong delivery codes are accepted before any block (known gap 3).
+5. **OTP guessing:** try 6 wrong delivery codes in a row with a test booking; the 6th write to `otp_attempts` must be denied and the booking step must stay denied for 15 minutes (F2).
 6. **Invite:** redeem the same code twice, an expired code, a code at its max uses, someone else's whitelist. All must fail except the first valid one.
 7. **Share links:** open an LR link after it is revoked and after it ended. Must show "not available". Try changing the id in the link: must show nothing.
 8. **Admin roles:** sign in as `support` and try a payout (finance) and a verification decision (verifier). Must be denied.
@@ -120,3 +120,13 @@ Do this on a test project, with test accounts, never on real users. Write each r
 10. **Hosting:** check headers of every page (`test/hosting_headers_test.dart` lists them): nosniff, frame deny, referrer policy; the legal pages carry the DRAFT mark until a lawyer signs off.
 11. **Secrets:** search the repo and the APK for keys and passwords (`git grep -nEi "apikey|secret|password" -- ':!*.md'`); the only values allowed are the public Firebase client config. `android/key.properties` and keystores must not be in git.
 12. **Dependencies:** run `flutter pub outdated` and `npm audit` in `firestore_rules_test` once a quarter and note the result.
+
+### Part 2, Phase A (F1 to F6) - 2026-10-15
+| Item | State |
+|---|---|
+| F1 login code limits (60 s resend, 5 sends per hour per number, 5 wrong codes lock 15 min) | done, client side only (`docs/OTP_SECURITY.md` says what really protects) |
+| F2 trip code limit | done in the rules (`otp_attempts`), rules tests pass; audit type `otp_lock`; customer notice |
+| F3 `docs/OTP_SECURITY.md` | written; Firebase's own limits must be read from the official page by the owner |
+| F4 no screenshots on sensitive screens | done, flag `secureScreens` default OFF, release Android only |
+| F5 logs and crash reports | Redactor extended (UPI links, IFSC, tokens, bare 6-digit codes); crash reports carry cleaned text only; steps in `docs/RELEASE_BUILD_SECURITY.md` |
+| F6 secrets audit | re-run: no private keys, no tokens, no keystores in the tree or history; the only key-like values are the public Firebase client keys in `lib/firebase_options.dart` |

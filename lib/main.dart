@@ -45,7 +45,7 @@ Future<void> main() async {
   // Log uncaught async errors (e.g. a dropped network call) instead of
   // letting them take the app down; screens show their own retry UI.
   PlatformDispatcher.instance.onError = (error, stack) {
-    debugPrint('Uncaught error: $error\n$stack');
+    debugPrint('Uncaught error: ${Redactor.safe(error)}');
     return true;
   };
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);

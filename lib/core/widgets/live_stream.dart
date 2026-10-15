@@ -1,3 +1,4 @@
+import '../services/breadcrumbs.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -101,7 +102,7 @@ class _LiveStreamState<D> extends State<LiveStream<D>> {
       stream: _stream,
       builder: (context, snap) {
         if (snap.hasError) {
-          debugPrint('LiveStream error: ${snap.error}');
+          debugPrint('LiveStream error: ${Redactor.safe(snap.error)}');
           final offline = !ConnectivityService.online.value;
           return ErrorRetry(
             messageKey: offline ? 'errorOffline' : loadErrorKey(snap.error),
