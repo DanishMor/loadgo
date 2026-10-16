@@ -1,7 +1,6 @@
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:transport_app/core/adapters/adapters.dart';
-import 'package:transport_app/core/adapters/partner_adapters.dart';
 import 'package:transport_app/core/services/server_actions.dart';
 
 class Fake implements ServerGateway {

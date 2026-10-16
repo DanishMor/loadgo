@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 import '../core/features/features.dart';
@@ -24,6 +25,9 @@ class AdminUploads extends StatefulWidget {
 class _AdminUploadsState extends State<AdminUploads> {
   bool _shown = false;
 
+  // One stream for the life of the card, not a new one on every rebuild.
+  late final Stream<QuerySnapshot<Map<String, dynamic>>> _stream = Backend.db.collection('users').doc(widget.uid).collection('uploads').limit(20).snapshots();
+
   Future<void> _show() async {
     // The look is recorded first; if the log cannot be written the papers stay hidden.
     try {
@@ -46,7 +50,7 @@ class _AdminUploadsState extends State<AdminUploads> {
           )
         else
           StreamBuilder(
-            stream: Backend.db.collection('users').doc(widget.uid).collection('uploads').limit(20).snapshots(),
+            stream: _stream,
             builder: (context, snap) {
               final docs = snap.data?.docs ?? const [];
               if (docs.isEmpty) return Text(tr(context, 'adminNoPapers'), key: ValueKey('noPapers_${widget.uid}'), style: DsType.caption.copyWith(color: context.ds.textMuted));

@@ -9,6 +9,7 @@ import '../models/trip_evidence.dart';
 import '../services/trip_evidence_service.dart';
 import '../widgets/signature_pad.dart';
 import '../theme/design_tokens.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../features/features.dart';
 import '../photos/photo_widgets.dart';
 import '../services/backend.dart';
@@ -144,9 +145,16 @@ class PodScreen extends StatelessWidget {
 }
 
 /// The photos taken on this trip (pickup, delivery, proof, damage), read with the sign-in.
-class _TripPhotos extends StatelessWidget {
+class _TripPhotos extends StatefulWidget {
   final String bookingId;
   const _TripPhotos({required this.bookingId});
+
+  @override
+  State<_TripPhotos> createState() => _TripPhotosState();
+}
+
+class _TripPhotosState extends State<_TripPhotos> {
+  late final Stream<QuerySnapshot<Map<String, dynamic>>> _stream = Backend.db.collection('bookings').doc(widget.bookingId).collection('proofs').limit(30).snapshots();
 
   @override
   Widget build(BuildContext context) {
@@ -157,7 +165,7 @@ class _TripPhotos extends StatelessWidget {
           Text(tr(context, 'photosTitle'), style: DsStyle.t16w700.copyWith(color: AppColors.title)),
           const SizedBox(height: 6),
           StreamBuilder(
-            stream: Backend.db.collection('bookings').doc(bookingId).collection('proofs').limit(30).snapshots(),
+            stream: _stream,
             builder: (context, snap) {
               final docs = [for (final d in snap.data?.docs ?? const []) if (d.data()['path'] is String) d];
               if (docs.isEmpty) return Text(tr(context, 'photosNone'), key: const ValueKey('noTripPhotos'), style: DsStyle.inherit.copyWith(color: AppColors.muted));

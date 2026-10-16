@@ -98,9 +98,13 @@ class _PhotoImageState extends State<PhotoImage> {
             child: Image.memory(bytes, fit: BoxFit.cover, cacheWidth: 400, errorBuilder: (_, _, _) => Icon(Icons.broken_image_outlined, color: c.textMuted)),
           );
         }
-        return ClipRRect(
-          borderRadius: DsRadius.all(DsRadius.md),
-          child: Container(width: widget.size, height: widget.size, color: c.chip, child: child),
+        return Semantics(
+          image: true,
+          label: tr(context, 'photoAlt'),
+          child: ClipRRect(
+            borderRadius: DsRadius.all(DsRadius.md),
+            child: Container(width: widget.size, height: widget.size, color: c.chip, child: child),
+          ),
         );
       },
     );
