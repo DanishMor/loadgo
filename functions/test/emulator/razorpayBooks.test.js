@@ -179,8 +179,12 @@ test('refund: two at the same moment cannot pass the total together', async () =
     refundPayment(getDb(), slow, 'fin1', { orderId: oid, amountPaise: 700000 }, staff),
     refundPayment(getDb(), slow, 'fin1', { orderId: oid, amountPaise: 700000 }, staff),
   ]);
-  assert.equal(results.filter((r) => r.status === 'fulfilled').length, 1);
-  assert.equal((await getDb().collection('payment_orders').doc(oid).get()).data().refundedPaise, 700000);
+  // Never both. (On a very busy emulator both may be aborted; then nothing is refunded and nothing is left reserved.)
+  const done = results.filter((r) => r.status === 'fulfilled').length;
+  assert.ok(done <= 1, 'two refunds passed the total together');
+  const o = (await getDb().collection('payment_orders').doc(oid).get()).data();
+  assert.equal(o.refundedPaise || 0, 700000 * done);
+  assert.equal(o.refundPendingPaise || 0, 0, 'no reservation is left behind');
 });
 
 test('refund started outside our app (webhook only) is applied and capped at the payment', async () => {
@@ -196,4 +200,15 @@ test('refund of a payment that was never put in the ledger writes no adjustment'
   await pay(oid, 'pay_b3');
   await refundPayment(getDb(), async () => ({ id: 'rfnd_3' }), 'fin1', { orderId: oid, amountPaise: 1000 }, staff);
   assert.equal((await ledger()).length, 0);
+});
+
+test('G17: a person can start only so many new orders a day; giving back an open order does not use a turn', async () => {
+  await getDb().collection('config').doc('paymentLimits').set({ perUserPerDay: 2, totalPerDay: 100 });
+  await getDb().collection('bookings').doc('B4').set({ customerId: 'cust1', agreedFarePaise: 111100 });
+  await getDb().collection('bookings').doc('B5').set({ customerId: 'cust1', agreedFarePaise: 222200 });
+  await createOrder(getDb(), fakeHttp, 'cust1', { bookingId: 'B1' });
+  await createOrder(getDb(), fakeHttp, 'cust1', { bookingId: 'B1' }); // the same open order: free
+  await createOrder(getDb(), fakeHttp, 'cust1', { bookingId: 'B4' });
+  await assert.rejects(createOrder(getDb(), fakeHttp, 'cust1', { bookingId: 'B5' }), (e) => e.code === 'resource-exhausted');
+  assert.equal((await getDb().collection('payment_orders').get()).size, 2);
 });

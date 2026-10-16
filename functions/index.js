@@ -174,7 +174,7 @@ function paymentCallable(run) {
     try {
       return await run(db, request.auth && request.auth.uid, request.data, razorpay.razorpayHttp(RZP_KEY_ID.value(), RZP_KEY_SECRET.value()));
     } catch (e) {
-      if (e instanceof razorpay.PaymentError || e instanceof adminActions.ActionError) throw new HttpsError(e.code, e.message);
+      if (e instanceof razorpay.PaymentError || e instanceof adminActions.ActionError || e instanceof QuotaError) throw new HttpsError(e.code, e.message);
       console.error('payment failed', e && e.message);
       throw new HttpsError('internal', 'failed');
     }

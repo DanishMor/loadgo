@@ -2,8 +2,8 @@
 
 Plan: docs/MASTER_PLAN_PART3.md. Read it, then continue from NEXT.
 
-LAST_DONE: G16
-NEXT: G17 (cost guards: payments quota, contract test that every paid callable has a switch and a quota, COST_WATCH)
+LAST_DONE: G17
+NEXT: G18 (new features from docs/NEW_FEATURES_PLAN.md, free ones first)
 
 Unfinished: none.
 

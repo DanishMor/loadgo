@@ -7,6 +7,7 @@
 
 const crypto = require('node:crypto');
 const { safeId } = require('./common');
+const { consume } = require('./quota');
 
 const ID = /^[A-Za-z0-9_]{1,64}$/;
 
@@ -75,6 +76,9 @@ async function createOrder(db, http, callerUid, input, nowMs = Date.now(), keyId
     const madeMs = o.createdAt && typeof o.createdAt.toMillis === 'function' ? o.createdAt.toMillis() : o.createdAt instanceof Date ? o.createdAt.getTime() : 0;
     if (o.customerId === callerUid && o.amountPaise === amount && nowMs - madeMs < 30 * 60 * 1000) return { orderId: d.id, amountPaise: amount, reference: bookingId, again: true, ...(keyId ? { keyId } : {}) };
   }
+  // G17: a person can start only so many new orders a day, and everybody so many (config/paymentLimits). An open order
+  // given back above does not use a turn.
+  await consume(db, 'payorder', callerUid, { perUser: 30, total: 1000 }, (await db.collection('config').doc('paymentLimits').get()).data(), nowMs);
   const order = await http('POST', '/orders', { amount, currency: 'INR', receipt: bookingId.slice(0, 40) });
   if (!order || typeof order.id !== 'string' || order.amount !== amount) throw new PaymentError('unavailable', 'odd answer');
   await db.collection('payment_orders').doc(order.id).set({ bookingId, customerId: callerUid, amountPaise: amount, status: 'created', createdAt: new Date() });
