@@ -2,8 +2,8 @@
 
 Plan: docs/MASTER_PLAN_PART3.md. Read it, then continue from NEXT.
 
-LAST_DONE: G0
-NEXT: G1
+LAST_DONE: G3
+NEXT: G4 (owner bug list is empty, so G4 is skipped) then G5
 
 Unfinished: none.
 

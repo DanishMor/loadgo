@@ -31,3 +31,4 @@ One line per assumption taken without asking.
 - 2026-10-16 Photos: no download links (getData with sign-in only) so a leaked URL never opens a paper; truck views have fixed file names (front/side/rear/load); queue keeps max 10 photos and only on phones (web has no file path).
 - 2026-10-16 Admin web: firebase.json is not changed for the second hosting site (an unmapped target would stop today's deploy); the owner adds it with the steps in docs/ADMIN_WEB.md. serverStatus has no switch on purpose: it is how to test a fresh deploy.
 - 2026-10-16 Payment: the app sends only the booking id; the server takes the amount from the booking so a changed phone cannot pay less. Refund needs finance or super staff and never exceeds what was paid. KYC/SMS partner skeletons come before any contract; they never block the manual path.
+- G4: owner bug list in the master plan is empty, so nothing to fix (2026-10-16).
