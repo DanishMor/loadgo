@@ -15,6 +15,22 @@ Everything built so far runs on the free Firebase stack (Auth + Firestore + Host
 | 9. Insurance partner | partnership | cargo cover at booking | premium is paid per booking by the customer; revenue share to negotiate | idea only |
 | 10. LLM assistant | LLM API key | smarter Sahayak behind the same `AssistantEngine` interface | per token; a few thousand at small volume, set a daily cap | `LATER(paid)` LLM |
 
+## Status after Part 2 (F15 to F37)
+
+What is now **written and tested but not deployed** (the owner deploys, see `docs/BLAZE_GO_LIVE.md`):
+
+| Step | State | Where |
+|---|---|---|
+| 1. Blaze + Cloud Functions | 38 functions written, each behind its own switch (OFF), with client fallbacks | `functions/`, `docs/FUNCTIONS.md` |
+| 2. Push notifications | server send, quiet hours, per-device tokens, 5 channels, tap routing, admin announcements | `functions/src/push.js`, `lib/core/notifications/` |
+| 3. Firebase Storage | papers, truck photos, trip photos, admin viewer, POD and LR PDF photo; rules and tests ready | `storage.rules`, `lib/core/photos/` |
+| 5. Payment gateway | Razorpay adapter and server functions (test keys first); the app never holds a key | `lib/core/adapters/razorpay_gateway.dart`, `functions/src/razorpay.js` |
+| 6. KYC | skeleton calls a `kycVerify` function that does not exist yet; answers "unavailable", so manual admin review stays the default | `lib/core/adapters/partner_adapters.dart` |
+| 7. SMS | MSG91 skeleton calls an `smsSend` function that does not exist yet; login codes stay with Firebase Auth | same file |
+| 4. Maps, 8. App Check, 9. Insurance, 10. LLM | not started | unchanged |
+
+Still needing a **partner or a contract**: the Razorpay account and business KYC, a KYC verification partner, an MSG91 account with DLT registration. The server functions for the last two are the next code to write once a partner is chosen.
+
 ## One-time and yearly
 - Google Play developer account: one-time fee of about USD 25 (check today's rate).
 - Own domain for links and policy pages: optional, roughly 800 to 1,500 a year; then change the host in `ShareLinks`, `PolicyLinks`, the manifest and `config/app.policyBaseUrl`.

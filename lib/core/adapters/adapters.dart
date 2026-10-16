@@ -5,7 +5,9 @@
 // which contract test it must pass (test/adapter_contract_test.dart).
 export 'kyc_adapter.dart';
 export 'maps_adapter.dart';
+export 'partner_adapters.dart';
 export 'payment_adapter.dart';
 export 'push_adapter.dart';
+export 'razorpay_gateway.dart';
 export 'sms_adapter.dart';
 export 'storage_adapter.dart';

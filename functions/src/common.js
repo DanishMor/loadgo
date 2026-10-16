@@ -19,6 +19,7 @@ const FLAGS = Object.freeze([
   'pushNotifications',
   'adminBroadcast',
   'photoUploads',
+  'paymentGateway',
 ]);
 
 const FLAG_TTL_MS = 30 * 1000;

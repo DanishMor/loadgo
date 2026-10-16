@@ -24,6 +24,7 @@ Goal: put LoadGo in front of a small, known group (one or two corridors, tens of
 | Server admin actions | OFF | Features > Server admin actions |
 | Server account deletion | OFF | Features > Server account deletion |
 | Server earnings checks | OFF | Features > Server earnings checks |
+| Online payment (test mode) | OFF | Features > Online payment (test mode) |
 | Push notifications | OFF | Features > Push notifications |
 | Admin announcements by push | OFF | Features > Admin announcements by push |
 | Photo uploads | OFF | Features > Photo uploads |

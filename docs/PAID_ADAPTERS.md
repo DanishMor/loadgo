@@ -9,6 +9,8 @@ Everything in `lib/core/adapters/` is the plug for a paid service. Today the app
 | `MapsProvider` (geocode, route) | maps_adapter.dart | Google Maps Platform | offline city table and straight-line distance | `LATER(paid)` maps |
 | `PaymentGateway` (order, verify, refund) | payment_adapter.dart | payment partner (UPI, card) | payments are recorded, not processed | `LATER(paid)` gateway |
 | `KycVerifier` | kyc_adapter.dart | licence / RC / PAN / GSTIN / Aadhaar partner | format checks and admin review | `LATER(paid)` KYC |
+| `RazorpayGateway` (F34) | razorpay_gateway.dart | Razorpay through Cloud Functions (key stays on the server) | `NoPaymentGateway` until the switch `paymentGateway` is on | `LATER(paid)` gateway |
+| `Msg91SmsGateway`, `PartnerKycVerifier` (F35) | partner_adapters.dart | SMS provider, KYC partner (skeletons, server functions not written) | `NoSmsGateway`, manual admin review | `LATER(paid)` SMS / KYC |
 | `FileStore` | storage_adapter.dart | Firebase Storage (Blaze) | no photo upload | `LATER(paid)` photos |
 
 ## How to plug a real provider in

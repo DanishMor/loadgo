@@ -31,6 +31,7 @@ force any flag On or Off; a forced value always wins. A flag that is OFF hides i
 | `serverAdminActions` | Risk tier and driver approval are done by the server and logged, not by the admin phone itself. | OFF | OFF | Admin > Features > Server admin actions |
 | `serverDeletion` | The server removes a person's data, sign-in and files when an account deletion is approved. | OFF | OFF | Admin > Features > Server account deletion |
 | `serverWallet` | The server adds up the ledger, writes the summary, checks payouts and runs the daily check. | OFF | OFF | Admin > Features > Server earnings checks |
+| `paymentGateway` | Customers can pay a booking online through the payment partner (test mode until the owner adds keys). | OFF | OFF | Admin > Features > Online payment (test mode) |
 | `pushNotifications` | Phones get push messages for new loads, offers, trip steps and chat. Needs the functions deployed. | OFF | OFF | Admin > Features > Push notifications |
 | `adminBroadcast` | Admins can send an announcement push to a role or to everyone. | OFF | OFF | Admin > Features > Admin announcements by push |
 | `photoUploads` | Documents and trip photos can be added from the phone camera or gallery. Needs Storage switched on. | OFF | OFF | Admin > Features > Photo uploads |

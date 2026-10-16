@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import '../core/l10n/l10n.dart';
 import '../core/services/admin_console_service.dart';
 import '../core/services/error_log_service.dart';
+import '../core/services/server_actions.dart';
+import '../core/widgets/ds/app_button.dart';
 import '../core/widgets/common.dart';
 import '../core/widgets/live_stream.dart';
 import '../core/theme/design_tokens.dart';
@@ -63,6 +65,8 @@ class _AdminHealthScreenState extends State<AdminHealthScreen> {
           },
         ),
         const SizedBox(height: 20),
+        const ServerStatusCard(),
+        const SizedBox(height: 20),
         Text(tr(context, 'healthErrors'), style: DsStyle.t16w700),
         const SizedBox(height: 4),
         Text(tr(context, 'healthErrorsNote'), style: DsStyle.t12w400.copyWith(color: AppColors.muted)),
@@ -85,6 +89,51 @@ class _AdminHealthScreenState extends State<AdminHealthScreen> {
             ]);
           },
         ),
+      ]),
+    );
+  }
+}
+
+/// F33: "Is the server there?" Pressing the button asks the cloud functions. No answer
+/// is not an error: the app then uses its own direct writes, as before the deploy.
+class ServerStatusCard extends StatefulWidget {
+  final Future<ServerStatus?> Function()? check;
+  const ServerStatusCard({super.key, this.check});
+
+  @override
+  State<ServerStatusCard> createState() => _ServerStatusCardState();
+}
+
+class _ServerStatusCardState extends State<ServerStatusCard> {
+  bool _busy = false;
+  bool _asked = false;
+  ServerStatus? _status;
+
+  Future<void> _ask() async {
+    setState(() => _busy = true);
+    final s = await (widget.check ?? ServerActions.status)();
+    if (!mounted) return;
+    setState(() {
+      _busy = false;
+      _asked = true;
+      _status = s;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.ds;
+    return AppCard(
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text(tr(context, 'serverStatusTitle'), style: DsType.title.copyWith(color: c.text)),
+        const SizedBox(height: DsSpace.s2),
+        if (_asked && _status != null) ...[
+          Text(tr(context, 'serverStatusUp'), key: const ValueKey('serverUp'), style: DsType.body.copyWith(color: c.success)),
+          Text('${_status!.on} / ${_status!.switches.length} ${tr(context, 'serverStatusSwitches')}', key: const ValueKey('serverSwitches'), style: DsType.caption.copyWith(color: c.textMuted)),
+        ],
+        if (_asked && _status == null) Text(tr(context, 'serverStatusDown'), key: const ValueKey('serverDown'), style: DsType.body.copyWith(color: c.textMuted)),
+        const SizedBox(height: DsSpace.s2),
+        AppButton(key: const ValueKey('serverCheck'), label: tr(context, 'serverStatusCheck'), kind: AppButtonKind.secondary, expand: false, loading: _busy, onPressed: _busy ? null : _ask),
       ]),
     );
   }

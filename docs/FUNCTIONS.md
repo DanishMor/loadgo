@@ -32,6 +32,7 @@ Every function first asks `flagOn(db, name)`: it reads `config/features.flags.<n
 | `serverAdminActions` | admin actions as callable functions | F21 |
 | `serverDeletion` | account deletion cascade | F22 |
 | `serverWallet` | wallet summary, reconciliation, payout checks | F23 |
+| `paymentGateway` | Razorpay order, signature check, refund (test mode first) | F34 |
 | `pushNotifications` | push on events | F25 |
 | `adminBroadcast` | admin announcement push | F27 |
 | `photoUploads` | photo upload helpers | F28 to F31 |
@@ -47,6 +48,7 @@ Every function first asks `flagOn(db, name)`: it reads `config/features.flags.<n
 | tripDelivered, ratingAdded | a booking becomes delivered, a rating is created | serverTrust | counts the trip once (trip_counts) and writes public_trust/{uid} with safe fields only |
 | jobExpireLoads, jobHoldScheduled, jobSuspendExpiredDocs | every day 03:00, every 15 minutes, every day 03:30 (India time) | serverJobs | closes old open loads; marks the vehicle busy one lead time before a scheduled pickup; holds vehicles and drivers with expired papers (an admin override wins) |
 | adminSetRiskTier, adminDecideDriver | callable | serverAdminActions | the admin action done by the server with the staff role checked and the audit line written by the server |
+| serverStatus | callable | none (works with every switch off) | any admin asks "is the server there?"; returns the region and which server switches are on, no personal data. Admin > System health > "Check server" |
 | deleteApprovedAccount | deletion_requests/{uid} becomes approved | serverDeletion | removes the data, the sign-in and the files; keeps money records; blocks on an open payout |
 | walletOnLedger, walletOnPayout, walletReconcile, adminPayoutDecision | ledger or payout written, every day 04:00, callable | serverWallet | recomputes wallets/{uid}, rejects an impossible payout request, writes the daily report, approve / pay / reject / reverse with maker-checker |
 | pushOnNotification, pushOnOffer, pushOnOfferSelected, pushOnChat, pushOnSos, pushOnPayout, pushNewLoad, pushWaves, pushDocExpiry | events and schedules | pushNotifications | push messages (see below) |

@@ -19,6 +19,14 @@ class CloudServerGateway implements ServerGateway {
   }
 }
 
+/// What the server says about itself (F33).
+class ServerStatus {
+  final Map<String, bool> switches;
+  const ServerStatus(this.switches);
+
+  int get on => switches.values.where((v) => v).length;
+}
+
 /// The function answered no: a real refusal (not allowed, bad input). Shown to the admin.
 class ServerRefused implements Exception {
   final String code;
@@ -63,6 +71,19 @@ class ServerActions {
 
   static Future<bool> payoutDecision(String payoutId, String action, {String? reason, String? reference}) async =>
       await tryCall(FeatureKey.serverWallet, 'adminPayoutDecision', {'payoutId': payoutId, 'action': action, 'reason': ?reason, 'reference': ?reference}) != null;
+
+  /// F33: asks the server whether it is there. Null when it is not reachable (not deployed yet).
+  /// This call has no switch: it must work before anything is turned on.
+  static Future<ServerStatus?> status() async {
+    try {
+      final r = await gateway.call('serverStatus', const {});
+      if (r['ok'] != true) return null;
+      final sw = r['switches'];
+      return ServerStatus({if (sw is Map) for (final e in sw.entries) e.key.toString(): e.value == true});
+    } catch (_) {
+      return null;
+    }
+  }
 
   /// An announcement push. Returns how many people were tried, or null when the server is not there.
   static Future<int?> broadcast({required String title, required String body, String? role}) async {

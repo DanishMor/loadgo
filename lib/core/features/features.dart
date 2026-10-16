@@ -47,6 +47,7 @@ class FeatureKey {
   static const serverAdminActions = 'serverAdminActions';
   static const serverDeletion = 'serverDeletion';
   static const serverWallet = 'serverWallet';
+  static const paymentGateway = 'paymentGateway';
   static const pushNotifications = 'pushNotifications';
   static const adminBroadcast = 'adminBroadcast';
   static const photoUploads = 'photoUploads';
@@ -89,6 +90,7 @@ class Features {
     FeatureSpec(FeatureKey.serverAdminActions, pilotOn: false, normalOn: false),
     FeatureSpec(FeatureKey.serverDeletion, pilotOn: false, normalOn: false),
     FeatureSpec(FeatureKey.serverWallet, pilotOn: false, normalOn: false),
+    FeatureSpec(FeatureKey.paymentGateway, pilotOn: false, normalOn: false),
     FeatureSpec(FeatureKey.pushNotifications, pilotOn: false, normalOn: false),
     FeatureSpec(FeatureKey.adminBroadcast, pilotOn: false, normalOn: false),
     FeatureSpec(FeatureKey.photoUploads, pilotOn: false, normalOn: false),

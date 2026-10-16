@@ -33,6 +33,8 @@ import 'core/widgets/ds/haptics.dart';
 import 'core/widgets/live_stream.dart' show OfflineBanner;
 import 'firebase_options.dart';
 import 'route_hooks.dart';
+import 'admin/admin_web_shell.dart';
+import 'core/app_mode.dart';
 
 /// Lets code outside a screen (the session watcher) reach the navigator.
 final GlobalKey<NavigatorState> appNavigatorKey = GlobalKey<NavigatorState>();
@@ -137,7 +139,7 @@ class LoadGoApp extends StatelessWidget {
               textDirection: LanguageScope.of(context).textDirection,
               child: Column(
                 children: [
-                  Expanded(child: AppControlGate(child: child ?? const SizedBox.shrink())),
+                  Expanded(child: AppControlGate(child: AppMode.isAdminOnly ? AdminWebShell(child: child ?? const SizedBox.shrink()) : (child ?? const SizedBox.shrink()))),
                   const OfflineBanner(),
                 ],
               ),

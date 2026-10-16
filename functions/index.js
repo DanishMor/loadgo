@@ -134,6 +134,43 @@ function adminCallable(action, flag = 'serverAdminActions') {
   });
 }
 
+// ---- F34: Razorpay sandbox (switch: paymentGateway) ----
+// The key id and secret are Firebase secrets, set by the owner (see docs/BLAZE_GO_LIVE.md); none is in the repo.
+const { defineSecret } = require('firebase-functions/params');
+const razorpay = require('./src/razorpay');
+const RZP_KEY_ID = defineSecret('RAZORPAY_KEY_ID');
+const RZP_KEY_SECRET = defineSecret('RAZORPAY_KEY_SECRET');
+
+function paymentCallable(run) {
+  return onCall({ secrets: [RZP_KEY_ID, RZP_KEY_SECRET] }, async (request) => {
+    const db = getFirestore();
+    if (!(await flagOn(db, 'paymentGateway'))) throw new HttpsError('failed-precondition', 'disabled');
+    try {
+      return await run(db, request.auth && request.auth.uid, request.data, razorpay.razorpayHttp(RZP_KEY_ID.value(), RZP_KEY_SECRET.value()));
+    } catch (e) {
+      if (e instanceof razorpay.PaymentError || e instanceof adminActions.ActionError) throw new HttpsError(e.code, e.message);
+      console.error('payment failed', e && e.message);
+      throw new HttpsError('internal', 'failed');
+    }
+  });
+}
+
+exports.paymentCreateOrder = paymentCallable((db, uid, data, http) => razorpay.createOrder(db, http, uid, data));
+exports.paymentVerify = paymentCallable((db, uid, data) => razorpay.verifyPayment(db, RZP_KEY_SECRET.value(), uid, data));
+exports.paymentRefund = paymentCallable((db, uid, data, http) =>
+  razorpay.refundPayment(db, http, uid, data, (d, u) => adminActions.requireStaff(d, u, ['super', 'finance'])));
+
+// F33: works with every switch off (no flag check), so the owner can test a fresh deploy.
+exports.serverStatus = onCall(async (request) => {
+  try {
+    return await adminActions.serverStatus(getFirestore(), request.auth && request.auth.uid);
+  } catch (e) {
+    if (e instanceof adminActions.ActionError) throw new HttpsError(e.code, e.message);
+    console.error('serverStatus failed', e && e.message);
+    throw new HttpsError('internal', 'failed');
+  }
+});
+
 exports.adminSetRiskTier = adminCallable(adminActions.setRiskTier);
 exports.adminDecideDriver = adminCallable(adminActions.decideDriver);
 

@@ -75,7 +75,7 @@ service firebase.storage {
     // by a person: evidence stays.
     match /bookings/{bookingId}/{kind}/{fileName} {
       allow read: if signedIn() && (tripDriver(bookingId) || tripCustomer(bookingId) || isAdmin());
-      allow create: if goodImage()
+      allow create: if resource == null && goodImage()
           && ((kind in ['pickup', 'delivery', 'pod'] && tripDriver(bookingId))
               || (kind == 'damage' && (tripDriver(bookingId) || tripCustomer(bookingId))));
       allow update, delete: if false;

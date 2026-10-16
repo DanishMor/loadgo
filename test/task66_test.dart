@@ -38,6 +38,7 @@ void main() {
       FeatureKey.serverAdminActions: 'Server admin actions',
       FeatureKey.serverDeletion: 'Server account deletion',
       FeatureKey.serverWallet: 'Server earnings checks',
+      FeatureKey.paymentGateway: 'Online payment (test mode)',
       FeatureKey.pushNotifications: 'Push notifications',
       FeatureKey.adminBroadcast: 'Admin announcements by push',
       FeatureKey.photoUploads: 'Photo uploads',

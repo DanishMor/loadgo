@@ -3,7 +3,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const { Timestamp } = require('firebase-admin/firestore');
 const { getDb, clearDb } = require('../helpers');
-const { setRiskTier, decideDriver, requireStaff, ActionError } = require('../../src/adminActions');
+const { setRiskTier, decideDriver, requireStaff, serverStatus, ActionError } = require('../../src/adminActions');
 
 const NOW = Date.UTC(2026, 9, 15, 12, 0, 0);
 
@@ -115,4 +115,25 @@ test('the time stamps are the server time given, not anything from the caller', 
   assert.equal(u.verificationMeta.at.toMillis(), NOW);
   assert.equal(u.verified, true);
   assert.ok(u.updatedAt instanceof Timestamp);
+});
+
+test('serverStatus: any staff role may ask, it works with every switch off, and shows only switch names', async () => {
+  const db = getDb();
+  const off = await serverStatus(db, 'sup1', NOW);
+  assert.equal(off.ok, true);
+  assert.equal(off.at, NOW);
+  assert.equal(off.region, 'asia-south1');
+  assert.ok(Object.keys(off.switches).length >= 11);
+  assert.ok(Object.values(off.switches).every((v) => v === false));
+  await db.collection('config').doc('features').set({ flags: { serverJobs: true, serverWallet: 'yes' } });
+  require('../../src/common').clearFlagCache();
+  const on = await serverStatus(db, 'fin1', NOW);
+  assert.equal(on.switches.serverJobs, true);
+  assert.equal(on.switches.serverWallet, false, 'only exactly true counts');
+});
+
+test('serverStatus: strangers and signed-out callers are refused', async () => {
+  const db = getDb();
+  await denied(serverStatus(db, 'nobody'), 'permission-denied');
+  await denied(serverStatus(db, undefined), 'unauthenticated');
 });

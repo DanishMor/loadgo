@@ -7,7 +7,7 @@
 // caller's uid as arguments; index.js wraps them as callables.
 
 const { Timestamp } = require('firebase-admin/firestore');
-const { safeId, text } = require('./common');
+const { safeId, text, readFlags, FLAGS, REGION } = require('./common');
 
 const TIERS = Object.freeze(['normal', 'review', 'restricted', 'suspended', 'banned']);
 const STATUSES = Object.freeze(['pending', 'approved', 'rejected']);
@@ -96,4 +96,14 @@ async function decideDriver(db, callerUid, input, nowMs = Date.now()) {
   return { ok: true, uid: target, status: input.status };
 }
 
-module.exports = { ActionError, requireStaff, setRiskTier, decideDriver, TIERS, STATUSES, REJECT_REASONS, RISK_ROLES, VERIFY_ROLES };
+// F33: "is the server there?" Any admin may ask; it works with every switch off, so it is the
+// first thing to try after a deploy. Returns which server switches are on, nothing about people.
+async function serverStatus(db, callerUid, nowMs = Date.now()) {
+  await requireStaff(db, callerUid, STAFF_ROLES);
+  const flags = await readFlags(db);
+  const switches = {};
+  for (const name of FLAGS) switches[name] = flags[name] === true;
+  return { ok: true, region: REGION, at: nowMs, switches };
+}
+
+module.exports = { ActionError, requireStaff, serverStatus, setRiskTier, decideDriver, TIERS, STATUSES, REJECT_REASONS, RISK_ROLES, VERIFY_ROLES };
