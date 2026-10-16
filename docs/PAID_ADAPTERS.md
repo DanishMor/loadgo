@@ -11,6 +11,7 @@ Everything in `lib/core/adapters/` is the plug for a paid service. Today the app
 | `KycVerifier` | kyc_adapter.dart | licence / RC / PAN / GSTIN / Aadhaar partner | format checks and admin review | `LATER(paid)` KYC |
 | `RazorpayGateway` (F34, G9) | razorpay_gateway.dart, online_pay.dart, razorpay_checkout.dart | Razorpay through Cloud Functions (key stays on the server; the app gets only the public key id with each order) | `NoPaymentGateway` until the switch `paymentGateway` is on; the old "I have paid" record flow stays | `LATER(paid)` gateway |
 | `Msg91SmsGateway`, `PartnerKycVerifier` (F35) | partner_adapters.dart | SMS provider, KYC partner (skeletons, server functions not written) | `NoSmsGateway`, manual admin review | `LATER(paid)` SMS / KYC |
+| `EwayBillProvider` (G14) | eway_adapter.dart | GST Suvidha Provider (e-way bill) | the person makes the bill on the GST portal and records the number; the app checks 12 digits and the expiry | `LATER(paid)` GSP |
 | `FileStore` | storage_adapter.dart | Firebase Storage (Blaze) | no photo upload | `LATER(paid)` photos |
 
 ## How to plug a real provider in

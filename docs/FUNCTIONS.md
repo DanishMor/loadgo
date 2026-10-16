@@ -33,6 +33,7 @@ Every function first asks `flagOn(db, name)`: it reads `config/features.flags.<n
 | `serverDeletion` | account deletion cascade | F22 |
 | `serverWallet` | wallet summary, reconciliation, payout checks | F23 |
 | `paymentGateway` | Razorpay order, signature check, webhook, refund, ledger lines (test mode first) | F34, G9 |
+| `kycVerify` | ID check answers for the admin (kycVerify) | G13 |
 | `smsGateway` | trip SMS fallback and the SOS text (MSG91) | G12 |
 | `maps` | road distance and time (mapsRoute) and the trip map | G10 |
 | `pushNotifications` | push on events | F25 |
@@ -56,6 +57,7 @@ Every function first asks `flagOn(db, name)`: it reads `config/features.flags.<n
 | walletOnLedger, walletOnPayout, walletReconcile, adminPayoutDecision | ledger or payout written, every day 04:00, callable | serverWallet | recomputes wallets/{uid}, rejects an impossible payout request, writes the daily report, approve / pay / reject / reverse with maker-checker |
 | pushOnNotification, pushOnOffer, pushOnOfferSelected, pushOnChat, pushOnSos, pushOnPayout, pushNewLoad, pushWaves, pushDocExpiry | events and schedules | pushNotifications | push messages (see below) |
 | paymentCreateOrder, paymentVerify, paymentRefund, paymentWebhook | callable (3), HTTPS POST from Razorpay | paymentGateway | G9. The amount is the booking's own, never from the phone. A good payment (phone verify or signed webhook, whichever comes first, counted once) marks the order and the booking paid and writes the driver's two ledger lines (earning, commission at the config/pricing rate, Pro rate while the plan lasts). A refund (finance or super only, reserved before the call, capped at what was paid) writes one adjustment line. Webhook events are claimed once in `payment_events`. |
+| kycVerify | callable | kycVerify | G13. ID check of licence, RC, PAN, GSTIN and the last four Aadhaar digits through a provider (sandbox or none today); result in `kyc_checks/{uid}` for admins; format checked again, daily limits (6 per person, 300 total); the number is not kept. docs/KYC_PARTNER_CHECKLIST.md |
 | smsSend, smsOnNotification | callable, a notification is created | smsGateway | G12. MSG91 through the key in the secret MSG91_AUTH_KEY and template ids in `config/sms`. `smsSend` only texts the caller's own emergency contacts; `smsOnNotification` sends one short trip SMS to a person with a phone and no push token. Daily limits per person and in total (`quota_usage`). Setup: docs/SMS_SETUP.md |
 | mapsRoute | callable | maps | G10. Road distance and time for two places inside India from Google Routes, cached 30 days per pair (about 1 km grid) in `route_cache`, at most `perUserPerDay` (20) turns per person and `totalPerDay` (2000) for everybody, counted in `maps_usage`; the key is the secret MAPS_SERVER_KEY. Setup: docs/MAPS_SETUP.md |
 | adminBroadcast | callable | adminBroadcast | an announcement push to a role or to everyone (super, support, ops) |

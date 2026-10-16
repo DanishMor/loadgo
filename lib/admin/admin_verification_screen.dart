@@ -148,6 +148,7 @@ class _DriverCardState extends State<_DriverCard> {
           VerificationBadges(user: d.data, isDriver: true, reveal: _reveal),
           const SizedBox(height: 6),
           AutoCheckChips(user: d.data),
+          PartnerKycChips(uid: d.uid),
           AdminUploads(uid: d.uid),
           Align(
             alignment: Alignment.centerLeft,

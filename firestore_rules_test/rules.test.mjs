@@ -6365,3 +6365,16 @@ describe('G9 payment records are written by the server only', () => {
     await assertFails(rawSetDoc(doc(asAdmin(), 'ledger', 'adj_rf_order_1_100'), { driverId: 'u1', type: 'adjustment', amountPaise: 100, reason: 'Online refund', by: 'system_razorpay', createdAt: serverTimestamp() }));
   });
 });
+
+describe('G13 ID check answers are written by the server only', () => {
+  test('only an admin can read them, nobody can write them, not even the owner or an admin', async () => {
+    await seed((db) => setDoc(doc(db, 'kyc_checks', 'u1'), { licence: { status: 'verified' } }));
+    await assertSucceeds(getDoc(doc(asAdmin(), 'kyc_checks', 'u1')));
+    for (const db of [as('u1'), as('u2'), asAdmin()]) {
+      await assertFails(rawSetDoc(doc(db, 'kyc_checks', 'u1'), { licence: { status: 'verified' } }));
+      await assertFails(updateDoc(doc(db, 'kyc_checks', 'u1'), { licence: { status: 'verified' } }));
+    }
+    await assertFails(getDoc(doc(as('u1'), 'kyc_checks', 'u1')));
+    await assertFails(getDoc(doc(as('u2'), 'kyc_checks', 'u1')));
+  });
+});

@@ -150,6 +150,7 @@ const RZP_KEY_SECRET = defineSecret('RAZORPAY_KEY_SECRET');
 const RZP_WEBHOOK_SECRET = defineSecret('RAZORPAY_WEBHOOK_SECRET');
 const maps = require('./src/maps');
 const sms = require('./src/sms');
+const kyc = require('./src/kyc');
 const { QuotaError } = require('./src/quota');
 const MSG91_AUTH_KEY = defineSecret('MSG91_AUTH_KEY');
 const MAPS_SERVER_KEY = defineSecret('MAPS_SERVER_KEY');
@@ -191,6 +192,20 @@ exports.paymentWebhook = onRequest({ secrets: [RZP_WEBHOOK_SECRET], maxInstances
   } catch (e) {
     console.error('payment webhook failed', e && e.message);
     res.status(500).send('failed');
+  }
+});
+
+// G13: ID checks behind a provider interface (switch: kycVerify). No partner is chosen: the default answer is
+// "unavailable" and the admin reviews the papers; "sandbox" (config/kyc.provider) gives fake answers for tests and demos.
+exports.kycVerify = onCall({ maxInstances: 5 }, async (request) => {
+  const db = getFirestore();
+  if (!(await flagOn(db, 'kycVerify'))) throw new HttpsError('failed-precondition', 'disabled');
+  try {
+    return await kyc.verify(db, request.auth && request.auth.uid, request.data);
+  } catch (e) {
+    if (e instanceof kyc.KycError || e instanceof QuotaError) throw new HttpsError(e.code, e.message);
+    console.error('kyc verify failed', e && e.message);
+    throw new HttpsError('internal', 'failed');
   }
 });
 

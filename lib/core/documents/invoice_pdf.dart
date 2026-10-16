@@ -7,6 +7,8 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 
 import '../bilty/lr_pdf.dart' show LrFonts;
+import '../gst/gst_rules.dart';
+import '../pricing/cities.dart';
 import 'amount_words.dart';
 import '../models/booking.dart';
 import '../models/invoice.dart';
@@ -25,6 +27,10 @@ String _rupees(int paise) {
 String invoiceRupees(int paise) => _rupees(paise);
 
 String _date(DateTime? d) => d == null ? '-' : '${d.day.toString().padLeft(2, '0')}-${d.month.toString().padLeft(2, '0')}-${d.year}';
+
+/// Place of supply for the invoice: the state of the buyer's GSTIN, else the state of the drop city, else null.
+@visibleForTesting
+String? invoicePlaceOfSupply(TripInvoice inv, Booking b) => gstinStateName(inv.buyerGstin) ?? findCity(b.drop)?.state;
 
 /// A4 GST invoice as PDF bytes (MASTER-5 Task 36 polish): the bundled Noto
 /// fonts so names in any Indian script print, the rupee sign, the amounts in
@@ -55,6 +61,9 @@ Future<Uint8List> buildInvoicePdf(TripInvoice inv, Booking b) async {
         child: pw.Text(t, style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold, color: PdfColors.grey800)),
       );
   final half = (inv.gstPercent / 2).toStringAsFixed(inv.gstPercent % 2 == 0 ? 0 : 1);
+  final place = invoicePlaceOfSupply(inv, b);
+  // Seller in another state than the place of supply: one IGST line (the sum of the two halves), not CGST + SGST.
+  final interState = supplyKind(sellerGstin: inv.sellerGstin, placeOfSupplyState: place) == SupplyKind.interState;
   doc.addPage(pw.Page(
     pageFormat: PdfPageFormat.a4,
     margin: const pw.EdgeInsets.all(36),
@@ -70,6 +79,7 @@ Future<Uint8List> buildInvoicePdf(TripInvoice inv, Booking b) async {
       section('SELLER (TRANSPORTER)'),
       row('Name', inv.sellerName),
       if (inv.sellerGstin.isNotEmpty) row('GSTIN', inv.sellerGstin),
+      if (gstinStateName(inv.sellerGstin) != null) row('State', '${gstinStateName(inv.sellerGstin)} (${gstinStateCode(inv.sellerGstin)})'),
       section('BUYER'),
       row('Name', inv.buyerName.isEmpty ? '-' : inv.buyerName),
       if (inv.buyerGstin.isNotEmpty) row('GSTIN', inv.buyerGstin),
@@ -80,13 +90,19 @@ Future<Uint8List> buildInvoicePdf(TripInvoice inv, Booking b) async {
       row('Vehicle', b.vehicleNumber),
       row('LR number', b.lrNumber),
       row('HSN / SAC', '${inv.hsn} (goods transport by road)'),
+      row('Place of supply', place ?? '-'),
+      row('Reverse charge', 'No'),
       row('E-way bill', inv.ewayBillNo.isEmpty ? '-' : inv.ewayBillNo),
       if (inv.ewayValidUntil != null) row('E-way valid until', _date(inv.ewayValidUntil)),
       if (inv.ewayDistanceKm != null) row('Distance', '${inv.ewayDistanceKm} km'),
       section('AMOUNT'),
       amountRow('Taxable value', inv.taxablePaise),
-      amountRow('CGST $half%', inv.cgstPaise),
-      amountRow('SGST $half%', inv.sgstPaise),
+      if (interState)
+        amountRow('IGST ${inv.gstPercent.toStringAsFixed(inv.gstPercent % 1 == 0 ? 0 : 1)}%', inv.cgstPaise + inv.sgstPaise)
+      else ...[
+        amountRow('CGST $half%', inv.cgstPaise),
+        amountRow('SGST $half%', inv.sgstPaise),
+      ],
       pw.Divider(),
       amountRow('Invoice total', inv.totalPaise, bold: true),
       pw.SizedBox(height: 4),

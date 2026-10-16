@@ -22,6 +22,7 @@ const FLAGS = Object.freeze([
   'paymentGateway',
   'maps',
   'smsGateway',
+  'kycVerify',
 ]);
 
 const FLAG_TTL_MS = 30 * 1000;

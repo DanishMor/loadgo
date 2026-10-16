@@ -2,8 +2,8 @@
 
 Plan: docs/MASTER_PLAN_PART3.md. Read it, then continue from NEXT.
 
-LAST_DONE: G12
-NEXT: G13 (KYC sandbox verifier + manual review)
+LAST_DONE: G14
+NEXT: G15 (App Check Play Integrity client, flag OFF)
 
 Unfinished: none.
 

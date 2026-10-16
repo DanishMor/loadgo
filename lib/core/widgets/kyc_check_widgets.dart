@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../features/features.dart';
+import '../services/backend.dart';
+import 'feature_gate.dart';
+
 import '../identity/kyc_auto_check.dart';
 import '../l10n/l10n.dart';
 import '../services/admin_user_service.dart';
@@ -39,6 +43,51 @@ class AutoCheckChips extends StatelessWidget {
       if (problems.isEmpty) StatusChip(label: tr(context, 'autoCheckClean'), color: AppColors.success),
       for (final p in problems) StatusChip(label: kycProblemLabel(context, p), color: AppColors.warning),
     ]);
+  }
+}
+
+/// What the ID check (G13) said about each number, for the admin. Written by the server only
+/// (`kyc_checks/{uid}`). With no answer it says so and the admin looks at the papers, as before.
+class PartnerKycChips extends StatelessWidget {
+  final String uid;
+  final Stream<Map<String, dynamic>?>? answers;
+
+  const PartnerKycChips({super.key, required this.uid, this.answers});
+
+  Stream<Map<String, dynamic>?> get _stream =>
+      answers ?? Backend.db.collection('kyc_checks').doc(uid).snapshots().map((s) => s.data());
+
+  @override
+  Widget build(BuildContext context) {
+    return FeatureGate(
+      featureKey: FeatureKey.kycVerify,
+      child: StreamBuilder<Map<String, dynamic>?>(
+        stream: _stream,
+        builder: (context, snap) {
+          // A read that fails is the same as no answer: the admin looks at the papers.
+          final data = snap.hasError ? null : snap.data;
+          final chips = <Widget>[];
+          for (final kind in const ['licence', 'rc', 'pan', 'gstin', 'aadhaar']) {
+            final a = data?[kind];
+            final status = a is Map ? a['status'] : null;
+            final label = tr(context, 'kycKind_$kind');
+            switch (status) {
+              case 'verified':
+                chips.add(StatusChip(label: trf(context, 'kycChipVerified', {'kind': label}), color: AppColors.success));
+              case 'mismatch':
+                chips.add(StatusChip(label: trf(context, 'kycChipMismatch', {'kind': label}), color: AppColors.warning));
+              case 'not_found':
+                chips.add(StatusChip(label: trf(context, 'kycChipNotFound', {'kind': label}), color: AppColors.warning));
+            }
+          }
+          if (chips.isEmpty) chips.add(StatusChip(label: tr(context, 'kycChipManual'), color: AppColors.faint));
+          return Padding(
+            padding: const EdgeInsets.only(top: 6),
+            child: Wrap(spacing: 6, runSpacing: 6, key: ValueKey('partnerKyc_$uid'), children: chips),
+          );
+        },
+      ),
+    );
   }
 }
 

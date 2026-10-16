@@ -416,6 +416,13 @@ service cloud.firestore {
           && resource.data.get('riskTier', 'normal') in ['normal', 'review'];
     }
 
+    // kyc_checks/{uid}: the answer of the ID check (G13). Written only by the server (Admin SDK); admins read it.
+    // It is a separate collection on purpose: a person can edit their own user document, so a "verified" there could be forged.
+    match /kyc_checks/{userId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
     // users/{uid}/admin_notes: internal notes about a user. Admins only, append-only.
     match /users/{userId}/admin_notes/{noteId} {
       allow read: if isAdmin();

@@ -11,6 +11,7 @@ import 'backend.dart';
 import 'push_service.dart';
 import 'session_watcher.dart';
 import 'funnel.dart';
+import '../identity/kyc_check_service.dart';
 
 /// The account is already locked to [existing]; [requested] was chosen at login.
 class RoleMismatchException implements Exception {
@@ -216,6 +217,7 @@ class UserService {
     );
     await batch.commit();
     Funnel.mark(FunnelStep.docsAdded, role: 'driver').ignore();
+    KycCheckService.checkDriver(kyc).ignore();
   }
 
   static Future<void> saveDriverProfile({

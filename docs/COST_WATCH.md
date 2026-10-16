@@ -116,6 +116,10 @@ Firestore reads from the functions: the chat scan reads the sender's last messag
 
 - `smsOnNotification` runs on every new in-app notification but exits at once unless the switch is on and the type is a trip step; one SMS (a few paise) only for people with no push token. `smsSend` only on SOS. Caps: `config/sms.perUserPerDay` (10) and `totalPerDay` (500). Setup: docs/SMS_SETUP.md.
 
+### ID checks (G13)
+
+- `kycVerify` runs about 3 times per new driver and only when a provider is set (no partner: it answers at once and costs nothing). The partner's price per check is the real cost (docs/KYC_PARTNER_CHECKLIST.md). Caps: `config/kyc.perUserPerDay` (6) and `totalPerDay` (300).
+
 ### Payment and push
 
 - Razorpay charges per payment (the partner's fee, not Google's). Functions for payment run only when a person pays, when Razorpay sends the webhook (about 2 to 3 events per payment) or an admin refunds: tiny. Each payment writes about 6 documents (order, booking, 2 ledger lines, event, wallet recompute).

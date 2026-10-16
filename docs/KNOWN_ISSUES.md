@@ -20,11 +20,12 @@ Things that cannot be proved on the laptop, or that need a paid service or a con
 
 | Area | State |
 |---|---|
-| Cloud Functions (43 functions) | Written and tested on the emulator; **not deployed**. Until then every server switch stays OFF and the app does the older thing on the phone. |
+| Cloud Functions (44 functions) | Written and tested on the emulator; **not deployed**. Until then every server switch stays OFF and the app does the older thing on the phone. |
 | Storage (photos) | Rules written and tested; the bucket needs the Blaze plan. |
 | Online payment | G9: Razorpay server code (order, verify, webhook, refund, ledger lines) and the "Pay online" button are ready for **test keys** (the `razorpay_flutter` window is not yet tried on a real phone; the release build may need the plugin's keep rules if a build shows a missing class). No live money. Payouts stay manual with two admins. |
-| KYC and GST check | Skeleton only; admin looks at the papers. |
+| KYC and GST check | G13: the sandbox provider, the checks on the phone and the server and the admin chips are ready (switch `kycVerify`). No real partner is chosen (docs/KYC_PARTNER_CHECKLIST.md); admin review of the papers stays the real check. GST/e-way bill: G14. |
 | SMS (MSG91): trip SMS fallback and SOS text | G12: server code and tests are ready (switch `smsGateway`); needs DLT-approved templates, the partner key (secret) and the owner's SMS account (docs/SMS_SETUP.md). The login code stays with Firebase Auth. |
+| E-way bill generation | G14: rules, checks and the adapter skeleton are ready (docs/GST_EWAY.md); a paid GSP is needed to generate. The invoice prints place of supply and IGST for another state; the threshold, the validity rules and "reverse charge: No" must be confirmed by a CA. |
 | Maps and road ETA | G10: the `mapsRoute` function (cached, limited per person and per day) and the trip map are written; need a Maps server key (secret) and an Android key (docs/MAPS_SETUP.md). The map picture itself is not tried on a real phone. Switch `maps` OFF: city table. |
 | App Check | Not enabled; needs Play Integrity setup. |
 
