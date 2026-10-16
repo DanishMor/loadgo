@@ -16,6 +16,7 @@ import '../core/models/lifecycle.dart';
 import '../core/widgets/lifecycle_bar.dart';
 import '../core/widgets/location_widgets.dart';
 import '../core/maps/trip_map.dart';
+import '../core/trust/public_trust_card.dart';
 import 'trip_otp_card.dart';
 import '../core/documents/trip_document_buttons.dart';
 import '../core/documents/payment_card.dart';
@@ -56,6 +57,7 @@ class BookingTrackingScreen extends StatelessWidget {
           Align(alignment: Alignment.centerLeft, child: RatingBadge(userId: booking.driverId)),
           const SizedBox(height: 4),
           DriverTrustRow(booking: booking),
+          PublicTrustCard(driverId: booking.driverId),
           const SizedBox(height: 8),
           ArrivalEtaCard(booking: booking),
           TripEtaCard(booking: booking),

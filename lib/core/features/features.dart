@@ -51,6 +51,7 @@ class FeatureKey {
   static const pushNotifications = 'pushNotifications';
   static const adminBroadcast = 'adminBroadcast';
   static const photoUploads = 'photoUploads';
+  static const tripTrustCard = 'tripTrustCard';
   static const appCheckEnforce = 'appCheckEnforce';
   static const kycVerify = 'kycVerify';
   static const smsGateway = 'smsGateway';
@@ -99,6 +100,7 @@ class Features {
     FeatureSpec(FeatureKey.pushNotifications, pilotOn: false, normalOn: false),
     FeatureSpec(FeatureKey.adminBroadcast, pilotOn: false, normalOn: false),
     FeatureSpec(FeatureKey.photoUploads, pilotOn: false, normalOn: false),
+    FeatureSpec(FeatureKey.tripTrustCard, pilotOn: false, normalOn: false),
     FeatureSpec(FeatureKey.appCheckEnforce, pilotOn: false, normalOn: false),
     FeatureSpec(FeatureKey.kycVerify, pilotOn: false, normalOn: false),
     FeatureSpec(FeatureKey.smsGateway, pilotOn: false, normalOn: false),

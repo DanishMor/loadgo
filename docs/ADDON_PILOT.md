@@ -28,6 +28,7 @@ Goal: put LoadGo in front of a small, known group (one or two corridors, tens of
 | Push notifications | OFF | Features > Push notifications |
 | Admin announcements by push | OFF | Features > Admin announcements by push |
 | Photo uploads | OFF | Features > Photo uploads |
+| Driver trust on offers and trips | OFF | Features > Driver trust on offers and trips |
 | Refuse calls from unknown apps | OFF | Features > Refuse calls from unknown apps |
 | ID checks (licence, RC, PAN, GST) | OFF | Features > ID checks (licence, RC, PAN, GST) |
 | SMS messages | OFF | Features > SMS messages |

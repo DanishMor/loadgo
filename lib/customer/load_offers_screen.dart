@@ -2,6 +2,7 @@ import '../core/errors/error_text.dart';
 import 'package:flutter/material.dart';
 
 import '../core/l10n/l10n.dart';
+import '../core/trust/public_trust_card.dart';
 import '../core/models/load.dart';
 import '../core/models/offer.dart';
 import '../core/services/offer_service.dart';
@@ -139,6 +140,7 @@ class _CustomerOfferCardState extends State<_CustomerOfferCard> {
             ],
           ),
           Text('${o.vehicleNumber} • ${vehicleTypeLabel(context, o.vehicleType)}', style: DsStyle.inherit.copyWith(color: AppColors.muted)),
+          PublicTrustCard(driverId: o.driverId),
           if (o.isCompanyBid)
             Padding(
               padding: const EdgeInsets.only(top: 4),

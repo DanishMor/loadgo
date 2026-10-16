@@ -2,8 +2,8 @@
 
 Plan: docs/MASTER_PLAN_PART3.md. Read it, then continue from NEXT.
 
-LAST_DONE: G18
-NEXT: G19 trip trust card (show public_trust to customers)
+LAST_DONE: G19
+NEXT: G20 route rate range from finished trips (server aggregate + client line)
 
 Unfinished: none.
 

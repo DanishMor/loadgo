@@ -42,6 +42,7 @@ void main() {
       FeatureKey.pushNotifications: 'Push notifications',
       FeatureKey.adminBroadcast: 'Admin announcements by push',
       FeatureKey.photoUploads: 'Photo uploads',
+      FeatureKey.tripTrustCard: 'Driver trust on offers and trips',
       FeatureKey.appCheckEnforce: 'Refuse calls from unknown apps',
       FeatureKey.kycVerify: 'ID checks (licence, RC, PAN, GST)',
       FeatureKey.smsGateway: 'SMS messages',
