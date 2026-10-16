@@ -2,8 +2,8 @@
 
 Plan: docs/MASTER_PLAN_PART3.md. Read it, then continue from NEXT.
 
-LAST_DONE: G9
-NEXT: G10 (maps)
+LAST_DONE: G10
+NEXT: G11 (live location; LocationSharingCard exists, add consent, foreground service, throttle, retention)
 
 Unfinished: none.
 

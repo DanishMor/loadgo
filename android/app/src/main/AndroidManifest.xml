@@ -16,6 +16,7 @@
         android:allowBackup="false"
         android:fullBackupContent="false"
         android:usesCleartextTraffic="false">
+        <meta-data android:name="com.google.android.geo.API_KEY" android:value="${MAPS_API_KEY}"/>
         <!-- Push messages without their own channel use this one (F24). -->
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_channel_id"

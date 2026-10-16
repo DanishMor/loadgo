@@ -13,6 +13,7 @@ class DistanceSource {
   DistanceSource._();
   static const cities = 'cities';
   static const manual = 'manual';
+  static const maps = 'maps';
 }
 
 /// Reads `config/pricing` (admin-written) with [defaultPricing] as fallback

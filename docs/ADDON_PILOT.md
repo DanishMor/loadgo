@@ -28,6 +28,7 @@ Goal: put LoadGo in front of a small, known group (one or two corridors, tens of
 | Push notifications | OFF | Features > Push notifications |
 | Admin announcements by push | OFF | Features > Admin announcements by push |
 | Photo uploads | OFF | Features > Photo uploads |
+| Maps and road distance | OFF | Features > Maps and road distance |
 | Promo codes, credits, referral | OFF | Offers (three switches, default OFF) |
 | Surge pricing | OFF | `config/pricing.surge.enabled` |
 | Driver network and groups | OFF | Features |

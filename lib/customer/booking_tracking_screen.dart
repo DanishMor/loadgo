@@ -15,6 +15,7 @@ import '../core/widgets/trip_eta_card.dart';
 import '../core/models/lifecycle.dart';
 import '../core/widgets/lifecycle_bar.dart';
 import '../core/widgets/location_widgets.dart';
+import '../core/maps/trip_map.dart';
 import 'trip_otp_card.dart';
 import '../core/documents/trip_document_buttons.dart';
 import '../core/documents/payment_card.dart';
@@ -61,6 +62,16 @@ class BookingTrackingScreen extends StatelessWidget {
           if (booking.isInTransit) ...[
             const SizedBox(height: 8),
             DriverLocationCard(booking: booking),
+            if (TripMapScreen.available)
+              Align(
+                alignment: AlignmentDirectional.centerStart,
+                child: TextButton.icon(
+                  key: const ValueKey('openTripMap'),
+                  onPressed: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => TripMapScreen(bookingId: booking.id))),
+                  icon: const Icon(Icons.map_outlined),
+                  label: Text(tr(context, 'tripMapOpen')),
+                ),
+              ),
           ],
           const SizedBox(height: 8),
           DetentionCard(booking: booking, isDriver: false),

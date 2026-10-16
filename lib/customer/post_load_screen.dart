@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 
 import '../core/constants/cancel_reasons.dart';
 import '../core/constants/logistics.dart';
+import '../core/maps/road_distance.dart';
 import '../core/services/load_service.dart';
 import 'matching_vehicles_line.dart';
 import '../core/widgets/common.dart';
@@ -115,6 +116,7 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
   @override
   void dispose() {
     _draftTimer?.cancel();
+    _roadTimer?.cancel();
     _pickupCtrl.dispose();
     _dropCtrl.dispose();
     _weightCtrl.dispose();
@@ -360,7 +362,17 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
     }
   }
 
-  void _requote() => setState(() {});
+  Timer? _roadTimer;
+
+  void _requote() {
+    setState(() {});
+    // G10: with the maps switch on, ask for the real road distance once the person stops typing.
+    if (!RoadDistance.enabled) return;
+    _roadTimer?.cancel();
+    _roadTimer = Timer(const Duration(milliseconds: 900), () async {
+      if (await RoadDistance.prefetch(_route) && mounted) setState(() {});
+    });
+  }
 
   int? get _manualKm {
     final n = int.tryParse(_distanceCtrl.text.trim());
@@ -374,7 +386,7 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
         _dropCtrl.text,
       ];
 
-  int? get _autoKm => PricingService.estimateRouteKm(_route);
+  int? get _autoKm => RoadDistance.kmFor(_route) ?? PricingService.estimateRouteKm(_route);
 
   MoversDetails? get _movers {
     final items = MoversDetails.parseItems(_itemsCtrl.text);
@@ -656,7 +668,7 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
         rentalHours: _bookingType == BookingType.rental ? _rentalHours : null,
         movers: _bookingType == BookingType.movers ? _movers : null,
         estimate: _quote,
-        distanceSource: _manualKm != null ? DistanceSource.manual : DistanceSource.cities,
+        distanceSource: _manualKm != null ? DistanceSource.manual : (RoadDistance.kmFor(_route) != null ? DistanceSource.maps : DistanceSource.cities),
         extraPickups: [for (final c in _extraPickups) c.text],
         extraDrops: [for (final c in _extraDrops) c.text],
         pickupSlot: _slot,

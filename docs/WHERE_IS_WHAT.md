@@ -35,6 +35,7 @@ force any flag On or Off; a forced value always wins. A flag that is OFF hides i
 | `pushNotifications` | Phones get push messages for new loads, offers, trip steps and chat. Needs the functions deployed. | OFF | OFF | Admin > Features > Push notifications |
 | `adminBroadcast` | Admins can send an announcement push to a role or to everyone. | OFF | OFF | Admin > Features > Admin announcements by push |
 | `photoUploads` | Documents and trip photos can be added from the phone camera or gallery. Needs Storage switched on. | OFF | OFF | Admin > Features > Photo uploads |
+| `maps` | Real road distance and time for fares and trips, and the trip map. Needs the functions deployed and a Maps key set as a secret. Off: the built-in city table. | OFF | OFF | Admin > Features > Maps and road distance |
 | `secureScreens` | No screenshots or screen recording on the login code, documents, private LR copy, earnings and trip code screens (Android release builds) | OFF | OFF | Admin > Features > Block screenshots on private screens |
 
 Other switches that are not in the list above:

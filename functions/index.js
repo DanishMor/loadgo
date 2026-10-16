@@ -141,6 +141,8 @@ const razorpay = require('./src/razorpay');
 const RZP_KEY_ID = defineSecret('RAZORPAY_KEY_ID');
 const RZP_KEY_SECRET = defineSecret('RAZORPAY_KEY_SECRET');
 const RZP_WEBHOOK_SECRET = defineSecret('RAZORPAY_WEBHOOK_SECRET');
+const maps = require('./src/maps');
+const MAPS_SERVER_KEY = defineSecret('MAPS_SERVER_KEY');
 
 function paymentCallable(run) {
   return onCall({ secrets: [RZP_KEY_ID, RZP_KEY_SECRET] }, async (request) => {
@@ -179,6 +181,19 @@ exports.paymentWebhook = onRequest({ secrets: [RZP_WEBHOOK_SECRET], maxInstances
   } catch (e) {
     console.error('payment webhook failed', e && e.message);
     res.status(500).send('failed');
+  }
+});
+
+// G10: road distance and time for a pair of places, cached and limited (switch: maps). The key is a Firebase secret.
+exports.mapsRoute = onCall({ secrets: [MAPS_SERVER_KEY], maxInstances: 5 }, async (request) => {
+  const db = getFirestore();
+  if (!(await flagOn(db, 'maps'))) throw new HttpsError('failed-precondition', 'disabled');
+  try {
+    return await maps.route(db, maps.googleRoutesHttp(MAPS_SERVER_KEY.value()), request.auth && request.auth.uid, request.data);
+  } catch (e) {
+    if (e instanceof maps.MapsError) throw new HttpsError(e.code, e.message);
+    console.error('maps route failed', e && e.message);
+    throw new HttpsError('internal', 'failed');
   }
 });
 

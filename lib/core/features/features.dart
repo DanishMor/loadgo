@@ -51,6 +51,7 @@ class FeatureKey {
   static const pushNotifications = 'pushNotifications';
   static const adminBroadcast = 'adminBroadcast';
   static const photoUploads = 'photoUploads';
+  static const maps = 'maps';
 }
 
 /// `config/features`: {pilotMode: bool, flags: {key: bool}}. A missing
@@ -94,6 +95,7 @@ class Features {
     FeatureSpec(FeatureKey.pushNotifications, pilotOn: false, normalOn: false),
     FeatureSpec(FeatureKey.adminBroadcast, pilotOn: false, normalOn: false),
     FeatureSpec(FeatureKey.photoUploads, pilotOn: false, normalOn: false),
+    FeatureSpec(FeatureKey.maps, pilotOn: false, normalOn: false),
   ];
 
   static final _byKey = {for (final s in registry) s.key: s};

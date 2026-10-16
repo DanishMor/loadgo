@@ -18,6 +18,14 @@ val loadgoApplicationId = (project.findProperty("loadgo.applicationId") as Strin
 
 // Release signing comes from android/key.properties (never committed, see
 // docs/ANDROID_RELEASE.md). Without it a release build falls back to the debug key.
+// The Maps key for the trip map comes from android/local.properties (MAPS_API_KEY=...) or the environment, never from the repository.
+// Empty when not set: the app runs, the map shows nothing (docs/MAPS_SETUP.md).
+val localProps = Properties().apply {
+    val f = rootProject.file("local.properties")
+    if (f.exists()) f.inputStream().use { load(it) }
+}
+val mapsApiKey: String = localProps.getProperty("MAPS_API_KEY") ?: System.getenv("MAPS_API_KEY") ?: ""
+
 val keystoreProps = Properties().apply {
     val f = rootProject.file("key.properties")
     if (f.exists()) f.inputStream().use { load(it) }
@@ -43,6 +51,7 @@ android {
 
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        manifestPlaceholders["MAPS_API_KEY"] = mapsApiKey
     }
 
     signingConfigs {
