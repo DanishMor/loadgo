@@ -100,3 +100,17 @@ Use the demo data (Admin > Demo data) in a test project, never real people. Hide
 
 ## Other graphics
 - App icon 512x512 (see ANDROID_RELEASE.md), feature graphic 1024x500: truck + the words "Book a truck. Find a load." Draft only, to be designed.
+
+## Additions for Part 2 (use only when the matching switch is ON in the released build)
+Do not describe a feature in the listing until it works for every user of that build. Keep the claims small; never promise safety, cover or guarantees.
+
+| Feature | Switch | One line for the full description (English) | Screenshot idea |
+|---|---|---|---|
+| Alerts | `pushNotifications` | "Get an alert when a driver sends a rate, a trip moves, or a payout is paid." | Notification list with the 5 groups in Settings |
+| Photos | `photoUploads` | "Add photos of your papers and of the load at pickup and delivery." | Trip proof dialog with the photo card |
+| Earnings | `walletHub` | "See what you earned, what is pending and when it is paid." | Earnings hub (driver) |
+| Online payment | `paymentGateway` | "Pay a booking online" (only after live keys and the lawyer's answers) | Pay screen (test data) |
+
+Hindi and Hinglish lines: take the same sentence from the `*_strings.dart` tables after the native reader has reviewed `docs/TRANSLATION_REVIEW.csv`.
+
+Screenshots 9 and 10 (add after the switches are ON): the earnings hub and the trip proof dialog. Use demo data only.

@@ -13,6 +13,11 @@ LoadGo connects customers who need goods moved with drivers and transporters who
 - **Microphone:** while you hold the mic button, to turn speech into text, and during an in-app call. Audio is not recorded or stored by LoadGo, and call audio does not pass through LoadGo servers (it goes directly between the two phones).
 - **Chat and call records:** the messages of a booking, who called whom, when, and how the call ended (no audio). Messages that were stopped because they carried a phone number, a UPI id or another app are not sent; a short copy (up to 120 characters), the kind and the time are kept as a "violation", and a strike count is kept on your profile.
 - **Device and app data:** device identifier used for fraud checks, app version, and anonymous crash and error reports.
+- **Photos (when the photo switch is on):** photos of papers (driving licence, RC, insurance, PUC, permit, fitness) you add for your own account and your trucks, and photos taken on a trip (at pickup, at delivery, proof of delivery, damage). Papers can be seen only by you and LoadGo admins who verify them (each look is written to an audit log). Trip photos can be seen by the two parties of the booking and admins. The app never makes a public link to a photo. Photos are removed when your account is deleted, except trip photos that belong to the other party's record of a finished trip.
+- **Push notifications:** a device token so we can send you alerts you allow (booking, chat, payment, offers). The message text is short and has no phone number or chat text. You can switch groups off in Settings; safety alerts stay on.
+- **Earnings records:** your earnings, commission, payout requests and their status are kept as records. LoadGo does not hold your money. Staff approve payouts with two people and every action is written to an audit log.
+- **Online payment (only if the owner switches it on):** the payment partner (Razorpay) handles card or UPI details. LoadGo does not receive or store card numbers, only the order, the amount and whether it was paid.
+- **Login safety:** how many login codes were asked for and how many wrong codes were typed, so that guessing can be stopped.
 
 ## Why we use it
 To run the service (matching, bookings, safety, support), to prevent fraud and duplicate accounts, to send in-app and push notifications you allow, and to improve the app.

@@ -39,7 +39,7 @@ Status key: [x] done in the repo, [ ] needs you (account, keys, decisions).
 No background location, no contacts, no SMS, no storage permission.
 
 ## Data safety form (answers)
-- Data collected: Personal info (name, phone number, e-mail, address, user ids), Financial info (payment records only, no card data), Location (approximate and precise), Messages (in-app chat and call records: who called whom, when and how it ended), Photos: none yet, Audio: used live for in-app calls and not recorded or stored, App activity and diagnostics (crash logs, performance), Device or other ids (fraud checks).
+- Data collected: Personal info (name, phone number, e-mail, address, user ids), Financial info (payment records only, no card data), Location (approximate and precise), Messages (in-app chat and call records: who called whom, when and how it ended), Photos: none yet (see "Data safety additions for Part 2" when photo uploads go ON), Audio: used live for in-app calls and not recorded or stored, App activity and diagnostics (crash logs, performance), Device or other ids (fraud checks).
 - Purpose: app functionality, account management, fraud prevention, analytics, communications.
 - Shared with third parties: no sale; Google Firebase acts as processor. The other party of a booking sees trip details (name, rating, vehicle number, verified badge). Phone numbers are not shown between customers, drivers and transporters. Call audio goes directly between the two phones (WebRTC; Google's public STUN servers see the network addresses needed to connect).
 - Encrypted in transit: yes (HTTPS). Users can request deletion: yes (in app and the web page). Data you collect is optional: location and microphone are optional.
@@ -53,6 +53,17 @@ No background location, no contacts, no SMS, no storage permission.
 - Trust numbers (on-time, completion, repeat customers) are calculated on the phone from the person's own trips, not stored or shared.
 - Saved places: addresses and optional GST invoice details the person types, kept in their own account.
 - Still true: no ads, no sale of data, no card data, call audio is not recorded.
+
+## Data safety additions for Part 2 (photos, push, earnings records)
+Use these when the matching switches go ON (`docs/BLAZE_GO_LIVE.md`). Update the form before the build that turns them on is released.
+- **Photos and videos -> Photos:** collected (papers and trip photos). Purpose: app functionality, fraud prevention and account management. Not shared with third parties except Google Firebase as processor. Encrypted in transit: yes. Deletion: with the account. Optional: yes (the app works with typed document numbers).
+- **App info and performance / Device or other IDs:** the push token is a device id. Purpose: app functionality (notifications). Not sold.
+- **Financial info:** "Other financial info" = earnings records, payout requests and their status (no card or bank data stored by the app; a UPI id the person types for payout is kept). With online payment ON: the payment partner collects card or UPI data; the app does not. Say so in the form.
+- **Personal info / User IDs and App activity:** login attempt counters (codes asked, wrong codes) for security.
+- Audio: unchanged (not recorded). Location: unchanged. Still no ads, no sale of data.
+- **Financial features declaration:** keep "none" while payments are records only. Change it when `paymentGateway` goes live: the app then starts online payments through a partner (check Play's current wording).
+- **Sensitive screens:** earnings and papers screens block screenshots (`secureScreens`); mention nothing in the form, but test it on a real phone.
+- **Permissions added:** CAMERA is not requested by the app itself (the system picker is used), and no storage permission is needed. Confirm on the built release that the manifest has no new permission (`flutter build` output merged manifest).
 
 ## Content rating and target
 Content rating notes for the questionnaire (IARC): no violence, no sexual content, no gambling, no drugs, no ads, no purchases in the app, no location sharing with strangers (location goes to the booking party only), users can talk to each other only inside a booking (private chat and call, no public posts); expect "Everyone" or "3+", target audience 18+. Say "yes" to user-to-user communication and "no" to sharing location publicly.
