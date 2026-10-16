@@ -35,7 +35,7 @@ import 'firebase_options.dart';
 import 'route_hooks.dart';
 import 'admin/admin_web_shell.dart';
 import 'core/app_mode.dart';
-import 'core/photos/photo_widgets.dart' show PhotoSync;
+import 'core/photos/photo_widgets.dart' show PhotoImage, PhotoSync;
 
 /// Lets code outside a screen (the session watcher) reach the navigator.
 final GlobalKey<NavigatorState> appNavigatorKey = GlobalKey<NavigatorState>();
@@ -45,8 +45,6 @@ Future<void> main() async {
   AppRoutes.roleSelection = (_) => const RoleSelectionScreen();
   AppRoutes.adminEntry = (_) => const AdminEntryTile();
   registerRouteHooks();
-  // A tapped push opens the right screen (does nothing while the pushNotifications switch is off).
-  PushRouter.start(appNavigatorKey);
   // In a release build a widget that fails to build shows a calm sentence, not the framework's error box.
   if (!kDebugMode) ErrorWidget.builder = friendlyErrorWidget;
   // Log uncaught async errors (e.g. a dropped network call) instead of
@@ -57,6 +55,9 @@ Future<void> main() async {
   };
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await CrashService.init();
+  // A tapped push opens the right screen. It must start AFTER Firebase: before that the messaging
+  // service does not exist and the router would silently stay off.
+  await PushRouter.start(appNavigatorKey);
   Backend.enableOfflinePersistence();
   AppControlService.refresh();
   // The local settings do not depend on each other: read them together so the
@@ -88,6 +89,9 @@ Future<void> main() async {
       // Another account needs its own settings; the same one reuses the cache.
       refreshAppConfig(force: user.uid != configUid);
       configUid = user.uid;
+    } else {
+      // Pictures of papers kept in memory must not outlive the sign-in.
+      PhotoImage.clearCache();
     }
   });
   // An expired or revoked session takes the person back to the first screen.

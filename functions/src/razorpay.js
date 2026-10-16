@@ -55,7 +55,7 @@ function razorpayHttp(keyId, keySecret, fetchImpl = fetch) {
 }
 
 // A customer pays for a booking. The amount is the booking's own amount, never what the phone says.
-async function createOrder(db, http, callerUid, input) {
+async function createOrder(db, http, callerUid, input, nowMs = Date.now()) {
   if (!safeId(callerUid)) throw new PaymentError('unauthenticated', 'sign in first');
   const bookingId = safeId(input && input.bookingId);
   if (!bookingId) throw new PaymentError('invalid-argument', 'bookingId');
@@ -65,6 +65,14 @@ async function createOrder(db, http, callerUid, input) {
   if (b.customerId !== callerUid) throw new PaymentError('permission-denied', 'not your booking');
   const amount = [b.agreedFarePaise, b.fareEstimate].find(validPaise);
   if (!amount) throw new PaymentError('failed-precondition', 'no amount to pay');
+  // Pressing "Pay" again must not pile up orders: an unpaid order of the same amount made in the last
+  // 30 minutes is given back. (Equality filters only, so no composite index is needed.)
+  const open = await db.collection('payment_orders').where('bookingId', '==', bookingId).where('status', '==', 'created').limit(5).get();
+  for (const d of open.docs) {
+    const o = d.data();
+    const madeMs = o.createdAt && typeof o.createdAt.toMillis === 'function' ? o.createdAt.toMillis() : o.createdAt instanceof Date ? o.createdAt.getTime() : 0;
+    if (o.customerId === callerUid && o.amountPaise === amount && nowMs - madeMs < 30 * 60 * 1000) return { orderId: d.id, amountPaise: amount, reference: bookingId, again: true };
+  }
   const order = await http('POST', '/orders', { amount, currency: 'INR', receipt: bookingId.slice(0, 40) });
   if (!order || typeof order.id !== 'string' || order.amount !== amount) throw new PaymentError('unavailable', 'odd answer');
   await db.collection('payment_orders').doc(order.id).set({ bookingId, customerId: callerUid, amountPaise: amount, status: 'created', createdAt: new Date() });

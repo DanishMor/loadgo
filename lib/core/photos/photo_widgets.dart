@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:io' show Directory, File;
 import 'dart:typed_data';
 
+import 'package:flutter/foundation.dart' show kIsWeb, visibleForTesting;
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -52,7 +54,7 @@ class PhotoImage extends StatefulWidget {
 
   static final Map<String, Uint8List> _cache = {};
 
-  @visibleForTesting
+  /// Empties the pictures kept in memory (called when the person signs out, and in tests).
   static void clearCache() => _cache.clear();
 
   @override
@@ -176,6 +178,7 @@ class _PhotoAttachState extends State<PhotoAttach> {
         _stored = r;
       });
       widget.onUploaded?.call(r);
+      deleteLocalPicture(photo.localPath).ignore();
     } on PhotoRejected catch (e) {
       if (!mounted) return;
       setState(() {
@@ -237,6 +240,7 @@ class PhotoSync {
 
   /// Replaced in tests.
   static FileReader reader = _readFile;
+  static FileCleaner cleaner = deleteLocalPicture;
 
   static void start() {
     if (_started) return;
@@ -252,7 +256,7 @@ class PhotoSync {
     if (_running || !ConnectivityService.online.value || !FeaturesService.isOn(FeatureKey.photoUploads) || Backend.uid == null) return 0;
     _running = true;
     try {
-      return await PhotoQueue.flush(reader);
+      return await PhotoQueue.flush(reader, clean: cleaner);
     } catch (_) {
       return 0;
     } finally {
@@ -265,7 +269,22 @@ class PhotoSync {
     _started = false;
     _running = false;
     reader = _readFile;
+    cleaner = deleteLocalPicture;
   }
+}
+
+/// Deletes the copy of a picture that the picker left in the app's cache. It only ever touches files
+/// inside the temporary folder (on a phone the picker copies there), never a person's own photo
+/// elsewhere (on a computer the picker returns the original). Does nothing on the web or when the file is gone.
+Future<void> deleteLocalPicture(String? path, {String? tempDir}) async {
+  if (kIsWeb || path == null || path.isEmpty) return;
+  try {
+    final root = (tempDir ?? Directory.systemTemp.path).replaceAll(r'\', '/');
+    final p = path.replaceAll(r'\', '/');
+    if (root.isEmpty || !p.startsWith(root.endsWith('/') ? root : '$root/') || p.contains('/../')) return;
+    final f = File(path);
+    if (await f.exists()) await f.delete();
+  } catch (_) {}
 }
 
 Future<Uint8List?> _readFile(String path) async {

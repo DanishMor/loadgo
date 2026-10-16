@@ -38,6 +38,23 @@ test('createOrder: the amount comes from the booking, not from the phone', async
   assert.equal(r2.amountPaise, 500000, 'falls back to the estimate');
 });
 
+test('createOrder: pressing Pay again gives the same open order; a paid or changed one makes a new order', async () => {
+  const calls = [];
+  const a = await createOrder(getDb(), fakeHttp(calls), 'cust1', { bookingId: 'B1' });
+  const b = await createOrder(getDb(), fakeHttp(calls), 'cust1', { bookingId: 'B1' });
+  assert.equal(b.orderId, a.orderId);
+  assert.equal(b.again, true);
+  assert.equal(calls.length, 1, 'the gateway was asked once');
+  assert.equal((await getDb().collection('payment_orders').get()).size, 1);
+  // a different amount (the fare changed) is a new order
+  await getDb().collection('bookings').doc('B1').update({ agreedFarePaise: 1300000 });
+  const c = await createOrder(getDb(), fakeHttp(calls), 'cust1', { bookingId: 'B1' });
+  assert.notEqual(c.orderId, a.orderId);
+  // after the half hour it is also a new order
+  const later = await createOrder(getDb(), fakeHttp(calls), 'cust1', { bookingId: 'B1' }, Date.now() + 31 * 60 * 1000);
+  assert.notEqual(later.orderId, c.orderId);
+});
+
 test('createOrder: only the booking customer; no amount, no booking and bad input are refused', async () => {
   await denied(createOrder(getDb(), fakeHttp(), 'cust2', { bookingId: 'B1' }), 'permission-denied');
   await denied(createOrder(getDb(), fakeHttp(), 'drv1', { bookingId: 'B1' }), 'permission-denied');

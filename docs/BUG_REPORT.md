@@ -106,3 +106,14 @@ The new code was read like a reviewer: null and crash paths, `permission-denied`
 | P2-B5 | lib/admin/admin_web_shell.dart | the page and the guard under it each listened to "is admin?" and could disagree for one frame; the guard then asked a navigator that does not exist in this build to close | one listener in `_AdminGate`, the guard gets the same answer | Low |
 | P2-B6 | firestore.indexes.json | the chat scan reads one chat by `senderId` and `createdAt`: only a collection-group index existed. The emulator does not ask for indexes, real Firestore would fail the function and retry | collection-scope index on `messages` added; `test/function_indexes_test.dart` lists every index the functions need | High on deploy (scan never works) |
 | P2-B7 | functions/integration/functions.test.js | the limits test assumed the 6th load is the one removed; which one goes depends on trigger order | the test checks the count (5 left) and the single audit line | Low (test only) |
+
+### Round 2
+
+| ID | File | What was wrong | Fix | Severity |
+|---|---|---|---|---|
+| P2-B8 | lib/main.dart, lib/core/notifications/push_router.dart | `PushRouter.start` ran before `Firebase.initializeApp`: `FirebaseMessaging.instance` threw, the error was swallowed and tapping a push never opened the right screen | started after Firebase; a failed start can be tried again; `test/main_order_test.dart` | High (push taps dead) |
+| P2-B9 | lib/core/photos/photo_service.dart | the queue flush saved the list it read at the start: a photo added while others were being sent was lost | only the handled photos are removed from the list as it is then; reads and writes run one after the other; tests in `test/photo_sync_test.dart` | Medium |
+| P2-B10 | lib/core/photos/photo_service.dart | a queued photo had no owner: after a second person signed in on the same phone it would have been uploaded into the second person's papers | every queued photo stores its uid; only that account sends it | High (papers in the wrong account) |
+| P2-B11 | lib/core/photos/photo_widgets.dart | pictures of papers stayed in the picker cache after sending, and in memory after sign-out | the cache copy is deleted after the upload (only inside the temporary folder, never a person's own photo); the in-memory pictures are cleared on sign-out | Medium (privacy) |
+| P2-B12 | functions/src/razorpay.js | pressing Pay again made a new Razorpay order every time | an unpaid order of the same amount from the last 30 minutes is given back | Low (clutter) |
+| P2-B13 | functions/src/razorpay.js | an unused `catch (_)` variable failed the lint | `catch {` | Low |

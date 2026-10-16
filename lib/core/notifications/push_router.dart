@@ -74,6 +74,7 @@ class PushRouter {
         WidgetsBinding.instance.addPostFrameCallback((_) => unawaited(open(navigatorKey, data)));
       }
     } catch (e) {
+      _started = false; // a later call may still work
       Breadcrumbs.add('push router off');
     }
   }

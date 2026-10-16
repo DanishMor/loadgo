@@ -212,25 +212,34 @@ class PendingPhoto {
   final String? view;
   final String localPath;
   final String mime;
-  const PendingPhoto({required this.kind, required this.localPath, required this.mime, this.bookingId, this.vehicleId, this.view});
+
+  /// Who took it. A photo is only ever sent by the same account (two people may share a phone).
+  final String uid;
+  const PendingPhoto({required this.kind, required this.localPath, required this.mime, required this.uid, this.bookingId, this.vehicleId, this.view});
+
+  String get key => '$uid|${kind.name}|$bookingId|$vehicleId|$view|$localPath';
 
   PhotoTarget get target => PhotoTarget(kind, bookingId: bookingId, vehicleId: vehicleId, view: view);
 
-  Map<String, Object?> toJson() => {'kind': kind.name, 'localPath': localPath, 'mime': mime, 'bookingId': bookingId, 'vehicleId': vehicleId, 'view': view};
+  Map<String, Object?> toJson() => {'kind': kind.name, 'localPath': localPath, 'mime': mime, 'uid': uid, 'bookingId': bookingId, 'vehicleId': vehicleId, 'view': view};
 
   static PendingPhoto? fromJson(Object? j) {
     if (j is! Map) return null;
     final kind = PhotoKind.values.where((k) => k.name == j['kind']).firstOrNull;
     final path = j['localPath'];
     final mime = j['mime'];
-    if (kind == null || path is! String || path.isEmpty || mime is! String) return null;
+    final uid = j['uid'];
+    if (kind == null || path is! String || path.isEmpty || mime is! String || uid is! String || uid.isEmpty) return null;
     String? s(Object? v) => v is String ? v : null;
-    return PendingPhoto(kind: kind, localPath: path, mime: mime, bookingId: s(j['bookingId']), vehicleId: s(j['vehicleId']), view: s(j['view']));
+    return PendingPhoto(kind: kind, localPath: path, mime: mime, uid: uid, bookingId: s(j['bookingId']), vehicleId: s(j['vehicleId']), view: s(j['view']));
   }
 }
 
 /// Reads a file the phone kept (null when it is gone). Replaced in tests.
 typedef FileReader = Future<Uint8List?> Function(String path);
+
+/// Removes a picture the phone kept for the upload (papers must not stay in the cache). Replaced in tests.
+typedef FileCleaner = Future<void> Function(String path);
 
 class PhotoQueue {
   PhotoQueue._();
@@ -256,37 +265,61 @@ class PhotoQueue {
     } catch (_) {}
   }
 
-  /// Adds a photo. Returns false when it cannot be kept (no file path, as on the web, or the queue is full).
-  static Future<bool> add(PhotoTarget target, PickedPhoto photo) async {
-    final path = photo.localPath;
-    if (path == null || path.isEmpty) return false;
-    final list = await items();
-    if (list.length >= maxItems) return false;
-    list.add(PendingPhoto(kind: target.kind, localPath: path, mime: photo.mime, bookingId: target.bookingId, vehicleId: target.vehicleId, view: target.view));
-    await _save(list);
-    return true;
+  // Reads and writes of the list happen one after the other, so a photo added while others are
+  // being sent is never lost.
+  static Future<void> _tail = Future<void>.value();
+
+  static Future<T> _locked<T>(Future<T> Function() job) {
+    final done = _tail.then((_) => job());
+    _tail = done.then<void>((_) {}, onError: (_) {});
+    return done;
   }
 
-  /// Sends what is waiting. A photo whose file is gone or that the rules refuse is dropped;
-  /// one that fails on the network stays. Returns how many were sent.
-  static Future<int> flush(FileReader read) async {
-    final list = await items();
-    if (list.isEmpty || Backend.uid == null) return 0;
-    final keep = <PendingPhoto>[];
+  /// Adds a photo. Returns false when it cannot be kept (no file path, as on the web, nobody signed in, or the queue is full).
+  static Future<bool> add(PhotoTarget target, PickedPhoto photo) {
+    final path = photo.localPath;
+    final uid = Backend.uid;
+    if (path == null || path.isEmpty || uid == null) return Future.value(false);
+    return _locked(() async {
+      final list = await items();
+      if (list.length >= maxItems) return false;
+      list.add(PendingPhoto(kind: target.kind, localPath: path, mime: photo.mime, uid: uid, bookingId: target.bookingId, vehicleId: target.vehicleId, view: target.view));
+      await _save(list);
+      return true;
+    });
+  }
+
+  /// Sends what is waiting for the signed-in account. A photo whose file is gone or that the rules
+  /// refuse is dropped; one that fails on the network stays; another account's photos are left alone.
+  /// Returns how many were sent.
+  static Future<int> flush(FileReader read, {FileCleaner? clean}) async {
+    final uid = Backend.uid;
+    if (uid == null) return 0;
+    final mine = [for (final p in await items()) if (p.uid == uid) p];
+    if (mine.isEmpty) return 0;
+    final done = <String>{}; // sent, gone or refused: these leave the queue
     var sent = 0;
-    for (final p in list) {
+    for (final p in mine) {
       try {
         final bytes = await read(p.localPath);
-        if (bytes == null) continue; // the file is gone
-        await PhotoService.upload(p.target, PickedPhoto(bytes, p.mime), backoff: const []);
-        sent++;
+        if (bytes != null) {
+          await PhotoService.upload(p.target, PickedPhoto(bytes, p.mime), backoff: const []);
+          sent++;
+        }
+        done.add(p.key); // sent, or the file is gone
       } on PhotoRejected {
-        // never going to work: drop it
+        done.add(p.key); // never going to work
       } catch (e) {
-        if (PhotoService.isTransient(e)) keep.add(p); // else a refusal by the rules: drop it
+        if (!PhotoService.isTransient(e)) done.add(p.key); // a refusal by the rules; a network problem stays
       }
     }
-    await _save(keep);
+    if (clean != null) {
+      for (final p in mine) {
+        if (done.contains(p.key)) await clean(p.localPath).catchError((_) {});
+      }
+    }
+    // Take out only what was handled, from the list as it is now (photos added meanwhile stay).
+    await _locked(() async => _save([for (final p in await items()) if (!done.contains(p.key)) p]));
     return sent;
   }
 }
