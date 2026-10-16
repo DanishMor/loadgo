@@ -24,6 +24,8 @@ import 'core/services/backend.dart';
 import 'core/services/breadcrumbs.dart';
 import 'core/services/push_service.dart';
 import 'core/services/session_watcher.dart';
+import 'core/services/settings_service.dart';
+import 'core/services/analytics_events.dart';
 import 'core/settings/simple_mode.dart';
 import 'core/theme/app_theme.dart';
 import 'core/widgets/app_control_gate.dart';
@@ -91,7 +93,10 @@ Future<void> main() async {
       // Another account needs its own settings; the same one reuses the cache.
       refreshAppConfig(force: user.uid != configUid);
       configUid = user.uid;
+      // The saved analytics choice applies from the first screen (off until the person said yes).
+      SettingsService.loadConsents().then((_) {}, onError: (_) {});
     } else {
+      AnalyticsEvents.setConsent(false).ignore();
       // Pictures of papers kept in memory must not outlive the sign-in.
       PhotoImage.clearCache();
     }

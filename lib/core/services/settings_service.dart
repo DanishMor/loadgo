@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 
 import '../models/user_settings.dart';
+import 'analytics_events.dart';
 import 'backend.dart';
 
 /// Notification preferences, consents and the delete-account request.
@@ -34,11 +35,20 @@ class SettingsService {
     prefs.value = p;
   }
 
-  static Future<Consents> loadConsents() async => Consents.fromMap((await _profile())['consents']);
+  static Future<Consents> loadConsents() async {
+    final c = Consents.fromMap((await _profile())['consents']);
+    AnalyticsEvents.setConsent(c.analytics).ignore();
+    return c;
+  }
 
   /// Saves the choices. Turning location off also deletes the saved
   /// `lastLocation`, so nothing is kept without consent.
-  static Future<void> saveConsents(Consents c) => _user.set(
+  static Future<void> saveConsents(Consents c) {
+    AnalyticsEvents.setConsent(c.analytics).ignore();
+    return _saveConsents(c);
+  }
+
+  static Future<void> _saveConsents(Consents c) => _user.set(
         {
           'consents': c.toMap(),
           'consentsUpdatedAt': FieldValue.serverTimestamp(),

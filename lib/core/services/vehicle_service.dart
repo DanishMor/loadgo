@@ -6,6 +6,7 @@ import '../constants/logistics.dart';
 import '../models/vehicle.dart';
 import 'backend.dart';
 import 'doc_expiry_service.dart';
+import 'funnel.dart';
 
 /// Another account (or another of your vehicles) already registered this number.
 class DuplicateVehicleException implements Exception {
@@ -203,6 +204,7 @@ class VehicleService {
       'updatedAt': FieldValue.serverTimestamp(),
     });
     await DocExpiryService.syncVehicle(vehicleId);
+    Funnel.mark(FunnelStep.docsAdded, role: 'fleet').ignore();
   }
 
   /// Owner switches between available and maintenance. on_trip is managed by

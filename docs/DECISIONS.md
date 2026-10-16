@@ -33,3 +33,4 @@ One line per assumption taken without asking.
 - 2026-10-16 Payment: the app sends only the booking id; the server takes the amount from the booking so a changed phone cannot pay less. Refund needs finance or super staff and never exceeds what was paid. KYC/SMS partner skeletons come before any contract; they never block the manual path.
 - G4: owner bug list in the master plan is empty, so nothing to fix (2026-10-16).
 - G6: the deploy state is a second table in ROADMAP_STATUS.md, not a new column on 1,000 rows, so roadmap_counts.py keeps working (2026-10-16).
+- G8: no analytics without the person's analytics consent (it was ignored before); funnel steps are not used up while consent is off (2026-10-16).

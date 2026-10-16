@@ -17,6 +17,7 @@ import '../documents/doc_expiry.dart';
 import 'notification_service.dart';
 import 'risk_service.dart';
 import 'trip_otp_attempts.dart';
+import 'funnel.dart';
 
 /// Thrown when a load was taken by another driver, closed, or never existed.
 class LoadUnavailableException implements Exception {
@@ -231,6 +232,7 @@ class BookingService {
       }
       final next = await _advance(ref, uid, otp: otp, pickup: pickup, delivery: delivery);
       TripShareService.syncStatus(bookingId, next);
+      if (next == BookingStatus.delivered) Funnel.mark(FunnelStep.firstDelivery).ignore();
       return next;
     } on FirebaseException catch (e) {
       if (e.code == 'permission-denied' && otp != null) {

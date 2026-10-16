@@ -8,6 +8,7 @@ import 'analytics_events.dart';
 import 'backend.dart';
 import 'rate_limit_service.dart';
 import 'risk_service.dart';
+import 'funnel.dart';
 import 'booking_service.dart';
 
 /// Price offers on open loads. Drivers offer, customers counter once and
@@ -61,6 +62,7 @@ class OfferService {
       });
     });
     if (asCompany) AnalyticsEvents.log(AnalyticsEvents.companyBid);
+    Funnel.mark(FunnelStep.firstBid, role: asCompany ? 'fleet' : 'driver').ignore();
     return ref.id;
   }
 

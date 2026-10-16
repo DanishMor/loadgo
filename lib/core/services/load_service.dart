@@ -20,6 +20,7 @@ import 'rewards_service.dart';
 import 'risk_service.dart';
 import '../pricing/fare_calculator.dart';
 import 'backend.dart';
+import 'funnel.dart';
 import 'server_clock.dart';
 import 'business_ops_service.dart';
 import 'repeat_service.dart';
@@ -185,6 +186,7 @@ class LoadService {
       });
     }
     await batch.commit();
+    Funnel.loadPosted().ignore();
     return ref.id;
   }
 

@@ -2,8 +2,8 @@
 
 Plan: docs/MASTER_PLAN_PART3.md. Read it, then continue from NEXT.
 
-LAST_DONE: G7
-NEXT: G8 (analytics)
+LAST_DONE: G8
+NEXT: G9 (Razorpay: reuse F34 server module, finish ledger link, webhook, refund, tests)
 
 Unfinished: none.
 

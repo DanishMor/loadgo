@@ -10,6 +10,7 @@ import 'audit_service.dart';
 import 'backend.dart';
 import 'push_service.dart';
 import 'session_watcher.dart';
+import 'funnel.dart';
 
 /// The account is already locked to [existing]; [requested] was chosen at login.
 class RoleMismatchException implements Exception {
@@ -68,6 +69,7 @@ class UserService {
     if (!snap.exists) data['createdAt'] = FieldValue.serverTimestamp();
 
     await ref.set(data, SetOptions(merge: true));
+    if (!snap.exists) Funnel.mark(FunnelStep.signup, role: role).ignore();
   }
 
   static Future<void> saveCustomerProfile({
@@ -111,6 +113,7 @@ class UserService {
     data['identityHashes'] = hashes;
     batch.set(ref, data, SetOptions(merge: true));
     await batch.commit();
+    Funnel.mark(FunnelStep.profileDone, role: 'customer').ignore();
   }
 
   /// Transporter profile: name, company and PAN (unique across accounts),
@@ -165,6 +168,7 @@ class UserService {
       SetOptions(merge: true),
     );
     await batch.commit();
+    Funnel.mark(FunnelStep.profileDone, role: 'fleet').ignore();
   }
 
   /// Driver onboarding documents (also used to edit them later). Saved
@@ -211,6 +215,7 @@ class UserService {
       SetOptions(merge: true),
     );
     await batch.commit();
+    Funnel.mark(FunnelStep.docsAdded, role: 'driver').ignore();
   }
 
   static Future<void> saveDriverProfile({
@@ -244,6 +249,7 @@ class UserService {
     }
 
     await ref.set(data, SetOptions(merge: true));
+    Funnel.mark(FunnelStep.profileDone, role: 'driver').ignore();
   }
 
   /// Driver online / offline switch, kept on the profile so it survives a

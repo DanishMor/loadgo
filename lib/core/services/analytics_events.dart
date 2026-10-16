@@ -8,6 +8,19 @@ class AnalyticsEvents {
 
   static bool enabled = !kDebugMode;
 
+  /// The person's own choice (Settings > data use > analytics). Off until they say yes, and off again
+  /// when they sign out, so nothing is sent without consent.
+  static bool consent = false;
+
+  /// Applies the choice here and to the Analytics plugin itself. Never throws.
+  static Future<void> setConsent(bool on) async {
+    consent = on;
+    if (!enabled) return;
+    try {
+      await FirebaseAnalytics.instance.setAnalyticsCollectionEnabled(on);
+    } catch (_) {}
+  }
+
   static const screenView = 'screen_view';
   static const loadPosted = 'load_posted';
   static const offerSent = 'offer_sent';
@@ -36,8 +49,13 @@ class AnalyticsEvents {
     return out;
   }
 
+  /// Tests read what would be sent here.
+  @visibleForTesting
+  static void Function(String name, Map<String, Object> params)? testSink;
+
   static Future<void> log(String name, {Map<String, Object?>? params}) async {
-    if (!enabled || !validName(name)) return;
+    if (testSink != null && validName(name)) testSink!(name, cleanParams(params));
+    if (!enabled || !consent || !validName(name)) return;
     try {
       await FirebaseAnalytics.instance.logEvent(name: name, parameters: cleanParams(params));
     } catch (_) {}
