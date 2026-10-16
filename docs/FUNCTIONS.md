@@ -35,6 +35,8 @@ Every function first asks `flagOn(db, name)`: it reads `config/features.flags.<n
 | `paymentGateway` | Razorpay order, signature check, webhook, refund, ledger lines (test mode first) | F34, G9 |
 | `kycVerify` | ID check answers for the admin (kycVerify) | G13 |
 | `smsGateway` | trip SMS fallback and the SOS text (MSG91) | G12 |
+| `rateRange` | usual price of a route from finished trips | G20 |
+| `payHold` | online payment held until delivery | G21 |
 | `maps` | road distance and time (mapsRoute) and the trip map | G10 |
 | `pushNotifications` | push on events | F25 |
 | `adminBroadcast` | admin announcement push | F27 |
@@ -48,7 +50,7 @@ Every function first asks `flagOn(db, name)`: it reads `config/features.flags.<n
 | scanBookingMessage, scanLinkMessage, scanGroupMessage | a chat message is created | serverChatScan | the contact filter again, on the server; a hit removes the message and gives a strike (same ladder as the app) |
 | creditsBalance | a credit line is written | serverCredits | adds up the lines into credit_balances/{uid}; an overspend marks the load and is audited |
 | referralCheck | a referral is created | serverCredits | voids both bonus lines when the referral is not valid (own code, too late, unknown person, more than 20) |
-| tripDelivered, ratingAdded | a booking becomes delivered, a rating is created | serverTrust | counts the trip once (trip_counts) and writes public_trust/{uid} with safe fields only |
+| tripDelivered, ratingAdded | a booking becomes delivered, a rating is created | serverTrust, payHold, rateRange | counts the trip once (trip_counts) and writes public_trust/{uid} with safe fields only (serverTrust); G21 `payHold`: releases an online payment held since before delivery into the driver's ledger (earning, commission), less any refund meanwhile; G20 `rateRange`: adds the final amount to `route_rates/{from}_{to}_{type}` (last 30 amounts, no ids) |
 | jobClearLocations | every day 04:30 (India time) | serverJobs | G11: removes the driver position (and its time) from a delivered or cancelled booking a day after the last update |
 | jobExpireLoads, jobHoldScheduled, jobSuspendExpiredDocs | every day 03:00, every 15 minutes, every day 03:30 (India time) | serverJobs | closes old open loads; marks the vehicle busy one lead time before a scheduled pickup; holds vehicles and drivers with expired papers (an admin override wins) |
 | adminSetRiskTier, adminDecideDriver | callable | serverAdminActions | the admin action done by the server with the staff role checked and the audit line written by the server |

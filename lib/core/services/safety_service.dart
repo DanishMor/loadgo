@@ -69,11 +69,16 @@ class SafetyService {
   }
 
   /// Raises an SOS for admins with the last known position (if any).
-  static Future<String> sendSos({Booking? booking, GeoPoint? location}) async {
+  static const sosReasons = ['sos', 'checkin_help', 'checkin_no_answer'];
+
+  static Future<String> sendSos({Booking? booking, GeoPoint? location, String reason = 'sos'}) async {
+    if (!sosReasons.contains(reason)) reason = 'sos';
     final uid = Backend.requireUid();
     final ref = await Backend.db.collection('sos_alerts').add({
       'userId': uid,
       'bookingId': ?booking?.id,
+      // Only the new check-in reasons are written; a plain SOS looks exactly as before.
+      if (reason != 'sos') 'reason': reason,
       'location': location ?? booking?.lastKnownLocation,
       'status': 'open',
       'createdAt': FieldValue.serverTimestamp(),

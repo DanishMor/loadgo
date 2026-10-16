@@ -92,7 +92,7 @@ class DriverTripScreen extends StatelessWidget {
           ],
           if (booking.isInTransit) ...[
             const SizedBox(height: 14),
-            TripGeofenceBanner(dropPlace: booking.drop),
+            TripGeofenceBanner(dropPlace: booking.drop, booking: booking),
             if (booking.extraDrops.isNotEmpty) ...[
               const SizedBox(height: 8),
               StopProgressCard(booking: booking),

@@ -121,6 +121,10 @@ Each server call that costs money has three controls, all in Firestore so the ow
 
 Fields in every limits document: `perUserPerDay` and `totalPerDay`, whole numbers only (a text or negative value falls back to the default). The counters live in `quota_usage` (and `maps_usage`); both carry `expireAt`, so set a **TTL policy** on `expireAt` for them in the Console (Firestore > TTL). Switch off a call at once: Admin > Features. `test/cost_guards_test.dart` fails if a new paid call is added without a switch, a quota and a line here. Calls without a valid App Check proof are counted in the logs (docs/APP_CHECK.md).
 
+### Route rates and held payments (G20, G21)
+
+- Each delivered trip adds one small write to `route_rates` (plus a bookkeeping document `route_rates_seen`, which expires in 90 days: set a TTL policy on `expireAt`). The app reads one document per route and run. Held payments add one release transaction per delivered trip that had an online payment.
+
 ### Maps (G10)
 
 - `mapsRoute` runs only on a new city pair (the answer is kept 30 days in `route_cache`), so a pilot day is a few dozen Routes requests. Hard caps: `config/mapsLimits.perUserPerDay` (20) and `totalPerDay` (2000). Key setup: docs/MAPS_SETUP.md.

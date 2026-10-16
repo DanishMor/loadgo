@@ -6,7 +6,8 @@
 // an injected `http(method, path, body)` function so tests use a fake.
 
 const crypto = require('node:crypto');
-const { safeId } = require('./common');
+const { FieldValue } = require('firebase-admin/firestore');
+const { safeId, flagOn } = require('./common');
 const { consume } = require('./quota');
 
 const ID = /^[A-Za-z0-9_]{1,64}$/;
@@ -123,6 +124,9 @@ async function settleOrder(db, orderId, paymentId, paidPaise, nowMs = Date.now()
   if (!first.exists) throw new PaymentError('not-found', 'order');
   const bookingSnap0 = await db.collection('bookings').doc(first.data().bookingId).get();
   const bps = await commissionBpsFor(db, bookingSnap0.exists ? bookingSnap0.data().driverId : null, nowMs);
+  // G21: with the payHold switch on, money paid before delivery is held: the order is paid but the driver's ledger lines
+  // are written when the trip is delivered (releaseHeld).
+  const hold = await flagOn(db, 'payHold', nowMs);
   return db.runTransaction(async (tx) => {
     const snap = await tx.get(orderRef);
     if (!snap.exists) throw new PaymentError('not-found', 'order');
@@ -143,7 +147,10 @@ async function settleOrder(db, orderId, paymentId, paidPaise, nowMs = Date.now()
     const earn = b && b.driverId ? await tx.get(earnRef) : null;
     const settleByServer = !!(b && b.driverId && b.paymentStatus !== 'driver_confirmed' && earn && !earn.exists);
     tx.update(orderRef, { status: 'paid', paymentId, paidAt: new Date() });
-    if (settleByServer) {
+    const held = !!(settleByServer && hold && b.status !== 'delivered');
+    if (held) {
+      tx.update(bRef, { paymentHold: { orderId, paise: o.amountPaise }, onlinePaidPaise: o.amountPaise, paymentVia: 'razorpay', updatedAt: new Date() });
+    } else if (settleByServer) {
       const commission = commissionPaise(o.amountPaise, bps);
       tx.update(bRef, { paymentStatus: 'driver_confirmed', paidAmountPaise: o.amountPaise, paymentVia: 'razorpay', paymentConfirmedAt: new Date(), updatedAt: new Date() });
       tx.set(earnRef, { driverId: b.driverId, bookingId: o.bookingId, type: 'trip_earning', amountPaise: o.amountPaise, createdAt: new Date() });
@@ -152,7 +159,40 @@ async function settleOrder(db, orderId, paymentId, paidPaise, nowMs = Date.now()
       // Paid by hand already, or no driver yet: only the order is marked; nothing is counted twice.
       tx.update(bRef, { onlinePaidPaise: o.amountPaise, updatedAt: new Date() });
     }
-    return { ok: true, ledger: settleByServer };
+    return { ok: true, ledger: settleByServer && !held, held };
+  });
+}
+
+// G21: the trip was delivered. A held payment now becomes the driver's earning (minus what was refunded meanwhile) and
+// the booking counts as paid. Safe to run twice: the hold is cleared in the same transaction, and a ledger line that
+// already exists is never written again.
+async function releaseHeld(db, bookingId, nowMs = Date.now()) {
+  if (!safeId(bookingId)) return { action: 'skipped' };
+  const bRef = db.collection('bookings').doc(bookingId);
+  const first = await bRef.get();
+  const hold0 = first.exists ? first.data().paymentHold : null;
+  if (!hold0 || typeof hold0.orderId !== 'string' || first.data().status !== 'delivered') return { action: 'skipped' };
+  const bps = await commissionBpsFor(db, first.data().driverId, nowMs);
+  return db.runTransaction(async (tx) => {
+    const bSnap = await tx.get(bRef);
+    const b = bSnap.exists ? bSnap.data() : null;
+    if (!b || !b.paymentHold || b.status !== 'delivered' || !b.driverId) return { action: 'skipped' };
+    const oRef = db.collection('payment_orders').doc(b.paymentHold.orderId);
+    const oSnap = await tx.get(oRef);
+    const earnRef = db.collection('ledger').doc(`${bookingId}_trip_earning`);
+    const commRef = db.collection('ledger').doc(`${bookingId}_platform_commission`);
+    const earn = await tx.get(earnRef);
+    const o = oSnap.exists ? oSnap.data() : null;
+    const refunded = o && Number.isSafeInteger(o.refundedPaise) ? o.refundedPaise : 0;
+    const net = o && o.status === 'paid' ? o.amountPaise - refunded : 0;
+    if (net <= 0 || earn.exists) {
+      tx.update(bRef, { paymentHold: FieldValue.delete(), updatedAt: new Date() });
+      return { action: 'cleared' };
+    }
+    tx.update(bRef, { paymentHold: FieldValue.delete(), paymentStatus: 'driver_confirmed', paidAmountPaise: net, paymentVia: 'razorpay', paymentConfirmedAt: new Date(), updatedAt: new Date() });
+    tx.set(earnRef, { driverId: b.driverId, bookingId, type: 'trip_earning', amountPaise: net, createdAt: new Date() });
+    tx.set(commRef, { driverId: b.driverId, bookingId, type: 'platform_commission', amountPaise: -commissionPaise(net, bps), createdAt: new Date() });
+    return { action: 'released', paise: net };
   });
 }
 
@@ -233,10 +273,14 @@ async function refundPayment(db, http, callerUid, input, staffCheck) {
     const o = snap.data();
     if (o.status !== 'paid' || typeof o.paymentId !== 'string') throw new PaymentError('failed-precondition', 'not paid');
     const already = Number.isSafeInteger(o.refundedPaise) ? o.refundedPaise : 0;
-    const pending = Number.isSafeInteger(o.refundPendingPaise) ? o.refundPendingPaise : 0;
+    // A reservation older than 5 minutes is a call that died half way (the gateway answered or not, we never learned):
+    // it stops blocking, and finance checks the gateway's list before refunding again.
+    const reservedAt = o.refundPendingAt && typeof o.refundPendingAt.toMillis === 'function' ? o.refundPendingAt.toMillis() : 0;
+    const stale = reservedAt > 0 && Date.now() - reservedAt > 5 * 60 * 1000;
+    const pending = !stale && Number.isSafeInteger(o.refundPendingPaise) ? o.refundPendingPaise : 0;
     if (already >= o.amountPaise) throw new PaymentError('failed-precondition', 'already refunded');
     if (already + pending + input.amountPaise > o.amountPaise) throw new PaymentError('failed-precondition', 'more than was paid');
-    tx.update(ref, { refundPendingPaise: pending + input.amountPaise });
+    tx.update(ref, { refundPendingPaise: pending + input.amountPaise, refundPendingAt: new Date() });
     return o.paymentId;
   });
   let answer;
@@ -310,5 +354,5 @@ async function handleWebhook(db, { rawBody, signature, eventId, secret }, nowMs 
 
 module.exports = {
   refundPayment, PaymentError, MAX_PAISE, validPaise, expectedSignature, verifySignature, razorpayHttp, createOrder, verifyPayment,
-  settleOrder, applyRefund, handleWebhook, verifyWebhookSignature, commissionPaise,
+  settleOrder, releaseHeld, applyRefund, handleWebhook, verifyWebhookSignature, commissionPaise,
 };

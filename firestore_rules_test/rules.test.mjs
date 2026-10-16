@@ -3089,6 +3089,17 @@ describe('safety', () => {
     await assertFails(updateDoc(doc(as('driver1'), 'sos_alerts', 's1'), { status: 'resolved' }));
   });
 
+  test('G22 check-in alerts: only the two check-in reasons are allowed, any other reason or field is refused', async () => {
+    await seedBooking();
+    await assertSucceeds(setDoc(doc(as('driver1'), 'sos_alerts', 'c1'), sos('driver1', { bookingId: 'L1', reason: 'checkin_help' })));
+    await assertSucceeds(setDoc(doc(as('driver1'), 'sos_alerts', 'c2'), sos('driver1', { bookingId: 'L1', reason: 'checkin_no_answer' })));
+    await assertSucceeds(setDoc(doc(as('driver1'), 'sos_alerts', 'c3'), sos('driver1', { reason: 'sos' })));
+    await assertFails(setDoc(doc(as('driver1'), 'sos_alerts', 'c4'), sos('driver1', { reason: 'prank' })));
+    await assertFails(setDoc(doc(as('driver1'), 'sos_alerts', 'c5'), sos('driver1', { reason: 5 })));
+    await assertFails(setDoc(doc(as('driver1'), 'sos_alerts', 'c6'), sos('driver1', { reason: 'checkin_help', note: 'x' })));
+    await assertFails(updateDoc(doc(as('driver1'), 'sos_alerts', 'c1'), { reason: 'sos' }));
+  });
+
   test('emergency contacts: at most three', async () => {
     const c = (n) => Array.from({ length: n }, (_, i) => ({ name: `C${i}`, phone: '+919800000000' }));
     await assertSucceeds(setDoc(doc(as('u1'), 'users', 'u1'), { phone: '+91', emergencyContacts: c(3) }));
@@ -6376,5 +6387,20 @@ describe('G13 ID check answers are written by the server only', () => {
     }
     await assertFails(getDoc(doc(as('u1'), 'kyc_checks', 'u1')));
     await assertFails(getDoc(doc(as('u2'), 'kyc_checks', 'u1')));
+  });
+});
+
+describe('G20 route rates are written by the server only', () => {
+  test('a signed-in person reads one route by its id; nobody lists them or writes them', async () => {
+    await seed((db) => setDoc(doc(db, 'route_rates', 'mumbai_jaipur_14ft'), { n: 5, recent: [1, 2, 3, 4, 5] }));
+    await assertSucceeds(getDoc(doc(as('u1'), 'route_rates', 'mumbai_jaipur_14ft')));
+    await assertFails(getDoc(doc(anon(), 'route_rates', 'mumbai_jaipur_14ft')));
+    await assertFails(getDocs(collection(as('u1'), 'route_rates')));
+    for (const db of [as('u1'), asAdmin()]) {
+      await assertFails(rawSetDoc(doc(db, 'route_rates', 'mumbai_jaipur_14ft'), { n: 999, recent: [1] }));
+      await assertFails(updateDoc(doc(db, 'route_rates', 'mumbai_jaipur_14ft'), { n: 999 }));
+      await assertFails(getDoc(doc(db, 'route_rates_seen', 'b1')));
+      await assertFails(rawSetDoc(doc(db, 'route_rates_seen', 'b1'), { at: 1 }));
+    }
   });
 });

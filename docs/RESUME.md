@@ -2,8 +2,8 @@
 
 Plan: docs/MASTER_PLAN_PART3.md. Read it, then continue from NEXT.
 
-LAST_DONE: G19
-NEXT: G20 route rate range from finished trips (server aggregate + client line)
+LAST_DONE: G22
+NEXT: G23 party khata
 
 Unfinished: none.
 

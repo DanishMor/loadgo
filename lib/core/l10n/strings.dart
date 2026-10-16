@@ -116,6 +116,9 @@ import 'maps_strings.dart';
 import 'live_location_strings.dart';
 import 'kyc_check_strings.dart';
 import 'public_trust_strings.dart';
+import 'route_rate_strings.dart';
+import 'pay_hold_strings.dart';
+import 'checkin_strings.dart';
 import 'admin_web_strings.dart';
 import 'broadcast_strings.dart';
 
@@ -273,6 +276,9 @@ const List<Map<String, List<String>>> stringTables = [
   liveLocationStrings,
   kycCheckStrings,
   publicTrustStrings,
+  routeRateStrings,
+  payHoldStrings,
+  checkinStrings,
   adminWebStrings,
   broadcastStrings,
 ];

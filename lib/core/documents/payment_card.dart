@@ -108,7 +108,9 @@ class _PaymentCardState extends State<PaymentCard> {
   Widget build(BuildContext context) {
     final b = widget.booking;
     if (b.status == BookingStatus.cancelled) return const SizedBox.shrink();
-    final open = b.status != BookingStatus.delivered && b.paymentStatus == PaymentStatus.pending;
+    // G21: money paid online is held until delivery; nothing else is asked of either side meanwhile.
+    final held = b.heldPaise != null;
+    final open = b.status != BookingStatus.delivered && b.paymentStatus == PaymentStatus.pending && !held;
     final me = Backend.uid;
     final color = switch (b.paymentStatus) {
       PaymentStatus.driverConfirmed => AppColors.success,
@@ -130,6 +132,11 @@ class _PaymentCardState extends State<PaymentCard> {
               StatusChip(label: paymentStatusLabel(context, b.paymentStatus), color: color),
             ],
           ),
+          if (held)
+            Padding(
+              padding: const EdgeInsets.only(top: 6),
+              child: Text(trf(context, 'payHeldLine', {'amount': formatPaise(b.heldPaise!)}), key: const ValueKey('payHeldLine'), style: DsStyle.w700.copyWith(color: AppColors.success)),
+            ),
           if (b.paidAmountPaise != null)
             Padding(
               padding: const EdgeInsets.only(top: 6),
@@ -167,7 +174,7 @@ class _PaymentCardState extends State<PaymentCard> {
               icon: const Icon(Icons.verified_outlined),
               label: Text(tr(context, 'advanceConfirm')),
             ),
-          if (me == b.customerId && b.paymentStatus == PaymentStatus.pending && OnlinePay.available)
+          if (me == b.customerId && b.paymentStatus == PaymentStatus.pending && !held && OnlinePay.available)
             FilledButton.icon(
               key: const ValueKey('payOnline'),
               onPressed: _busy ? null : _payOnline,
@@ -188,7 +195,7 @@ class _PaymentCardState extends State<PaymentCard> {
               icon: const Icon(Icons.qr_code_2_rounded, size: 18),
               label: Text(tr(context, 'shareUpiId')),
             ),
-          if (me == b.customerId && b.paymentStatus == PaymentStatus.pending)
+          if (me == b.customerId && b.paymentStatus == PaymentStatus.pending && !held)
             FilledButton.icon(
               key: const ValueKey('markPaid'),
               onPressed: _busy ? null : _markPaid,

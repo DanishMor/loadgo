@@ -95,6 +95,9 @@ class Booking {
   /// says they paid (paise). Records only; no gateway yet.
   final String paymentMode;
   final String paymentStatus;
+
+  /// G21: paise the customer paid online that are held until delivery (written by the server), else null.
+  final int? heldPaise;
   final int? paidAmountPaise;
 
   /// Advance the customer says they paid (paise) and when the driver confirmed it.
@@ -161,6 +164,7 @@ class Booking {
     this.replacedVehicleIds = const [],
     this.paymentMode = 'cash',
     this.paymentStatus = 'pending',
+    this.heldPaise,
     this.paidAmountPaise,
     this.advancePaise,
     this.advanceConfirmedAt,
@@ -253,6 +257,7 @@ class Booking {
       ewayBillNo: d['ewayBillNo'] as String? ?? '',
       paymentMode: d['paymentMode'] as String? ?? 'cash',
       paymentStatus: d['paymentStatus'] as String? ?? 'pending',
+      heldPaise: d['paymentHold'] is Map && (d['paymentHold'] as Map)['paise'] is int ? (d['paymentHold'] as Map)['paise'] as int : null,
       paidAmountPaise: (d['paidAmountPaise'] as num?)?.round(),
       advancePaise: (d['advancePaise'] as num?)?.round(),
       advanceConfirmedAt: (d['advanceConfirmedAt'] as Timestamp?)?.toDate(),

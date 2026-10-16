@@ -9,6 +9,7 @@ import 'package:flutter/services.dart';
 import '../core/constants/cancel_reasons.dart';
 import '../core/constants/logistics.dart';
 import '../core/maps/road_distance.dart';
+import '../core/pricing/route_rates.dart';
 import '../core/services/load_service.dart';
 import 'matching_vehicles_line.dart';
 import '../core/widgets/common.dart';
@@ -478,6 +479,8 @@ class _PostLoadScreenState extends State<PostLoadScreen> {
               cost: tripCostFor(farePaise: quote.total, km: (_manualKm ?? auto)!, vehicleType: _vehicleType, from: _pickupCtrl.text, to: _dropCtrl.text),
             ),
           ],
+          if (_bookingType == BookingType.freight)
+            RateRangeLine(pickup: _pickupCtrl.text, drop: _dropCtrl.text, vehicleType: _vehicleType),
           const SizedBox(height: 6),
           Text(tr(context, 'estimateNote'), style: DsStyle.t12w400.copyWith(color: AppColors.faint)),
         ],

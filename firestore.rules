@@ -2104,7 +2104,8 @@ service cloud.firestore {
     match /sos_alerts/{alertId} {
       allow read: if signedIn() && (resource.data.userId == request.auth.uid || isAdmin());
       allow create: if signedIn()
-          && request.resource.data.keys().hasOnly(['userId', 'bookingId', 'location', 'status', 'createdAt'])
+          && request.resource.data.keys().hasOnly(['userId', 'bookingId', 'location', 'status', 'createdAt', 'reason'])
+          && request.resource.data.get('reason', 'sos') in ['sos', 'checkin_help', 'checkin_no_answer']
           && request.resource.data.userId == request.auth.uid
           && request.resource.data.status == 'open'
           && request.resource.data.createdAt == request.time
@@ -3830,6 +3831,17 @@ service cloud.firestore {
       match /seen/{bookingId} {
         allow read, write: if false;
       }
+    }
+
+    // route_rates/{from}_{to}_{type} (G20): the last 30 final amounts of finished trips on a route. Server-written only;
+    // one document at a time by its id (the list cannot be read). route_rates_seen is the server's own bookkeeping.
+    match /route_rates/{key} {
+      allow get: if signedIn();
+      allow list, write: if false;
+    }
+
+    match /route_rates_seen/{bookingId} {
+      allow read, write: if false;
     }
 
     match /public_trust/{uid} {

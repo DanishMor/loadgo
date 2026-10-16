@@ -85,8 +85,11 @@ exports.tripDelivered = onDocumentUpdated('bookings/{bookingId}', async (event) 
   const after = event.data && event.data.after && event.data.after.data();
   if (!after || after.status !== 'delivered' || (before && before.status === 'delivered')) return;
   const db = getFirestore();
-  if (!(await flagOn(db, 'serverTrust'))) return;
-  await trust.onDelivered(db, event.params.bookingId, after);
+  if (await flagOn(db, 'serverTrust')) await trust.onDelivered(db, event.params.bookingId, after);
+  // G21: money held since the online payment is released to the driver now (switch: payHold; a held payment exists only while it is on).
+  if (after.paymentHold) await razorpay.releaseHeld(db, event.params.bookingId);
+  // G20: the final amount joins the usual-price list of its route (switch: rateRange).
+  if (await flagOn(db, 'rateRange')) await rates.recordTrip(db, event.params.bookingId, after);
 });
 
 exports.ratingAdded = onDocumentCreated('ratings/{ratingId}', async (event) => {
@@ -151,6 +154,7 @@ const RZP_WEBHOOK_SECRET = defineSecret('RAZORPAY_WEBHOOK_SECRET');
 const maps = require('./src/maps');
 const sms = require('./src/sms');
 const kyc = require('./src/kyc');
+const rates = require('./src/rates');
 const appCheck = require('./src/appCheck');
 
 // G15: monitor first, refuse later (switch appCheckEnforce). Used by the callables that cost money or touch IDs.

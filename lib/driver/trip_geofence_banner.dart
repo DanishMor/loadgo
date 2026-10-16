@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../core/geo/trip_watcher.dart';
+import '../core/models/booking.dart';
+import 'safety_checkin_card.dart';
 import '../core/l10n/l10n.dart';
 import '../core/services/location_service.dart';
 import '../core/widgets/common.dart';
@@ -13,11 +15,14 @@ import '../core/theme/design_tokens.dart';
 class TripGeofenceBanner extends StatefulWidget {
   final String dropPlace;
 
+  /// The trip, so a check-in alert can name it (G22). Optional.
+  final Booking? booking;
+
   /// Injectable for tests; defaults to the device position stream.
   final Stream<Coordinates>? positions;
   final DateTime Function() now;
 
-  const TripGeofenceBanner({super.key, required this.dropPlace, this.positions, this.now = DateTime.now});
+  const TripGeofenceBanner({super.key, required this.dropPlace, this.booking, this.positions, this.now = DateTime.now});
 
   @override
   State<TripGeofenceBanner> createState() => _TripGeofenceBannerState();
@@ -78,7 +83,10 @@ class _TripGeofenceBannerState extends State<TripGeofenceBanner> {
       if (s.destinationReached) _card(const ValueKey('geoReached'), Icons.flag_circle_outlined, AppColors.success, tr(context, 'geoReached')),
       if (s.nearDestination)
         _card(const ValueKey('geoNear'), Icons.near_me_rounded, AppColors.primary, trf(context, 'geoNear', {'km': (s.kmToDrop ?? 0).round()})),
-      if (s.longHalt) _card(const ValueKey('geoHalt'), Icons.pause_circle_outline_rounded, AppColors.warning, trf(context, 'geoHalt', {'m': TripWatcher.haltMinutes})),
+      if (s.longHalt && SafetyCheckinCard.enabled)
+        SafetyCheckinCard(key: const ValueKey('safetyCheckin'), booking: widget.booking)
+      else if (s.longHalt)
+        _card(const ValueKey('geoHalt'), Icons.pause_circle_outline_rounded, AppColors.warning, trf(context, 'geoHalt', {'m': TripWatcher.haltMinutes})),
     ]);
   }
 }
