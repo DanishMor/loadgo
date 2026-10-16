@@ -1,8 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import '../adapters/partner_adapters.dart';
+import '../adapters/sms_adapter.dart';
+import '../features/features.dart';
 import '../models/app_notification.dart';
 import '../models/booking.dart';
 import 'backend.dart';
+import 'features_service.dart';
 import 'notification_service.dart';
 
 /// Someone the user wants called in an emergency.
@@ -28,6 +32,30 @@ class SafetyService {
 
   static const maxContacts = 3;
 
+  /// G12: the SMS partner behind the `smsGateway` switch (the server checks the number is one of the caller's contacts).
+  static SmsGateway sms = Msg91SmsGateway();
+
+  /// +91 form of a number a person typed: ten digits, or with 91 / +91 in front; null otherwise.
+  static String? e164India(String raw) {
+    final d = raw.replaceAll(RegExp(r'[\s-]'), '');
+    final m = RegExp(r'^(?:\+?91)?([6-9]\d{9})$').firstMatch(d);
+    return m == null ? null : '+91${m.group(1)}';
+  }
+
+  /// Best effort: one SMS to each saved contact. Never throws and never blocks the SOS.
+  static Future<int> smsContacts(Map<String, dynamic>? user, String text) async {
+    if (!FeaturesService.isOn(FeatureKey.smsGateway)) return 0;
+    var sent = 0;
+    for (final c in contactsFrom(user)) {
+      final to = e164India(c.phone);
+      if (to == null) continue;
+      try {
+        if ((await sms.send(to, text)).ok) sent++;
+      } catch (_) {}
+    }
+    return sent;
+  }
+
   static List<EmergencyContact> contactsFrom(Map<String, dynamic>? user) => [
         for (final m in (user?['emergencyContacts'] as List?) ?? const []) ?EmergencyContact.fromMap(m),
       ];
@@ -50,6 +78,14 @@ class SafetyService {
       'status': 'open',
       'createdAt': FieldValue.serverTimestamp(),
     });
+    if (FeaturesService.isOn(FeatureKey.smsGateway)) {
+      try {
+        final user = (await Backend.db.collection('users').doc(uid).get()).data();
+        final loc = location ?? booking?.lastKnownLocation;
+        final where = loc == null ? '' : ' https://maps.google.com/?q=${loc.latitude.toStringAsFixed(4)},${loc.longitude.toStringAsFixed(4)}';
+        smsContacts(user, 'SOS from a Load 20 user. Please call them.$where').ignore();
+      } catch (_) {}
+    }
     return ref.id;
   }
 

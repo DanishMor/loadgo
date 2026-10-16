@@ -36,6 +36,8 @@ Check: the app works as before with all switches OFF. Rollback: redeploy the pre
    - `firebase functions:secrets:set RAZORPAY_KEY_ID`
    - `firebase functions:secrets:set RAZORPAY_KEY_SECRET`
    - `firebase functions:secrets:set RAZORPAY_WEBHOOK_SECRET` (a long random text you invent; type the same text in the Razorpay dashboard webhook form)
+   - `firebase functions:secrets:set MSG91_AUTH_KEY` (only for SMS, see docs/SMS_SETUP.md)
+   - `firebase functions:secrets:set MAPS_SERVER_KEY` (only for maps, see docs/MAPS_SETUP.md)
    After the deploy (step 3) Razorpay dashboard > Webhooks > add the URL of `paymentWebhook` (Console > Functions > paymentWebhook > URL), events `payment.captured`, `payment.failed`, `refund.processed`.
    Use the **test** keys from the Razorpay dashboard first. Keep the live keys for step 9.
 2. `cd functions; npm ci; npm test` then `npm run test:emulator`.

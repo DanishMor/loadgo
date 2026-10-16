@@ -149,6 +149,9 @@ const RZP_KEY_ID = defineSecret('RAZORPAY_KEY_ID');
 const RZP_KEY_SECRET = defineSecret('RAZORPAY_KEY_SECRET');
 const RZP_WEBHOOK_SECRET = defineSecret('RAZORPAY_WEBHOOK_SECRET');
 const maps = require('./src/maps');
+const sms = require('./src/sms');
+const { QuotaError } = require('./src/quota');
+const MSG91_AUTH_KEY = defineSecret('MSG91_AUTH_KEY');
 const MAPS_SERVER_KEY = defineSecret('MAPS_SERVER_KEY');
 
 function paymentCallable(run) {
@@ -188,6 +191,32 @@ exports.paymentWebhook = onRequest({ secrets: [RZP_WEBHOOK_SECRET], maxInstances
   } catch (e) {
     console.error('payment webhook failed', e && e.message);
     res.status(500).send('failed');
+  }
+});
+
+// G12: transactional SMS through MSG91 (switch: smsGateway). The auth key is a Firebase secret; template ids are in config/sms.
+// "I need help" SMS from the app: only to the caller's own saved emergency contacts.
+exports.smsSend = onCall({ secrets: [MSG91_AUTH_KEY], maxInstances: 5 }, async (request) => {
+  const db = getFirestore();
+  if (!(await flagOn(db, 'smsGateway'))) throw new HttpsError('failed-precondition', 'disabled');
+  try {
+    const r = await sms.emergencySms(db, sms.msg91Http(MSG91_AUTH_KEY.value()), request.auth && request.auth.uid, request.data);
+    return { messageId: r.messageId };
+  } catch (e) {
+    if (e instanceof sms.SmsError || e instanceof QuotaError) throw new HttpsError(e.code, e.message);
+    console.error('sms failed', e && e.message);
+    throw new HttpsError('internal', 'failed');
+  }
+});
+
+// A trip notification for someone with no push token also goes out as one short SMS (daily limit per person and in total).
+exports.smsOnNotification = onDocumentCreated({ document: 'notifications/{id}', secrets: [MSG91_AUTH_KEY] }, async (event) => {
+  const db = getFirestore();
+  if (!(await flagOn(db, 'smsGateway'))) return;
+  try {
+    await sms.onNotificationSms(db, sms.msg91Http(MSG91_AUTH_KEY.value()), event.data && event.data.data());
+  } catch (e) {
+    console.error('sms notification failed', e && e.message);
   }
 });
 

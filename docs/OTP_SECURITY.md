@@ -42,3 +42,21 @@ Each line says how to verify it.
 - Never show the real code in an error message. `OtpVerificationScreen` shows only "n tries left".
 - A redesign of the login screens must keep calling `sendPhoneOtp` (the limit lives there) and `OtpLimiter` in the code screen. `test/otp_limits_test.dart` fails if they are removed.
 - The pickup and delivery step must keep storing the guess first. `test/trip_otp_attempts_test.dart` and the rules tests fail otherwise.
+
+## Using MSG91 for the login code (G12, design only, default OFF)
+
+**Today:** the login code is sent by Firebase Auth. To my knowledge the SMS provider of Firebase phone sign-in cannot be replaced (UNVERIFIED: re-check the Firebase documentation before relying on this). The app's MSG91 work (`smsSend`, `smsOnNotification`) never touches the login code.
+
+**If the owner ever wants MSG91 to deliver the login code**, the only way is a *custom* sign-in: the server creates and checks the code and, when it is right, mints a Firebase **custom token** for the phone number. This is NOT built. If it is built later it must sit behind its own switch (`smsLoginOtp`, OFF) and must keep every control Firebase gives us for free:
+
+| Risk | Why it matters | What the build must do |
+|---|---|---|
+| **SMS pumping** (fraud: bots request codes to premium numbers) | Firebase has its own abuse detection; a custom flow has none | India-only numbers (+91 and 10 digits), per number 5 per hour, per IP and per device limits, a total daily cap, a kill switch, App Check enforced first |
+| **Code guessing** | A 6-digit code has 1,000,000 values | Store only a hash (HMAC with a secret), 5 tries per code then lock 15 minutes, code valid 5 minutes, single use |
+| **Replay and enumeration** | Answers that differ for known and unknown numbers leak who is registered | The same answer for every number; constant-time compare; never say whether an account exists |
+| **Token minting is account takeover** | A bug in the check lets anyone sign in as anyone | Mint the token only after a successful, unexpired, unused check; log every mint (audit); short-lived token; admin accounts never use this path |
+| **DLT template** | Login SMS needs an approved DLT template and a registered header | Owner registers it with the provider first |
+| **Cost** | Every request costs a few paise | quota.js daily caps and the budget alert |
+| **Loss of Firebase's protections** | reCAPTCHA / Play Integrity checks inside Firebase Auth do not run | App Check on the callable; decide before building whether the saving is worth the added risk |
+
+**Recommendation:** keep Firebase for the login code. Use MSG91 only for trip messages and the SOS message, where a mistake costs a message, not an account.

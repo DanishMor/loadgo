@@ -21,6 +21,7 @@ const FLAGS = Object.freeze([
   'photoUploads',
   'paymentGateway',
   'maps',
+  'smsGateway',
 ]);
 
 const FLAG_TTL_MS = 30 * 1000;

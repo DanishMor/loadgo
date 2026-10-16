@@ -108,6 +108,14 @@ Firestore reads from the functions: the chat scan reads the sender's last messag
 - Set a lifecycle rule in the Cloud Console to delete trip photos after the retention period in `docs/DATA_RETENTION.md` (owner step). Account deletion removes `users/{uid}/` files.
 - Watch: Console > Storage > Usage after the first week with `photoUploads` ON.
 
+### Maps (G10)
+
+- `mapsRoute` runs only on a new city pair (the answer is kept 30 days in `route_cache`), so a pilot day is a few dozen Routes requests. Hard caps: `config/mapsLimits.perUserPerDay` (20) and `totalPerDay` (2000). Key setup: docs/MAPS_SETUP.md.
+
+### SMS (G12)
+
+- `smsOnNotification` runs on every new in-app notification but exits at once unless the switch is on and the type is a trip step; one SMS (a few paise) only for people with no push token. `smsSend` only on SOS. Caps: `config/sms.perUserPerDay` (10) and `totalPerDay` (500). Setup: docs/SMS_SETUP.md.
+
 ### Payment and push
 
 - Razorpay charges per payment (the partner's fee, not Google's). Functions for payment run only when a person pays, when Razorpay sends the webhook (about 2 to 3 events per payment) or an admin refunds: tiny. Each payment writes about 6 documents (order, booking, 2 ledger lines, event, wallet recompute).

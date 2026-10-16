@@ -2,8 +2,8 @@
 
 Plan: docs/MASTER_PLAN_PART3.md. Read it, then continue from NEXT.
 
-LAST_DONE: G11
-NEXT: G12 (SMS MSG91 adapter server side)
+LAST_DONE: G12
+NEXT: G13 (KYC sandbox verifier + manual review)
 
 Unfinished: none.
 

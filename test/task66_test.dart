@@ -42,6 +42,7 @@ void main() {
       FeatureKey.pushNotifications: 'Push notifications',
       FeatureKey.adminBroadcast: 'Admin announcements by push',
       FeatureKey.photoUploads: 'Photo uploads',
+      FeatureKey.smsGateway: 'SMS messages',
       FeatureKey.liveLocation: 'Live trip location',
       FeatureKey.maps: 'Maps and road distance',
     };

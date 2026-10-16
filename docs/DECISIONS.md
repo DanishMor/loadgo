@@ -34,3 +34,4 @@ One line per assumption taken without asking.
 - G4: owner bug list in the master plan is empty, so nothing to fix (2026-10-16).
 - G6: the deploy state is a second table in ROADMAP_STATUS.md, not a new column on 1,000 rows, so roadmap_counts.py keeps working (2026-10-16).
 - G8: no analytics without the person's analytics consent (it was ignored before); funnel steps are not used up while consent is off (2026-10-16).
+- G12: login OTP via MSG91 custom token is documented only (risks in OTP_SECURITY.md), not built; recommended to keep Firebase (2026-10-16).
