@@ -58,6 +58,7 @@ dependencies:
   local_auth: ^3.0.2
   razorpay_flutter: ^1.4.7
   google_maps_flutter: ^2.19.0
+  firebase_app_check: ^0.4.8
 
 dev_dependencies:
   flutter_test:

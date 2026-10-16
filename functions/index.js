@@ -151,6 +151,17 @@ const RZP_WEBHOOK_SECRET = defineSecret('RAZORPAY_WEBHOOK_SECRET');
 const maps = require('./src/maps');
 const sms = require('./src/sms');
 const kyc = require('./src/kyc');
+const appCheck = require('./src/appCheck');
+
+// G15: monitor first, refuse later (switch appCheckEnforce). Used by the callables that cost money or touch IDs.
+async function appCheckGuard(db, request, name) {
+  try {
+    await appCheck.guard(db, request, name);
+  } catch (e) {
+    if (e instanceof appCheck.AppCheckError) throw new HttpsError(e.code, e.message);
+    throw e;
+  }
+}
 const { QuotaError } = require('./src/quota');
 const MSG91_AUTH_KEY = defineSecret('MSG91_AUTH_KEY');
 const MAPS_SERVER_KEY = defineSecret('MAPS_SERVER_KEY');
@@ -159,6 +170,7 @@ function paymentCallable(run) {
   return onCall({ secrets: [RZP_KEY_ID, RZP_KEY_SECRET] }, async (request) => {
     const db = getFirestore();
     if (!(await flagOn(db, 'paymentGateway'))) throw new HttpsError('failed-precondition', 'disabled');
+    await appCheckGuard(db, request, 'payment');
     try {
       return await run(db, request.auth && request.auth.uid, request.data, razorpay.razorpayHttp(RZP_KEY_ID.value(), RZP_KEY_SECRET.value()));
     } catch (e) {
@@ -200,6 +212,7 @@ exports.paymentWebhook = onRequest({ secrets: [RZP_WEBHOOK_SECRET], maxInstances
 exports.kycVerify = onCall({ maxInstances: 5 }, async (request) => {
   const db = getFirestore();
   if (!(await flagOn(db, 'kycVerify'))) throw new HttpsError('failed-precondition', 'disabled');
+  await appCheckGuard(db, request, 'kycVerify');
   try {
     return await kyc.verify(db, request.auth && request.auth.uid, request.data);
   } catch (e) {
@@ -214,6 +227,7 @@ exports.kycVerify = onCall({ maxInstances: 5 }, async (request) => {
 exports.smsSend = onCall({ secrets: [MSG91_AUTH_KEY], maxInstances: 5 }, async (request) => {
   const db = getFirestore();
   if (!(await flagOn(db, 'smsGateway'))) throw new HttpsError('failed-precondition', 'disabled');
+  await appCheckGuard(db, request, 'smsSend');
   try {
     const r = await sms.emergencySms(db, sms.msg91Http(MSG91_AUTH_KEY.value()), request.auth && request.auth.uid, request.data);
     return { messageId: r.messageId };
@@ -239,6 +253,7 @@ exports.smsOnNotification = onDocumentCreated({ document: 'notifications/{id}', 
 exports.mapsRoute = onCall({ secrets: [MAPS_SERVER_KEY], maxInstances: 5 }, async (request) => {
   const db = getFirestore();
   if (!(await flagOn(db, 'maps'))) throw new HttpsError('failed-precondition', 'disabled');
+  await appCheckGuard(db, request, 'mapsRoute');
   try {
     return await maps.route(db, maps.googleRoutesHttp(MAPS_SERVER_KEY.value()), request.auth && request.auth.uid, request.data);
   } catch (e) {

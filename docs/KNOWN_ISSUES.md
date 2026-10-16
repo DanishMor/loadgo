@@ -27,7 +27,7 @@ Things that cannot be proved on the laptop, or that need a paid service or a con
 | SMS (MSG91): trip SMS fallback and SOS text | G12: server code and tests are ready (switch `smsGateway`); needs DLT-approved templates, the partner key (secret) and the owner's SMS account (docs/SMS_SETUP.md). The login code stays with Firebase Auth. |
 | E-way bill generation | G14: rules, checks and the adapter skeleton are ready (docs/GST_EWAY.md); a paid GSP is needed to generate. The invoice prints place of supply and IGST for another state; the threshold, the validity rules and "reverse charge: No" must be confirmed by a CA. |
 | Maps and road ETA | G10: the `mapsRoute` function (cached, limited per person and per day) and the trip map are written; need a Maps server key (secret) and an Android key (docs/MAPS_SETUP.md). The map picture itself is not tried on a real phone. Switch `maps` OFF: city table. |
-| App Check | Not enabled; needs Play Integrity setup. |
+| App Check | G15: the phone side (Play Integrity, debug provider) is built but asleep until a build uses `--dart-define=APP_CHECK=on`; the functions only count calls without proof until `appCheckEnforce` is turned on. Needs the Console registration and a week of monitoring (docs/APP_CHECK.md). |
 
 ## Limits of the design (by choice)
 

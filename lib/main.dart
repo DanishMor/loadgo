@@ -31,6 +31,7 @@ import 'core/theme/app_theme.dart';
 import 'core/widgets/app_control_gate.dart';
 import 'core/notifications/push_router.dart';
 import 'core/security/app_lock.dart';
+import 'core/services/app_check_setup.dart';
 import 'core/security/local_auth_authenticator.dart';
 import 'core/widgets/ds/haptics.dart';
 import 'core/widgets/live_stream.dart' show OfflineBanner;
@@ -58,6 +59,8 @@ Future<void> main() async {
   };
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await CrashService.init();
+  // G15: App Check proof, only when the build asks for it (--dart-define=APP_CHECK=on); monitor mode first.
+  await AppCheckSetup.start();
   // A tapped push opens the right screen. It must start AFTER Firebase: before that the messaging
   // service does not exist and the router would silently stay off.
   await PushRouter.start(appNavigatorKey);

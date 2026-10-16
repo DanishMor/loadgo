@@ -2,8 +2,8 @@
 
 Plan: docs/MASTER_PLAN_PART3.md. Read it, then continue from NEXT.
 
-LAST_DONE: G14
-NEXT: G15 (App Check Play Integrity client, flag OFF)
+LAST_DONE: G16
+NEXT: G17 (cost guards: payments quota, contract test that every paid callable has a switch and a quota, COST_WATCH)
 
 Unfinished: none.
 
