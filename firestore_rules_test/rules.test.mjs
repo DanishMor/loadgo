@@ -6390,6 +6390,56 @@ describe('G13 ID check answers are written by the server only', () => {
   });
 });
 
+describe('G23 party khata is private to its owner', () => {
+  const party = (extra = {}) => ({ name: 'Sharma Traders', note: 'Jaipur', balancePaise: 0, createdAt: serverTimestamp(), updatedAt: serverTimestamp(), ...extra });
+  const entry = (extra = {}) => ({ kind: 'owed', amountPaise: 150000, note: 'trip', date: Timestamp.now(), createdAt: serverTimestamp(), ...extra });
+
+  test('the owner keeps parties; nobody else reads or writes them, not even an admin', async () => {
+    await assertSucceeds(setDoc(doc(as('u1'), 'users', 'u1', 'khata', 'p1'), party()));
+    await assertSucceeds(updateDoc(doc(as('u1'), 'users', 'u1', 'khata', 'p1'), { balancePaise: 150000, updatedAt: serverTimestamp() }));
+    await assertSucceeds(getDoc(doc(as('u1'), 'users', 'u1', 'khata', 'p1')));
+    for (const db of [as('u2'), asAdmin(), anon()]) {
+      await assertFails(getDoc(doc(db, 'users', 'u1', 'khata', 'p1')));
+      await assertFails(setDoc(doc(db, 'users', 'u1', 'khata', 'p9'), party()));
+      await assertFails(deleteDoc(doc(db, 'users', 'u1', 'khata', 'p1')));
+    }
+    await assertSucceeds(deleteDoc(doc(as('u1'), 'users', 'u1', 'khata', 'p1')));
+  });
+
+  test('party shape: a name of 1 to 40 characters, a short note, a whole-paise balance in range, no other field', async () => {
+    const ref = (id) => doc(as('u1'), 'users', 'u1', 'khata', id);
+    await assertFails(setDoc(ref('a'), party({ name: '' })));
+    await assertFails(setDoc(ref('b'), party({ name: 'x'.repeat(41) })));
+    await assertFails(setDoc(ref('c'), party({ note: 'x'.repeat(61) })));
+    await assertFails(setDoc(ref('d'), party({ balancePaise: 1.5 })));
+    await assertFails(setDoc(ref('e'), party({ balancePaise: 1000000000001 })));
+    await assertFails(setDoc(ref('f'), party({ balancePaise: -1000000000001 })));
+    await assertFails(setDoc(ref('g'), party({ phone: '9800000000' })));
+    await assertFails(setDoc(ref('h'), party({ name: 5 })));
+  });
+
+  test('lines: only the owner adds them, with a kind, a whole positive amount in range, a date and the server time; never edited', async () => {
+    await seed((db) => setDoc(doc(db, 'users', 'u1', 'khata', 'p1'), { name: 'A', balancePaise: 0 }));
+    const e = (id) => doc(as('u1'), 'users', 'u1', 'khata', 'p1', 'entries', id);
+    await assertSucceeds(setDoc(e('e1'), entry()));
+    await assertSucceeds(setDoc(e('e2'), entry({ kind: 'received' })));
+    await assertFails(setDoc(e('e3'), entry({ kind: 'gift' })));
+    await assertFails(setDoc(e('e4'), entry({ amountPaise: 0 })));
+    await assertFails(setDoc(e('e5'), entry({ amountPaise: -5 })));
+    await assertFails(setDoc(e('e6'), entry({ amountPaise: 100000000001 })));
+    await assertFails(setDoc(e('e7'), entry({ amountPaise: 10.5 })));
+    await assertFails(setDoc(e('e8'), entry({ note: 'x'.repeat(61) })));
+    await assertFails(setDoc(e('e9'), entry({ date: 'today' })));
+    await assertFails(setDoc(e('e10'), entry({ createdAt: Timestamp.fromMillis(1000) })));
+    await assertFails(setDoc(e('e11'), entry({ extra: 1 })));
+    await assertFails(updateDoc(e('e1'), { amountPaise: 1 }));
+    await assertFails(setDoc(doc(as('u2'), 'users', 'u1', 'khata', 'p1', 'entries', 'x'), entry()));
+    await assertFails(getDoc(doc(asAdmin(), 'users', 'u1', 'khata', 'p1', 'entries', 'e1')));
+    await assertSucceeds(getDoc(e('e1')));
+    await assertSucceeds(deleteDoc(e('e2')));
+  });
+});
+
 describe('G20 route rates are written by the server only', () => {
   test('a signed-in person reads one route by its id; nobody lists them or writes them', async () => {
     await seed((db) => setDoc(doc(db, 'route_rates', 'mumbai_jaipur_14ft'), { n: 5, recent: [1, 2, 3, 4, 5] }));

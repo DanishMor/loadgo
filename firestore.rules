@@ -423,6 +423,31 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // users/{uid}/khata/{partyId} (G23): the owner's private notebook of who owes whom. Records only. The balance is kept
+    // together with the lines by the app in one batch; only the owner sees any of it (admins do not).
+    match /users/{userId}/khata/{partyId} {
+      allow read, delete: if isUser(userId);
+      allow create, update: if isUser(userId)
+          && request.resource.data.keys().hasOnly(['name', 'note', 'balancePaise', 'createdAt', 'updatedAt'])
+          && request.resource.data.name is string && request.resource.data.name.size() >= 1 && request.resource.data.name.size() <= 40
+          && request.resource.data.get('note', '') is string && request.resource.data.get('note', '').size() <= 60
+          && request.resource.data.balancePaise is int
+          && request.resource.data.balancePaise <= 1000000000000 && request.resource.data.balancePaise >= -1000000000000;
+
+      match /entries/{entryId} {
+        allow read, delete: if isUser(userId);
+        allow create: if isUser(userId)
+            && request.resource.data.keys().hasOnly(['kind', 'amountPaise', 'note', 'date', 'createdAt'])
+            && request.resource.data.kind in ['owed', 'received']
+            && request.resource.data.amountPaise is int
+            && request.resource.data.amountPaise >= 1 && request.resource.data.amountPaise <= 100000000000
+            && request.resource.data.get('note', '') is string && request.resource.data.get('note', '').size() <= 60
+            && request.resource.data.date is timestamp
+            && request.resource.data.createdAt == request.time;
+        allow update: if false;
+      }
+    }
+
     // users/{uid}/admin_notes: internal notes about a user. Admins only, append-only.
     match /users/{userId}/admin_notes/{noteId} {
       allow read: if isAdmin();

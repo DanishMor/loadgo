@@ -28,6 +28,8 @@ Goal: put LoadGo in front of a small, known group (one or two corridors, tens of
 | Push notifications | OFF | Features > Push notifications |
 | Admin announcements by push | OFF | Features > Admin announcements by push |
 | Photo uploads | OFF | Features > Photo uploads |
+| Business card to share | OFF | Features > Business card to share |
+| Party khata | OFF | Features > Party khata |
 | Safety check-in on a long stop | OFF | Features > Safety check-in on a long stop |
 | Hold online payment until delivery | OFF | Features > Hold online payment until delivery |
 | Usual price on a route | OFF | Features > Usual price on a route |

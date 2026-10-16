@@ -58,3 +58,17 @@ The plan above was written from the competitor matrix. Before building, each row
 | 19, 20 | FASTag / fuel card, trip insurance | none | **Doc only** (G25): partner deals |
 
 So Phase 4 builds six features: G19 trip trust card, G20 route rate range, G21 payment hold, G22 safety check-in, G23 party khata, G24 business card, and G25 writes the partner offers note. Each has its flag (OFF), its rules test and an end-to-end test.
+
+## Status after Phase 4 (2026-10-17)
+
+| Task | Feature | Flag | Where | Tests |
+|---|---|---|---|---|
+| G19 | Driver trust card for customers | `tripTrustCard` | Customer offers and trip screen | `public_trust_card_test` |
+| G20 | Usual price of a route | `rateRange` | Customer > Post a load > estimate | `route_rates_test`, emulator `rates` |
+| G21 | Online payment held until delivery | `payHold` | Payment card (both sides) | emulator `razorpayHold`, `pay_hold_card_test` |
+| G22 | Safety check-in on a long stop | `safetyCheckin` | Driver trip screen | `safety_checkin_test`, rules (SOS reason) |
+| G23 | Party khata | `khata` | Profile > Party khata | `khata_test`, rules (private book) |
+| G24 | Business card | `bizCard` | Driver and transporter Profile | `business_card_test` |
+| G25 | Partner offers note (FASTag, insurance, caller ID, part load) | none | docs/PARTNER_OFFERS.md | doc only |
+
+G26 to G37 were kept free in the plan for more features; the audit (G18) found nothing else worth building before the pilot shows real demand. They are not used.

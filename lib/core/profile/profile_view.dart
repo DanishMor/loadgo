@@ -3,7 +3,11 @@ import 'package:flutter/material.dart';
 
 import '../models/rating.dart';
 import '../services/auth_helpers.dart';
+import '../features/features.dart';
+import '../khata/khata_screens.dart';
+import '../share/business_card.dart';
 import '../navigation/app_routes.dart';
+import '../widgets/feature_gate.dart';
 import '../services/backend.dart';
 import '../services/rating_service.dart';
 import '../services/user_service.dart';
@@ -210,6 +214,29 @@ class _ProfileViewState extends State<ProfileView> {
                       title: Text(tr(context, 'helpSupport')),
                       trailing: const Icon(Icons.chevron_right_rounded),
                       onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const SupportHomeScreen())),
+                    ),
+                    if (widget.isDriver || widget.role == 'fleet')
+                      FeatureGate(
+                        featureKey: FeatureKey.bizCard,
+                        child: ListTile(
+                          key: const ValueKey('profileBizCard'),
+                          contentPadding: EdgeInsets.zero,
+                          leading: Icon(Icons.badge_outlined, color: AppColors.muted),
+                          title: Text(tr(context, 'bizTitle')),
+                          trailing: const Icon(Icons.chevron_right_rounded),
+                          onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const BusinessCardScreen())),
+                        ),
+                      ),
+                    FeatureGate(
+                      featureKey: FeatureKey.khata,
+                      child: ListTile(
+                        key: const ValueKey('profileKhata'),
+                        contentPadding: EdgeInsets.zero,
+                        leading: Icon(Icons.menu_book_outlined, color: AppColors.muted),
+                        title: Text(tr(context, 'khataTitle')),
+                        trailing: const Icon(Icons.chevron_right_rounded),
+                        onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const KhataScreen())),
+                      ),
                     ),
                     ListTile(
                       key: const ValueKey('profileEmergency'),

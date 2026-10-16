@@ -42,6 +42,8 @@ void main() {
       FeatureKey.pushNotifications: 'Push notifications',
       FeatureKey.adminBroadcast: 'Admin announcements by push',
       FeatureKey.photoUploads: 'Photo uploads',
+      FeatureKey.bizCard: 'Business card to share',
+      FeatureKey.khata: 'Party khata',
       FeatureKey.safetyCheckin: 'Safety check-in on a long stop',
       FeatureKey.payHold: 'Hold online payment until delivery',
       FeatureKey.rateRange: 'Usual price on a route',
