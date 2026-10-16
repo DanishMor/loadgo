@@ -115,6 +115,8 @@ Firestore reads from the functions: the chat scan reads the sender's last messag
 
 ### Other triggers and schedules (small)
 
+- `jobClearLocations` (every day 04:30): one indexed query on `locationUpdatedAt`, writes only for old finished trips; tiny. Live location itself costs about 12 to 120 writes per driving hour (docs/LIVE_LOCATION.md).
+
 | Function | When it runs | Size |
 |---|---|---|
 | `referralCheck` | a new referral | a few a day |

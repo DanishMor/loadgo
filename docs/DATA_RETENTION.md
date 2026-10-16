@@ -8,6 +8,7 @@ Written 2026-10-04 for the free stack (Auth + Firestore). It states what LoadGo 
 | Driver documents (licence, RC, PAN, Aadhaar last 4 only) | `users/{uid}.driverKyc` | While the account exists | Account deletion or the driver edits them |
 | Identity index (hash of licence / PAN / RC / GST) | `identity_index` | While the account exists | Account deletion; admins can free an entry |
 | Last location (with consent) | `users/{uid}.lastLocation` | Until the next update | Consent switched off (deleted at once) or account deletion |
+| Driver trip position (G11, with consent) | `bookings/{id}.lastKnownLocation` and `locationUpdatedAt` | 24 hours after the trip is delivered or cancelled | Server job `jobClearLocations`, or account deletion |
 | Devices | `users/{uid}/devices`, `device_links` | While the account exists | Revoke, account deletion |
 | Loads, bookings, chat, ratings, tips, payments records | `loads`, `bookings/*`, `ratings`, `tips`, `ledger` | 8 years (tax and dispute period; GST records) | Not deleted on request; personal fields are cleared when the account is deleted |
 | Audit events, risk signals, fraud cases | `audit_events`, `risk_signals`, `fraud_cases` | 3 years | Admin clean-up |

@@ -47,6 +47,7 @@ Every function first asks `flagOn(db, name)`: it reads `config/features.flags.<n
 | creditsBalance | a credit line is written | serverCredits | adds up the lines into credit_balances/{uid}; an overspend marks the load and is audited |
 | referralCheck | a referral is created | serverCredits | voids both bonus lines when the referral is not valid (own code, too late, unknown person, more than 20) |
 | tripDelivered, ratingAdded | a booking becomes delivered, a rating is created | serverTrust | counts the trip once (trip_counts) and writes public_trust/{uid} with safe fields only |
+| jobClearLocations | every day 04:30 (India time) | serverJobs | G11: removes the driver position (and its time) from a delivered or cancelled booking a day after the last update |
 | jobExpireLoads, jobHoldScheduled, jobSuspendExpiredDocs | every day 03:00, every 15 minutes, every day 03:30 (India time) | serverJobs | closes old open loads; marks the vehicle busy one lead time before a scheduled pickup; holds vehicles and drivers with expired papers (an admin override wins) |
 | adminSetRiskTier, adminDecideDriver | callable | serverAdminActions | the admin action done by the server with the staff role checked and the audit line written by the server |
 | serverStatus | callable | none (works with every switch off) | any admin asks "is the server there?"; returns the region and which server switches are on, no personal data. Admin > System health > "Check server" |

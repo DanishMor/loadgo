@@ -7,6 +7,7 @@ Things that cannot be proved on the laptop, or that need a paid service or a con
 | Area | What may happen | Fallback / note |
 |---|---|---|
 | Screenshot block (`secureScreens`) | On some phones the block may not apply to the recent-apps thumbnail. | Test on 2 phones before relying on it. |
+| Live location (`liveLocation`) | G11: the foreground service and consent check are written and tested with fakes. Not yet tried on a real phone for a long drive (battery saver on some makers may stop it); the customer then sees "Last seen N min ago". | Leave OFF until a real 1 hour test. |
 | Fingerprint lock (`appLock`) | G7: the real prompt is plugged in through `local_auth` (`USE_BIOMETRIC`, MainActivity is a FlutterFragmentActivity). Not yet tried on a real phone: check that the prompt opens, that a wrong finger keeps the screen locked and that the Settings switch refuses when no lock is set. | Leave `appLock` OFF until tested on 2 phones. |
 | Fresh SMS code (`walletStepUp`) | The code path is tested with fakes and rules; a real SMS needs billing and a real number. | Leave OFF until tested. |
 | Push | Delivery depends on the phone maker (battery saver can delay or drop it). Tap routing is tested only with fakes. | The in-app notification list always has the message. |
@@ -19,7 +20,7 @@ Things that cannot be proved on the laptop, or that need a paid service or a con
 
 | Area | State |
 |---|---|
-| Cloud Functions (40 functions) | Written and tested on the emulator; **not deployed**. Until then every server switch stays OFF and the app does the older thing on the phone. |
+| Cloud Functions (41 functions) | Written and tested on the emulator; **not deployed**. Until then every server switch stays OFF and the app does the older thing on the phone. |
 | Storage (photos) | Rules written and tested; the bucket needs the Blaze plan. |
 | Online payment | G9: Razorpay server code (order, verify, webhook, refund, ledger lines) and the "Pay online" button are ready for **test keys** (the `razorpay_flutter` window is not yet tried on a real phone; the release build may need the plugin's keep rules if a build shows a missing class). No live money. Payouts stay manual with two admins. |
 | KYC and GST check | Skeleton only; admin looks at the papers. |

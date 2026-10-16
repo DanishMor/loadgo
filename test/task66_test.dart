@@ -42,6 +42,7 @@ void main() {
       FeatureKey.pushNotifications: 'Push notifications',
       FeatureKey.adminBroadcast: 'Admin announcements by push',
       FeatureKey.photoUploads: 'Photo uploads',
+      FeatureKey.liveLocation: 'Live trip location',
       FeatureKey.maps: 'Maps and road distance',
     };
     expect(labels.keys.toSet(), Features.registry.map((s) => s.key).toSet(), reason: 'a new feature needs a row in ADDON_PILOT.md');

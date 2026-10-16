@@ -33,6 +33,7 @@ Status key: [x] done in the repo, [ ] needs you (account, keys, decisions).
 | POST_NOTIFICATIONS | booking, offer and payment alerts | Settings > Phone alerts, shown once |
 | RECORD_AUDIO | speech to text on the mic button, and the in-app voice call | shown once before the first use of each |
 | USE_BIOMETRIC | optional fingerprint or screen lock on earnings (`appLock`, OFF by default) | the phone shows its own prompt |
+| FOREGROUND_SERVICE / FOREGROUND_SERVICE_LOCATION | live trip location for the customer while the screen is off (declared use: location, only during a trip, with the driver's consent) | consent screen + ongoing notification |
 | INTERNET | sign-in, data and the in-app call | none (normal permission) |
 | MODIFY_AUDIO_SETTINGS | speaker on / off during an in-app call | none (normal permission) |
 | ACCESS_NETWORK_STATE | the call checks that the network is there | none (normal permission) |

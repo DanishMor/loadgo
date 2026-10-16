@@ -118,6 +118,13 @@ exports.jobSuspendExpiredDocs = onSchedule({ schedule: 'every day 03:30', timeZo
   await jobs.suspendExpiredDocs(db);
 });
 
+// G11: a finished trip does not keep the driver's last position for more than a day (docs/LIVE_LOCATION.md).
+exports.jobClearLocations = onSchedule({ schedule: 'every day 04:30', timeZone: IST }, async () => {
+  const db = getFirestore();
+  if (!(await flagOn(db, 'serverJobs'))) return;
+  await jobs.clearOldLocations(db);
+});
+
 // ---- F21: admin actions (switch: serverAdminActions) ----
 // A callable turns an ActionError into the matching HttpsError; any other error is logged and hidden.
 function adminCallable(action, flag = 'serverAdminActions') {

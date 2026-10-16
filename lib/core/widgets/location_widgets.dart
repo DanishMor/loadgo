@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../location/live_location_sharer.dart';
 import '../models/booking.dart';
 import '../services/booking_service.dart';
 import '../services/location_service.dart';
@@ -28,10 +29,17 @@ class _LocationSharingCardState extends State<LocationSharingCard> {
   DateTime? _lastWrite;
   bool _denied = false;
 
+  bool get _live => LiveLocationSharer.enabled;
+
   @override
   void initState() {
     super.initState();
-    _start();
+    if (_live) {
+      // G11: the shared service keeps going when this screen is closed; it stops with the trip.
+      LiveLocationSharer.start(widget.booking.id, noticeTitle: tr(context, 'liveNoticeTitle'), noticeText: tr(context, 'liveNoticeText'));
+    } else {
+      _start();
+    }
   }
 
   Future<void> _start() async {
@@ -65,6 +73,27 @@ class _LocationSharingCardState extends State<LocationSharingCard> {
 
   @override
   Widget build(BuildContext context) {
+    if (_live) {
+      return ValueListenableBuilder<SharingState>(
+        valueListenable: LiveLocationSharer.state,
+        builder: (context, s, _) {
+          final on = s == SharingState.on || s == SharingState.starting;
+          final key = switch (s) {
+            SharingState.noConsent => 'liveNoConsent',
+            SharingState.noPermission => 'liveNoPermission',
+            SharingState.off => 'locationSharingOff',
+            _ => 'locationSharingOn',
+          };
+          return AppCard(
+            child: Row(children: [
+              Icon(on ? Icons.my_location_rounded : Icons.location_off_rounded, color: on ? AppColors.success : Colors.redAccent),
+              const SizedBox(width: 12),
+              Expanded(child: Text(tr(context, key), key: const ValueKey('liveShareState'), style: DsStyle.w700.copyWith(color: AppColors.body))),
+            ]),
+          );
+        },
+      );
+    }
     return AppCard(
       child: Row(
         children: [
@@ -81,6 +110,14 @@ class _LocationSharingCardState extends State<LocationSharingCard> {
       ),
     );
   }
+}
+
+/// "Last seen 5 min ago" for the customer when no map is shown (G11).
+String lastSeenText(BuildContext context, DateTime at, {DateTime? now}) {
+  final m = (now ?? DateTime.now()).difference(at).inMinutes;
+  if (m < 1) return tr(context, 'lastSeenNow');
+  if (m < 120) return trf(context, 'lastSeenMinutes', {'n': m});
+  return trf(context, 'lastSeenHours', {'n': m ~/ 60});
 }
 
 /// Customer side: the driver's last known position as text (until a map key
@@ -108,11 +145,15 @@ class DriverLocationCard extends StatelessWidget {
                 if (loc == null)
                   Text(tr(context, 'locationNotShared'), style: DsStyle.inherit.copyWith(color: AppColors.muted))
                 else ...[
-                  Text('${loc.latitude.toStringAsFixed(5)}, ${loc.longitude.toStringAsFixed(5)}',
-                      style: DsStyle.w700.copyWith(color: AppColors.body)),
+                  if (!LiveLocationSharer.enabled)
+                      Text('${loc.latitude.toStringAsFixed(5)}, ${loc.longitude.toStringAsFixed(5)}',
+                        style: DsStyle.w700.copyWith(color: AppColors.body)),
                   if (at != null)
-                    Text('${tr(context, 'updatedAt')}: ${formatDateTime(at)}',
-                        style: DsStyle.t12w400.copyWith(color: AppColors.muted)),
+                    Text(
+                      LiveLocationSharer.enabled ? lastSeenText(context, at) : '${tr(context, 'updatedAt')}: ${formatDateTime(at)}',
+                      key: const ValueKey('lastSeen'),
+                      style: DsStyle.t12w400.copyWith(color: AppColors.muted),
+                    ),
                 ],
               ],
             ),

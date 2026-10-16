@@ -14,7 +14,7 @@
 //                       docSuspended and lifted on renewal. An admin override
 //                       (docOverrideUntil in the future) always wins.
 
-const { Timestamp, FieldPath } = require('firebase-admin/firestore');
+const { Timestamp, FieldPath, FieldValue } = require('firebase-admin/firestore');
 const { safeId } = require('./common');
 
 const DAY = 24 * 3600 * 1000;
@@ -145,4 +145,19 @@ async function suspendExpiredDocs(db, nowMs = Date.now()) {
   return result;
 }
 
-module.exports = { expireOpenLoads, holdScheduled, suspendExpiredDocs, startOfDayMs, expiredBlockingDocs, overrideActive };
+// G11: the driver's shared position is for the live trip only. Once the trip is delivered or cancelled and the
+// position is older than keepHours (default 24), the two fields are removed from the booking. Idempotent.
+const TERMINAL = ['delivered', 'cancelled'];
+async function clearOldLocations(db, nowMs = Date.now(), { keepHours = 24 } = {}) {
+  const cutoff = Timestamp.fromMillis(nowMs - keepHours * 3600 * 1000);
+  let cleared = 0;
+  await eachPage(db.collection('bookings').where('locationUpdatedAt', '<', cutoff), 'locationUpdatedAt', async (doc) => {
+    const b = doc.data();
+    if (!TERMINAL.includes(b.status)) return;
+    await doc.ref.update({ lastKnownLocation: FieldValue.delete(), locationUpdatedAt: FieldValue.delete() });
+    cleared++;
+  });
+  return { cleared };
+}
+
+module.exports = { expireOpenLoads, holdScheduled, suspendExpiredDocs, clearOldLocations, startOfDayMs, expiredBlockingDocs, overrideActive };

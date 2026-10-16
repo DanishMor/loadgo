@@ -23,12 +23,24 @@ class LocationService {
     }
   }
 
-  /// Position updates, at most one every ~50 m of movement.
-  static Stream<Coordinates> positions() {
+  /// Position updates, at most one every ~50 m of movement. With [foregroundTitle] on Android the
+  /// updates run as a foreground service with a visible notification (G11), so they keep coming
+  /// with the screen off; the notification is the person's sign that sharing is on.
+  static Stream<Coordinates> positions({String? foregroundTitle, String foregroundText = ''}) {
     if (_fake != null) return _fake!();
-    return Geolocator.getPositionStream(
-      locationSettings: const LocationSettings(accuracy: LocationAccuracy.high, distanceFilter: 50),
-    ).map((p) => (lat: p.latitude, lng: p.longitude));
+    final LocationSettings settings = foregroundTitle != null && defaultTargetPlatform == TargetPlatform.android
+        ? AndroidSettings(
+            accuracy: LocationAccuracy.high,
+            distanceFilter: 50,
+            foregroundNotificationConfig: ForegroundNotificationConfig(
+              notificationTitle: foregroundTitle,
+              notificationText: foregroundText,
+              notificationChannelName: 'Trip location',
+              setOngoing: true,
+            ),
+          )
+        : const LocationSettings(accuracy: LocationAccuracy.high, distanceFilter: 50);
+    return Geolocator.getPositionStream(locationSettings: settings).map((p) => (lat: p.latitude, lng: p.longitude));
   }
 
   /// One position fix, or null when location is off, denied or unavailable.

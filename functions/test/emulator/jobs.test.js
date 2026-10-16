@@ -130,3 +130,22 @@ test('drivers with an expired licence are marked and lifted again when they rene
   const again = await suspendExpiredDocs(db, NOW);
   assert.deepEqual(again, { vehiclesHeld: 0, vehiclesLifted: 0, driversSuspended: 0, driversLifted: 0 });
 });
+
+test('G11: a finished trip loses its shared position after a day; a live trip and a fresh one keep it', async () => {
+  const { clearOldLocations } = require('../../src/jobs');
+  const db = getDb();
+  const loc = { lastKnownLocation: new (require('firebase-admin/firestore').GeoPoint)(28.6, 77.2) };
+  await db.collection('bookings').doc('done').set({ status: 'delivered', ...loc, locationUpdatedAt: ts(NOW - 25 * 3600 * 1000), driverId: 'd1' });
+  await db.collection('bookings').doc('cancelled').set({ status: 'cancelled', ...loc, locationUpdatedAt: ts(NOW - 48 * 3600 * 1000) });
+  await db.collection('bookings').doc('fresh').set({ status: 'delivered', ...loc, locationUpdatedAt: ts(NOW - 3600 * 1000) });
+  await db.collection('bookings').doc('live').set({ status: 'in_transit', ...loc, locationUpdatedAt: ts(NOW - 30 * 3600 * 1000) });
+  assert.deepEqual(await clearOldLocations(db, NOW), { cleared: 2 });
+  const d = async (id) => (await db.collection('bookings').doc(id).get()).data();
+  assert.equal((await d('done')).lastKnownLocation, undefined);
+  assert.equal((await d('done')).locationUpdatedAt, undefined);
+  assert.equal((await d('done')).driverId, 'd1', 'nothing else is touched');
+  assert.equal((await d('cancelled')).lastKnownLocation, undefined);
+  assert.ok((await d('fresh')).lastKnownLocation);
+  assert.ok((await d('live')).lastKnownLocation);
+  assert.deepEqual(await clearOldLocations(db, NOW), { cleared: 0 }, 'a second run does nothing');
+});

@@ -2,8 +2,8 @@
 
 Plan: docs/MASTER_PLAN_PART3.md. Read it, then continue from NEXT.
 
-LAST_DONE: G10
-NEXT: G11 (live location; LocationSharingCard exists, add consent, foreground service, throttle, retention)
+LAST_DONE: G11
+NEXT: G12 (SMS MSG91 adapter server side)
 
 Unfinished: none.
 

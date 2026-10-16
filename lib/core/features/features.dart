@@ -51,6 +51,7 @@ class FeatureKey {
   static const pushNotifications = 'pushNotifications';
   static const adminBroadcast = 'adminBroadcast';
   static const photoUploads = 'photoUploads';
+  static const liveLocation = 'liveLocation';
   static const maps = 'maps';
 }
 
@@ -95,6 +96,7 @@ class Features {
     FeatureSpec(FeatureKey.pushNotifications, pilotOn: false, normalOn: false),
     FeatureSpec(FeatureKey.adminBroadcast, pilotOn: false, normalOn: false),
     FeatureSpec(FeatureKey.photoUploads, pilotOn: false, normalOn: false),
+    FeatureSpec(FeatureKey.liveLocation, pilotOn: false, normalOn: false),
     FeatureSpec(FeatureKey.maps, pilotOn: false, normalOn: false),
   ];
 
