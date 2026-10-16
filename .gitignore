@@ -62,3 +62,6 @@ android/.gradle/
 # Cloud Functions and rules-test dependencies
 functions/node_modules/
 firestore_rules_test/node_modules/
+
+functions/.secret.local
+*-debug.log

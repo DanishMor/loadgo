@@ -104,3 +104,22 @@ Rollback: turn the switch OFF (takes effect within 30 seconds). To remove a func
 ## Costs
 
 Each switch lists its trigger in `docs/COST_WATCH.md`. A budget alert must exist before any switch is turned on.
+
+## Integration tests through the emulators (F44)
+
+`functions/integration/` runs the functions for real inside the local Auth, Firestore, Functions, Storage and Pub/Sub emulators (`firebase.integration.json`, project id `loadgo-integration`). It proves the wiring that the faster tests cannot: a real trigger fires when a document is written, a callable checks a real sign-in token, account deletion removes a real file and a real sign-in.
+
+```powershell
+$env:JAVA_HOME = 'C:\Program Files\Android\Android Studio\jbr'
+$env:Path = "$env:JAVA_HOME\bin;C:\Program Files\Git\bin;" + $env:Path
+cd functions
+npm run test:integration
+```
+
+- It takes about 2 to 3 minutes (the functions cache the switches for 30 seconds, so the test waits once).
+- The first run downloads the Pub/Sub emulator (a Google developer tool) once.
+- `integration/run.sh` writes a `.secret.local` with two fake Razorpay values for the emulator only and deletes it at the end. Nothing reaches a real project.
+- Covered: switches OFF do nothing; `serverStatus`; limits; chat scan; credits; trust; wallet and the impossible payout; admin risk tier; broadcast guard; payment guards; account deletion with Storage; push triggers with nobody to send to.
+- Not covered (no emulator exists): the real FCM send, the Razorpay call, the schedules. Those stay in `docs/KNOWN_ISSUES.md`.
+
+If a run stops with "Port 8087 is not open ... could not start Pub/Sub Emulator", an emulator from an earlier run is still alive: end the leftover `java` process of that emulator (Task Manager) and run again.

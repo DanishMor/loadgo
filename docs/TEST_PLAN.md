@@ -93,3 +93,22 @@ What the ticks above already have as test code, so a release check only needs th
 | Rules | every collection, every role | `firestore_rules_test/rules.test.mjs`, `firestore_rules_test/matrix.test.mjs`, `test/rules_audit_test.dart` |
 | Pilot operations (MASTER-6) | invite codes, waitlist, control room, manual dispatch, reports, cohorts, surveys, payment aging, appeals, LR register, mic test, staff matrix, offline matrix, error taxonomy, redaction, adapters | `test/e2e/pilot_e2e_test.dart`, `test/layout_m6_screens_test.dart`, `test/staff_matrix_test.dart`, `test/offline_matrix_test.dart`, `test/error_taxonomy_test.dart`, `test/redaction_test.dart`, `test/adapter_contract_test.dart`, `firestore_rules_test/matrix.test.mjs` |
 | Quality | layout of all screens, 12 languages, right-to-left, accessibility, states, listeners, indexes, old documents | `test/layout_all_screens_test.dart`, `test/language_qa_test.dart`, `test/translations_test.dart`, `test/rtl_test.dart`, `test/accessibility_test.dart`, `test/state_audit_test.dart`, `test/listener_audit_test.dart`, `test/index_audit_test.dart`, `test/model_fuzz_test.dart` |
+
+## Part 2 (F1 to F46): what is tested where
+
+| Area | What is checked | Tests |
+|---|---|---|
+| Login and trip code limits | resend wait, 5 sends an hour, 5 wrong codes lock; trip code lock enforced by rules | `test/otp_limits_test.dart`, `firestore_rules_test/rules.test.mjs` |
+| Screen privacy | screenshot block switch, redaction of logs | `test/secure_screen_test.dart`, `test/redaction_f5_test.dart` |
+| Money and earnings | integer paise, wallet book, hubs, step-up, limits, finance, maker-checker | `test/money_core_test.dart`, `test/wallet_*_test.dart`, `test/hub_*_test.dart`, `test/e2e/wallet_e2e_test.dart` |
+| Cloud Functions | plain logic, emulator logic, real wiring through all emulators | `functions/test/unit`, `functions/test/emulator`, `functions/integration` |
+| Server actions and fallbacks | switch off, no server, real refusal | `test/server_actions_test.dart`, `test/functions_flags_test.dart` |
+| Push | target mapping, routing, per-device token, text in 12 languages | `test/push_target_test.dart`, `test/push_client_test.dart`, `functions/test/unit/push.test.js` |
+| Photos | limits, retries, queue, no public links, widgets, admin viewer, POD, PDF | `test/photo_service_test.dart`, `test/photo_widgets_test.dart`, `test/pod_photos_test.dart`, `firestore_rules_test/storage.test.mjs` |
+| Admin web build | shell for admin, non-admin, waiting | `test/admin_web_shell_test.dart` |
+| Payment partner | signature, amount from booking, refunds capped, no key in repo | `test/razorpay_gateway_test.dart`, `functions/test/unit/razorpay.test.js`, `functions/test/emulator/razorpay.test.js` |
+| Partner skeletons | fall back calmly | `test/partner_adapters_test.dart` |
+| Docs that must match code | go-live, release, known issues, cost, translation sheet, logo brief | `test/blaze_docs_test.dart`, `test/release_docs_test.dart`, `test/known_issues_test.dart`, `test/cost_security_docs_test.dart`, `test/translation_review_test.dart`, `test/logo_brief_test.dart` |
+| Quality of new screens | tap size, spoken labels, contrast, 360x640 at 2.0x, dark, right-to-left | `test/new_screens_a11y_test.dart`, `test/photo_widgets_test.dart` |
+
+Run order and memory rule: tests run in batches of about 30 files with `--concurrency=1`, never the whole suite at once (`scratchpad/run_batches.ps1` was used; results are in `docs/PROGRESS.md`).

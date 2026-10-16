@@ -130,3 +130,27 @@ Do this on a test project, with test accounts, never on real users. Write each r
 | F4 no screenshots on sensitive screens | done, flag `secureScreens` default OFF, release Android only |
 | F5 logs and crash reports | Redactor extended (UPI links, IFSC, tokens, bare 6-digit codes); crash reports carry cleaned text only; steps in `docs/RELEASE_BUILD_SECURITY.md` |
 | F6 secrets audit | re-run: no private keys, no tokens, no keystores in the tree or history; the only key-like values are the public Firebase client keys in `lib/firebase_options.dart` |
+
+### Part 2: Cloud Functions and Storage rules review (F45) - 2026-10-16
+
+What was read: `functions/index.js`, every module in `functions/src/`, `storage.rules`, and the rules for `uploads`, `proofs`, `payment_orders` (no client access).
+
+**Passed**
+- Every callable checks the sign-in first; admin callables check `admins/{uid}` and the staff role inside the function (not only in the app). `serverStatus` returns only switch names. Tests: `test/emulator/adminActions.test.js`, `integration/functions.test.js`.
+- Every function is behind a switch that is exactly `true`; if the switch document cannot be read, everything is OFF. Cache is 30 seconds.
+- Input is checked by `safeId` and whitelists; money is whole paise with a cap; the payment amount comes from the booking, not from the phone.
+- The Razorpay signature is HMAC-SHA256 compared in constant time; keys are Firebase secrets, none in the repo (a test scans lib, functions and docs).
+- Triggers are safe to run twice (retry): messages already removed are skipped, ledger and counts are recomputed, not incremented.
+- Push text has no number, name or chat text; dead tokens are removed.
+- Storage: papers only for the owner and admins, trip photos only for the two parties and admins, trip evidence cannot be overwritten or deleted, only images under 5 MB, a closed default for every other path. No rule gives public read.
+- No function takes a URL or file path from the caller and fetches it (no server-side request forgery); the only outgoing call is to the fixed Razorpay address.
+- `maxInstances` is 10 for all functions (limits a runaway bill).
+
+**Accepted risks (each has a note for later)**
+- **Admin looking at papers is logged by the admin's phone** (`AdminUploads` writes the audit line first). A modified admin app could skip the line. Better: a callable that returns the file and writes the line. Later, with App Check.
+- **No App Check**: a modified app can call the callables. They check the caller, so the damage is limited to what that person may do. Turn on App Check (monitor, then enforce).
+- **No per-caller rate limit on callables**: the cost cap is `maxInstances` and the budget alert.
+- **Chat scan and limits run after the write**: the message exists for a second or two before it is removed. The rules and the phone still block first.
+- **Storage rule reads the booking in Firestore** (`firestore.get`): each photo read or write costs one extra read. Counted in `COST_WATCH.md`.
+
+**Re-run**: rules tests (`firestore_rules_test`, `npm test`), `functions` unit and emulator tests, `integration/run.sh`, and `docs/SECRETS_AUDIT.md`.

@@ -1,0 +1,17 @@
+{
+  "functions": [{ "source": "functions", "codebase": "default" }],
+  "firestore": { "rules": "firestore.rules", "indexes": "firestore.indexes.json" },
+  "storage": { "rules": "storage.rules" },
+  "emulators": {
+    "auth": { "port": 9098, "host": "127.0.0.1" },
+    "functions": { "port": 5002, "host": "127.0.0.1" },
+    "firestore": { "port": 8086, "host": "127.0.0.1" },
+    "storage": { "port": 9198, "host": "127.0.0.1" },
+    "pubsub": { "port": 8087, "host": "127.0.0.1" },
+    "eventarc": { "port": 9299, "host": "127.0.0.1" },
+    "hub": { "port": 4410, "host": "127.0.0.1" },
+    "logging": { "port": 4510, "host": "127.0.0.1" },
+    "ui": { "enabled": false },
+    "singleProjectMode": true
+  }
+}
