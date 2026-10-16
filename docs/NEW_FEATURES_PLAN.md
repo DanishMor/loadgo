@@ -30,3 +30,31 @@ Common to every feature: a flag in `config/features` (default OFF, shown in Admi
 Build order: 1, 3, 2, 4, 8, 5, 6, 7, 9, 10, 11, 12, 14, 16, 17, 18, 13 (needs G9), then 15, 19, 20 only as docs or skeletons.
 
 Scope note: the plan allows G18 to G37 (20 slots). Features 15, 19 and 20 are documented skeletons because they depend on a partner or the OS.
+
+## Audit before building (G18, 2026-10-17)
+
+The plan above was written from the competitor matrix. Before building, each row was checked against the code. Most of it **already exists**; building it again would be a duplicate. Result:
+
+| # | Feature | In the app today | Decision |
+|---|---|---|---|
+| 1 | Trusted contacts | Emergency contacts (3) + "Share trip with my contacts" (`ShareTripButton`, 24-hour link `tripShare`) | **Exists**, no new build |
+| 2 | Safety check-in | Night prompt and rest prompt (`TripSafetyChecks`), halt detection (`trip_watcher`); **no** "Are you OK?" reply with an alert to support | **Build** (G22) |
+| 3 | Driver trust card | `TrustBadgesCard` shows the driver their own numbers; the server writes `public_trust/{uid}` (F19) but **no screen shows it to customers** | **Build** (G19) |
+| 4 | Wait-time charge | `DetentionCard` records waiting minutes and the charge it would cost; it is not added to the bill (needs the customer's consent and invoice rules) | **Exists as record**; adding to the bill deferred |
+| 5 | Preferred routes | `FavouriteRoute` and `PlannedRoute` in the load ranker | **Exists** |
+| 6 | Load match score | `LoadMatch.score` in `LoadRanker` | **Exists** |
+| 7 | Freight rate range | `BidAssistant` suggests a range from the fare estimate; **nothing from real finished trips** | **Build** (G20) |
+| 8 | Document vault | Vehicle papers with expiry + reminders (`DocExpiryService`, home banner, notification list) | **Exists** |
+| 9 | Expense log, mileage | `VehicleExpensesScreen`, `ExpenseService`, mileage in `TripCost` | **Exists** |
+| 10 | Service reminders | Service and tyre dates in the home banner and notification list | **Exists** |
+| 11 | Party khata | Wallet ledger is the driver's earnings only; **no** per-party "who owes whom" | **Build** (G23) |
+| 12 | Advance and balance split | PAY3: advance recorded and confirmed, balance shown | **Exists** |
+| 13 | Payment hold until delivery | G9 credits the driver at payment time | **Build** (G21, server, flag `payHold`) |
+| 14 | Shareable business card | none | **Build** (G24) |
+| 15 | Caller ID card | none | **Skip** (needs OS call hook; in-app call screens already show names) |
+| 16 | Multi-stop | `extraPickups`, `extraDrops`, `StopProgressCard` | **Exists** |
+| 17 | Part load | Empty-trucks board only | **Later**: needs matching of weight shares; written in docs/PARTNER_OFFERS.md |
+| 18 | KYC badge | `VerificationBadges`, admin chips (G13) | **Exists** |
+| 19, 20 | FASTag / fuel card, trip insurance | none | **Doc only** (G25): partner deals |
+
+So Phase 4 builds six features: G19 trip trust card, G20 route rate range, G21 payment hold, G22 safety check-in, G23 party khata, G24 business card, and G25 writes the partner offers note. Each has its flag (OFF), its rules test and an end-to-end test.

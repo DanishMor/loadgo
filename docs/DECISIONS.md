@@ -36,3 +36,4 @@ One line per assumption taken without asking.
 - G8: no analytics without the person's analytics consent (it was ignored before); funnel steps are not used up while consent is off (2026-10-16).
 - G12: login OTP via MSG91 custom token is documented only (risks in OTP_SECURITY.md), not built; recommended to keep Firebase (2026-10-16).
 - G14: invoice shows reverse charge 'No' and IGST when seller and place of supply differ; both need CA confirmation (docs/GST_EWAY.md) (2026-10-16).
+- G18: audit showed most planned features already exist; Phase 4 builds only the real gaps (trust card, route rates, payment hold, safety check-in, khata, business card) (2026-10-17).

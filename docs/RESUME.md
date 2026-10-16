@@ -2,8 +2,8 @@
 
 Plan: docs/MASTER_PLAN_PART3.md. Read it, then continue from NEXT.
 
-LAST_DONE: G17
-NEXT: G18 (new features from docs/NEW_FEATURES_PLAN.md, free ones first)
+LAST_DONE: G18
+NEXT: G19 trip trust card (show public_trust to customers)
 
 Unfinished: none.
 
