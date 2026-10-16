@@ -63,3 +63,23 @@ test('G9: the webhook signature is HMAC-SHA256 hex of the raw body with the webh
   assert.equal(verifyWebhookSignature(undefined, sig, 'wh_secret'), false);
   assert.equal(verifyWebhookSignature(body, sig.slice(2), 'wh_secret'), false);
 });
+
+test('G38: the commission share of a refund is exact for the biggest orders and adds up across partial refunds', () => {
+  const { commissionShare } = require('../../src/razorpay');
+  // 10 crore rupees order (1e10 paise), 5% commission, refund of nearly all of it: far above 2^53 when multiplied
+  assert.equal(commissionShare(500000000, 9999999999, 10000000000), 500000000, 'half a paisa rounds up');
+  assert.equal(commissionShare(500000000, 9999999990, 10000000000), 500000000, 'exactly half a paisa rounds up');
+  assert.equal(commissionShare(500000000, 9999999980, 10000000000), 499999999, 'a hair under half rounds down');
+  assert.equal(commissionShare(500000000, 10000000000, 10000000000), 500000000, 'a full refund gives back the whole commission');
+  assert.equal(commissionShare(500000000, 0, 10000000000), 0);
+  assert.equal(commissionShare(50000, 400000, 1000000), 20000);
+  // many small refunds: the pieces (difference of running totals) add up to the share of the total
+  let prev = 0;
+  let sum = 0;
+  for (const total of [333, 700, 1001, 5000, 9999, 12345, 20000]) {
+    sum += commissionShare(1000, total, 20000) - commissionShare(1000, prev, 20000);
+    prev = total;
+  }
+  assert.equal(sum, commissionShare(1000, 20000, 20000));
+  assert.equal(commissionShare(1000, 5, 0), 0, 'no order amount, no division by zero');
+});

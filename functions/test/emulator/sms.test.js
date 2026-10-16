@@ -15,6 +15,9 @@ test.beforeEach(async () => {
   await db.collection('users').doc('u2').set({ phone: '+919822222222', fcmTokens: ['t'.repeat(40)] });
   await db.collection('users').doc('u3').set({ phone: '+919833333333', notificationPrefs: { bookingUpdates: false } });
   await db.collection('users').doc('u4').set({ role: 'customer' });
+  await db.collection('bookings').doc('abc123booking').set({ customerId: 'u1', driverId: 'd1' });
+  await db.collection('bookings').doc('b1').set({ customerId: 'u1', driverId: 'd1' });
+  await db.collection('bookings').doc('b2').set({ customerId: 'someone_else', driverId: 'u1' });
 });
 
 const recorder = (calls = []) => async (req) => {
@@ -85,6 +88,17 @@ test('trip SMS: only for someone with a phone, no push token and booking updates
   assert.equal((await onNotificationSms(getDb(), send, { type: 'load_accepted' })).reason, 'skipped');
   assert.equal((await onNotificationSms(getDb(), send, null)).reason, 'skipped');
   assert.equal(calls.length, 1);
+});
+
+test('G38: a notification that someone addressed to a person about a booking that is not theirs sends nothing', async () => {
+  const calls = [];
+  const send = recorder(calls);
+  // u1 is the DRIVER of b2, not its customer: a made-up notification to u1 must not cost an SMS
+  assert.equal((await onNotificationSms(getDb(), send, { userId: 'u1', type: 'load_accepted', relatedId: 'b2' })).reason, 'not_their_booking');
+  assert.equal((await onNotificationSms(getDb(), send, { userId: 'u1', type: 'load_accepted', relatedId: 'nobooking' })).reason, 'not_their_booking');
+  assert.equal((await onNotificationSms(getDb(), send, { userId: 'u1', type: 'load_accepted' })).reason, 'no_booking');
+  assert.equal((await onNotificationSms(getDb(), send, { userId: 'u1', type: 'load_accepted', relatedId: '../x' })).reason, 'no_booking');
+  assert.equal(calls.length, 0);
 });
 
 test('a device token under users/{uid}/devices also counts as push', async () => {

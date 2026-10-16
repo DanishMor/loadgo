@@ -196,6 +196,17 @@ async function releaseHeld(db, bookingId, nowMs = Date.now()) {
   });
 }
 
+// G38: a booking was cancelled while an online payment was held for it. Nothing is paid out (the hold stays), and the
+// money has to go back to the customer: finance refunds the order with paymentRefund. This leaves a line in the audit
+// trail (actor "server") that names the booking and the order, so it can be found. Safe to run twice (same line id).
+async function noteCancelledHold(db, bookingId, booking, nowMs = Date.now()) {
+  if (!safeId(bookingId) || !booking || booking.status !== 'cancelled' || !booking.paymentHold || typeof booking.paymentHold.orderId !== 'string') return { action: 'skipped' };
+  const ref = db.collection('audit_events').doc(`hold_cancelled_${bookingId}`);
+  if ((await ref.get()).exists) return { action: 'again' };
+  await ref.set({ type: 'user_action', actorId: 'server', targetId: bookingId, data: { action: 'hold_cancelled', orderId: String(booking.paymentHold.orderId).slice(0, 64), paise: Number.isSafeInteger(booking.paymentHold.paise) ? booking.paymentHold.paise : 0 }, createdAt: new Date(nowMs) });
+  return { action: 'noted' };
+}
+
 // The phone tells us the payment finished; only a good signature on an order we made counts.
 async function verifyPayment(db, secret, callerUid, input, nowMs = Date.now()) {
   if (!safeId(callerUid)) throw new PaymentError('unauthenticated', 'sign in first');
@@ -216,9 +227,18 @@ async function verifyPayment(db, secret, callerUid, input, nowMs = Date.now()) {
 // A refund takes back from the driver what the customer got back, and gives back the commission share.
 // One adjustment line per refund, with an id made from the order and the running total, so a retry or a
 // webhook for the same refund writes nothing twice.
+// The commission share is worked out on the running total (so many small refunds add up to the same as one big
+// one) and in BigInt: commission x refund passes 2^53 for a big order and a plain number would round wrongly.
+function commissionShare(commission, refunded, amount) {
+  if (!(amount > 0)) return 0;
+  const num = BigInt(commission) * BigInt(refunded) * 2n + BigInt(amount);
+  return Number(num / (2n * BigInt(amount)));
+}
+
 function refundLine(o, driverId, refundPaise, totalAfter, commissionOnOrder) {
   if (!driverId) return null;
-  const commShare = Math.floor((commissionOnOrder * refundPaise * 2 + o.amountPaise) / (2 * o.amountPaise));
+  const before = totalAfter - refundPaise;
+  const commShare = commissionShare(commissionOnOrder, totalAfter, o.amountPaise) - commissionShare(commissionOnOrder, before, o.amountPaise);
   const net = -(refundPaise - commShare);
   if (net === 0) return null;
   return {
@@ -354,5 +374,5 @@ async function handleWebhook(db, { rawBody, signature, eventId, secret }, nowMs 
 
 module.exports = {
   refundPayment, PaymentError, MAX_PAISE, validPaise, expectedSignature, verifySignature, razorpayHttp, createOrder, verifyPayment,
-  settleOrder, releaseHeld, applyRefund, handleWebhook, verifyWebhookSignature, commissionPaise,
+  settleOrder, releaseHeld, noteCancelledHold, applyRefund, commissionShare, handleWebhook, verifyWebhookSignature, commissionPaise,
 };

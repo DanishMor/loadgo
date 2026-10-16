@@ -6390,6 +6390,23 @@ describe('G13 ID check answers are written by the server only', () => {
   });
 });
 
+describe('G38 money fields of a booking cannot be written from a phone', () => {
+  test('neither the customer, the driver nor an admin can set the held payment, the online amount or the payment route', async () => {
+    await seedBooking('in_transit');
+    const fields = [{ paymentHold: { orderId: 'o1', paise: 100 } }, { onlinePaidPaise: 100 }, { paymentVia: 'razorpay' }, { paidAmountPaise: 100, paymentStatus: 'driver_confirmed' }];
+    for (const who of [as('customer1'), as('driver1'), as('driver2'), asAdmin()]) {
+      for (const f of fields) await assertFails(updateDoc(doc(who, 'bookings', 'L1'), f));
+    }
+  });
+
+  test('nobody can write the server-only ledger lines of an online payment or a refund', async () => {
+    await seedBooking('delivered');
+    for (const who of [as('driver1'), as('customer1'), asAdmin()]) {
+      await assertFails(rawSetDoc(doc(who, 'ledger', 'L1_trip_earning'), { driverId: 'driver1', bookingId: 'L1', type: 'trip_earning', amountPaise: 100, createdAt: serverTimestamp() }));
+    }
+  });
+});
+
 describe('G23 party khata is private to its owner', () => {
   const party = (extra = {}) => ({ name: 'Sharma Traders', note: 'Jaipur', balancePaise: 0, createdAt: serverTimestamp(), updatedAt: serverTimestamp(), ...extra });
   const entry = (extra = {}) => ({ kind: 'owed', amountPaise: 150000, note: 'trip', date: Timestamp.now(), createdAt: serverTimestamp(), ...extra });

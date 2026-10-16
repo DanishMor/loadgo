@@ -30,6 +30,7 @@ import 'core/settings/simple_mode.dart';
 import 'core/theme/app_theme.dart';
 import 'core/widgets/app_control_gate.dart';
 import 'core/notifications/push_router.dart';
+import 'core/location/live_location_sharer.dart';
 import 'core/security/app_lock.dart';
 import 'core/services/app_check_setup.dart';
 import 'core/security/local_auth_authenticator.dart';
@@ -100,6 +101,8 @@ Future<void> main() async {
       SettingsService.loadConsents().then((_) {}, onError: (_) {});
     } else {
       AnalyticsEvents.setConsent(false).ignore();
+      // The live trip location stops with the sign-in (G11).
+      LiveLocationSharer.stop().ignore();
       // Pictures of papers kept in memory must not outlive the sign-in.
       PhotoImage.clearCache();
     }

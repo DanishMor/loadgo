@@ -79,6 +79,24 @@ test('a refund before delivery lowers what is released; a full refund releases n
   assert.equal((await booking('B3')).paymentHold, undefined);
 });
 
+test('G38: a booking cancelled while the money is held is noted once for finance, and nothing is paid out', async () => {
+  const { noteCancelledHold } = require('../../src/razorpay');
+  const oid = await pay('B1');
+  await getDb().collection('bookings').doc('B1').update({ status: 'cancelled' });
+  const b = await booking('B1');
+  assert.equal((await noteCancelledHold(getDb(), 'B1', b)).action, 'noted');
+  assert.equal((await noteCancelledHold(getDb(), 'B1', b)).action, 'again');
+  const line = (await getDb().collection('audit_events').doc('hold_cancelled_B1').get()).data();
+  assert.equal(line.targetId, 'B1');
+  assert.equal(line.data.orderId, oid);
+  assert.equal(line.data.paise, 1000000);
+  assert.equal((await ledger()).length, 0);
+  assert.equal((await noteCancelledHold(getDb(), 'B2', await booking('B2'))).action, 'skipped', 'no hold, nothing to note');
+  // finance can still refund the held order
+  const r = await refundPayment(getDb(), async () => ({ id: 'rfc' }), 'fin1', { orderId: oid, amountPaise: 1000000 }, staff);
+  assert.equal(r.refundedPaise, 1000000);
+});
+
 test('payment after delivery, or with the switch off, is not held', async () => {
   await pay('B2', 'pay_2');
   assert.equal((await ledger()).filter((l) => l.bookingId === 'B2').length, 2);

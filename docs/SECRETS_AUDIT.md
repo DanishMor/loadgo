@@ -36,3 +36,27 @@ Agar kuch mile: pehle us key ko rotate/revoke karo (Console se), phir history se
 
 ## Re-run 2026-10-15 (F6)
 Same commands as above on the current tree: 0 private-key or token hits outside docs and tests, 0 keystore-like files in history or tracked, only the public Firebase client keys in lib/firebase_options.dart look like keys. Result: clean.
+
+## Re-run 2026-10-17 (G39, after Part 3)
+
+Same checks on the tree and the history after the Razorpay, Maps, SMS, ID-check and App Check work:
+
+| Check | Result |
+|---|---|
+| Private-key blocks, `AKIA...`, `ghp_...`, `sk_live_`/`sk_test_`, `rzp_live_`/`rzp_test_`, an `authkey` assigned a long value, outside docs and tests | **none** |
+| Keystore, `key.properties`, `*.jks`, service-account JSON, `.env`, `local.properties` ever in git history or tracked | **none** (`android/local.properties` is ignored by `android/.gitignore`) |
+| Firebase client API keys | only the public ones in `google-services.json` and `firebase_options.dart`, as before |
+| Maps key | not in the repo: the manifest reads `${MAPS_API_KEY}` from `android/local.properties` or the environment (docs/MAPS_SETUP.md) |
+
+Where each new secret lives (all typed by the owner, none in chat or the repo):
+
+| Secret | Where | Used by |
+|---|---|---|
+| `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET` | Firebase Functions secrets | `paymentCreateOrder`, `paymentVerify`, `paymentRefund` (the key id is also sent to the phone with each order: it is public by design) |
+| `RAZORPAY_WEBHOOK_SECRET` | Firebase Functions secret | `paymentWebhook` |
+| `MAPS_SERVER_KEY` | Firebase Functions secret | `mapsRoute` |
+| `MSG91_AUTH_KEY` | Firebase Functions secret | `smsSend`, `smsOnNotification` |
+| Android Maps key | `android/local.properties` or `MAPS_API_KEY` in the build environment | the trip map (restricted to the package and the SHA, docs/MAPS_SETUP.md) |
+| App Check debug token | the developer's Console, never a file | debug builds only |
+
+Tests keep it that way: `test/razorpay_gateway_test.dart` (no Razorpay key pattern in `lib/` and docs), `test/app_check_setup_test.dart` (no token-like value), `test/security_doc_test.dart`, `test/signing_ignore_test.dart`.

@@ -2,8 +2,8 @@
 
 Plan: docs/MASTER_PLAN_PART3.md. Read it, then continue from NEXT.
 
-LAST_DONE: G25
-NEXT: G38 bug hunt round 1 on the new code (G26 to G37 are intentionally unused)
+LAST_DONE: G38
+NEXT: G39 security review (functions + rules), dependency audit (firebase-admin major)
 
 Unfinished: none.
 

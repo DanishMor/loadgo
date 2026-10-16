@@ -127,3 +127,34 @@ The new code was read like a reviewer: null and crash paths, `permission-denied`
 | P2-B16 | lib/main.dart | pictures of papers kept in memory after sign-out | cleared when the sign-in ends | Low (privacy) |
 
 After round 3 the angles (null and crash paths, `permission-denied` against rules, indexes, paise, leaks, overflow, dark mode, right-to-left, abuse, races) were read once more over `functions/`, `storage.rules`, `lib/core/photos`, `lib/admin`, `lib/core/adapters`: nothing new. Free bugs open: 0.
+
+## Part 3 (G38, 2026-10-17)
+
+### Round 1 (new code of G7 to G25)
+
+| ID | File | What was wrong | Fix | Severity |
+|---|---|---|---|---|
+| P3-B1 | lib/main.dart, lib/core/location/live_location_sharer.dart | the live trip location was documented to stop at sign-out but nothing stopped it: a second person signing in on the same phone could have the first person's trip position written under the old booking | `LiveLocationSharer.stop()` in the signed-out branch; `test/g38_guards_test.dart` keeps it | Medium (privacy) |
+| P3-B2 | android/app/src/main/AndroidManifest.xml | Analytics' automatic events (first open, screen views) were collected before the person agreed, although the analytics switch defaults to off: the consent only gated our own events | `firebase_analytics_collection_enabled=false` in the manifest; `setConsent(true)` turns it on | Medium (privacy, DPDP) |
+| P3-B3 | functions/src/sms.js | a made-up notification addressed to someone else could cost them an SMS (a notification is a document any signed-in person can create for another); the daily cap limited the damage but not the annoyance | the SMS goes out only when the notification names a booking of which the person is the customer; emulator test with three variants | Medium (abuse, cost) |
+| P3-B4 | functions/src/razorpay.js | the commission share of a refund was `commission x refund x 2` in a plain number: above 2^53 for a big order (about 1 crore rupees) it rounds wrongly; many small refunds also drifted by a paisa each | BigInt arithmetic, and the share is taken from the running total so pieces add up exactly | Medium (money maths) |
+| P3-B5 | functions/src/razorpay.js | a refund call that died half way left a reservation that blocked later refunds for ever | a reservation older than 5 minutes stops blocking (stale test) | Low |
+| P3-B6 | docs/COST_WATCH.md | the Maps cost note of G10 had been lost by a bad edit (the test for schedules did not catch it, it is a callable) | restored; `test/cost_guards_test.dart` now fails when a paid call has no note | Low |
+
+### Round 2 (screens: overflow, dark mode, right-to-left, accessibility)
+
+`test/part3_layout_test.dart` draws every new screen (trust card, usual-price line, check-in, held payment, khata list and party, business card) at 360 x 640 with 2.0x text in English, Hindi, Tamil, Telugu, Kannada, Urdu and Kashmiri, light and dark, then with the low-end switch on, then checks 48 dp targets, spoken labels and contrast. 108 cases pass.
+
+| ID | File | What was wrong | Fix | Severity |
+|---|---|---|---|---|
+| P3-B7 | lib/driver/safety_checkin_card.dart | the card's text took the theme colour while its card took the palette colour: in dark mode the contrast could drop (found as 1.12:1 in the test, which had not set the palette the way the app builder does) | text colours come from the same palette as the card (`AppColors.title`); the test sets `AppPalette.current` like `main.dart` | Low |
+
+### Round 3 (abuse, money, missing indexes, races)
+
+| ID | File | What was wrong | Fix | Severity |
+|---|---|---|---|---|
+| P3-B8 | functions/index.js, functions/src/razorpay.js | a booking cancelled while an online payment was held left the money with no trace for finance | the cancel is noted in the audit trail (`hold_cancelled_<booking>`, once) so finance finds it and refunds with `paymentRefund`; emulator test | Medium (money) |
+
+Checked and found fine (no change): indexes (new queries are one range on one field, or equality on one or two fields: `locationUpdatedAt <`, `paymentId ==`, `bookingId == and status ==`); a replayed webhook (event id claimed once); two refunds at once (reservation); verify then webhook (one settle step); an amount that differs from the order (flagged `mismatch`, never paid); Aadhaar (only four digits accepted, nothing looked up); KYC answer forgery (separate collection, no client write); a pay-order flood (daily quota); kill switches (every paid call has a switch, a quota, the App Check guard and a cost note, `test/cost_guards_test.dart`).
+
+Known and accepted: a person can still find out, with the partner switched on, whether a licence number exists in the government record (6 checks a day per person, 300 in total).

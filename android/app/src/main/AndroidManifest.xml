@@ -19,6 +19,8 @@
         android:fullBackupContent="false"
         android:usesCleartextTraffic="false">
         <meta-data android:name="com.google.android.geo.API_KEY" android:value="${MAPS_API_KEY}"/>
+        <!-- Analytics collects nothing until the person agrees in Settings (AnalyticsEvents.setConsent turns it on). -->
+        <meta-data android:name="firebase_analytics_collection_enabled" android:value="false"/>
         <!-- Push messages without their own channel use this one (F24). -->
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_channel_id"

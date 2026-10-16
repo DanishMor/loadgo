@@ -41,3 +41,8 @@ Things that cannot be proved on the laptop, or that need a paid service or a con
 ## If you find a new issue
 
 Write the phone model, Android version, language, screen and what you did. Add it to `docs/BUG_REPORT.md`.
+
+## Added in Part 3 (G38)
+
+- A booking cancelled while an online payment is held (`payHold`) leaves the money held; finance refunds it with the refund function (the audit trail line `hold_cancelled_<booking>` marks it). No automatic refund yet.
+- Reservations of a refund that died half way stop blocking after 5 minutes; check the gateway's list before refunding again.

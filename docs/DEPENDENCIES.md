@@ -32,3 +32,16 @@ Mahine mein ek baar `flutter pub outdated`, patch/minor lagao, analyze + poora t
 | Package | Version | Kyun | Dhyan |
 |---|---|---|---|
 | cloud_functions | 6.x (`flutter pub add`) | admin actions, payout decisions aur announcement push ko server function se chalane ke liye (F21, F23, F27). Switch band ho ya function deploy na ho to app purane direct write par chalta hai. | Sirf Firebase ka apna package. Android par koi extra permission nahi. Asli phone par pehli baar test karna hai (jab owner functions deploy kare). `functions/` ke Node packages (firebase-admin, firebase-functions, eslint) alag hain: `functions/package.json`. |
+
+## Part 3 (2026-10-17): nayi packages
+| Package | Version | Kyun | Dhyan |
+|---|---|---|---|
+| local_auth | 3.0.2 | earnings par fingerprint / screen lock (G7, `appLock` OFF) | `USE_BIOMETRIC` permission; MainActivity ab `FlutterFragmentActivity`. Asli phone par test baaki. |
+| razorpay_flutter | 1.4.x | online payment ki checkout window (G9, `paymentGateway` OFF) | Sirf public key id use hoti hai (server order ke saath bhejta hai). Release build mein agar class missing dikhe to plugin ke keep rules lagte hain. Asli phone par test baaki. |
+| google_maps_flutter | 2.19.x | trip map (G10, `maps` OFF) | Android key `android/local.properties` se; bina key ke map khaali dikhta hai, app nahi girti. Web build mein ye plugin compile hota hai, map web par nahi dikhaya jata. |
+| firebase_app_check | 0.4.x | app ka praman (G15) | Soya hua hai jab tak build `--dart-define=APP_CHECK=on` se na bane. Play Integrity Console mein register karna hota hai (docs/APP_CHECK.md). |
+
+`geolocator` ka foreground service use hua (G11), koi naya package nahi; `FOREGROUND_SERVICE` permissions manifest mein.
+
+### Functions ka `npm audit` (2026-10-17, G39)
+`npm audit --omit=dev` ne 9 baat batayi (2 high, 7 moderate), sab `firebase-admin` 12 ke andar ke packages se (`node-forge`, `uuid`, `google-gax`, `teeny-request`, `retry-request`, `@google-cloud/*`). Fix sirf `firebase-admin` ka major upgrade hai. Dekhiye "Functions upgrade" neeche.

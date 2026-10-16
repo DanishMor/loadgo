@@ -99,6 +99,11 @@ async function onNotificationSms(db, http, n, nowMs = Date.now()) {
   if (prefs && typeof prefs === 'object' && prefs.bookingUpdates === false) return { sent: false, reason: 'switched_off' };
   if (typeof user.phone !== 'string' || !msisdn(user.phone)) return { sent: false, reason: 'no_phone' };
   if (await hasPushToken(db, n.userId, user)) return { sent: false, reason: 'has_push' };
+  // A notification is a document any signed-in person can address to somebody else. A text message costs money and can
+  // annoy, so it goes out only when the notification is about a booking of which this person is the customer.
+  if (!safeId(n.relatedId)) return { sent: false, reason: 'no_booking' };
+  const booking = (await db.collection('bookings').doc(n.relatedId).get()).data();
+  if (!booking || booking.customerId !== n.userId) return { sent: false, reason: 'not_their_booking' };
   const ref = safeId(n.relatedId) ? n.relatedId.slice(-6).toUpperCase() : '';
   try {
     await sendTemplate(db, http, { uid: n.userId, to: user.phone, template: 'tripStatus', vars: { var1: TRIP_TYPES[n.type], var2: ref } }, nowMs);

@@ -83,6 +83,11 @@ exports.referralCheck = onDocumentCreated('referrals/{uid}', async (event) => {
 exports.tripDelivered = onDocumentUpdated('bookings/{bookingId}', async (event) => {
   const before = event.data && event.data.before && event.data.before.data();
   const after = event.data && event.data.after && event.data.after.data();
+  // G38: a cancelled booking that still holds an online payment is noted for finance to refund.
+  if (after && after.status === 'cancelled' && (!before || before.status !== 'cancelled') && after.paymentHold) {
+    await razorpay.noteCancelledHold(getFirestore(), event.params.bookingId, after);
+    return;
+  }
   if (!after || after.status !== 'delivered' || (before && before.status === 'delivered')) return;
   const db = getFirestore();
   if (await flagOn(db, 'serverTrust')) await trust.onDelivered(db, event.params.bookingId, after);

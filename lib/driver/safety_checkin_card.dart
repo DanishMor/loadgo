@@ -81,7 +81,7 @@ class _SafetyCheckinCardState extends State<SafetyCheckinCard> {
           child: Row(children: [
             Icon(Icons.check_circle_outline_rounded, color: c.success),
             const SizedBox(width: 12),
-            Expanded(child: Text(tr(context, 'checkinThanks'), style: DsStyle.w700)),
+            Expanded(child: Text(tr(context, 'checkinThanks'), style: DsStyle.w700.copyWith(color: AppColors.title))),
           ]),
         ),
       );
@@ -102,7 +102,7 @@ class _SafetyCheckinCardState extends State<SafetyCheckinCard> {
                   CheckinState.escalated => 'checkinNoAnswerSent',
                   _ => 'checkinAsk',
                 }),
-                style: DsStyle.w700,
+                style: DsStyle.w700.copyWith(color: AppColors.title),
               ),
             ),
           ]),
