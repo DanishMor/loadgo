@@ -35,6 +35,7 @@ import 'firebase_options.dart';
 import 'route_hooks.dart';
 import 'admin/admin_web_shell.dart';
 import 'core/app_mode.dart';
+import 'core/photos/photo_widgets.dart' show PhotoSync;
 
 /// Lets code outside a screen (the session watcher) reach the navigator.
 final GlobalKey<NavigatorState> appNavigatorKey = GlobalKey<NavigatorState>();
@@ -69,6 +70,8 @@ Future<void> main() async {
     Haptics.load(), AppLock.load(),
   ]);
   applyLanguageName(results[0] as String?);
+  // Photos that waited for the network go out when the phone is back online.
+  PhotoSync.start();
   // Register for push whenever a user is signed in (also after app restarts).
   String? configUid;
   FirebaseAuth.instance.authStateChanges().listen((user) {
@@ -81,6 +84,7 @@ Future<void> main() async {
       PushService.askAfterSignIn(appNavigatorKey);
       AppControlService.refresh();
       DeviceService.syncClock().ignore();
+      PhotoSync.flush().ignore();
       // Another account needs its own settings; the same one reuses the cache.
       refreshAppConfig(force: user.uid != configUid);
       configUid = user.uid;

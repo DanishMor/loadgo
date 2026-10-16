@@ -41,6 +41,20 @@ class _AdminBroadcastScreenState extends State<AdminBroadcastScreen> {
       showSnack(context, tr(context, 'bcTooShort'));
       return;
     }
+    // A mass push cannot be taken back: ask once, naming the audience.
+    final who = tr(context, const {null: 'bcAll', 'driver': 'bcDrivers', 'customer': 'bcCustomers', 'fleet': 'bcFleet'}[_role]!);
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (c) => AlertDialog(
+        title: Text(tr(c, 'bcConfirmTitle')),
+        content: Text(trf(c, 'bcConfirmBody', {'who': who})),
+        actions: [
+          TextButton(key: const ValueKey('bcCancel'), onPressed: () => Navigator.pop(c, false), child: Text(tr(c, 'cancel'))),
+          FilledButton(key: const ValueKey('bcConfirm'), onPressed: () => Navigator.pop(c, true), child: Text(tr(c, 'bcSend'))),
+        ],
+      ),
+    );
+    if (ok != true || !mounted) return;
     setState(() => _busy = true);
     try {
       final n = await widget.send(title: t, body: b, role: _role);

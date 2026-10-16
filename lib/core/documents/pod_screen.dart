@@ -167,6 +167,7 @@ class _TripPhotosState extends State<_TripPhotos> {
           StreamBuilder(
             stream: _stream,
             builder: (context, snap) {
+              if (snap.hasError) return Text(tr(context, 'somethingWrong'), style: DsStyle.inherit.copyWith(color: AppColors.muted));
               final docs = [for (final d in snap.data?.docs ?? const []) if (d.data()['path'] is String) d];
               if (docs.isEmpty) return Text(tr(context, 'photosNone'), key: const ValueKey('noTripPhotos'), style: DsStyle.inherit.copyWith(color: AppColors.muted));
               return Wrap(spacing: 10, runSpacing: 10, children: [

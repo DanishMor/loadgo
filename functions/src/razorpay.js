@@ -44,7 +44,7 @@ function razorpayHttp(keyId, keySecret, fetchImpl = fetch) {
         headers: { Authorization: auth, 'Content-Type': 'application/json' },
         body: body ? JSON.stringify(body) : undefined,
       });
-    } catch (_) {
+    } catch {
       throw new PaymentError('unavailable', 'gateway not reachable');
     }
     if (res.status >= 500) throw new PaymentError('unavailable', 'gateway error');

@@ -5,7 +5,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:transport_app/core/features/features.dart';
 import 'package:transport_app/core/photos/photo_service.dart';
+import 'package:transport_app/core/services/features_service.dart';
 import 'package:transport_app/core/services/backend.dart';
 
 class FakeStorage implements StorageGateway {
@@ -32,6 +34,15 @@ class FakeStorage implements StorageGateway {
 }
 
 Uint8List bytes([int n = 100]) => Uint8List.fromList(List.filled(n, 7));
+
+class ThrowingStorage implements StorageGateway {
+  @override
+  Future<void> put(String path, Uint8List bytes, String contentType, {void Function(double)? onProgress}) async => throw Exception('x');
+  @override
+  Future<Uint8List?> get(String path, {int maxSize = 5 * 1024 * 1024}) async => throw Exception('boom');
+  @override
+  Future<void> delete(String path) async {}
+}
 
 /// F29: taking in photos and papers.
 void main() {
@@ -194,6 +205,36 @@ void main() {
       expect(await PhotoQueue.items(), isEmpty);
       SharedPreferences.setMockInitialValues({'photo_queue': '[1, {"kind": "nope"}, {"kind": "pickup", "localPath": "", "mime": "x"}]'});
       expect(await PhotoQueue.items(), isEmpty);
+    });
+  });
+
+  group('the picture for the LR', () {
+    Future<void> proof(String id, String kind, List<int> bytes) async {
+      final path = 'bookings/B1/$kind/$id.jpg';
+      storage.puts[path] = Uint8List.fromList(bytes);
+      await db.collection('bookings').doc('B1').collection('proofs').doc(id).set({'kind': kind, 'path': path});
+    }
+
+    test('the signed proof comes first, then the delivery photo; none or switch off is null', () async {
+      FeaturesService.notifier.value = const Features(flags: {FeatureKey.photoUploads: true});
+      expect(await PhotoService.proofImage('B1'), isNull, reason: 'nothing yet');
+      await proof('d1', 'delivery', [1, 1]);
+      await proof('p0', 'pickup', [9, 9]);
+      expect(await PhotoService.proofImage('B1'), [1, 1], reason: 'delivery photo, never the pickup one');
+      await proof('s1', 'pod', [2, 2]);
+      expect(await PhotoService.proofImage('B1'), [2, 2], reason: 'the signed proof is preferred');
+      FeaturesService.notifier.value = const Features();
+      expect(await PhotoService.proofImage('B1'), isNull, reason: 'switch off');
+      FeaturesService.reset();
+    });
+
+    test('a missing file or a broken read never stops the LR', () async {
+      FeaturesService.notifier.value = const Features(flags: {FeatureKey.photoUploads: true});
+      await db.collection('bookings').doc('B1').collection('proofs').doc('x').set({'kind': 'pod', 'path': 'bookings/B1/pod/gone.jpg'});
+      expect(await PhotoService.proofImage('B1'), isNull);
+      PhotoService.gateway = ThrowingStorage();
+      expect(await PhotoService.proofImage('B1'), isNull);
+      FeaturesService.reset();
     });
   });
 

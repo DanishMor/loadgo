@@ -7,6 +7,7 @@ import 'package:share_plus/share_plus.dart';
 import '../app_info.dart';
 import '../l10n/l10n.dart';
 import '../models/booking.dart';
+import '../photos/photo_service.dart';
 import '../widgets/common.dart';
 import '../widgets/live_stream.dart';
 import 'lr_copy_screen.dart';
@@ -61,6 +62,8 @@ class _LrSendScreenState extends State<LrSendScreen> {
       issuerName: _lr.issuerName,
       delivered: widget.booking.deliveryOtpVerified,
       generatedAt: DateTime.now(),
+      // The photo of the delivered load (the driver's own copy never carries it).
+      podPhoto: _copy == LrCopy.driver || !widget.booking.deliveryOtpVerified ? null : await PhotoService.proofImage(widget.booking.id),
     ));
   }
 

@@ -90,3 +90,19 @@ Method, three rounds. **Round 1**: not a line-by-line read of every file; each c
 | P9-B1 | lib/core/pricing/fare_calculator.dart `MoversDetails.parseItems` | an item name ending in x or X lost its last letter when a quantity followed: "box 10" became "bo" x 10 ("Max 4" became "Ma") | the quantity separator needs a space or `*` (`^(.*?)(?:(?:\s+[xX]?|\s*\*)\s*(\d+))?$`); test/pure_logic_gaps_test.dart | Medium (wrong item names in a movers quote) |
 
 | L18-B1 | lib/core/settings/onboarding_screen.dart | the Next button called PageController.nextPage with Duration.zero when animations are off (system setting or Low-end mode): an assertion in debug, undefined movement in release | jumpToPage when the duration is zero | Medium (Low-end phones, first run) |
+
+## Part 2 bug hunt (F1 to F46), 2026-10-16
+
+The new code was read like a reviewer: null and crash paths, `permission-denied` against the rules, missing indexes, wrong paise, leaks, overflow, dark-mode contrast, right-to-left, abuse, races.
+
+### Round 1
+
+| ID | File | What was wrong | Fix | Severity |
+|---|---|---|---|---|
+| P2-B1 | storage.rules | trip evidence (pickup, delivery, pod, damage) could be overwritten by `create` on an existing file in the emulator: the test "evidence is not overwritten" failed | `create` now needs `resource == null` | High (evidence could be replaced) |
+| P2-B2 | lib/admin/admin_uploads.dart, lib/core/documents/pod_screen.dart | the Firestore stream was built inside `build`, so every rebuild subscribed again (extra reads, flicker) | stream created once in `State` | Medium (cost) |
+| P2-B3 | lib/core/photos/photo_widgets.dart, lib/main.dart | the offline photo queue was never sent: nothing called the flush | `PhotoSync` starts at app start, runs when the phone is online again and after sign-in, one run at a time (no duplicates); `test/photo_sync_test.dart` | High (photos lost silently) |
+| P2-B4 | lib/core/bilty/lr_send_screen.dart | the LR PDF could print a proof photo but no caller passed one | `PhotoService.proofImage` (signed proof first, then the delivery photo; null on any problem) passed for non-driver copies of a delivered trip | Medium (F31 not really done) |
+| P2-B5 | lib/admin/admin_web_shell.dart | the page and the guard under it each listened to "is admin?" and could disagree for one frame; the guard then asked a navigator that does not exist in this build to close | one listener in `_AdminGate`, the guard gets the same answer | Low |
+| P2-B6 | firestore.indexes.json | the chat scan reads one chat by `senderId` and `createdAt`: only a collection-group index existed. The emulator does not ask for indexes, real Firestore would fail the function and retry | collection-scope index on `messages` added; `test/function_indexes_test.dart` lists every index the functions need | High on deploy (scan never works) |
+| P2-B7 | functions/integration/functions.test.js | the limits test assumed the 6th load is the one removed; which one goes depends on trigger order | the test checks the count (5 left) and the single audit line | Low (test only) |

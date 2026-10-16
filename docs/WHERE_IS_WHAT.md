@@ -184,3 +184,30 @@ Every admin list (tickets, SOS, reports, audit log, vehicles, deletion requests 
 | Login pieces (header, phone field) | `lib/auth/login_widgets.dart` |
 | Guard: no hard-coded colour or text style outside the theme (table is empty) | `tool/theme_guard.dart`, `test/theme_guard_test.dart`, `docs/THEME_EXCEPTIONS.md` |
 | Brand rules, name checks | `docs/BRAND.md`, `docs/NAME_CHECKLIST.md`, `docs/RENAME.md` |
+
+## Part 2: server, photos, payments, admin web (F1 to F46)
+
+| Thing | Where |
+|---|---|
+| Login code limits (resend wait, hourly cap, lock) | `lib/core/security/otp_limits.dart`, `docs/OTP_SECURITY.md` |
+| Trip code lock (enforced by rules) | `firestore.rules` (`otp_attempts`), `lib/core/services/trip_otp_attempts.dart` |
+| Screenshot block | `lib/core/security/secure_screen.dart`, `MainActivity.kt` (flag `secureScreens`) |
+| Money in whole paise, wallet book | `lib/core/money/`, `lib/core/wallet/` |
+| Earnings hubs (driver, customer, transporter) | `lib/core/wallet/hub/`, entry `lib/driver/wallet_entry.dart` (flag `walletHub`) |
+| Fresh code before payouts, limits, app lock | `lib/core/wallet/step_up.dart`, `app_lock.dart` (flags `walletStepUp`, `walletLimits`, `appLock`) |
+| Admin Finance and payouts with two people | `lib/admin/admin_finance_screen.dart` (flag `walletMakerChecker`), `docs/WALLET_SECURITY.md` |
+| Cloud Functions (38) | `functions/index.js`, `functions/src/`, `docs/FUNCTIONS.md` |
+| Server actions with phone fallback | `lib/core/services/server_actions.dart` |
+| Check the server | Admin > System health > Check server (`lib/admin/admin_health_screen.dart`) |
+| Push: token, channels, tap routing | `lib/core/services/push_service.dart`, `lib/core/notifications/`, `MainActivity.kt` |
+| Announcement push | Admin > Announcement push (`lib/admin/admin_broadcast_screen.dart`, flag `adminBroadcast`) |
+| Photos and papers (add) | `lib/core/photos/` (`PhotoAttach`): Vehicle documents, trip pickup/delivery dialog, damage claim, driver profile (flag `photoUploads`) |
+| Papers seen by admin | Admin > Driver verification > Show papers (`lib/admin/admin_uploads.dart`) |
+| Trip photos | POD screen (`lib/core/documents/pod_screen.dart`); proof photo in the LR PDF (`lib/core/bilty/lr_pdf.dart`) |
+| Storage rules | `storage.rules`, `firestore_rules_test/storage.test.mjs` |
+| Online payment (test mode) | `lib/core/adapters/razorpay_gateway.dart`, `functions/src/razorpay.js` (flag `paymentGateway`) |
+| KYC and SMS partner skeletons | `lib/core/adapters/partner_adapters.dart` |
+| Admin-only web build | `lib/admin/admin_web_shell.dart`, `lib/core/app_mode.dart`, `docs/ADMIN_WEB.md` |
+| Go-live order, release list, known issues | `docs/BLAZE_GO_LIVE.md`, `docs/RELEASE_CANDIDATE.md`, `docs/KNOWN_ISSUES.md` |
+| Texts for the native reader, logo brief | `docs/TRANSLATION_REVIEW.csv`, `docs/LOGO_BRIEF.md` |
+| Integration tests (all emulators) | `functions/integration/`, `firebase.integration.json` |

@@ -6,7 +6,9 @@ import 'package:image_picker/image_picker.dart';
 
 import '../features/features.dart';
 import '../l10n/l10n.dart';
+import '../services/backend.dart';
 import '../services/connectivity_service.dart';
+import '../services/features_service.dart';
 import '../theme/design_tokens.dart';
 import '../widgets/common.dart';
 import '../widgets/ds/app_button.dart';
@@ -224,8 +226,47 @@ class _PhotoAttachState extends State<PhotoAttach> {
   }
 }
 
-/// Sends the photos that waited for the network (call when the phone comes back online).
-Future<int> flushPhotoQueue() => PhotoQueue.flush(_readFile);
+/// Sends the photos that waited for the network. Starts once at app start:
+/// whenever the phone comes back online (and once right away) the waiting photos go out.
+/// Only one send runs at a time, so a photo is never sent twice.
+class PhotoSync {
+  PhotoSync._();
+
+  static bool _started = false;
+  static bool _running = false;
+
+  /// Replaced in tests.
+  static FileReader reader = _readFile;
+
+  static void start() {
+    if (_started) return;
+    _started = true;
+    ConnectivityService.online.addListener(() {
+      if (ConnectivityService.online.value) flush().ignore();
+    });
+    flush().ignore();
+  }
+
+  /// Returns how many photos were sent (0 when the switch is off, nobody is signed in, the phone is offline or a send is already running).
+  static Future<int> flush() async {
+    if (_running || !ConnectivityService.online.value || !FeaturesService.isOn(FeatureKey.photoUploads) || Backend.uid == null) return 0;
+    _running = true;
+    try {
+      return await PhotoQueue.flush(reader);
+    } catch (_) {
+      return 0;
+    } finally {
+      _running = false;
+    }
+  }
+
+  @visibleForTesting
+  static void resetForTest() {
+    _started = false;
+    _running = false;
+    reader = _readFile;
+  }
+}
 
 Future<Uint8List?> _readFile(String path) async {
   try {

@@ -6,7 +6,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../features/features.dart';
 import '../services/backend.dart';
+import '../services/features_service.dart';
 
 /// What a photo is for. The first six are papers; the others belong to a truck or a trip.
 enum PhotoKind { licence, rc, insurance, puc, permit, fitness, truck, pickup, delivery, pod, damage }
@@ -169,6 +171,27 @@ class PhotoService {
       await rec.set(data);
     }
     return UploadedPhoto(path, rec == null ? null : id);
+  }
+
+  /// The picture to print on the LR: the signed proof of delivery if there is one, else the delivery photo.
+  /// Null when the switch is off, there is none, or anything goes wrong (the LR must print without it).
+  static Future<Uint8List?> proofImage(String bookingId) async {
+    try {
+      if (!FeaturesService.isOn(FeatureKey.photoUploads)) return null;
+      final snap = await Backend.db.collection('bookings').doc(bookingId).collection('proofs').limit(30).get();
+      final docs = [for (final d in snap.docs) if (d.data()['path'] is String) d.data()];
+      for (final kind in const ['pod', 'delivery']) {
+        for (final d in docs) {
+          if (d['kind'] == kind) {
+            final bytes = await gateway.get(d['path'] as String);
+            if (bytes != null && bytes.isNotEmpty) return bytes;
+          }
+        }
+      }
+      return null;
+    } catch (_) {
+      return null;
+    }
   }
 
   /// Network trouble that may pass (worth another try or the queue), as opposed to a refusal.

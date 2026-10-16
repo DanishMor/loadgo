@@ -33,7 +33,7 @@ Things that cannot be proved on the laptop, or that need a paid service or a con
 - **Wallet history**: the hub shows the newest ledger lines; true paging needs a composite index (`firestore.indexes.json`) that the owner deploys.
 - **Fake database in tests** does not serialise transactions the way real Firestore does; concurrency tests are written for the real behaviour but proved only on the emulator.
 - **Admin web build**: a customer who signs in on the admin address sees "This account is not an admin" and can sign out; the customer sign-up pages are still reachable before sign-in.
-- **Translations**: 159 new texts wait for the native reader (`docs/TRANSLATION_REVIEW.csv`). Kashmiri and some Indic joined letters in PDFs are drawn side by side by the PDF library.
+- **Translations**: the new texts wait for the native reader (`docs/TRANSLATION_REVIEW.csv`). Kashmiri and some Indic joined letters in PDFs are drawn side by side by the PDF library.
 - **Logo**: the mark is a placeholder until the designer delivers (`docs/LOGO_BRIEF.md`).
 
 ## If you find a new issue

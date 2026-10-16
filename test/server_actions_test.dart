@@ -175,6 +175,15 @@ void main() {
       await t.tap(find.byKey(const ValueKey('bcRole_driver')));
       await t.pump();
       await t.tap(find.byKey(const ValueKey('bcSend')));
+      await t.pumpAndSettle();
+      // Asked once, with the audience named; Cancel sends nothing.
+      expect(find.text('It goes to ${T.get('bcDrivers', AppLanguage.english)} and cannot be taken back.'), findsOneWidget);
+      await t.tap(find.byKey(const ValueKey('bcCancel')));
+      await t.pumpAndSettle();
+      expect(sent, isEmpty);
+      await t.tap(find.byKey(const ValueKey('bcSend')));
+      await t.pumpAndSettle();
+      await t.tap(find.byKey(const ValueKey('bcConfirm')));
       await t.pump();
       await t.pump();
       await t.pump(const Duration(milliseconds: 400));
@@ -191,6 +200,8 @@ void main() {
       await t.enterText(find.byKey(const ValueKey('bcBody')), 'World wide');
       await t.scrollUntilVisible(find.byKey(const ValueKey('bcSend')), 200, scrollable: find.byType(Scrollable).first);
       await t.tap(find.byKey(const ValueKey('bcSend')));
+      await t.pumpAndSettle();
+      await t.tap(find.byKey(const ValueKey('bcConfirm')));
       await t.pump();
       await t.pump();
       expect(find.text(T.get('bcNoServer', AppLanguage.english)), findsOneWidget);

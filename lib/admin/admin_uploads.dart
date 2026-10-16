@@ -52,6 +52,7 @@ class _AdminUploadsState extends State<AdminUploads> {
           StreamBuilder(
             stream: _stream,
             builder: (context, snap) {
+              if (snap.hasError) return Text(tr(context, 'somethingWrong'), key: ValueKey('papersError_${widget.uid}'), style: DsType.caption.copyWith(color: context.ds.textMuted));
               final docs = snap.data?.docs ?? const [];
               if (docs.isEmpty) return Text(tr(context, 'adminNoPapers'), key: ValueKey('noPapers_${widget.uid}'), style: DsType.caption.copyWith(color: context.ds.textMuted));
               return Wrap(spacing: DsSpace.s3, runSpacing: DsSpace.s3, children: [
