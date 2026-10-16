@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:transport_app/core/features/features.dart';
 import 'package:transport_app/core/l10n/l10n.dart';
-import 'package:transport_app/core/models/booking.dart';
 import 'package:transport_app/core/services/backend.dart';
 import 'package:transport_app/core/services/features_service.dart';
 import 'package:transport_app/core/services/location_service.dart';
