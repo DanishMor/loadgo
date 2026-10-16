@@ -23,6 +23,17 @@ force any flag On or Off; a forced value always wins. A flag that is OFF hides i
 | `walletStepUp` | A fresh SMS code before a payout request or a change of payout details | OFF | OFF | Admin > Features > Fresh code before payouts |
 | `walletLimits` | Waiting time after payout details change and a daily payout count and total limit (config/wallet) | OFF | OFF | Admin > Features > Payout limits and waiting time |
 | `appLock` | Optional fingerprint / screen lock on the earnings screens | OFF | OFF | Admin > Features > Fingerprint lock for earnings; Settings |
+| `serverLimits` | The server counts bids, chat messages and code requests per hour and refuses extra ones, even from a modified app. | OFF | OFF | Admin > Features > Server hourly limits |
+| `serverChatScan` | The server scans every chat message again for phone numbers and links and applies the strike steps. | OFF | OFF | Admin > Features > Server chat check |
+| `serverCredits` | The server settles promo, credits and referral bonuses so a modified app cannot change the balance. | OFF | OFF | Admin > Features > Server credits and referral |
+| `serverTrust` | The server counts finished trips and writes a safe public trust summary for each driver. | OFF | OFF | Admin > Features > Server trip counts |
+| `serverJobs` | The server expires old open loads, starts scheduled bookings and suspends drivers with expired documents. | OFF | OFF | Admin > Features > Server timed jobs |
+| `serverAdminActions` | Risk tier and driver approval are done by the server and logged, not by the admin phone itself. | OFF | OFF | Admin > Features > Server admin actions |
+| `serverDeletion` | The server removes a person's data, sign-in and files when an account deletion is approved. | OFF | OFF | Admin > Features > Server account deletion |
+| `serverWallet` | The server adds up the ledger, writes the summary, checks payouts and runs the daily check. | OFF | OFF | Admin > Features > Server earnings checks |
+| `pushNotifications` | Phones get push messages for new loads, offers, trip steps and chat. Needs the functions deployed. | OFF | OFF | Admin > Features > Push notifications |
+| `adminBroadcast` | Admins can send an announcement push to a role or to everyone. | OFF | OFF | Admin > Features > Admin announcements by push |
+| `photoUploads` | Documents and trip photos can be added from the phone camera or gallery. Needs Storage switched on. | OFF | OFF | Admin > Features > Photo uploads |
 | `secureScreens` | No screenshots or screen recording on the login code, documents, private LR copy, earnings and trip code screens (Android release builds) | OFF | OFF | Admin > Features > Block screenshots on private screens |
 
 Other switches that are not in the list above:
@@ -152,6 +163,7 @@ Admin Panel: **Profile > Admin** (only for accounts in `admins/{uid}`). The pane
 | Deletion requests | account deletions | super, support |
 | Audit log | who did what (includes number views and chat opens) | super, ops |
 | Driver rewards, Payouts, Offers, Config | money records and settings; Config also has the **Announcement banner** (text per language, level, last day, roles) | super |
+| Announcement push | an announcement push to drivers, customers, transporters or everyone (switch Admin > Features > Admin announcements by push; the server sends it, honours each person's notification switches and quiet hours, and writes the audit line) | super, support, ops |
 | Finance | payout queue with two admins (one approves, a different one marks paid with the bank or UPI reference), reversal, daily check of ledger against payouts and summaries, warnings for big or repeated payouts, freeze and correction tools, CSV copy | super, finance |
 
 Every admin list (tickets, SOS, reports, audit log, vehicles, deletion requests ...) has a search box, saved filters (kept on the device), "Show 50 more" and **Export CSV** of what is on screen (no phone numbers, e-mail, KYC or free text). Every admin change also writes an audit event.

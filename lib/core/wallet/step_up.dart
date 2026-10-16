@@ -246,7 +246,7 @@ class _StepUpDialogState extends State<StepUpDialog> {
       title: Text(tr(context, 'stepUpTitle')),
       content: SingleChildScrollView(
         child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(trf(context, 'stepUpBody', {'phone': maskPhone(phone)}), style: DsType.body.copyWith(color: c.text)),
+          Text(trf(context, 'stepUpBody', {'number': maskPhone(phone)}), style: DsType.body.copyWith(color: c.text)),
           const SizedBox(height: DsSpace.s4),
           OtpField(
             fieldKey: const ValueKey('stepUpCode'),

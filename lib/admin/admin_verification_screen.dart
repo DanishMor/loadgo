@@ -1,5 +1,6 @@
 import '../core/errors/error_text.dart';
 import 'package:flutter/material.dart';
+import 'admin_uploads.dart';
 
 import '../core/l10n/l10n.dart';
 import '../core/onboarding/driver_onboarding.dart';
@@ -147,6 +148,7 @@ class _DriverCardState extends State<_DriverCard> {
           VerificationBadges(user: d.data, isDriver: true, reveal: _reveal),
           const SizedBox(height: 6),
           AutoCheckChips(user: d.data),
+          AdminUploads(uid: d.uid),
           Align(
             alignment: Alignment.centerLeft,
             child: TextButton.icon(

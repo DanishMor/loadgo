@@ -58,3 +58,7 @@ android/build/
 android/app/build/
 android/.gradle/
 *.hprof
+
+# Cloud Functions and rules-test dependencies
+functions/node_modules/
+firestore_rules_test/node_modules/

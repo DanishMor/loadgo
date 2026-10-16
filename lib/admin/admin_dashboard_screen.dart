@@ -1,3 +1,5 @@
+import '../core/features/features.dart';
+import '../core/services/features_service.dart';
 import 'admin_violations_screen.dart';
 import 'package:flutter/material.dart';
 
@@ -36,6 +38,7 @@ import 'admin_rating_flags_screen.dart';
 import 'admin_trends_section.dart';
 import 'admin_lists.dart';
 import 'admin_offers_screen.dart';
+import 'admin_broadcast_screen.dart';
 import 'admin_finance_screen.dart';
 import 'admin_payouts_screen.dart';
 import 'admin_signals_screen.dart';
@@ -107,6 +110,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       ('adminDriverRewards', 'adminDriverRewards', Icons.emoji_events_outlined, const AdminDriverRewardsScreen()),
       ('adminPayouts', 'adminPayouts', Icons.account_balance_outlined, const AdminPayoutsScreen()),
       ('adminFinance', 'adminFinance', Icons.payments_outlined, const AdminFinanceScreen()),
+      if (FeaturesService.isOn(FeatureKey.adminBroadcast)) ('adminBroadcast', 'adminBroadcast', Icons.campaign_outlined, const AdminBroadcastScreen()),
       ('adminOffers', 'adminOffers', Icons.local_offer_outlined, const AdminOffersScreen()),
       ('adminConfig', 'adminConfig', Icons.tune_rounded, const AdminConfigScreen()),
     ];

@@ -30,6 +30,17 @@ void main() {
       FeatureKey.walletStepUp: 'Fresh code before payouts',
       FeatureKey.walletLimits: 'Payout limits and waiting time',
       FeatureKey.appLock: 'Fingerprint lock for earnings',
+      FeatureKey.serverLimits: 'Server hourly limits',
+      FeatureKey.serverChatScan: 'Server chat check',
+      FeatureKey.serverCredits: 'Server credits and referral',
+      FeatureKey.serverTrust: 'Server trip counts',
+      FeatureKey.serverJobs: 'Server timed jobs',
+      FeatureKey.serverAdminActions: 'Server admin actions',
+      FeatureKey.serverDeletion: 'Server account deletion',
+      FeatureKey.serverWallet: 'Server earnings checks',
+      FeatureKey.pushNotifications: 'Push notifications',
+      FeatureKey.adminBroadcast: 'Admin announcements by push',
+      FeatureKey.photoUploads: 'Photo uploads',
     };
     expect(labels.keys.toSet(), Features.registry.map((s) => s.key).toSet(), reason: 'a new feature needs a row in ADDON_PILOT.md');
     for (final s in Features.registry) {

@@ -110,6 +110,8 @@ import 'otp_limit_strings.dart';
 import 'hub_strings.dart';
 import 'wallet_security_strings.dart';
 import 'finance_strings.dart';
+import 'photo_strings.dart';
+import 'broadcast_strings.dart';
 
 import 'app_control_strings.dart';
 import 'admin_tools_strings.dart';
@@ -259,6 +261,8 @@ const List<Map<String, List<String>>> stringTables = [
   hubStrings,
   walletSecurityStrings,
   financeStrings,
+  photoStrings,
+  broadcastStrings,
 ];
 
 final Map<String, List<String>> extraStrings = {

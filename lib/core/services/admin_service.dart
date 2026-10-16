@@ -2,6 +2,7 @@ import '../onboarding/driver_onboarding.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'audit_service.dart';
+import 'server_actions.dart';
 import 'backend.dart';
 
 /// A driver awaiting (or past) verification, as shown to admins.
@@ -61,11 +62,13 @@ class AdminService {
         .map((s) => s.docs.map(DriverVerification.fromDoc).toList()..sort((a, b) => a.name.compareTo(b.name)));
   }
 
-  static Future<void> setStatus(String uid, String status, {String? reason, String note = ''}) {
+  static Future<void> setStatus(String uid, String status, {String? reason, String note = ''}) async {
     assert(const [pending, approved, rejected].contains(status));
     assert(reason == null || (status == rejected && RejectReason.all.contains(reason)));
     final n = note.trim();
     assert(n.length <= RejectReason.maxNote);
+    // With the serverAdminActions switch on and the function deployed, the server does it and writes the audit line.
+    if (await ServerActions.decideDriver(uid, status, reason: reason, note: reason != null && n.isNotEmpty ? n : null)) return;
     final batch = Backend.db.batch();
     batch.update(Backend.db.collection('users').doc(uid), {
       'verificationStatus': status,

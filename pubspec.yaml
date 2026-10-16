@@ -54,6 +54,7 @@ dependencies:
   share_plus: ^13.3.1
   speech_to_text: ^7.5.0
   flutter_webrtc: ^1.6.2+hotfix.4
+  cloud_functions: ^6.5.0
 
 dev_dependencies:
   flutter_test:

@@ -66,6 +66,7 @@ void main() {
       'adminDriverRewards': 'Driver rewards',
       'adminPayouts': 'Payouts',
       'adminFinance': 'Finance',
+      'adminBroadcast': 'Announcement push',
       'adminOffers': 'Offers',
       'adminConfig': 'Config',
     };

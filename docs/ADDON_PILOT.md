@@ -16,6 +16,17 @@ Goal: put LoadGo in front of a small, known group (one or two corridors, tens of
 | Fresh code before payouts | OFF | Features > Fresh code before payouts |
 | Payout limits and waiting time | OFF | Features > Payout limits and waiting time |
 | Fingerprint lock for earnings | OFF | Features > Fingerprint lock for earnings |
+| Server hourly limits | OFF | Features > Server hourly limits |
+| Server chat check | OFF | Features > Server chat check |
+| Server credits and referral | OFF | Features > Server credits and referral |
+| Server trip counts | OFF | Features > Server trip counts |
+| Server timed jobs | OFF | Features > Server timed jobs |
+| Server admin actions | OFF | Features > Server admin actions |
+| Server account deletion | OFF | Features > Server account deletion |
+| Server earnings checks | OFF | Features > Server earnings checks |
+| Push notifications | OFF | Features > Push notifications |
+| Admin announcements by push | OFF | Features > Admin announcements by push |
+| Photo uploads | OFF | Features > Photo uploads |
 | Promo codes, credits, referral | OFF | Offers (three switches, default OFF) |
 | Surge pricing | OFF | `config/pricing.surge.enabled` |
 | Driver network and groups | OFF | Features |

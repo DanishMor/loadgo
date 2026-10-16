@@ -8,6 +8,7 @@ import '../money/money.dart';
 import 'audit_service.dart';
 import 'backend.dart';
 import 'payout_service.dart';
+import 'server_actions.dart';
 
 /// The reason a finance action was refused before it was sent.
 class FinanceException implements Exception {
@@ -75,6 +76,8 @@ class FinanceService {
   /// Maker: approve a request.
   static Future<void> approve(Payout p) async {
     final me = Backend.requireUid();
+    // With the serverWallet switch on and the function deployed, the server does it (same rules, same audit line).
+    if (await ServerActions.payoutDecision(p.id, 'approve')) return;
     await _payoutStep(p, {'status': Payout.approved, 'approvedBy': me, 'approvedAt': FieldValue.serverTimestamp()}, 'approve');
   }
 
@@ -84,18 +87,21 @@ class FinanceService {
     if (p.approvedBy == me) throw const FinanceException('finSameAdmin');
     final ref = _text(reference);
     if (ref.length < 4 || ref.length > 60) throw const FinanceException('finNeedRef');
+    if (await ServerActions.payoutDecision(p.id, 'pay', reference: ref)) return;
     await _payoutStep(p, {'status': Payout.paid, 'paidBy': me, 'paidAt': FieldValue.serverTimestamp(), 'reference': ref}, 'pay');
   }
 
   static Future<void> reject(Payout p, String reason) async {
     _needReason(reason);
     final me = Backend.requireUid();
+    if (await ServerActions.payoutDecision(p.id, 'reject', reason: _text(reason))) return;
     await _payoutStep(p, {'status': Payout.rejected, 'handledBy': me, 'handledAt': FieldValue.serverTimestamp(), 'reason': _text(reason)}, 'reject');
   }
 
   static Future<void> reverse(Payout p, String reason) async {
     _needReason(reason, min: 5);
     final me = Backend.requireUid();
+    if (await ServerActions.payoutDecision(p.id, 'reverse', reason: _text(reason))) return;
     await _payoutStep(p, {'status': Payout.reversed, 'reversedBy': me, 'reversedAt': FieldValue.serverTimestamp(), 'reason': _text(reason)}, 'reverse');
   }
 

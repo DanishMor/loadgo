@@ -4,6 +4,7 @@ import '../models/risk.dart';
 import '../models/vehicle.dart';
 import '../risk/risk_config.dart';
 import 'audit_service.dart';
+import 'server_actions.dart';
 import '../risk/risk_rules.dart';
 import 'backend.dart';
 
@@ -68,6 +69,8 @@ class RiskService {
   /// Admin only (rules).
   static Future<void> setTier(String uid, String tier, {String reason = ''}) async {
     if (!RiskTier.all.contains(tier)) throw ArgumentError.value(tier, 'tier');
+    // With the serverAdminActions switch on and the function deployed, the server does it and writes the audit line.
+    if (await ServerActions.setRiskTier(uid, tier, reason.trim())) return;
     final batch = Backend.db.batch();
     batch.update(_users.doc(uid), {
       'riskTier': tier,

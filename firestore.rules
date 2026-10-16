@@ -2916,7 +2916,7 @@ service cloud.firestore {
           && request.resource.data.createdAt == request.time;
       allow update: if adminIn(['super', 'support'])
           && changedKeys().hasOnly(['status', 'handledBy', 'handledAt'])
-          && request.resource.data.status in ['pending', 'done', 'rejected'];
+          && request.resource.data.status in ['pending', 'approved', 'done', 'rejected'];
       allow delete: if false;
     }
 
@@ -2935,7 +2935,9 @@ service cloud.firestore {
     match /users/{userId}/devices/{deviceId} {
       allow read: if isUser(userId) || isAdmin();
       allow create, update: if isUser(userId)
-          && request.resource.data.keys().hasOnly(['label', 'trusted', 'revoked', 'firstSeenAt', 'lastSeenAt', 'lastLoginAt'])
+          && request.resource.data.keys().hasOnly(['label', 'trusted', 'revoked', 'firstSeenAt', 'lastSeenAt', 'lastLoginAt', 'fcmToken', 'fcmUpdatedAt'])
+          && (!('fcmToken' in request.resource.data) || (request.resource.data.fcmToken is string && request.resource.data.fcmToken.size() >= 20 && request.resource.data.fcmToken.size() <= 4096))
+          && (!('fcmUpdatedAt' in request.resource.data) || request.resource.data.fcmUpdatedAt is timestamp)
           && request.resource.data.label is string && request.resource.data.label.size() <= 40
           && request.resource.data.trusted is bool && request.resource.data.revoked is bool
           && deviceId.matches('^[a-z0-9-]{8,40}$');
@@ -3802,6 +3804,75 @@ service cloud.firestore {
           && request.resource.data.json is string && request.resource.data.json.size() <= 30000
           && request.resource.data.by == request.auth.uid
           && request.resource.data.createdAt == request.time;
+      allow update, delete: if false;
+    }
+
+    // credit_balances/{uid}: the real credits balance, added up by the server
+    // (functions/src/credits.js). Clients read their own; nobody writes from a client.
+    match /credit_balances/{uid} {
+      allow read: if signedIn() && (request.auth.uid == uid || isAdmin());
+      allow write: if false;
+    }
+
+    // trip_counts/{uid}: delivered trips counted once each by the server (for
+    // incentives). public_trust/{uid}: the safe numbers other people may see
+    // about a driver (trips, rating, verified, member since). Server-written only.
+    match /trip_counts/{uid} {
+      allow read: if signedIn() && (request.auth.uid == uid || isAdmin());
+      allow write: if false;
+      match /seen/{bookingId} {
+        allow read, write: if false;
+      }
+    }
+
+    match /public_trust/{uid} {
+      // One person at a time (by id); the whole list cannot be read.
+      allow get: if signedIn();
+      allow list, write: if false;
+    }
+
+    // reconciliation_reports/{yyyymmdd}: the server's daily check of every earnings book. Admins read.
+    match /reconciliation_reports/{day} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
+    // Records of uploaded photos and papers (F28): the file itself is in Cloud
+    // Storage (storage.rules); this says what it is. Never a download link:
+    // the app reads the file with its sign-in. Append-only, owner deletes.
+    function validUploadMeta(d, folder, id) {
+      return d.size is int && d.size > 0 && d.size < 5 * 1024 * 1024
+          && d.contentType is string && d.contentType.matches('image/(jpeg|png|webp|heic|heif)')
+          && d.path is string && d.path.matches(folder + '/' + id + '[.][a-z0-9]{3,4}')
+          && d.createdAt == request.time;
+    }
+
+    match /users/{userId}/uploads/{uploadId} {
+      allow read: if isUser(userId) || isAdmin();
+      allow create: if isUser(userId)
+          && request.resource.data.keys().hasOnly(['kind', 'path', 'size', 'contentType', 'vehicleId', 'createdAt'])
+          && (!('vehicleId' in request.resource.data)
+              || (request.resource.data.vehicleId is string && request.resource.data.vehicleId.matches('[A-Za-z0-9_-]{1,128}')))
+          && request.resource.data.kind in ['licence', 'rc', 'insurance', 'puc', 'permit', 'fitness']
+          && validUploadMeta(request.resource.data, 'users/' + userId + '/docs/' + request.resource.data.kind, uploadId);
+      allow update: if false;
+      allow delete: if isUser(userId);
+    }
+
+    match /bookings/{bookingId}/proofs/{proofId} {
+      function proofParty(b) {
+        return request.auth.uid == b.driverId || request.auth.uid == b.get('assignedDriverId', '') || request.auth.uid == b.customerId;
+      }
+      allow read: if signedIn() && (proofParty(get(docPath('bookings', bookingId)).data) || isAdmin());
+      allow create: if signedIn()
+          && request.resource.data.keys().hasOnly(['kind', 'path', 'size', 'contentType', 'by', 'createdAt'])
+          && request.resource.data.by == request.auth.uid
+          && request.resource.data.kind in ['pickup', 'delivery', 'pod', 'damage']
+          && validUploadMeta(request.resource.data, 'bookings/' + bookingId + '/' + request.resource.data.kind, proofId)
+          && (request.resource.data.kind == 'damage'
+              ? proofParty(get(docPath('bookings', bookingId)).data)
+              : (request.auth.uid == get(docPath('bookings', bookingId)).data.driverId
+                  || request.auth.uid == get(docPath('bookings', bookingId)).data.get('assignedDriverId', '')));
       allow update, delete: if false;
     }
 

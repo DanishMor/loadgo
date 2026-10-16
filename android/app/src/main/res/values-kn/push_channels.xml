@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="channel_bookings">ಟ್ರಿಪ್ ಮತ್ತು ಬುಕಿಂಗ್ ಅಪ್‌ಡೇಟ್‌ಗಳು</string>
+    <string name="channel_chat">ಚಾಟ್ ಸಂದೇಶಗಳು</string>
+    <string name="channel_payments">ಪಾವತಿ ಮತ್ತು ಪೇಔಟ್</string>
+    <string name="channel_offers">ಹೊಸ ಲೋಡ್ ಮತ್ತು ಆಫರ್‌ಗಳು</string>
+    <string name="channel_admin">ಅಡ್ಮಿನ್ ಎಚ್ಚರಿಕೆಗಳು</string>
+</resources>

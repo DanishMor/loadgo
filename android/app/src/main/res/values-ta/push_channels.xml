@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="channel_bookings">பயண மற்றும் பதிவு அப்டேட்கள்</string>
+    <string name="channel_chat">அரட்டைச் செய்திகள்</string>
+    <string name="channel_payments">பணம் மற்றும் பேஅவுட்</string>
+    <string name="channel_offers">புதிய லோடுகள் மற்றும் சலுகைகள்</string>
+    <string name="channel_admin">நிர்வாக எச்சரிக்கைகள்</string>
+</resources>

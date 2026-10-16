@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../identity/profile_extras.dart';
+import '../photos/photo_service.dart';
+import '../photos/photo_widgets.dart';
 import '../services/user_service.dart';
 import '../wallet/step_up.dart';
 import '../widgets/common.dart';
@@ -123,6 +125,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   controller: _companyCtrl,
                   textCapitalization: TextCapitalization.words,
                   decoration: const InputDecoration(prefixIcon: Icon(Icons.business_rounded)), inputFormatters: [LengthLimitingTextInputFormatter(100)]),
+                if (widget.isDriver) ...[
+                  const SizedBox(height: 18),
+                  const PhotoAttach(target: PhotoTarget(PhotoKind.licence)),
+                ],
                 const SizedBox(height: 18),
                 FieldLabel(tr(context, 'addrCurrent')),
                 TextFormField(

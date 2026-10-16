@@ -37,6 +37,19 @@ class FeatureKey {
 
   /// F11: an optional fingerprint / screen lock on the money screens.
   static const appLock = 'appLock';
+
+  /// Server features (Phase C to E). Cloud Functions read the same switches from config/features.
+  static const serverLimits = 'serverLimits';
+  static const serverChatScan = 'serverChatScan';
+  static const serverCredits = 'serverCredits';
+  static const serverTrust = 'serverTrust';
+  static const serverJobs = 'serverJobs';
+  static const serverAdminActions = 'serverAdminActions';
+  static const serverDeletion = 'serverDeletion';
+  static const serverWallet = 'serverWallet';
+  static const pushNotifications = 'pushNotifications';
+  static const adminBroadcast = 'adminBroadcast';
+  static const photoUploads = 'photoUploads';
 }
 
 /// `config/features`: {pilotMode: bool, flags: {key: bool}}. A missing
@@ -68,6 +81,17 @@ class Features {
     FeatureSpec(FeatureKey.walletStepUp, pilotOn: false, normalOn: false),
     FeatureSpec(FeatureKey.walletLimits, pilotOn: false, normalOn: false),
     FeatureSpec(FeatureKey.appLock, pilotOn: false, normalOn: false),
+    FeatureSpec(FeatureKey.serverLimits, pilotOn: false, normalOn: false),
+    FeatureSpec(FeatureKey.serverChatScan, pilotOn: false, normalOn: false),
+    FeatureSpec(FeatureKey.serverCredits, pilotOn: false, normalOn: false),
+    FeatureSpec(FeatureKey.serverTrust, pilotOn: false, normalOn: false),
+    FeatureSpec(FeatureKey.serverJobs, pilotOn: false, normalOn: false),
+    FeatureSpec(FeatureKey.serverAdminActions, pilotOn: false, normalOn: false),
+    FeatureSpec(FeatureKey.serverDeletion, pilotOn: false, normalOn: false),
+    FeatureSpec(FeatureKey.serverWallet, pilotOn: false, normalOn: false),
+    FeatureSpec(FeatureKey.pushNotifications, pilotOn: false, normalOn: false),
+    FeatureSpec(FeatureKey.adminBroadcast, pilotOn: false, normalOn: false),
+    FeatureSpec(FeatureKey.photoUploads, pilotOn: false, normalOn: false),
   ];
 
   static final _byKey = {for (final s in registry) s.key: s};

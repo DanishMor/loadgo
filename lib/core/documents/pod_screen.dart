@@ -9,6 +9,10 @@ import '../models/trip_evidence.dart';
 import '../services/trip_evidence_service.dart';
 import '../widgets/signature_pad.dart';
 import '../theme/design_tokens.dart';
+import '../features/features.dart';
+import '../photos/photo_widgets.dart';
+import '../services/backend.dart';
+import '../widgets/feature_gate.dart';
 
 /// Proof-of-delivery packet: timeline with times, OTP checks, cargo details
 /// at pickup and receiver details at delivery. Same view for both parties.
@@ -30,6 +34,18 @@ class PodScreen extends StatelessWidget {
             value,
             style: DsStyle.w600.copyWith(color: AppColors.title),
           ),
+        ),
+      ],
+    ),
+  );
+
+  Widget _photosLater(BuildContext context) => AppCard(
+    child: Row(
+      children: [
+        Icon(Icons.photo_library_outlined, color: AppColors.faint),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(tr(context, 'photosLater'), style: DsStyle.inherit.copyWith(color: AppColors.muted)),
         ),
       ],
     ),
@@ -113,21 +129,48 @@ class PodScreen extends StatelessWidget {
                 ),
               ]),
               const SizedBox(height: 12),
-              // LATER(paid): pickup/delivery photos need Firebase Storage (Blaze plan).
-              AppCard(
-                child: Row(
-                  children: [
-                    Icon(Icons.photo_library_outlined, color: AppColors.faint),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(tr(context, 'photosLater'), style: DsStyle.inherit.copyWith(color: AppColors.muted)),
-                    ),
-                  ],
-                ),
+              // With the photoUploads switch on, the photos taken on this trip; else the old note.
+              FeatureGate(
+                featureKey: FeatureKey.photoUploads,
+                otherwise: _photosLater(context),
+                child: _TripPhotos(bookingId: b.id),
               ),
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// The photos taken on this trip (pickup, delivery, proof, damage), read with the sign-in.
+class _TripPhotos extends StatelessWidget {
+  final String bookingId;
+  const _TripPhotos({required this.bookingId});
+
+  @override
+  Widget build(BuildContext context) {
+    return AppCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(tr(context, 'photosTitle'), style: DsStyle.t16w700.copyWith(color: AppColors.title)),
+          const SizedBox(height: 6),
+          StreamBuilder(
+            stream: Backend.db.collection('bookings').doc(bookingId).collection('proofs').limit(30).snapshots(),
+            builder: (context, snap) {
+              final docs = [for (final d in snap.data?.docs ?? const []) if (d.data()['path'] is String) d];
+              if (docs.isEmpty) return Text(tr(context, 'photosNone'), key: const ValueKey('noTripPhotos'), style: DsStyle.inherit.copyWith(color: AppColors.muted));
+              return Wrap(spacing: 10, runSpacing: 10, children: [
+                for (final d in docs)
+                  Column(key: ValueKey('tripPhoto_${d.id}'), mainAxisSize: MainAxisSize.min, children: [
+                    PhotoImage(d.data()['path'] as String, size: 96),
+                    SizedBox(width: 96, child: Text(tr(context, 'photoKind_${d.data()['kind']}'), textAlign: TextAlign.center, maxLines: 2, overflow: TextOverflow.ellipsis, style: DsStyle.t12w400.copyWith(color: AppColors.muted))),
+                  ]),
+              ]);
+            },
+          ),
+        ],
       ),
     );
   }

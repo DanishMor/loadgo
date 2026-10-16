@@ -5986,6 +5986,127 @@ describe('wallet security (F11)', () => {
     await assertFails(updateDoc(doc(asAdmin(), 'audit_events', 'x'), { type: 'wallet_action' }), 'append only');
   });
 
+  test('credit_balances: the owner and admins read, nobody writes from a client', async () => {
+    await seed((db) => setDoc(doc(db, 'credit_balances', 'u1'), { balancePaise: 500, lines: 2, updatedAt: Timestamp.now() }));
+    await assertSucceeds(getDoc(doc(as('u1'), 'credit_balances', 'u1')));
+    await assertSucceeds(getDoc(doc(asAdmin(), 'credit_balances', 'u1')));
+    await assertFails(getDoc(doc(as('u2'), 'credit_balances', 'u1')));
+    await assertFails(getDocs(collection(as('u1'), 'credit_balances')));
+    for (const db of [as('u1'), asAdmin()]) {
+      await assertFails(setDoc(doc(db, 'credit_balances', 'u1'), { balancePaise: 99999999 }));
+      await assertFails(updateDoc(doc(db, 'credit_balances', 'u1'), { balancePaise: 99999999 }));
+      await assertFails(deleteDoc(doc(db, 'credit_balances', 'u1')));
+    }
+  });
+
+  test('trip_counts and public_trust are written by the server only', async () => {
+    await seed(async (db) => {
+      await setDoc(doc(db, 'trip_counts', 'd1'), { total: 3, updatedAt: Timestamp.now() });
+      await setDoc(doc(db, 'trip_counts', 'd1', 'seen', 'B1'), { month: '2026-10' });
+      await setDoc(doc(db, 'public_trust', 'd1'), { trips: 3, rating: 4.5, ratingCount: 2, verified: true });
+    });
+    await assertSucceeds(getDoc(doc(as('d1'), 'trip_counts', 'd1')));
+    await assertSucceeds(getDoc(doc(asAdmin(), 'trip_counts', 'd1')));
+    await assertFails(getDoc(doc(as('d2'), 'trip_counts', 'd1')));
+    await assertFails(getDoc(doc(as('d1'), 'trip_counts', 'd1', 'seen', 'B1')));
+    await assertSucceeds(getDoc(doc(as('c1'), 'public_trust', 'd1')), 'any signed-in person may read the safe summary');
+    await assertFails(getDoc(doc(env.unauthenticatedContext().firestore(), 'public_trust', 'd1')), 'a person who is not signed in sees nothing');
+    for (const db of [as('d1'), asAdmin()]) {
+      await assertFails(setDoc(doc(db, 'trip_counts', 'd1'), { total: 999 }));
+      await assertFails(setDoc(doc(db, 'public_trust', 'd1'), { trips: 999 }));
+      await assertFails(updateDoc(doc(db, 'public_trust', 'd1'), { trips: 999 }));
+      await assertFails(deleteDoc(doc(db, 'public_trust', 'd1')));
+      await assertFails(setDoc(doc(db, 'trip_counts', 'd1', 'seen', 'B2'), { month: '2026-10' }));
+    }
+  });
+
+  test('reconciliation_reports: admins read, nobody writes from a client', async () => {
+    const staff = (uid) => withAuth(uid);
+    await seed((db) => setDoc(doc(db, 'admins', 'fin1'), { role: 'finance' }));
+    await seed((db) => setDoc(doc(db, 'reconciliation_reports', '20261015'), { checked: 3, problems: [], at: Timestamp.now() }));
+    await assertSucceeds(getDoc(doc(asAdmin(), 'reconciliation_reports', '20261015')));
+    await assertSucceeds(getDoc(doc(staff('fin1'), 'reconciliation_reports', '20261015')));
+    await assertFails(getDoc(doc(as('d1'), 'reconciliation_reports', '20261015')));
+    for (const db of [as('d1'), staff('fin1'), asAdmin()]) {
+      await assertFails(setDoc(doc(db, 'reconciliation_reports', '20261016'), { checked: 0 }));
+      await assertFails(deleteDoc(doc(db, 'reconciliation_reports', '20261015')));
+    }
+  });
+
+  test('deletion requests: support and super may set approved (the server then deletes); finance and others may not', async () => {
+    const staff = (uid) => withAuth(uid);
+    await seed(async (db) => {
+      await setDoc(doc(db, 'admins', 'fin1'), { role: 'finance' });
+      await setDoc(doc(db, 'admins', 'sup1'), { role: 'support' });
+      await setDoc(doc(db, 'deletion_requests', 'u9'), { userId: 'u9', status: 'pending', reason: '', createdAt: Timestamp.now() });
+    });
+    const set = (db, status) => updateDoc(doc(db, 'deletion_requests', 'u9'), { status, handledBy: db.__uid || 'admin1', handledAt: serverTimestamp() });
+    await assertFails(set(staff('fin1'), 'approved'));
+    await assertFails(set(as('u9'), 'approved'));
+    await assertFails(set(staff('sup1'), 'deleted'));
+    await assertSucceeds(set(staff('sup1'), 'approved'));
+    await assertSucceeds(set(asAdmin(), 'pending'));
+    await assertSucceeds(set(asAdmin(), 'done'));
+  });
+
+  test('a device record may hold its push token (20 to 4096 characters) and nothing else new', async () => {
+    const dev = (over = {}) => ({ label: 'android', trusted: true, revoked: false, firstSeenAt: serverTimestamp(), ...over });
+    const ref = (db) => doc(db, 'users', 'u1', 'devices', 'abcdefgh12345678');
+    await assertSucceeds(setDoc(ref(as('u1')), dev()));
+    await assertSucceeds(updateDoc(ref(as('u1')), { fcmToken: 't'.repeat(152), fcmUpdatedAt: serverTimestamp() }));
+    await assertFails(updateDoc(ref(as('u1')), { fcmToken: 'short' }), 'too short');
+    await assertFails(updateDoc(ref(as('u1')), { fcmToken: 't'.repeat(4097) }), 'too long');
+    await assertFails(updateDoc(ref(as('u1')), { fcmToken: 12345678901234567890 }), 'not a string');
+    await assertFails(updateDoc(ref(as('u1')), { fcmUpdatedAt: 'now' }), 'not a time');
+    await assertFails(updateDoc(ref(as('u1')), { phone: '9876543210' }), 'no other new field');
+    await assertFails(updateDoc(ref(as('u2')), { fcmToken: 't'.repeat(152) }), 'only the owner');
+    await assertSucceeds(getDoc(ref(as('u1'))));
+    await assertFails(getDoc(ref(as('u2'))));
+  });
+
+  test('upload records of papers: the owner writes (a known kind, an image under 5 MB, the path of the id), admins read, others nothing', async () => {
+    await seed((db) => setDoc(doc(db, 'admins', 'fin1'), { role: 'support' }));
+    const rec = (over = {}) => ({ kind: 'licence', path: 'users/u1/docs/licence/up1.jpg', size: 200000, contentType: 'image/jpeg', createdAt: serverTimestamp(), ...over });
+    const ref = (db, id = 'up1') => doc(db, 'users', 'u1', 'uploads', id);
+    await assertSucceeds(setDoc(ref(as('u1')), rec()));
+    await assertFails(setDoc(ref(as('u2')), rec()), 'not the owner');
+    await assertFails(setDoc(ref(as('u1'), 'up2'), rec({ kind: 'aadhaar', path: 'users/u1/docs/aadhaar/up2.jpg' })), 'Aadhaar is never uploaded');
+    await assertFails(setDoc(ref(as('u1'), 'up3'), rec({ path: 'users/u2/docs/licence/up3.jpg' })), 'another person path');
+    await assertFails(setDoc(ref(as('u1'), 'up4'), rec({ path: 'users/u1/docs/licence/other.jpg' })), 'path must end with the record id');
+    await assertFails(setDoc(ref(as('u1'), 'up5'), rec({ path: 'users/u1/docs/licence/up5.jpg', size: 6 * 1024 * 1024 })), 'over 5 MB');
+    await assertFails(setDoc(ref(as('u1'), 'up6'), rec({ path: 'users/u1/docs/licence/up6.jpg', contentType: 'application/pdf' })), 'not an image');
+    await assertFails(setDoc(ref(as('u1'), 'up7'), rec({ path: 'users/u1/docs/licence/up7.jpg', url: 'https://x' })), 'no link field');
+    await assertSucceeds(setDoc(ref(as('u1'), 'up8'), rec({ kind: 'rc', path: 'users/u1/docs/rc/up8.jpg', vehicleId: 'v-1' })), 'a paper of one vehicle');
+    await assertFails(setDoc(ref(as('u1'), 'up9'), rec({ kind: 'rc', path: 'users/u1/docs/rc/up9.jpg', vehicleId: '../x' })), 'unsafe vehicle id');
+    await assertSucceeds(getDoc(ref(as('u1'))));
+    await assertSucceeds(getDoc(ref(withAuth('fin1'))));
+    await assertFails(getDoc(ref(as('u2'))));
+    await assertFails(updateDoc(ref(as('u1')), { size: 1 }), 'append only');
+    await assertSucceeds(deleteDoc(ref(as('u1'))));
+  });
+
+  test('trip proof records: the driver writes pickup, delivery and pod; either side writes damage; both sides and admins read; nothing is edited', async () => {
+    await seedBooking('loading');
+    const rec = (kind, id, over = {}) => ({ kind, path: 'bookings/L1/' + kind + '/' + id + '.jpg', size: 1000, contentType: 'image/jpeg', by: 'driver1', createdAt: serverTimestamp(), ...over });
+    const ref = (db, id) => doc(db, 'bookings', 'L1', 'proofs', id);
+    await assertSucceeds(setDoc(ref(as('driver1'), 'p1'), rec('pickup', 'p1')));
+    await assertSucceeds(setDoc(ref(as('driver1'), 'p2'), rec('delivery', 'p2')));
+    await assertSucceeds(setDoc(ref(as('driver1'), 'p3'), rec('pod', 'p3')));
+    await assertSucceeds(setDoc(ref(as('driver1'), 'p4'), rec('damage', 'p4')));
+    await assertSucceeds(setDoc(ref(as('customer1'), 'p5'), rec('damage', 'p5', { by: 'customer1' })));
+    await assertFails(setDoc(ref(as('customer1'), 'p6'), rec('pickup', 'p6', { by: 'customer1' })), 'the customer does not write driver proof');
+    await assertFails(setDoc(ref(as('driver2'), 'p7'), rec('damage', 'p7', { by: 'driver2' })), 'a stranger');
+    await assertFails(setDoc(ref(as('driver1'), 'p8'), rec('pickup', 'p8', { by: 'customer1' })), 'by must be me');
+    await assertFails(setDoc(ref(as('driver1'), 'p9'), rec('selfie', 'p9')), 'unknown kind');
+    await assertFails(setDoc(ref(as('driver1'), 'p10'), rec('pickup', 'p10', { path: 'bookings/OTHER/pickup/p10.jpg' })), 'path of another booking');
+    await assertSucceeds(getDoc(ref(as('customer1'), 'p1')));
+    await assertSucceeds(getDoc(ref(as('driver1'), 'p5')));
+    await assertSucceeds(getDoc(ref(asAdmin(), 'p1')));
+    await assertFails(getDoc(ref(as('driver2'), 'p1')));
+    await assertFails(updateDoc(ref(as('driver1'), 'p1'), { size: 1 }));
+    await assertFails(deleteDoc(ref(as('driver1'), 'p1')));
+  });
+
   test('both flags off: a normal request without a counter still works and old profile edits are unchanged', async () => {
     await seed((db) => setDoc(doc(db, 'users', 'd1'), { role: 'driver', selectedRole: 'driver', driverName: 'Ravi' }));
     await assertSucceeds(addDoc(collection(as('d1'), 'payouts'), P()));

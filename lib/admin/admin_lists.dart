@@ -14,6 +14,8 @@ import '../core/models/booking.dart';
 import '../core/models/risk.dart';
 import '../core/models/support_ticket.dart';
 import '../core/admin/staff_roles.dart';
+import '../core/features/features.dart';
+import '../core/services/features_service.dart';
 import '../core/services/admin_console_service.dart';
 import '../core/services/auth_helpers.dart';
 import '../core/services/admin_user_service.dart';
@@ -804,13 +806,22 @@ class AdminDeletionRequestsScreen extends StatelessWidget {
         return ListTile(
           key: ValueKey('deletion_${d.id}'),
           title: Text('${r['userId'] ?? d.id}'),
-          subtitle: Text([r['status'] ?? '', r['reason'] ?? '', _ts(r['createdAt'])].where((e) => e.toString().isNotEmpty).join(' · ')),
+          subtitle: Text([r['status'] ?? '', r['blockedReason'] ?? '', r['reason'] ?? '', _ts(r['createdAt'])].where((e) => e.toString().isNotEmpty).join(' · ')),
           trailing: pending
-              ? TextButton(
-                  key: ValueKey('deletionDone_${d.id}'),
-                  onPressed: () => _run(context, () => AdminConsoleService.setDeletionStatus(d.id, 'done')),
-                  child: Text(tr(context, 'adminMarkDone')),
-                )
+              ? Wrap(spacing: 8, children: [
+                  // With the server deletion switch on, "approved" lets the server remove the data and the sign-in.
+                  if (FeaturesService.isOn(FeatureKey.serverDeletion))
+                    TextButton(
+                      key: ValueKey('deletionApprove_${d.id}'),
+                      onPressed: () => _run(context, () => AdminConsoleService.setDeletionStatus(d.id, 'approved')),
+                      child: Text(tr(context, 'adminApproveDelete')),
+                    ),
+                  TextButton(
+                    key: ValueKey('deletionDone_${d.id}'),
+                    onPressed: () => _run(context, () => AdminConsoleService.setDeletionStatus(d.id, 'done')),
+                    child: Text(tr(context, 'adminMarkDone')),
+                  ),
+                ])
               : null,
         );
       },

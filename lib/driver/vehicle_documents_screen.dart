@@ -5,6 +5,8 @@ import 'package:flutter/services.dart';
 
 import '../core/constants/logistics.dart';
 import '../core/l10n/l10n.dart';
+import '../core/photos/photo_service.dart';
+import '../core/photos/photo_widgets.dart';
 import '../core/models/vehicle.dart';
 import '../core/services/vehicle_service.dart';
 import '../core/widgets/common.dart';
@@ -184,7 +186,15 @@ class _VehicleDocumentsScreenState extends State<VehicleDocumentsScreen> {
               const SizedBox(height: 6),
               Text(tr(context, 'docsTextOnly'), style: DsStyle.t12w400.copyWith(color: AppColors.muted)),
               const SizedBox(height: 14),
-              for (final k in VehicleDocKind.all) ...[_docCard(k), const SizedBox(height: 12)],
+              for (final k in VehicleDocKind.all) ...[
+                _docCard(k),
+                PhotoAttach(target: PhotoTarget(PhotoKind.values.byName(k), vehicleId: v.id)),
+                const SizedBox(height: 12),
+              ],
+              for (final view in PhotoTarget.truckViews) ...[
+                PhotoAttach(target: PhotoTarget(PhotoKind.truck, vehicleId: v.id, view: view), titleKey: 'photoView_$view'),
+                const SizedBox(height: 12),
+              ],
               AppCard(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

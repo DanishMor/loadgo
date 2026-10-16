@@ -182,13 +182,13 @@ class _NextStatusButtonState extends State<_NextStatusButton> {
     PickupProof? pickup;
     DeliveryProof? delivery;
     if (next == BookingStatus.pickedUp) {
-      final r = await askPickupProof(context);
+      final r = await askPickupProof(context, bookingId: widget.booking.id);
       if (r == null) return;
       (otp, pickup) = r;
     } else if (next == BookingStatus.delivered) {
       // Delivery closes the load and can't be undone, so ask first.
       if (!await _confirmDelivered() || !mounted) return;
-      final r = await askDeliveryProof(context);
+      final r = await askDeliveryProof(context, bookingId: widget.booking.id);
       if (r == null) return;
       (otp, delivery) = r;
     }

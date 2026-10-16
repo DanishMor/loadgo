@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="channel_bookings">ٹرپ اور بکنگ اپڈیٹ</string>
+    <string name="channel_chat">چیٹ پیغامات</string>
+    <string name="channel_payments">ادائیگی اور پے آؤٹ</string>
+    <string name="channel_offers">نئے لوڈ اور آفر</string>
+    <string name="channel_admin">ایڈمن الرٹ</string>
+</resources>

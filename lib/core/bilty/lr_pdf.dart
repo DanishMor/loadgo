@@ -55,6 +55,9 @@ class LrPdfInput {
 
   /// Extra line under the heading (the driver the inspection copy is for).
   final String? subtitle;
+
+  /// The photo of the signed proof of delivery (bytes of a JPEG or PNG), printed under the rows when given.
+  final Uint8List? podPhoto;
   const LrPdfInput({
     required this.fields,
     required this.copy,
@@ -66,6 +69,7 @@ class LrPdfInput {
     required this.generatedAt,
     this.watermark,
     this.subtitle,
+    this.podPhoto,
   });
 }
 
@@ -88,6 +92,12 @@ Future<Uint8List> buildLrPdf(LrPdfInput i) async {
           pw.Expanded(child: pw.Text(r.value)),
         ]),
       );
+  pw.MemoryImage? podImage;
+  try {
+    if (i.podPhoto != null) podImage = pw.MemoryImage(i.podPhoto!);
+  } catch (_) {
+    podImage = null; // a damaged picture must not stop the LR from printing
+  }
   doc.addPage(pw.Page(
     pageFormat: PdfPageFormat.a4,
     margin: const pw.EdgeInsets.all(36),
@@ -111,6 +121,12 @@ Future<Uint8List> buildLrPdf(LrPdfInput i) async {
         pw.Divider(),
         for (final r in rows) row(r),
         pw.Divider(),
+        if (podImage != null) ...[
+          pw.Text(t('photoKind_pod')),
+          pw.SizedBox(height: 4),
+          pw.Container(height: 140, alignment: pw.Alignment.centerLeft, child: pw.Image(podImage, fit: pw.BoxFit.contain)),
+          pw.Divider(),
+        ],
         pw.Row(crossAxisAlignment: pw.CrossAxisAlignment.end, mainAxisAlignment: pw.MainAxisAlignment.spaceBetween, children: [
           pw.Column(crossAxisAlignment: pw.CrossAxisAlignment.start, children: [
             pw.Text('${t('blSignedBy')}: ${i.issuerName}'),

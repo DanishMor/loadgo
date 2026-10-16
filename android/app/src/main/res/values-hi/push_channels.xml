@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="channel_bookings">ट्रिप और बुकिंग अपडेट</string>
+    <string name="channel_chat">चैट संदेश</string>
+    <string name="channel_payments">भुगतान और पेआउट</string>
+    <string name="channel_offers">नए लोड और ऑफ़र</string>
+    <string name="channel_admin">एडमिन अलर्ट</string>
+</resources>

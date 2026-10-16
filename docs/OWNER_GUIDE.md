@@ -63,6 +63,8 @@ Kaun dekh sakta hai (role): super = owner, ops, support, verifier, finance. Jo r
 - **Deletion requests**: account hatane ki request (active trip ho to nahi hota). super, support.
 - **Audit log**: kisne kya kiya ka record. super, ops.
 - **Driver rewards**, **Payouts**: incentive aur payout ka record. super, finance.
+- **Announcement push**: sabhi ko ya sirf drivers / customers / transporters ko chhota sa announcement push (switch "Admin announcements by push" on hona chahiye aur functions deploy). Jinhone notification band kiya hai unhe nahi jaata. super, support, ops.
+- **Finance**: payout queue (ek finance admin approve karta hai, doosra bank ya UPI reference ke saath "paid" likhta hai), roz ki jaanch (khata, payout aur server summary ka milan), bade ya baar-baar ke payout par nishaan, payout rokna (freeze) aur sudhaar ki line. Kuch edit ya delete nahi hota. super, finance.
 
 ## 4. Playbooks
 ### SOS aaya

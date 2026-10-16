@@ -279,7 +279,7 @@ class AdminConsoleService {
       _db.collection('deletion_requests').limit(listLimit).snapshots().map((s) => s.docs);
 
   static Future<void> setDeletionStatus(String userId, String status) {
-    assert(const ['pending', 'done', 'rejected'].contains(status));
+    assert(const ['pending', 'approved', 'done', 'rejected'].contains(status));
     return _audited('deletion_status', userId, _db.collection('deletion_requests').doc(userId), {
       'status': status,
       'handledBy': Backend.requireUid(),

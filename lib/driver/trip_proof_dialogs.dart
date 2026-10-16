@@ -3,18 +3,23 @@ import 'package:flutter/services.dart';
 
 import '../core/l10n/l10n.dart';
 import '../core/models/booking.dart';
+import '../core/photos/photo_service.dart';
+import '../core/photos/photo_widgets.dart';
 
 /// Pickup: customer's OTP plus what was loaded. Null when cancelled.
-Future<(String, PickupProof)?> askPickupProof(BuildContext context) =>
-    showDialog<(String, PickupProof)>(context: context, builder: (_) => const _ProofDialog(pickup: true));
+Future<(String, PickupProof)?> askPickupProof(BuildContext context, {String? bookingId}) =>
+    showDialog<(String, PickupProof)>(context: context, builder: (_) => _ProofDialog(pickup: true, bookingId: bookingId));
 
 /// Delivery: customer's OTP plus who received the goods. Null when cancelled.
-Future<(String, DeliveryProof)?> askDeliveryProof(BuildContext context) =>
-    showDialog<(String, DeliveryProof)>(context: context, builder: (_) => const _ProofDialog(pickup: false));
+Future<(String, DeliveryProof)?> askDeliveryProof(BuildContext context, {String? bookingId}) =>
+    showDialog<(String, DeliveryProof)>(context: context, builder: (_) => _ProofDialog(pickup: false, bookingId: bookingId));
 
 class _ProofDialog extends StatefulWidget {
   final bool pickup;
-  const _ProofDialog({required this.pickup});
+
+  /// With the booking, the dialog also offers a photo of the load (the switch photoUploads must be on).
+  final String? bookingId;
+  const _ProofDialog({required this.pickup, this.bookingId});
 
   @override
   State<_ProofDialog> createState() => _ProofDialogState();
@@ -77,6 +82,9 @@ class _ProofDialogState extends State<_ProofDialog> {
                 decoration: InputDecoration(labelText: tr(context, 'enterOtp'), counterText: ''),
                 validator: (v) => RegExp(r'^\d{6}$').hasMatch(v?.trim() ?? '') ? null : tr(context, 'invalidOtp'),
               ),
+              // A photo of the load (shown only while the photoUploads switch is on).
+              if (widget.bookingId != null)
+                PhotoAttach(target: PhotoTarget(pickup ? PhotoKind.pickup : PhotoKind.delivery, bookingId: widget.bookingId)),
               if (pickup) ...[
                 TextFormField(
                   key: const ValueKey('packagesField'),

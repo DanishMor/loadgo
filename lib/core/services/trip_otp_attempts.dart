@@ -83,7 +83,11 @@ class TripOtpAttempts {
   }
 
   /// The customer (or the driver) reading the lock, e.g. for the notice card.
-  static Stream<Duration?> watchLock(String bookingId, String kind) => ref(bookingId, kind)
+  static Stream<Duration?> watchLock(String bookingId, String kind) => Backend.db
+      .collection('bookings')
+      .doc(bookingId)
+      .collection('otp_attempts')
+      .doc(kind)
       .snapshots()
       .map((s) => lockRemaining(s.data(), DateTime.now()))
       .handleError((_) {});

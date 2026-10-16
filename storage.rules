@@ -1,12 +1,45 @@
 rules_version = '2';
 
-// LoadGo Cloud Storage security rules.
-// Tests: firestore_rules_test/storage.test.mjs (run against the emulator).
+// Load 20 Cloud Storage security rules.
+// Tests: firestore_rules_test/storage.test.mjs (run against the emulators).
+//
+// Photos and papers are private. Nobody gets a public link: the app reads a
+// file with its sign-in (never with a download link) and these rules decide
+// who may. Every file is an image of at most 5 MB.
 service firebase.storage {
   match /b/{bucket}/o {
 
-    // RC documents live at vehicles/{ownerUid}/{vehicleId}/rc.jpg.
-    // Only the owner (uid in the path) may upload; any signed-in user may view.
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    // An admin: the same list the Firestore rules use (admins/{uid}).
+    function isAdmin() {
+      return signedIn() && firestore.exists(/databases/(default)/documents/admins/$(request.auth.uid));
+    }
+
+    function goodImage() {
+      return request.resource.size > 0
+          && request.resource.size < 5 * 1024 * 1024
+          && request.resource.contentType.matches('image/(jpeg|png|webp|heic|heif)');
+    }
+
+    function booking(id) {
+      return firestore.get(/databases/(default)/documents/bookings/$(id)).data;
+    }
+
+    // The driver on a trip: the booking holder or the driver a transporter assigned.
+    function tripDriver(id) {
+      return signedIn()
+          && (booking(id).driverId == request.auth.uid || booking(id).get('assignedDriverId', '') == request.auth.uid);
+    }
+
+    function tripCustomer(id) {
+      return signedIn() && booking(id).customerId == request.auth.uid;
+    }
+
+    // RC documents of vehicles, the older place: vehicles/{ownerUid}/{vehicleId}/rc.jpg.
+    // Only the owner may upload; any signed-in user may view (kept as it was).
     match /vehicles/{ownerId}/{vehicleId}/{fileName} {
       allow read: if request.auth != null;
       allow write: if request.auth != null
@@ -14,6 +47,38 @@ service firebase.storage {
           && request.resource.size < 5 * 1024 * 1024
           && request.resource.contentType.matches('image/.*');
       allow delete: if request.auth != null && request.auth.uid == ownerId;
+    }
+
+    // Papers of a person: users/{uid}/docs/{kind}/{file}. Only the owner and
+    // admins read; only the owner writes. (No Aadhaar: it is never uploaded.)
+    match /users/{uid}/docs/{kind}/{fileName} {
+      allow read: if signedIn() && (request.auth.uid == uid || isAdmin());
+      allow create, update: if signedIn()
+          && request.auth.uid == uid
+          && kind in ['licence', 'rc', 'insurance', 'puc', 'permit', 'fitness']
+          && goodImage();
+      allow delete: if signedIn() && request.auth.uid == uid;
+    }
+
+    // Photos of a truck: users/{uid}/trucks/{vehicleId}/{file}. The owner
+    // writes; any signed-in person may look (a customer sees the truck they are sent).
+    match /users/{uid}/trucks/{vehicleId}/{fileName} {
+      allow read: if signedIn();
+      allow create, update: if signedIn() && request.auth.uid == uid && goodImage();
+      allow delete: if signedIn() && request.auth.uid == uid;
+    }
+
+    // Proof on a trip: bookings/{bookingId}/{kind}/{file}.
+    //   pickup, delivery, pod : the trip driver writes
+    //   damage                : the driver or the customer writes (evidence for a claim)
+    // The two sides of the trip and admins read. Nothing is ever changed or deleted
+    // by a person: evidence stays.
+    match /bookings/{bookingId}/{kind}/{fileName} {
+      allow read: if signedIn() && (tripDriver(bookingId) || tripCustomer(bookingId) || isAdmin());
+      allow create: if goodImage()
+          && ((kind in ['pickup', 'delivery', 'pod'] && tripDriver(bookingId))
+              || (kind == 'damage' && (tripDriver(bookingId) || tripCustomer(bookingId))));
+      allow update, delete: if false;
     }
 
     // Everything else is closed by default.

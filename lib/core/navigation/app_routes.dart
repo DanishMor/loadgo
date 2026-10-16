@@ -22,6 +22,9 @@ class AppRoutes {
   /// Accept button. Registered by main.dart.
   static void Function(BuildContext context, String loadId, {required bool isDriver})? openLoad;
 
+  /// Opens the earnings screen for the role (a tapped payout push). Registered by main.dart.
+  static void Function(BuildContext context, {required bool isDriver})? openWallet;
+
   /// Starts Post Load from a place (customers). Registered by main.dart.
   static void Function(BuildContext context, {String? pickup, String? drop})? openPostLoad;
 

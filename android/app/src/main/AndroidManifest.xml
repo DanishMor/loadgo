@@ -15,6 +15,10 @@
         android:allowBackup="false"
         android:fullBackupContent="false"
         android:usesCleartextTraffic="false">
+        <!-- Push messages without their own channel use this one (F24). -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="bookings"/>
         <activity
             android:name=".MainActivity"
             android:exported="true"

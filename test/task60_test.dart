@@ -103,7 +103,8 @@ void main() {
 
   group('AdminFeaturesScreen', () {
     Future<void> open(WidgetTester t) async {
-      t.view.physicalSize = const Size(800, 2600);
+      // Tall on purpose: the list is lazy and has many switches, and every row must be built (never smaller than before).
+      t.view.physicalSize = const Size(800, 7000);
       t.view.devicePixelRatio = 1;
       addTearDown(t.view.reset);
       await t.pumpWidget(MaterialApp(home: LanguageScope(notifier: languageNotifier, child: const AdminFeaturesScreen())));

@@ -27,3 +27,8 @@ Sirf `pubspec.lock` badla (`flutter pub upgrade image_picker shared_preferences`
 
 ## Aage ka niyam
 Mahine mein ek baar `flutter pub outdated`, patch/minor lagao, analyze + poora test, phir `docs/PROGRESS.md` mein ek line. Major upgrade ek ek karke, alag commit mein, phone par test ke saath.
+
+## Part 2 (2026-10-16): ek naya package
+| Package | Version | Kyun | Dhyan |
+|---|---|---|---|
+| cloud_functions | 6.x (`flutter pub add`) | admin actions, payout decisions aur announcement push ko server function se chalane ke liye (F21, F23, F27). Switch band ho ya function deploy na ho to app purane direct write par chalta hai. | Sirf Firebase ka apna package. Android par koi extra permission nahi. Asli phone par pehli baar test karna hai (jab owner functions deploy kare). `functions/` ke Node packages (firebase-admin, firebase-functions, eslint) alag hain: `functions/package.json`. |

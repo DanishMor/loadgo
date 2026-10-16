@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../l10n/l10n.dart';
+import '../photos/photo_service.dart';
+import '../photos/photo_widgets.dart';
 import 'declared_value_line.dart';
 import 'trip_evidence_timeline.dart';
 import '../models/booking.dart';
@@ -133,6 +135,8 @@ class _NewClaimScreenState extends State<NewClaimScreen> {
           inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(6)],
           decoration: InputDecoration(labelText: tr(context, 'dspAmountOptional')),
         ),
+        const SizedBox(height: 12),
+        if (_type == ClaimType.damage) PhotoAttach(target: PhotoTarget(PhotoKind.damage, bookingId: widget.booking.id)),
         const SizedBox(height: 16),
         PrimaryButton(label: tr(context, 'reportProblem'), loading: _busy, onPressed: _submit),
       ]),
