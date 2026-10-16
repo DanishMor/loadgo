@@ -92,6 +92,18 @@ class TripEvidenceService {
     await batch.commit();
   }
 
+  /// The receiver's signature once (for the LR PDF). Null when there is none or anything goes wrong.
+  static Future<SignatureStrokes?> getSignature(String bookingId) async {
+    try {
+      final s = await _signature(bookingId).get();
+      if (!s.exists) return null;
+      final sig = SignatureStrokes.fromFirestore(s.data()!['strokes']);
+      return sig.isEmpty ? null : sig;
+    } catch (_) {
+      return null;
+    }
+  }
+
   static Stream<SignatureStrokes?> watchSignature(String bookingId) =>
       _signature(bookingId).snapshots().map((s) => s.exists ? SignatureStrokes.fromFirestore(s.data()!['strokes']) : null);
 

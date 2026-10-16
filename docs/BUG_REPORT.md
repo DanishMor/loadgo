@@ -117,3 +117,13 @@ The new code was read like a reviewer: null and crash paths, `permission-denied`
 | P2-B11 | lib/core/photos/photo_widgets.dart | pictures of papers stayed in the picker cache after sending, and in memory after sign-out | the cache copy is deleted after the upload (only inside the temporary folder, never a person's own photo); the in-memory pictures are cleared on sign-out | Medium (privacy) |
 | P2-B12 | functions/src/razorpay.js | pressing Pay again made a new Razorpay order every time | an unpaid order of the same amount from the last 30 minutes is given back | Low (clutter) |
 | P2-B13 | functions/src/razorpay.js | an unused `catch (_)` variable failed the lint | `catch {` | Low |
+
+### Round 3
+
+| ID | File | What was wrong | Fix | Severity |
+|---|---|---|---|---|
+| P2-B14 | lib/driver/vehicle_documents_screen.dart | the screen offered photos for insurance, PUC, fitness and permit but not for the RC | RC photo added at the top; `photo_service_test` checks every paper kind is a photo kind (the screen looks it up by name) | Low |
+| P2-B15 | lib/core/bilty/lr_pdf.dart, lib/core/services/trip_evidence_service.dart | the receiver's signature (strokes) was never printed on the LR/POD PDF although F31 asks for it | strokes drawn on the PDF next to the proof photo; out-of-range points are clamped; an empty signature prints nothing; `test/pod_photos_test.dart` | Medium |
+| P2-B16 | lib/main.dart | pictures of papers kept in memory after sign-out | cleared when the sign-in ends | Low (privacy) |
+
+After round 3 the angles (null and crash paths, `permission-denied` against rules, indexes, paise, leaks, overflow, dark mode, right-to-left, abuse, races) were read once more over `functions/`, `storage.rules`, `lib/core/photos`, `lib/admin`, `lib/core/adapters`: nothing new. Free bugs open: 0.

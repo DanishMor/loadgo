@@ -193,3 +193,28 @@ Open bugs: 0 (free)
 
 ## Master-7 prep (2026-10-11)
 Free gaps: 0. Open bugs: 0 (free). Fixed on the way: parseItems dropped a trailing x (P9-B1), Windows path/CRLF test failures, rules test runner on Windows, R8 Play Core rule (docs/BUG_REPORT.md). Still owner work (not code): sign in git as the repo owner for pushes if 403, real phone test of the release APK, Firebase Console steps (docs/FIREBASE_CONSOLE_CHECKLIST.md), upload keystore (docs/SIGNING.md), final name and package id (docs/RENAME.md), icon from a designer, lawyer/CA (docs/LEGAL_QUESTIONS.md).
+
+## Part 2 audit (F1 to F46), 2026-10-16
+
+Read again from nine angles: customer, driver, transporter, admin, bilty and proof, chat and calls, cost, security, quality. Every gap is either FREE (closed in code or docs), or needs a paid service, a contract, a real phone, or the owner.
+
+| ID | Gap | Class | State |
+|---|---|---|---|
+| G12.1 | Photos taken offline were kept but never sent | FREE | Closed (P2-B3, `PhotoSync`) |
+| G12.2 | The LR PDF could carry a proof photo, but nothing passed one; the receiver signature was not printed | FREE | Closed (P2-B4, signature in the PDF) |
+| G12.3 | Chat scan needed an index that was not in `firestore.indexes.json` | FREE | Closed (P2-B6, `function_indexes_test`) |
+| G12.4 | Tapping a push never opened the right screen (router started before Firebase) | FREE | Closed (P2-B8, `main_order_test`) |
+| G12.5 | A queued photo had no owner; two people on one phone could mix papers | FREE | Closed (P2-B10) |
+| G12.6 | A mass announcement went out with one tap | FREE | Closed (confirmation naming the audience) |
+| G12.7 | Trip evidence could be overwritten in storage rules | FREE | Closed (P2-B1) |
+| G12.8 | Pay pressed twice made two gateway orders | FREE | Closed (P2-B12) |
+| G12.9 | Admin viewing papers is logged by the admin's phone; a modified admin app could skip the line | needs Functions + App Check | `docs/SECURITY_REVIEW.md`, Part 2 |
+| G12.10 | Callables have no per-caller rate limit | needs App Check | `docs/SECURITY_REVIEW.md` |
+| G12.11 | Real fingerprint lock, screenshot block, real push delivery, camera on real phones | real phone | `docs/KNOWN_ISSUES.md`, `docs/BLOCKED.md` |
+| G12.12 | Live Razorpay, KYC partner, MSG91 | contract | `docs/PAID_UPGRADE_PLAN.md` |
+| G12.13 | Native reader for 162 new texts; final logo | manual (owner, designer) | `docs/TRANSLATION_REVIEW.csv`, `docs/LOGO_BRIEF.md` |
+| G12.14 | Old trip photos need a Storage lifecycle rule; second hosting site for the admin web build | manual (owner, Console) | `docs/COST_WATCH.md`, `docs/ADMIN_WEB.md` |
+| G12.15 | Trip photos of a finished trip stay after one party deletes the account (the other party's record) | by design | `docs/PRIVACY_POLICY.md` |
+
+Free gaps: 0
+Open bugs: 0 (free)

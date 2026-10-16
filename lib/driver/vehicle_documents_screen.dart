@@ -186,6 +186,8 @@ class _VehicleDocumentsScreenState extends State<VehicleDocumentsScreen> {
               const SizedBox(height: 6),
               Text(tr(context, 'docsTextOnly'), style: DsStyle.t12w400.copyWith(color: AppColors.muted)),
               const SizedBox(height: 14),
+              PhotoAttach(target: PhotoTarget(PhotoKind.rc, vehicleId: v.id)),
+              const SizedBox(height: 12),
               for (final k in VehicleDocKind.all) ...[
                 _docCard(k),
                 PhotoAttach(target: PhotoTarget(PhotoKind.values.byName(k), vehicleId: v.id)),

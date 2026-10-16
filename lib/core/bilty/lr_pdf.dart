@@ -6,6 +6,7 @@ import 'package:pdf/widgets.dart' as pw;
 
 import '../app_info.dart';
 import '../l10n/l10n.dart';
+import '../models/trip_evidence.dart';
 import 'lr_copy_view.dart';
 
 /// The Noto fonts bundled in assets/fonts: one per script, tried in turn for
@@ -58,6 +59,9 @@ class LrPdfInput {
 
   /// The photo of the signed proof of delivery (bytes of a JPEG or PNG), printed under the rows when given.
   final Uint8List? podPhoto;
+
+  /// The receiver's signature drawn on the phone (strokes), printed next to the photo when given.
+  final SignatureStrokes? signature;
   const LrPdfInput({
     required this.fields,
     required this.copy,
@@ -70,7 +74,26 @@ class LrPdfInput {
     this.watermark,
     this.subtitle,
     this.podPhoto,
+    this.signature,
   });
+}
+
+/// Draws the receiver's strokes (points between 0 and 1, top-left origin) on the page (bottom-left origin).
+void _drawSignature(PdfGraphics canvas, PdfPoint size, SignatureStrokes sig) {
+  canvas
+    ..setStrokeColor(PdfColors.black)
+    ..setLineWidth(1.2)
+    ..setLineCap(PdfLineCap.round)
+    ..setLineJoin(PdfLineJoin.round);
+  for (final stroke in sig.strokes.take(SignatureStrokes.maxStrokes)) {
+    if (stroke.length < 2) continue;
+    final pts = stroke.take(SignatureStrokes.maxPointsPerStroke).toList();
+    canvas.moveTo(pts.first.x.clamp(0, 1) * size.x, (1 - pts.first.y.clamp(0, 1)) * size.y);
+    for (final p in pts.skip(1)) {
+      canvas.lineTo(p.x.clamp(0, 1) * size.x, (1 - p.y.clamp(0, 1)) * size.y);
+    }
+    canvas.strokePath();
+  }
 }
 
 String _stamp(DateTime d) =>
@@ -121,10 +144,24 @@ Future<Uint8List> buildLrPdf(LrPdfInput i) async {
         pw.Divider(),
         for (final r in rows) row(r),
         pw.Divider(),
-        if (podImage != null) ...[
-          pw.Text(t('photoKind_pod')),
+        if (podImage != null || (i.signature != null && !i.signature!.isEmpty)) ...[
+          pw.Text(t('podTitle')),
           pw.SizedBox(height: 4),
-          pw.Container(height: 140, alignment: pw.Alignment.centerLeft, child: pw.Image(podImage, fit: pw.BoxFit.contain)),
+          pw.Row(crossAxisAlignment: pw.CrossAxisAlignment.end, children: [
+            if (podImage != null) pw.Container(height: 140, width: 220, alignment: pw.Alignment.centerLeft, child: pw.Image(podImage, fit: pw.BoxFit.contain)),
+            if (podImage != null) pw.SizedBox(width: 16),
+            if (i.signature != null && !i.signature!.isEmpty)
+              pw.Column(crossAxisAlignment: pw.CrossAxisAlignment.start, children: [
+                pw.Container(
+                  width: 180,
+                  height: 70,
+                  decoration: const pw.BoxDecoration(border: pw.Border(bottom: pw.BorderSide(color: PdfColors.grey600))),
+                  child: pw.CustomPaint(size: const PdfPoint(180, 70), painter: (canvas, size) => _drawSignature(canvas, size, i.signature!)),
+                ),
+                pw.SizedBox(height: 2),
+                pw.Text(t('receiverSignature'), style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey700)),
+              ]),
+          ]),
           pw.Divider(),
         ],
         pw.Row(crossAxisAlignment: pw.CrossAxisAlignment.end, mainAxisAlignment: pw.MainAxisAlignment.spaceBetween, children: [

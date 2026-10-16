@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:transport_app/core/constants/logistics.dart';
 import 'package:transport_app/core/features/features.dart';
 import 'package:transport_app/core/photos/photo_service.dart';
 import 'package:transport_app/core/services/features_service.dart';
@@ -57,6 +58,13 @@ void main() {
     PhotoService.gateway = storage;
   });
   tearDown(() => PhotoService.gateway = const FirebaseStorageGateway());
+
+  test('every vehicle paper kind of the app is a photo kind (the vehicle documents screen looks it up by name)', () {
+    for (final k in VehicleDocKind.all) {
+      expect(PhotoKind.values.map((e) => e.name), contains(k));
+      expect(PhotoTarget.docKinds.map((e) => e.name), contains(k));
+    }
+  });
 
   group('where a photo goes', () {
     test('papers, truck photos and trip proof have the paths storage.rules expects', () {

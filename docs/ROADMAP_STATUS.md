@@ -556,3 +556,20 @@ The 347 roadmap codes above are unchanged (236 Done, 111 Paid-or-Later, 0 open).
 | Feature map, app name in one file | - | Done (docs/WHERE_IS_WHAT.md, docs/NAMING.md) |
 
 Free gaps after the fourth audit round: 0 (docs/GAP_AUDIT.md).
+
+
+## Part 2 addendum (2026-10-16)
+
+The 347 roadmap codes above are unchanged. Part 2 (F1 to F46) built the pieces that were waiting for the paid stack, each behind a switch that is OFF and with the old behaviour as fallback:
+
+| Roadmap neighbour | What Part 2 added | State |
+|---|---|---|
+| Cloud Functions (`TODO(functions)` list) | 38 functions: limits, chat scan, credits, trust, jobs, admin actions, deletion, wallet, push, payments, status | Written and tested on emulators; **not deployed** (`docs/BLAZE_GO_LIVE.md`) |
+| Push notifications (`LATER(paid)` push) | per-device token, 5 channels, tap routing, waves 3/7/15 km, quiet hours, announcements | Ready; needs Blaze and a real phone |
+| Photos (`LATER(paid)` photos) | papers, truck, pickup/delivery/damage, admin viewer, POD and LR PDF, storage rules | Ready; needs Storage (Blaze) |
+| Payment gateway (`LATER(paid)` gateway) | Razorpay adapter + server code, test keys first | Ready; needs the owner's account |
+| KYC and SMS | adapter skeletons (manual admin review stays the default) | Skeleton; needs a partner |
+| Earnings and accounts | hubs, step-up, limits, maker-checker, finance dashboard | Done (records only) |
+| Admin web panel | admin-only web build | Done; second hosting site is an owner step |
+
+Free gaps after the Part 2 audit: 0 (`docs/GAP_AUDIT.md`, "Part 2 audit").
