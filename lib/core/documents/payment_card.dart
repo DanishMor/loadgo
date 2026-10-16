@@ -6,6 +6,7 @@ import '../constants/logistics.dart';
 import '../l10n/l10n.dart';
 import '../models/booking.dart';
 import '../models/ledger_entry.dart';
+import '../payments/online_pay.dart';
 import '../payments/payment_logic.dart';
 import '../services/backend.dart';
 import '../services/payment_service.dart';
@@ -51,6 +52,22 @@ class _PaymentCardState extends State<PaymentCard> {
     final paise = await askPricePaise(context,
         title: tr(context, 'markPaid'), label: tr(context, 'amountPaid'), initialPaise: b.billAmountPaise, note: tr(context, 'recordsOnly'));
     if (paise != null) await _run(() => PaymentService.markPaid(b, paise));
+  }
+
+  Future<void> _payOnline() async {
+    setState(() => _busy = true);
+    try {
+      final r = await OnlinePay.payBooking(widget.booking);
+      if (!mounted) return;
+      showSnack(context, tr(context, switch (r.status) {
+        OnlinePayStatus.paid => 'payOnlineDone',
+        OnlinePayStatus.cancelled => 'payOnlineCancelled',
+        OnlinePayStatus.unavailable => 'payOnlineUnavailable',
+        OnlinePayStatus.failed => 'payOnlineFailed',
+      }));
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
   }
 
   Future<void> _recordAdvance() async {
@@ -149,6 +166,13 @@ class _PaymentCardState extends State<PaymentCard> {
               onPressed: _busy ? null : () => _run(() => PaymentService.confirmAdvance(b)),
               icon: const Icon(Icons.verified_outlined),
               label: Text(tr(context, 'advanceConfirm')),
+            ),
+          if (me == b.customerId && b.paymentStatus == PaymentStatus.pending && OnlinePay.available)
+            FilledButton.icon(
+              key: const ValueKey('payOnline'),
+              onPressed: _busy ? null : _payOnline,
+              icon: const Icon(Icons.credit_card_rounded),
+              label: Text(tr(context, 'payOnline')),
             ),
           if (me == b.customerId && open && b.payUpiId.isNotEmpty)
             FilledButton.tonalIcon(

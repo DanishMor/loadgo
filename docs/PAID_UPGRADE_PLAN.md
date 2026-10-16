@@ -109,3 +109,9 @@ Har sandbox run ke baad `flutter test test/adapter_contract_test.dart` aur `docs
 - [ ] Flag Off karke dekha: app purane raaste par theek chalti hai.
 - [ ] Privacy policy, data-safety, retention, `docs/PAID_ADAPTERS.md` aur `docs/PROGRESS.md` update.
 - [ ] Kharcha 1 hafte dekha aur budget ke andar.
+
+## Payments (G9, 2026-10-16)
+
+Code ready, deploy pending: `paymentCreateOrder`, `paymentVerify`, `paymentRefund`, `paymentWebhook` and the "Pay online" button, all behind `paymentGateway` (OFF). Ledger and wallet: a good payment writes the driver's earning and commission lines (server side); a refund writes one adjustment. Details: docs/FUNCTIONS.md, docs/BLAZE_GO_LIVE.md step 4.
+
+**Payouts stay manual** (finance prepares, a second admin pays, maker-checker). **RazorpayX** (automatic payouts to a driver's bank or UPI) is documented only: it needs a business bank account, KYC of the business, a contract for RazorpayX, and a decision on who bears the transfer fee; the driver's payout details (already collected, masked in the app) would be sent to the partner, so the privacy policy and DPDP notice need a new processor line first. Do not start before the pilot shows enough payout volume.

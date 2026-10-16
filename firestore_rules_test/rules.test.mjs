@@ -6347,3 +6347,21 @@ describe('strike appeals (M6-34)', () => {
     await assertSucceeds(getDoc(doc(asAdmin(), 'strike_appeals', 'u1_1')));
   });
 });
+
+describe('G9 payment records are written by the server only', () => {
+  test('nobody can read or write payment orders and webhook events from a phone, not even an admin', async () => {
+    await seed((db) => setDoc(doc(db, 'payment_orders', 'order_1'), { bookingId: 'b1', customerId: 'u1', amountPaise: 100, status: 'created' }));
+    for (const db of [as('u1'), as('u2'), asAdmin()]) {
+      await assertFails(getDoc(doc(db, 'payment_orders', 'order_1')));
+      await assertFails(rawSetDoc(doc(db, 'payment_orders', 'order_2'), { bookingId: 'b1', customerId: 'u1', amountPaise: 1, status: 'paid' }));
+      await assertFails(updateDoc(doc(db, 'payment_orders', 'order_1'), { status: 'paid' }));
+      await assertFails(rawSetDoc(doc(db, 'payment_events', 'ev1'), { type: 'payment.captured' }));
+      await assertFails(getDoc(doc(db, 'payment_events', 'ev1')));
+    }
+  });
+
+  test('a person cannot write the system refund line or a trip earning for an online payment', async () => {
+    await assertFails(rawSetDoc(doc(as('u1'), 'ledger', 'adj_rf_order_1_100'), { driverId: 'u1', type: 'adjustment', amountPaise: 100, reason: 'Online refund', by: 'system_razorpay', createdAt: serverTimestamp() }));
+    await assertFails(rawSetDoc(doc(asAdmin(), 'ledger', 'adj_rf_order_1_100'), { driverId: 'u1', type: 'adjustment', amountPaise: 100, reason: 'Online refund', by: 'system_razorpay', createdAt: serverTimestamp() }));
+  });
+});

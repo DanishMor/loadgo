@@ -29,7 +29,9 @@ class RazorpayGateway implements PaymentGateway {
       final paise = r['amountPaise'];
       if (id is! String || paise is! int || paise <= 0 || paise > maxOrderPaise) return (null, PaymentFailure.notConfigured);
       if (paise != amountPaise) return (null, PaymentFailure.invalidAmount);
-      return (PaymentOrder(id, paise, reference), null);
+      final key = r['keyId'];
+      final okKey = key is String && RegExp(r'^[A-Za-z0-9_]{6,60}$').hasMatch(key);
+      return (PaymentOrder(id, paise, reference, okKey ? key : null), null);
     } catch (e) {
       return (null, _failure(e, PaymentFailure.notConfigured));
     }

@@ -19,9 +19,9 @@ Things that cannot be proved on the laptop, or that need a paid service or a con
 
 | Area | State |
 |---|---|
-| Cloud Functions (38 functions) | Written and tested on the emulator; **not deployed**. Until then every server switch stays OFF and the app does the older thing on the phone. |
+| Cloud Functions (39 functions) | Written and tested on the emulator; **not deployed**. Until then every server switch stays OFF and the app does the older thing on the phone. |
 | Storage (photos) | Rules written and tested; the bucket needs the Blaze plan. |
-| Online payment | Razorpay adapter and server code are ready for **test keys**; no live money. Payments and payouts stay records. |
+| Online payment | G9: Razorpay server code (order, verify, webhook, refund, ledger lines) and the "Pay online" button are ready for **test keys** (the `razorpay_flutter` window is not yet tried on a real phone; the release build may need the plugin's keep rules if a build shows a missing class). No live money. Payouts stay manual with two admins. |
 | KYC and GST check | Skeleton only; admin looks at the papers. |
 | SMS to emergency contacts (MSG91) | Skeleton only. |
 | Maps and road ETA | Not started (city table and straight-line distance). |

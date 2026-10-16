@@ -49,3 +49,17 @@ test('the http helper sends basic auth to the Razorpay address and maps failures
   const refused = razorpayHttp('a', 'b', async () => ({ ok: false, status: 400, json: async () => ({ error: { description: 'bad' } }) }));
   await assert.rejects(refused('GET', '/x'), (e) => e.code === 'failed-precondition' && e.message === 'bad');
 });
+
+test('G9: the webhook signature is HMAC-SHA256 hex of the raw body with the webhook secret', () => {
+  const { verifyWebhookSignature } = require('../../src/razorpay');
+  const body = Buffer.from('{"event":"payment.captured"}');
+  const sig = crypto.createHmac('sha256', 'wh_secret').update(body).digest('hex');
+  assert.equal(verifyWebhookSignature(body, sig, 'wh_secret'), true);
+  assert.equal(verifyWebhookSignature(body.toString(), sig, 'wh_secret'), true);
+  assert.equal(verifyWebhookSignature(body, sig, 'other'), false);
+  assert.equal(verifyWebhookSignature(body, sig, ''), false);
+  assert.equal(verifyWebhookSignature(Buffer.from('{"event":"x"}'), sig, 'wh_secret'), false);
+  assert.equal(verifyWebhookSignature(body, undefined, 'wh_secret'), false);
+  assert.equal(verifyWebhookSignature(undefined, sig, 'wh_secret'), false);
+  assert.equal(verifyWebhookSignature(body, sig.slice(2), 'wh_secret'), false);
+});

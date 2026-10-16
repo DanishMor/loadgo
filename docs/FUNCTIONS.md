@@ -32,7 +32,7 @@ Every function first asks `flagOn(db, name)`: it reads `config/features.flags.<n
 | `serverAdminActions` | admin actions as callable functions | F21 |
 | `serverDeletion` | account deletion cascade | F22 |
 | `serverWallet` | wallet summary, reconciliation, payout checks | F23 |
-| `paymentGateway` | Razorpay order, signature check, refund (test mode first) | F34 |
+| `paymentGateway` | Razorpay order, signature check, webhook, refund, ledger lines (test mode first) | F34, G9 |
 | `pushNotifications` | push on events | F25 |
 | `adminBroadcast` | admin announcement push | F27 |
 | `photoUploads` | photo upload helpers | F28 to F31 |
@@ -52,6 +52,7 @@ Every function first asks `flagOn(db, name)`: it reads `config/features.flags.<n
 | deleteApprovedAccount | deletion_requests/{uid} becomes approved | serverDeletion | removes the data, the sign-in and the files; keeps money records; blocks on an open payout |
 | walletOnLedger, walletOnPayout, walletReconcile, adminPayoutDecision | ledger or payout written, every day 04:00, callable | serverWallet | recomputes wallets/{uid}, rejects an impossible payout request, writes the daily report, approve / pay / reject / reverse with maker-checker |
 | pushOnNotification, pushOnOffer, pushOnOfferSelected, pushOnChat, pushOnSos, pushOnPayout, pushNewLoad, pushWaves, pushDocExpiry | events and schedules | pushNotifications | push messages (see below) |
+| paymentCreateOrder, paymentVerify, paymentRefund, paymentWebhook | callable (3), HTTPS POST from Razorpay | paymentGateway | G9. The amount is the booking's own, never from the phone. A good payment (phone verify or signed webhook, whichever comes first, counted once) marks the order and the booking paid and writes the driver's two ledger lines (earning, commission at the config/pricing rate, Pro rate while the plan lasts). A refund (finance or super only, reserved before the call, capped at what was paid) writes one adjustment line. Webhook events are claimed once in `payment_events`. |
 | adminBroadcast | callable | adminBroadcast | an announcement push to a role or to everyone (super, support, ops) |
 
 ### Push messages

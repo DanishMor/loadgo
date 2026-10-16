@@ -58,7 +58,7 @@ exports.scanGroupMessage = chatScanTrigger('driver_groups/{groupId}/messages/{id
 // ---- F18: credits and referral settlement (switch: serverCredits) ----
 const { onDocumentWritten, onDocumentUpdated } = require('firebase-functions/v2/firestore');
 const { onSchedule } = require('firebase-functions/v2/scheduler');
-const { onCall, HttpsError } = require('firebase-functions/v2/https');
+const { onCall, onRequest, HttpsError } = require('firebase-functions/v2/https');
 
 exports.creditsBalance = onDocumentWritten('users/{uid}/credits/{lineId}', async (event) => {
   const db = getFirestore();
@@ -140,6 +140,7 @@ const { defineSecret } = require('firebase-functions/params');
 const razorpay = require('./src/razorpay');
 const RZP_KEY_ID = defineSecret('RAZORPAY_KEY_ID');
 const RZP_KEY_SECRET = defineSecret('RAZORPAY_KEY_SECRET');
+const RZP_WEBHOOK_SECRET = defineSecret('RAZORPAY_WEBHOOK_SECRET');
 
 function paymentCallable(run) {
   return onCall({ secrets: [RZP_KEY_ID, RZP_KEY_SECRET] }, async (request) => {
@@ -155,10 +156,31 @@ function paymentCallable(run) {
   });
 }
 
-exports.paymentCreateOrder = paymentCallable((db, uid, data, http) => razorpay.createOrder(db, http, uid, data));
+// The key id is public by nature (the checkout window needs it); the app gets it in the answer and never stores it.
+exports.paymentCreateOrder = paymentCallable((db, uid, data, http) => razorpay.createOrder(db, http, uid, data, Date.now(), RZP_KEY_ID.value()));
 exports.paymentVerify = paymentCallable((db, uid, data) => razorpay.verifyPayment(db, RZP_KEY_SECRET.value(), uid, data));
 exports.paymentRefund = paymentCallable((db, uid, data, http) =>
   razorpay.refundPayment(db, http, uid, data, (d, u) => adminActions.requireStaff(d, u, ['super', 'finance'])));
+
+// G9: Razorpay tells us about a payment or refund by itself (webhook). The raw body is signed; a bad signature is a 400,
+// a repeated event is a 200 that does nothing. Switch off: 200 and nothing is read, so Razorpay does not keep retrying.
+exports.paymentWebhook = onRequest({ secrets: [RZP_WEBHOOK_SECRET], maxInstances: 5 }, async (req, res) => {
+  if (req.method !== 'POST') { res.status(405).send('POST only'); return; }
+  const db = getFirestore();
+  try {
+    if (!(await flagOn(db, 'paymentGateway'))) { res.status(200).send('disabled'); return; }
+    const r = await razorpay.handleWebhook(db, {
+      rawBody: req.rawBody,
+      signature: req.get('x-razorpay-signature'),
+      eventId: req.get('x-razorpay-event-id'),
+      secret: RZP_WEBHOOK_SECRET.value(),
+    });
+    res.status(r.status).send(r.body);
+  } catch (e) {
+    console.error('payment webhook failed', e && e.message);
+    res.status(500).send('failed');
+  }
+});
 
 // F33: works with every switch off (no flag check), so the owner can test a fresh deploy.
 exports.serverStatus = onCall(async (request) => {

@@ -35,6 +35,8 @@ Check: the app works as before with all switches OFF. Rollback: redeploy the pre
 1. Only if you will use online payment: set the two secrets yourself. Each command asks you to type the value, so it never appears in a file or in this chat:
    - `firebase functions:secrets:set RAZORPAY_KEY_ID`
    - `firebase functions:secrets:set RAZORPAY_KEY_SECRET`
+   - `firebase functions:secrets:set RAZORPAY_WEBHOOK_SECRET` (a long random text you invent; type the same text in the Razorpay dashboard webhook form)
+   After the deploy (step 3) Razorpay dashboard > Webhooks > add the URL of `paymentWebhook` (Console > Functions > paymentWebhook > URL), events `payment.captured`, `payment.failed`, `refund.processed`.
    Use the **test** keys from the Razorpay dashboard first. Keep the live keys for step 9.
 2. `cd functions; npm ci; npm test` then `npm run test:emulator`.
 3. `firebase deploy --only functions` (see `docs/FUNCTIONS.md`).

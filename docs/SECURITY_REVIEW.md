@@ -154,3 +154,11 @@ What was read: `functions/index.js`, every module in `functions/src/`, `storage.
 - **Storage rule reads the booking in Firestore** (`firestore.get`): each photo read or write costs one extra read. Counted in `COST_WATCH.md`.
 
 **Re-run**: rules tests (`firestore_rules_test`, `npm test`), `functions` unit and emulator tests, `integration/run.sh`, and `docs/SECRETS_AUDIT.md`.
+
+### G9: Razorpay money records (2026-10-16)
+
+- Amount comes from the booking, never from the phone (tested). Verify and webhook share one settle step in one transaction, so the same payment is never counted twice; an amount that differs from the order is stored as `mismatch` and not paid.
+- Webhook: HMAC-SHA256 of the raw body with its own secret, constant-time compare; event id claimed once in `payment_events` (replay does nothing); a failed run releases the claim so Razorpay can retry; switch off answers 200 without reading anything.
+- Refund: finance or super only; the amount is reserved in a transaction before the gateway call (two at once cannot pass), released if the gateway fails; one adjustment ledger line per refund with a deterministic id; a refund seen only in the webhook is applied once and capped at the payment.
+- `payment_orders` and `payment_events` have no client rule: only the Admin SDK touches them (deny by default).
+- Accepted: the ledger lines written by the server use `by: system_razorpay`; finance sees them in the wallet audit like any adjustment.

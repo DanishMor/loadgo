@@ -111,6 +111,7 @@ import 'hub_strings.dart';
 import 'wallet_security_strings.dart';
 import 'finance_strings.dart';
 import 'photo_strings.dart';
+import 'online_pay_strings.dart';
 import 'admin_web_strings.dart';
 import 'broadcast_strings.dart';
 
@@ -263,6 +264,7 @@ const List<Map<String, List<String>>> stringTables = [
   walletSecurityStrings,
   financeStrings,
   photoStrings,
+  onlinePayStrings,
   adminWebStrings,
   broadcastStrings,
 ];

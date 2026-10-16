@@ -4,7 +4,10 @@ class PaymentOrder {
   /// Integer paise, always.
   final int amountPaise;
   final String reference; // booking id
-  const PaymentOrder(this.id, this.amountPaise, this.reference);
+
+  /// The partner's public key id for the checkout window, sent by the server with the order (null for the fake).
+  final String? keyId;
+  const PaymentOrder(this.id, this.amountPaise, this.reference, [this.keyId]);
 }
 
 enum PaymentFailure { notConfigured, invalidAmount, unknownOrder, badSignature, alreadyRefunded, refundTooLarge }

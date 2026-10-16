@@ -110,7 +110,7 @@ Firestore reads from the functions: the chat scan reads the sender's last messag
 
 ### Payment and push
 
-- Razorpay charges per payment (the partner's fee, not Google's). Functions for payment run only when a person pays or an admin refunds: tiny.
+- Razorpay charges per payment (the partner's fee, not Google's). Functions for payment run only when a person pays, when Razorpay sends the webhook (about 2 to 3 events per payment) or an admin refunds: tiny. Each payment writes about 6 documents (order, booking, 2 ledger lines, event, wallet recompute).
 - FCM sending is free; the cost is the function runs above.
 
 ### Other triggers and schedules (small)
