@@ -32,6 +32,7 @@ Release builds use R8 (`isMinifyEnabled`, `isShrinkResources`). Rules are in `an
 | ACCESS_FINE_LOCATION, ACCESS_COARSE_LOCATION | trip tracking, nearest loads (asked with an explanation first) |
 | POST_NOTIFICATIONS | phone alerts (Android 13+; asked with an explanation first) |
 | RECORD_AUDIO | in-app voice call, voice input, Test my microphone |
+| USE_BIOMETRIC | optional fingerprint / screen lock on the earnings screens (`appLock`, OFF); nothing is stored or sent |
 | MODIFY_AUDIO_SETTINGS, CHANGE_NETWORK_STATE | speaker / call audio routing (flutter_webrtc) |
 No camera, contacts, SMS, storage or phone-state permission is declared. Photos use the system picker.
 

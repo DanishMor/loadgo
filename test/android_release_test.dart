@@ -26,7 +26,7 @@ void main() {
 
   test('only the documented permissions are declared', () {
     const allowed = {
-      'ACCESS_FINE_LOCATION', 'ACCESS_COARSE_LOCATION', 'POST_NOTIFICATIONS', 'RECORD_AUDIO',
+      'ACCESS_FINE_LOCATION', 'ACCESS_COARSE_LOCATION', 'POST_NOTIFICATIONS', 'RECORD_AUDIO', 'USE_BIOMETRIC',
       'INTERNET', 'MODIFY_AUDIO_SETTINGS', 'ACCESS_NETWORK_STATE', 'CHANGE_NETWORK_STATE',
     };
     final found = RegExp(r'uses-permission android:name="android\.permission\.(\w+)"').allMatches(manifest).map((m) => m.group(1)!).toSet();

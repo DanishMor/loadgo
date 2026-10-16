@@ -32,6 +32,7 @@ Status key: [x] done in the repo, [ ] needs you (account, keys, decisions).
 | ACCESS_FINE_LOCATION / COARSE | nearest city, nearby loads, trip progress | shown once before the first request |
 | POST_NOTIFICATIONS | booking, offer and payment alerts | Settings > Phone alerts, shown once |
 | RECORD_AUDIO | speech to text on the mic button, and the in-app voice call | shown once before the first use of each |
+| USE_BIOMETRIC | optional fingerprint or screen lock on earnings (`appLock`, OFF by default) | the phone shows its own prompt |
 | INTERNET | sign-in, data and the in-app call | none (normal permission) |
 | MODIFY_AUDIO_SETTINGS | speaker on / off during an in-app call | none (normal permission) |
 | ACCESS_NETWORK_STATE | the call checks that the network is there | none (normal permission) |

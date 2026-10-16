@@ -115,7 +115,7 @@ void main() {
       final m = File('android/app/src/main/AndroidManifest.xml').readAsStringSync();
       expect(m, contains('android:label="${AppInfo.name}"'));
       final perms = RegExp(r'uses-permission android:name="android\.permission\.(\w+)"').allMatches(m).map((x) => x[1]).toSet();
-      expect(perms, {'ACCESS_FINE_LOCATION', 'ACCESS_COARSE_LOCATION', 'POST_NOTIFICATIONS', 'RECORD_AUDIO', 'INTERNET', 'MODIFY_AUDIO_SETTINGS', 'ACCESS_NETWORK_STATE', 'CHANGE_NETWORK_STATE'});
+      expect(perms, {'ACCESS_FINE_LOCATION', 'ACCESS_COARSE_LOCATION', 'POST_NOTIFICATIONS', 'RECORD_AUDIO', 'USE_BIOMETRIC', 'INTERNET', 'MODIFY_AUDIO_SETTINGS', 'ACCESS_NETWORK_STATE', 'CHANGE_NETWORK_STATE'});
       final checklist = File('docs/PLAY_STORE_CHECKLIST.md').readAsStringSync();
       for (final p in perms) {
         expect(checklist, contains(p!.split('_').first == 'ACCESS' ? 'ACCESS_FINE_LOCATION' : p));

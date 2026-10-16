@@ -2,8 +2,8 @@
 
 Plan: docs/MASTER_PLAN_PART3.md. Read it, then continue from NEXT.
 
-LAST_DONE: G6
-NEXT: G7 (local_auth fingerprint lock)
+LAST_DONE: G7
+NEXT: G8 (analytics)
 
 Unfinished: none.
 

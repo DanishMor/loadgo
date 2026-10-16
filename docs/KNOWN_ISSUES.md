@@ -7,7 +7,7 @@ Things that cannot be proved on the laptop, or that need a paid service or a con
 | Area | What may happen | Fallback / note |
 |---|---|---|
 | Screenshot block (`secureScreens`) | On some phones the block may not apply to the recent-apps thumbnail. | Test on 2 phones before relying on it. |
-| Fingerprint lock (`appLock`) | The real prompt needs the `local_auth` plugin (not added). The switch uses a fake in tests and shows no real prompt. | Leave `appLock` OFF. |
+| Fingerprint lock (`appLock`) | G7: the real prompt is plugged in through `local_auth` (`USE_BIOMETRIC`, MainActivity is a FlutterFragmentActivity). Not yet tried on a real phone: check that the prompt opens, that a wrong finger keeps the screen locked and that the Settings switch refuses when no lock is set. | Leave `appLock` OFF until tested on 2 phones. |
 | Fresh SMS code (`walletStepUp`) | The code path is tested with fakes and rules; a real SMS needs billing and a real number. | Leave OFF until tested. |
 | Push | Delivery depends on the phone maker (battery saver can delay or drop it). Tap routing is tested only with fakes. | The in-app notification list always has the message. |
 | Camera and gallery | The system picker differs by phone; very large photos on weak phones may be slow to shrink. | Photos are cut to 1600 px and under 5 MB before sending. |
