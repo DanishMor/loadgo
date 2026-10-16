@@ -573,3 +573,16 @@ The 347 roadmap codes above are unchanged. Part 2 (F1 to F46) built the pieces t
 | Admin web panel | admin-only web build | Done; second hosting site is an owner step |
 
 Free gaps after the Part 2 audit: 0 (`docs/GAP_AUDIT.md`, "Part 2 audit").
+
+### Deploy state (G6, 2026-10-16)
+
+A second view next to the status column above: **Code ready, deploy pending** means the code, rules and an emulator or unit test exist, the switch is OFF, and it is not live until the owner deploys functions, rules or Storage (docs/BLAZE_GO_LIVE.md). The status counts in the Summary are not changed by this table.
+
+| Row | Deploy state | Evidence |
+|---|---|---|
+| CH5, S4, S5, S12, S14, DOC5, DOC8 (photos) | Code ready, deploy pending | `photoUploads` switch, PhotoService and queue (16 + 13 tests), storage rules tests (13), integration test through the Storage emulator. Needs Blaze and a Storage bucket |
+| Push (N1 to N10 sending part, CH push, missed call) | Code ready, deploy pending | `pushNotifications` switch, push triggers in `functions/`, emulator test (13 of 13 integration). Needs functions deployed |
+| PAY2, PAY5 (cards, refund) | Code ready, deploy pending | `paymentGateway` switch, Razorpay server module and RazorpayGateway client; test keys only. Needs Blaze and the owner's test keys as Functions secrets |
+| Server checks (limits, chat scan, credits, trust, jobs, admin actions, deletion, wallet) | Code ready, deploy pending | `server*` switches, 92 emulator tests |
+| Admin web (F32) | Code ready, deploy pending | Build checked; second hosting site is the owner's step (docs/ADMIN_WEB.md) |
+| KYC, MSG91, Maps, App Check, live location | Not code ready | Part 3 tasks G9 to G15 |
