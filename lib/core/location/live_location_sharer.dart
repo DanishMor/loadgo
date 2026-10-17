@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 
+import '../app_info.dart';
 import '../constants/logistics.dart';
 import '../features/features.dart';
 import '../models/booking.dart';
@@ -47,7 +48,7 @@ class LiveLocationSharer {
   static String? get activeBooking => _bookingId;
 
   /// Starts (or keeps) sharing for [bookingId]. [notice] is the notification text shown by the phone.
-  static Future<SharingState> start(String bookingId, {String noticeTitle = 'Load 20', String noticeText = ''}) async {
+  static Future<SharingState> start(String bookingId, {String noticeTitle = AppInfo.name, String noticeText = ''}) async {
     if (!enabled) return state.value = SharingState.off;
     if (_bookingId == bookingId && state.value == SharingState.on) return state.value;
     await stop();

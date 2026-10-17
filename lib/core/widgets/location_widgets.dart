@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../app_info.dart';
 import '../location/live_location_sharer.dart';
 import '../models/booking.dart';
 import '../services/booking_service.dart';
@@ -36,7 +37,7 @@ class _LocationSharingCardState extends State<LocationSharingCard> {
     super.initState();
     if (_live) {
       // G11: the shared service keeps going when this screen is closed; it stops with the trip.
-      LiveLocationSharer.start(widget.booking.id, noticeTitle: tr(context, 'liveNoticeTitle'), noticeText: tr(context, 'liveNoticeText'));
+      LiveLocationSharer.start(widget.booking.id, noticeTitle: trf(context, 'liveNoticeTitle', {'app': AppInfo.name}), noticeText: tr(context, 'liveNoticeText'));
     } else {
       _start();
     }
@@ -88,7 +89,7 @@ class _LocationSharingCardState extends State<LocationSharingCard> {
             child: Row(children: [
               Icon(on ? Icons.my_location_rounded : Icons.location_off_rounded, color: on ? AppColors.success : Colors.redAccent),
               const SizedBox(width: 12),
-              Expanded(child: Text(tr(context, key), key: const ValueKey('liveShareState'), style: DsStyle.w700.copyWith(color: AppColors.body))),
+              Expanded(child: Text(trf(context, key, {'app': AppInfo.name}), key: const ValueKey('liveShareState'), style: DsStyle.w700.copyWith(color: AppColors.body))),
             ]),
           );
         },

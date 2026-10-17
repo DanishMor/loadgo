@@ -13,12 +13,18 @@ class KhataService {
 
   static Stream<List<KhataParty>> watchParties() {
     if (Backend.uid == null) return Stream.value(const []);
-    return _parties.snapshots().map((s) => [for (final d in s.docs) KhataParty.fromDoc(d.id, d.data())]..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase())));
+    // At most 100 parties exist (the app refuses more), so the list is bounded.
+    return _parties.limit(KhataParty.maxParties).snapshots().map((s) => [for (final d in s.docs) KhataParty.fromDoc(d.id, d.data())]..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase())));
   }
+
+  /// The newest 500 lines of one party (the balance is kept on the party, so older lines do not change it).
+  static const maxShownLines = 500;
 
   static Stream<List<KhataEntry>> watchEntries(String partyId) => _parties
       .doc(partyId)
       .collection('entries')
+      .orderBy('createdAt', descending: true)
+      .limit(maxShownLines)
       .snapshots()
       .map((s) => [for (final d in s.docs) KhataEntry.fromDoc(d.id, d.data())]..sort((a, b) => b.date.compareTo(a.date)));
 

@@ -6,5 +6,5 @@ const Map<String, List<String>> publicTrustStrings = {
   'ptRating': ['{r} stars ({n})', '{r} स्टार ({n})', '{r} star ({n})', '{r} ನಕ್ಷತ್ರ ({n})', '{r} நட்சத்திரம் ({n})', '{r} స్టార్లు ({n})', '{r} स्टार ({n})', '{r} સ્ટાર ({n})', '{r} তারকা ({n})', '{r} ਸਟਾਰ ({n})', '{r} سٹار ({n})', '{r} اسٹار ({n})'],
   'ptSince': ['Since {month}', '{month} से', '{month} se', '{month} ರಿಂದ', '{month} முதல்', '{month} నుండి', '{month} पासून', '{month} થી', '{month} থেকে', '{month} ਤੋਂ', '{month} پیٹھ', '{month} سے'],
   'ptVerified': ['Verified', 'सत्यापित', 'Verified', 'ಪರಿಶೀಲಿತ', 'சரிபார்க்கப்பட்டது', 'ధృవీకరించబడింది', 'सत्यापित', 'ચકાસાયેલ', 'যাচাইকৃত', 'ਪੜਤਾਲਿਆ', 'تصدیق شدہ', 'تصدیق شدہ'],
-  'ptNew': ['New on Load 20', 'Load 20 पर नए', 'Load 20 par naye', 'Load 20 ನಲ್ಲಿ ಹೊಸಬರು', 'Load 20 இல் புதியவர்', 'Load 20 లో కొత్త', 'Load 20 वर नवीन', 'Load 20 પર નવા', 'Load 20-তে নতুন', 'Load 20 ਤੇ ਨਵੇਂ', 'Load 20 پیٹھ نوو', 'Load 20 پر نئے'],
+  'ptNew': ['New on {app}', '{app} पर नए', '{app} par naye', '{app} ನಲ್ಲಿ ಹೊಸಬರು', '{app} இல் புதியவர்', '{app} లో కొత్త', '{app} वर नवीन', '{app} પર નવા', '{app}-তে নতুন', '{app} ਤੇ ਨਵੇਂ', '{app} پیٹھ نوو', '{app} پر نئے'],
 };

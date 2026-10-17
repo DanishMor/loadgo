@@ -222,3 +222,29 @@ Every admin list (tickets, SOS, reports, audit log, vehicles, deletion requests 
 | Go-live order, release list, known issues | `docs/BLAZE_GO_LIVE.md`, `docs/RELEASE_CANDIDATE.md`, `docs/KNOWN_ISSUES.md` |
 | Texts for the native reader, logo brief | `docs/TRANSLATION_REVIEW.csv`, `docs/LOGO_BRIEF.md` |
 | Integration tests (all emulators) | `functions/integration/`, `firebase.integration.json` |
+
+## Part 3: paid-service code, new features, go-live (G1 to G45)
+
+Every row sits behind a switch that is OFF (see the flag table above). Setup docs are named in the last column.
+
+| What | Who | Where in the app | Code | Doc |
+|---|---|---|---|---|
+| Fingerprint / screen lock on earnings (real prompt) | driver, transporter | Settings; the earnings screens | `lib/core/security/local_auth_authenticator.dart` | KNOWN_ISSUES |
+| Analytics funnel (7 steps, no personal data, only after consent) | all | none (invisible) | `lib/core/services/funnel.dart`, `analytics_events.dart` | ANALYTICS |
+| Pay online (Razorpay checkout) | customer | Booking > payment card > Pay online | `lib/core/payments/online_pay.dart`, `functions/src/razorpay.js` | BLAZE_GO_LIVE, FUNCTIONS |
+| Payment held until delivery | customer, driver | payment card ("Held safely...") | `payHold`, `functions/src/razorpay.js` (`releaseHeld`) | FUNCTIONS |
+| Road distance on the post-load form | customer | Post a load > estimate card | `lib/core/maps/road_distance.dart`, `functions/src/maps.js` | MAPS_SETUP |
+| Trip map | customer | Booking > Show on map | `lib/core/maps/trip_map.dart` | MAPS_SETUP |
+| Usual price of a route | customer | Post a load > estimate card | `lib/core/pricing/route_rates.dart`, `functions/src/rates.js` | COST_WATCH |
+| Live trip location (foreground service, consent) | driver, customer | Driver trip screen; customer "Last seen N min ago" | `lib/core/location/live_location_sharer.dart` | LIVE_LOCATION |
+| SMS: trip step fallback and SOS text | customer, anyone with emergency contacts | none (invisible); SOS | `functions/src/sms.js`, `lib/core/services/safety_service.dart` | SMS_SETUP |
+| ID checks and admin answer chips | admin (driver saves papers) | Admin > Verification card | `functions/src/kyc.js`, `lib/core/widgets/kyc_check_widgets.dart` | KYC_PARTNER_CHECKLIST |
+| GST rules, IGST and place of supply on the invoice, e-way adapter | driver | Invoice PDF | `lib/core/gst/gst_rules.dart`, `lib/core/adapters/eway_adapter.dart` | GST_EWAY |
+| App Check (Play Integrity) and the server guard | all | none | `lib/core/services/app_check_setup.dart`, `functions/src/appCheck.js` | APP_CHECK |
+| Driver trust card | customer | offers on a load; booking screen | `lib/core/trust/public_trust_card.dart` | NEW_FEATURES_PLAN |
+| Safety check-in | driver | Driver trip screen after a 30 minute stop | `lib/driver/safety_checkin_card.dart` | NEW_FEATURES_PLAN |
+| Party khata | driver, transporter, customer | Profile > Party khata | `lib/core/khata/` | NEW_FEATURES_PLAN |
+| Business card | driver, transporter | Profile > My business card | `lib/core/share/business_card.dart` | NEW_FEATURES_PLAN |
+| Cost guards (switch, daily limits, App Check) | owner | Admin > Features; `config/*Limits` | `functions/src/quota.js` | COST_WATCH |
+| Go-live | owner | none | `tool/golive_check.ps1`, `tool/status.ps1`, `tool/regression_batches.ps1` | GO_LIVE_RUNBOOK, PHONE_TEST_SHEET |
+| Partner ideas not built | owner | none | none | PARTNER_OFFERS, COMPETITOR_MATRIX |

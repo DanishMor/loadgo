@@ -93,7 +93,7 @@ class BusinessCardView extends StatelessWidget {
         if (data.verified)
           Padding(
             padding: const EdgeInsets.only(top: DsSpace.s2),
-            child: StatusBadge(label: tr(context, 'bizVerified'), tone: StatusTone.success, icon: Icons.verified_rounded),
+            child: StatusBadge(label: trf(context, 'bizVerified', {'app': AppInfo.name}), tone: StatusTone.success, icon: Icons.verified_rounded),
           ),
         const SizedBox(height: DsSpace.s3),
         if (data.city.isNotEmpty) _line(c, Icons.place_outlined, data.city),

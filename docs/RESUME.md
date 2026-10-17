@@ -2,8 +2,8 @@
 
 Plan: docs/MASTER_PLAN_PART3.md. Read it, then continue from NEXT.
 
-LAST_DONE: G41
-NEXT: G42 full regression in batches
+LAST_DONE: G45 (all tasks done; only the final summary for the owner remains)
+NEXT: none. Owner steps: docs/GO_LIVE_RUNBOOK.md
 
 Unfinished: none.
 

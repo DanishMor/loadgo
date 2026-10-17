@@ -21,3 +21,7 @@ Give the filled CSV back. The fixes go into the `lib/core/l10n/*_strings.dart` f
 ## Make the CSV again
 
 `node` script used: it compares the string tables with the commit before Part 2 (`e329d3c`) and writes only new or changed keys. Ask Claude to run it again before sending a new copy to the reader.
+
+## Part 3 (G38 to G45)
+
+`docs/TRANSLATION_REVIEW_PART3.csv` lists the 94 texts added in Part 3 (maps, live location, online payment, held payment, ID-check answers, driver trust card, usual price, safety check-in, khata, business card, and the names and help of the new switches), 12 languages each, same columns as the Part 2 sheet. Make it again with `node tool/translation_review_part3.js`. Two things to check closely: the SOS and check-in sentences (a driver may read them in a bad moment: short and calm) and the payment sentences (a customer must understand "held until delivery").

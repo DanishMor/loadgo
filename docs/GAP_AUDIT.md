@@ -218,3 +218,26 @@ Read again from nine angles: customer, driver, transporter, admin, bilty and pro
 
 Free gaps: 0
 Open bugs: 0 (free)
+
+## Part 3 audit (G1 to G45), 2026-10-17
+
+Read again after the paid-services code, the new features and the bug hunt. Each gap is FREE (closed), or needs a paid service, a contract, a real phone, an owner step or a lawyer/CA answer.
+
+| ID | Gap | Class | State |
+|---|---|---|---|
+| G13.1 | Analytics collected before consent (automatic events) | FREE | Closed (P3-B2, manifest off until consent) |
+| G13.2 | Live location kept running after sign-out | FREE | Closed (P3-B1) |
+| G13.3 | SMS could be provoked by a made-up notification | FREE | Closed (P3-B3, booking ownership check) |
+| G13.4 | Refund commission maths above 2^53; stale refund reservation | FREE | Closed (P3-B4, P3-B5) |
+| G13.5 | Cancelled booking with held money had no trace | FREE | Closed (P3-B8, audit line for finance) |
+| G13.6 | Lost Maps cost note; slow khata lists | FREE | Closed (P3-B6, P3-B9, `cost_guards_test`, performance guard) |
+| G13.7 | Functions dependencies had 9 findings (2 high) | FREE | Closed (firebase-admin 14, firebase-functions 7; audit 0) |
+| G13.8 | Real Razorpay checkout window, Maps view, fingerprint prompt, foreground service, App Check token on real phones | real phone | `docs/PHONE_TEST_SHEET.md`, `docs/KNOWN_ISSUES.md` |
+| G13.9 | Live keys and secrets, DLT-approved SMS templates, Maps keys restricted, Play Integrity registered | manual (owner) | `docs/GO_LIVE_RUNBOOK.md`, `docs/MAPS_SETUP.md`, `docs/SMS_SETUP.md`, `docs/APP_CHECK.md` |
+| G13.10 | ID-check partner; GSP for e-way bill; FASTag, insurance partners | contract | `docs/KYC_PARTNER_CHECKLIST.md`, `docs/GST_EWAY.md`, `docs/PARTNER_OFFERS.md` |
+| G13.11 | E-way bill threshold and validity, invoice "reverse charge: No", wait-time charge on the bill, DPDP for ID checks and location | lawyer / CA | `docs/GST_EWAY.md`, `docs/LEGAL_QUESTIONS.md` |
+| G13.12 | Automatic refund of money held on a cancelled booking | later (finance refunds by hand today) | `docs/KNOWN_ISSUES.md` |
+| G13.13 | Native reader for the Part 3 texts (about 40 new keys x 12) | manual (owner) | `docs/TRANSLATION_REVIEW.md` |
+
+Free gaps: 0
+Open bugs: 0 (free)

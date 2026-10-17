@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../adapters/partner_adapters.dart';
+import '../app_info.dart';
 import '../adapters/sms_adapter.dart';
 import '../features/features.dart';
 import '../models/app_notification.dart';
@@ -88,7 +89,7 @@ class SafetyService {
         final user = (await Backend.db.collection('users').doc(uid).get()).data();
         final loc = location ?? booking?.lastKnownLocation;
         final where = loc == null ? '' : ' https://maps.google.com/?q=${loc.latitude.toStringAsFixed(4)},${loc.longitude.toStringAsFixed(4)}';
-        smsContacts(user, 'SOS from a Load 20 user. Please call them.$where').ignore();
+        smsContacts(user, 'SOS from a ${AppInfo.name} user. Please call them.$where').ignore();
       } catch (_) {}
     }
     return ref.id;

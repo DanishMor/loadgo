@@ -111,4 +111,23 @@ What the ticks above already have as test code, so a release check only needs th
 | Docs that must match code | go-live, release, known issues, cost, translation sheet, logo brief | `test/blaze_docs_test.dart`, `test/release_docs_test.dart`, `test/known_issues_test.dart`, `test/cost_security_docs_test.dart`, `test/translation_review_test.dart`, `test/logo_brief_test.dart` |
 | Quality of new screens | tap size, spoken labels, contrast, 360x640 at 2.0x, dark, right-to-left | `test/new_screens_a11y_test.dart`, `test/photo_widgets_test.dart` |
 
+## Part 3 (G7 to G45): what is tested where
+
+| Area | What is checked | Tests |
+|---|---|---|
+| Fingerprint lock | plugin wrapper never throws, switch needs a supported phone | `test/local_auth_authenticator_test.dart` |
+| Analytics | seven funnel steps once each, no personal data, nothing without consent, manifest auto-collection off | `test/funnel_test.dart`, `test/g38_guards_test.dart` |
+| Payments | order from the booking, signature, webhook (HMAC, replay), refund reservation and ledger, hold until delivery, quota, Pay online button | `functions/test/emulator/razorpay*.test.js`, `test/online_pay_test.dart`, `test/pay_hold_card_test.dart`, `functions/integration/part3.test.js` |
+| Maps | cache, daily limits, India bounds, road km on the post-load form, trip map follows the driver | `functions/test/emulator/maps.test.js`, `test/road_distance_test.dart`, `test/trip_map_test.dart` |
+| Live location | write policy, consent, stops with the trip, last-seen text, retention job | `test/live_location_g11_test.dart`, `functions/test/emulator/jobs.test.js` |
+| SMS | only own emergency contacts, only own booking, daily limits, SOS texts contacts | `functions/test/emulator/sms.test.js`, `test/sms_sos_test.dart` |
+| ID checks | sandbox, format re-check, Aadhaar four digits only, admin chips, server-only answers | `functions/test/emulator/kyc.test.js`, `test/kyc_g13_test.dart` |
+| GST and e-way bill | state, IGST, validity days, adapter contract, invoice fields | `test/gst_eway_test.dart` |
+| App Check | asleep by default, monitor then enforce | `functions/test/emulator/appCheck.test.js`, `test/app_check_setup_test.dart` |
+| Cost guards | every paid call has a switch, quota, guard and cost note | `test/cost_guards_test.dart` |
+| New features | trust card, usual price, safety check-in, khata, business card | `test/public_trust_card_test.dart`, `test/route_rates_test.dart`, `test/safety_checkin_test.dart`, `test/khata_test.dart`, `test/business_card_test.dart` |
+| Rules | server-only collections, money fields, khata privacy, SOS reasons | `firestore_rules_test/rules.test.mjs` (G9, G13, G20, G22, G23, G38 blocks) |
+| Layout and access | 7 languages, light/dark, 2.0x, low-end, targets, labels, contrast | `test/part3_layout_test.dart` |
+| Go-live | runbook and check script exist and agree | `test/go_live_docs_test.dart` |
+
 Run order and memory rule: tests run in batches of about 30 files with `--concurrency=1`, never the whole suite at once (`scratchpad/run_batches.ps1` was used; results are in `docs/PROGRESS.md`).

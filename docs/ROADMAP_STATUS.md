@@ -585,4 +585,10 @@ A second view next to the status column above: **Code ready, deploy pending** me
 | PAY2, PAY5 (cards, refund) | Code ready, deploy pending | `paymentGateway` switch, Razorpay server module and RazorpayGateway client; test keys only. Needs Blaze and the owner's test keys as Functions secrets |
 | Server checks (limits, chat scan, credits, trust, jobs, admin actions, deletion, wallet) | Code ready, deploy pending | `server*` switches, 92 emulator tests |
 | Admin web (F32) | Code ready, deploy pending | Build checked; second hosting site is the owner's step (docs/ADMIN_WEB.md) |
-| KYC, MSG91, Maps, App Check, live location | Not code ready | Part 3 tasks G9 to G15 |
+| Maps and road ETA (M module: map, road distance) | Code ready, deploy pending | `maps` switch, `mapsRoute` (cached, limited), trip map; needs the Maps keys (docs/MAPS_SETUP.md) |
+| Live location (M, T module) | Code ready, deploy pending | `liveLocation`, foreground service, consent, retention job; needs a real 1 hour drive test (docs/PHONE_TEST_SHEET.md) |
+| SMS (N, CH module: SMS fallback, SOS text) | Code ready, deploy pending | `smsGateway`, MSG91 through Functions; needs DLT templates and the key (docs/SMS_SETUP.md) |
+| KYC check (K module) | Code ready (sandbox), partner not chosen | `kycVerify`, `KycVerifier` contract, admin review stays the real check (docs/KYC_PARTNER_CHECKLIST.md) |
+| E-way bill and GST (DOC module) | Rules and adapter ready, generation needs a GSP | docs/GST_EWAY.md |
+| App Check (BE5) | Code ready, deploy and Console pending | monitor first (docs/APP_CHECK.md) |
+| Held payment, usual price, trust card, check-in, khata, business card | Code ready, deploy pending | flags `payHold`, `rateRange`, `tripTrustCard`, `safetyCheckin`, `khata`, `bizCard` |

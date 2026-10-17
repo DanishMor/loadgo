@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 
+import '../app_info.dart';
 import 'online_pay.dart';
 
 /// The Razorpay checkout window through the `razorpay_flutter` plugin. The key id
@@ -28,7 +29,7 @@ class RazorpayCheckout implements CheckoutLauncher {
         'key': keyId,
         'order_id': orderId,
         'amount': amountPaise, // paise, the same as the server's order
-        'name': 'Load 20',
+        'name': AppInfo.name,
         'description': description,
         'currency': 'INR',
         'theme': {'color': '#1B2A49'},

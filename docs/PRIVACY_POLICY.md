@@ -18,6 +18,13 @@ LoadGo connects customers who need goods moved with drivers and transporters who
 - **Earnings records:** your earnings, commission, payout requests and their status are kept as records. LoadGo does not hold your money. Staff approve payouts with two people and every action is written to an audit log.
 - **Online payment (only if the owner switches it on):** the payment partner (Razorpay) handles card or UPI details. LoadGo does not receive or store card numbers, only the order, the amount and whether it was paid.
 - **Login safety:** how many login codes were asked for and how many wrong codes were typed, so that guessing can be stopped.
+- **Live trip location (drivers, only if the switch is on and you agree):** while a trip is on the way, your position goes to the customer of that trip only. A notification shows while it runs. The last position is removed one day after the trip ends.
+- **Maps (only if the switch is on):** the two cities of a route are sent through our server to Google to get the road distance and time. No name or phone number is sent.
+- **Text messages (only if the switch is on):** a short SMS to your own phone for trip steps when you cannot receive push, and, if you press SOS, to the emergency contacts you saved. A text-message partner delivers them. The login code stays with Firebase.
+- **ID checks (only if the switch is on):** a licence, RC, PAN or GSTIN number may be checked with a verification partner. Of the Aadhaar number only the last four digits are kept, and they are never sent anywhere. Admins can still review your papers by eye.
+- **Analytics:** nothing is collected until you agree in Settings.
+- **App integrity:** the app may show Google Play Integrity proof (Firebase App Check) so that our servers can tell the real app from a copy.
+- **Khata and business card:** your party notebook is private to you. A business card is made on your phone and shared only when you press Share; your phone number is on it only if you switch that on each time.
 
 ## Why we use it
 To run the service (matching, bookings, safety, support), to prevent fraud and duplicate accounts, to send in-app and push notifications you allow, and to improve the app.

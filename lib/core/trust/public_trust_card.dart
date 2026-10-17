@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../app_info.dart';
 import '../features/features.dart';
 import '../l10n/l10n.dart';
 import '../theme/design_tokens.dart';
@@ -63,7 +64,7 @@ class PublicTrustCard extends StatelessWidget {
             ));
           }
           if (chips.isEmpty) {
-            chips.add(StatusBadge(key: const ValueKey('ptNew'), label: tr(context, 'ptNew'), tone: StatusTone.neutral, icon: Icons.fiber_new_rounded));
+            chips.add(StatusBadge(key: const ValueKey('ptNew'), label: trf(context, 'ptNew', {'app': AppInfo.name}), tone: StatusTone.neutral, icon: Icons.fiber_new_rounded));
           }
           return Padding(
             key: const ValueKey('publicTrustCard'),
