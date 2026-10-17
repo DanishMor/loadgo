@@ -2,8 +2,8 @@
 
 Plan: docs/MASTER_PLAN_PART3.md. Read it, then continue from NEXT.
 
-LAST_DONE: G38
-NEXT: G39 security review (functions + rules), dependency audit (firebase-admin major)
+LAST_DONE: G40
+NEXT: G41 performance and battery notes, then G42 full regression
 
 Unfinished: none.
 

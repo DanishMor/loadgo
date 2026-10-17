@@ -162,3 +162,49 @@ What was read: `functions/index.js`, every module in `functions/src/`, `storage.
 - Refund: finance or super only; the amount is reserved in a transaction before the gateway call (two at once cannot pass), released if the gateway fails; one adjustment ledger line per refund with a deterministic id; a refund seen only in the webhook is applied once and capped at the payment.
 - `payment_orders` and `payment_events` have no client rule: only the Admin SDK touches them (deny by default).
 - Accepted: the ledger lines written by the server use `by: system_razorpay`; finance sees them in the wallet audit like any adjustment.
+
+## Part 3: functions, rules and secrets review (G39, 2026-10-17)
+
+Scope: everything added in G7 to G25 and the fixes of G38. Method: each function read for who can call it, what it trusts, what it writes, what it logs, and what happens twice; each new rule read for who can read and write and which fields are whitelisted; each rule has a test (`firestore_rules_test`), each function an emulator test.
+
+### Functions
+
+| Function | Who may call | Trusts nothing about | Quota / switch | Writes | Logs | Replay or twice |
+|---|---|---|---|---|---|---|
+| `paymentCreateOrder` | signed-in customer of that booking | the amount (taken from the booking), the booking owner (checked) | switch `paymentGateway`, 30 orders a person a day (`config/paymentLimits`), App Check guard | `payment_orders` | no card or key data | an open order of the same amount is given back |
+| `paymentVerify` | the order's customer | the signature (HMAC check, constant time), the amount, who is paying | switch, guard | order, booking, ledger lines in one transaction | none | same payment id = same answer; another payment id = refused |
+| `paymentWebhook` | anyone who can send an HTTPS POST | everything until the HMAC of the raw body matches | switch (off = 200, nothing read) | order, booking, ledger, `payment_events` | event type only | event id claimed once; a failed run releases the claim |
+| `paymentRefund` | finance or super admin | the amount (capped at what was paid), races (reservation) | switch, guard | order, adjustment ledger line | none | refund id and running total make the line id |
+| `releaseHeld` (trigger) | server only | the hold on the booking, the refunds so far | switch `payHold` (a hold exists only while it is on) | ledger, booking | none | hold cleared in the same transaction |
+| `mapsRoute` | signed-in | coordinates (India box, numbers only) | switch `maps`, 20 a person and 2000 in total a day, guard | `route_cache`, `maps_usage` | none | cached 30 days |
+| `smsSend` | signed-in | the number (must be one of the caller's own emergency contacts), the text (480 characters, template variable) | switch `smsGateway`, 10 a person and 500 in total a day, guard | `quota_usage` | none | each call is one SMS (quota counts it) |
+| `smsOnNotification` (trigger) | server only | the notification (it can be made up by any signed-in person) | switch, only for trip types, only the customer of the named booking, only without push | `quota_usage` | none | a text per notification, quota counts it |
+| `kycVerify` | signed-in | the number (format checked again, Aadhaar only four digits), the caller | switch `kycVerify`, 6 a person and 300 in total a day, guard | `kyc_checks/{uid}` (Admin SDK only) | no number | idempotent per kind (merge) |
+| `jobClearLocations` | schedule | n/a | switch `serverJobs` | removes two fields from finished trips | none | idempotent |
+| `tripDelivered` additions | trigger | the booking | switches `rateRange`, `payHold` | `route_rates`, ledger, audit line | none | `route_rates_seen` per booking |
+
+### Rules added in Part 3 (all in the matrix and slice tests)
+
+| Collection | Read | Write | Notes |
+|---|---|---|---|
+| `kyc_checks/{uid}` | admins | nobody | separate from `users` on purpose: a user can edit their own user document |
+| `route_rates/{key}` | signed-in, one document at a time | nobody | aggregate amounts only |
+| `route_rates_seen`, `payment_events`, `payment_orders`, `quota_usage`, `maps_usage`, `route_cache` | nobody | nobody | Admin SDK only (deny by default) |
+| `users/{uid}/khata/**` | the owner only (not admins) | the owner, field whitelists, money in whole paise within range, lines never edited | private notebook |
+| `sos_alerts` | unchanged | `reason` added, only `sos`, `checkin_help`, `checkin_no_answer` | |
+| `bookings` money fields (`paymentHold`, `onlinePaidPaise`, `paymentVia`) | unchanged | cannot be written from a phone (tested for customer, both drivers, admin) | |
+| `ledger` | unchanged | the server lines (earning, commission, `adj_rf_*`) cannot be written by a phone | |
+
+### Findings
+
+Nothing high found. The G38 fixes (docs/BUG_REPORT.md P3-B1 to P3-B8) were the findings of this review and of the bug hunt. Accepted risks, each with its reason:
+
+1. **ID-check enumeration**: with a real partner a person could learn whether a licence number is on record; limited to 6 checks a day per person and 300 in total, and the partner is not chosen yet.
+2. **A person can start a payment order for any of their own bookings** up to the daily limit; the order costs nothing until paid.
+3. **The Razorpay key id is sent to the phone** with each order; it is a public identifier (the secret never leaves the server).
+4. **App Check is in monitor mode** until the owner turns on `appCheckEnforce` (docs/APP_CHECK.md); until then a script with a valid sign-in can call the paid functions within the daily quotas.
+5. **Held money on a cancelled booking** is refunded by finance by hand; the audit line makes it findable.
+
+### Dependencies
+
+`npm audit --omit=dev` in `functions/` found 9 vulnerabilities (2 high) in packages under `firebase-admin` 12. Fixed by moving to `firebase-admin` 14 and `firebase-functions` 7 (Node 22 as before): audit now reports 0; lint, unit tests, emulator tests and the all-emulator integration test were run on the new versions (results in docs/PROGRESS.md). Flutter packages: see docs/DEPENDENCIES.md (the new Part 3 packages are first-party Google or the payment partner's own plugin).

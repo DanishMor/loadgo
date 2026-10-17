@@ -133,3 +133,7 @@ npm run test:integration
 - Not covered (no emulator exists): the real FCM send, the Razorpay call, the schedules. Those stay in `docs/KNOWN_ISSUES.md`.
 
 If a run stops with "Port 8087 is not open ... could not start Pub/Sub Emulator", an emulator from an earlier run is still alive: end the leftover `java` process of that emulator (Task Manager) and run again.
+
+## Functions upgrade (G39, 2026-10-17)
+
+`firebase-admin` 12 to 14 and `firebase-functions` 6 to 7 (Node 22 as before): `npm audit --omit=dev` went from 9 findings (2 high) to **0**. Lint, 33 unit tests, 157 emulator tests and the integration test through all emulators (23 cases) pass on the new versions. Deploy order stays: owner deploys after the checks in docs/BLAZE_GO_LIVE.md; nothing was deployed.
