@@ -30,3 +30,29 @@ New screens and what keeps them cheap:
 - **Push:** the app registers once per sign-in; the tap router does no work until a push is tapped.
 - Guard tests: `test/performance_guard_test.dart` (lists, shrinkWrap, images), `test/setstate_future_guard_test.dart`, `test/new_screens_a11y_test.dart` (targets and contrast).
 - Real-phone numbers (frame times, memory with 50 photos in a list, cold start) are still to be filled in by the tester (steps above).
+
+## Part 3 (G41, 2026-10-17): what the new code costs
+
+Every new feature is behind a switch that is OFF, so a phone that does not use one pays nothing at run time. What each costs when it is ON, and the guard that keeps it small:
+
+| Feature | Cost when ON | Guard |
+|---|---|---|
+| Live trip location (G11) | GPS with a 50 m filter inside a foreground service; Firestore writes at most one per 30 s and only after 100 m (or every 5 min parked): about 12 to 120 writes an hour of driving. Battery: the GPS is the cost; the notification is required by Android. | `LiveLocationPolicy` (bounded config), stops with the trip and at sign-out, server job removes the last position after a day |
+| Trip map (G10) | one native map view while the screen is open; no polling (follows the booking document) | opened by a button, not drawn on other screens |
+| Road distance (G10) | one function call per new city pair per run, waits 0.9 s after typing stops; the server keeps the answer 30 days | per person and total daily caps, city-table fallback |
+| Usual price (G20) | one document read per route and truck type per run (cached in memory) | `RouteRates` cache; nothing without a known city pair |
+| Driver trust card (G19) | one document read per driver shown (a stream on one small document) | hidden with the switch off; failure draws nothing |
+| Party khata (G23) | a stream of the person's parties (at most 100); lines load only inside one party | list screen reads parties only (the balance sits on the party) |
+| Business card (G24) | one picture drawn at 3x when shared (about 340 x 300 px), nothing kept | made only on the Share tap |
+| Check-in (G22) | no extra GPS (it uses the banner's samples); one timer of 10 minutes while asking | one card per halt |
+| Analytics funnel (G8) | seven events per person in their whole life | once per step, nothing while consent is off |
+| App Check (G15) | token fetch is automatic and cached by the SDK | asleep unless the build asks |
+| Server work | see docs/COST_WATCH.md (one table of every paid call, its switch and its daily limit) | `test/cost_guards_test.dart` |
+
+### App size and start-up
+
+New plugins: `local_auth`, `razorpay_flutter`, `google_maps_flutter`, `firebase_app_check`. The release build removes unused code (`isMinifyEnabled`), but the Maps and Razorpay plugins add native libraries; measure the release APK / bundle size before and after on the owner's laptop (`flutter build appbundle --release` then look at the size) and write the numbers here. Start-up: nothing new runs before the first screen except reading the saved analytics choice after sign-in and (only if the build asks) App Check activation; both are fire-and-forget.
+
+### Low-end phones
+
+`test/part3_layout_test.dart` draws every new screen with Low-end mode on. The map is the one heavy view: on a Low-end phone prefer the "Last seen N min ago" line (switch `maps` off, or do not open the map). Nothing new loops without a stop.

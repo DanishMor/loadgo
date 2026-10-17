@@ -158,3 +158,9 @@ After round 3 the angles (null and crash paths, `permission-denied` against rule
 Checked and found fine (no change): indexes (new queries are one range on one field, or equality on one or two fields: `locationUpdatedAt <`, `paymentId ==`, `bookingId == and status ==`); a replayed webhook (event id claimed once); two refunds at once (reservation); verify then webhook (one settle step); an amount that differs from the order (flagged `mismatch`, never paid); Aadhaar (only four digits accepted, nothing looked up); KYC answer forgery (separate collection, no client write); a pay-order flood (daily quota); kill switches (every paid call has a switch, a quota, the App Check guard and a cost note, `test/cost_guards_test.dart`).
 
 Known and accepted: a person can still find out, with the partner switched on, whether a licence number exists in the government record (6 checks a day per person, 300 in total).
+
+### Round 4 (G41, caught by the existing performance guard)
+
+| ID | File | What was wrong | Fix | Severity |
+|---|---|---|---|---|
+| P3-B9 | lib/core/khata/khata_screens.dart | the party list (up to 100) and the line list (hundreds) were `ListView(children: [for ...])`, which builds every row at once | `ListView.builder` with the totals as row 0 and the note as the last row; `test/performance_guard_test.dart` found it | Low (speed on cheap phones) |

@@ -69,18 +69,32 @@ class _KhataScreenState extends State<KhataScreen> {
             return EmptyState(icon: Icons.menu_book_outlined, title: tr(context, 'khataEmpty'), subtitle: tr(context, 'khataEmptyHint'));
           }
           final t = KhataBook.totals(parties);
-          return ListView(padding: const EdgeInsets.fromLTRB(DsSpace.s4, DsSpace.s4, DsSpace.s4, 96), children: [
-            AppCard(
-              key: const ValueKey('khataTotals'),
-              child: Row(children: [
-                Expanded(child: _total(context, 'khataTheyOwe', t.theyOwe, c.success)),
-                const SizedBox(width: DsSpace.s3),
-                Expanded(child: _total(context, 'khataIOwe', t.iOwe, c.error)),
-              ]),
-            ),
-            const SizedBox(height: DsSpace.s3),
-            for (final p in parties)
-              Padding(
+          // A builder, not a list of children: a book can hold up to 100 parties. Row 0 is the totals, the last row the note.
+          return ListView.builder(
+            padding: const EdgeInsets.fromLTRB(DsSpace.s4, DsSpace.s4, DsSpace.s4, 96),
+            itemCount: parties.length + 2,
+            itemBuilder: (context, i) {
+              if (i == 0) {
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: DsSpace.s3),
+                  child: AppCard(
+                    key: const ValueKey('khataTotals'),
+                    child: Row(children: [
+                      Expanded(child: _total(context, 'khataTheyOwe', t.theyOwe, c.success)),
+                      const SizedBox(width: DsSpace.s3),
+                      Expanded(child: _total(context, 'khataIOwe', t.iOwe, c.error)),
+                    ]),
+                  ),
+                );
+              }
+              if (i == parties.length + 1) {
+                return Padding(
+                  padding: const EdgeInsets.only(top: DsSpace.s2),
+                  child: Text(tr(context, 'khataRecordsOnly'), style: DsType.caption.copyWith(color: c.textHint)),
+                );
+              }
+              final p = parties[i - 1];
+              return Padding(
                 padding: const EdgeInsets.only(bottom: DsSpace.s2),
                 child: AppCard(
                   key: ValueKey('khataParty_${p.id}'),
@@ -98,12 +112,9 @@ class _KhataScreenState extends State<KhataScreen> {
                     ]),
                   ]),
                 ),
-              ),
-            Padding(
-              padding: const EdgeInsets.only(top: DsSpace.s2),
-              child: Text(tr(context, 'khataRecordsOnly'), style: DsType.caption.copyWith(color: c.textHint)),
-            ),
-          ]);
+              );
+            },
+          );
         },
       ),
     );
@@ -173,32 +184,41 @@ class KhataPartyScreen extends StatelessWidget {
               IconButton(key: const ValueKey('khataShare'), tooltip: tr(context, 'khataShare'), icon: const Icon(Icons.share_outlined), onPressed: entries.isEmpty ? null : () => _share(context, entries)),
             ],
           ),
-          body: ListView(padding: const EdgeInsets.all(DsSpace.s4), children: [
-            AppCard(
-              key: const ValueKey('khataBalance'),
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(tr(context, bal > 0 ? 'khataTheyOwe' : (bal < 0 ? 'khataIOwe' : 'khataSettled')), style: DsType.caption.copyWith(color: c.textMuted)),
-                MoneyText(bal.abs(), size: MoneySize.large, color: bal > 0 ? c.success : (bal < 0 ? c.error : c.text)),
-              ]),
-            ),
-            const SizedBox(height: DsSpace.s3),
-            Row(children: [
-              Expanded(child: AppButton(key: const ValueKey('khataOwed'), label: tr(context, 'khataAddOwed'), icon: Icons.add_rounded, onPressed: () => _add(context, KhataEntryKind.owed))),
-              const SizedBox(width: DsSpace.s2),
-              Expanded(child: AppButton(key: const ValueKey('khataReceived'), label: tr(context, 'khataAddReceived'), icon: Icons.remove_rounded, kind: AppButtonKind.secondary, onPressed: () => _add(context, KhataEntryKind.received))),
-            ]),
-            const SizedBox(height: DsSpace.s3),
-            if (entries.isEmpty) Padding(padding: const EdgeInsets.all(DsSpace.s4), child: Text(tr(context, 'khataNoLines'), textAlign: TextAlign.center, style: DsType.body.copyWith(color: c.textMuted))),
-            for (final e in entries)
-              ListTile(
+          // A builder: a party can have hundreds of lines. Row 0 is the balance and the two buttons, then the lines.
+          body: ListView.builder(
+            padding: const EdgeInsets.all(DsSpace.s4),
+            itemCount: entries.isEmpty ? 2 : entries.length + 1,
+            itemBuilder: (context, i) {
+              if (i == 0) {
+                return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+                  AppCard(
+                    key: const ValueKey('khataBalance'),
+                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      Text(tr(context, bal > 0 ? 'khataTheyOwe' : (bal < 0 ? 'khataIOwe' : 'khataSettled')), style: DsType.caption.copyWith(color: c.textMuted)),
+                      MoneyText(bal.abs(), size: MoneySize.large, color: bal > 0 ? c.success : (bal < 0 ? c.error : c.text)),
+                    ]),
+                  ),
+                  const SizedBox(height: DsSpace.s3),
+                  Row(children: [
+                    Expanded(child: AppButton(key: const ValueKey('khataOwed'), label: tr(context, 'khataAddOwed'), icon: Icons.add_rounded, onPressed: () => _add(context, KhataEntryKind.owed))),
+                    const SizedBox(width: DsSpace.s2),
+                    Expanded(child: AppButton(key: const ValueKey('khataReceived'), label: tr(context, 'khataAddReceived'), icon: Icons.remove_rounded, kind: AppButtonKind.secondary, onPressed: () => _add(context, KhataEntryKind.received))),
+                  ]),
+                  const SizedBox(height: DsSpace.s3),
+                ]);
+              }
+              if (entries.isEmpty) return Padding(padding: const EdgeInsets.all(DsSpace.s4), child: Text(tr(context, 'khataNoLines'), textAlign: TextAlign.center, style: DsType.body.copyWith(color: c.textMuted)));
+              final e = entries[i - 1];
+              return ListTile(
                 key: ValueKey('khataEntry_${e.id}'),
                 contentPadding: EdgeInsets.zero,
                 title: MoneyText(e.amountPaise, signed: false, color: e.kind == KhataEntryKind.owed ? c.success : c.error),
                 subtitle: Text('${formatDate(e.date)}${e.note.isEmpty ? '' : ' • ${e.note}'}'),
                 leading: Icon(e.kind == KhataEntryKind.owed ? Icons.call_made_rounded : Icons.call_received_rounded, color: e.kind == KhataEntryKind.owed ? c.success : c.error),
                 trailing: IconButton(tooltip: tr(context, 'khataDeleteLine'), icon: const Icon(Icons.delete_outline_rounded), onPressed: () => _delete(context, e)),
-              ),
-          ]),
+              );
+            },
+          ),
         );
       },
     );
