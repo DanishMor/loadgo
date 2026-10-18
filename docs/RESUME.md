@@ -2,8 +2,8 @@
 
 Plan: docs/MASTER_PLAN_PART4.md. Read it, then continue from NEXT.
 
-LAST_DONE: Phase 4 finished (U18 to U26) and tagged ux-v2-phase4: customer shell + home, wizard, Bid Room, trip page v2, delivery, trips tab, bilty button, profile logout confirm, loading/empty/error tests (a double-padding overflow in the Trips skeleton was found and fixed).
-NEXT: Phase 5 driver UX v2: U27 driver home (online switch, earnings today, vehicle selector, Radar status, upcoming, document expiry, Simple Mode compatible) behind uiV2 with the old driver home kept when uiV2 is OFF, U28 Incoming Load Card (LoadRadar), U29 to U34, then Phase 6, 7, 8. Customer-side extras still open: none.
+LAST_DONE: U27 driver home v2 (driver/v2/driver_home_v2.dart: big online switch + today earnings + Radar line + truck-for-today chips + trips + banners + More; DriverHomeScreen picks it with uiV2, old _homeTab kept; _toolRows shared). Phase 4 tagged ux-v2-phase4.
+NEXT: U28 Incoming Load Card (full-screen card from LoadRadar, hosted by DriverHomeScreen when uiV2 and online; DriverHomeV2.radar stream is ready to take RadarState), U29 bid sheet, U30 feed, U31 my bids, U32 trip flow, U33 earnings, U34 onboarding; then Phase 6, 7, 8.
 
 Unfinished / to remember:
 - The old CustomerHomeScreen must stay reachable with uiV2 OFF.

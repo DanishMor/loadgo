@@ -9,6 +9,8 @@ import '../core/assistant/sahayak_screen.dart';
 import '../core/search/global_search_screen.dart';
 import '../core/network/network_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'v2/driver_home_v2.dart';
 
 import '../core/profile/profile_nav_tile.dart';
 import '../auth/driver_kyc_screen.dart';
@@ -69,6 +71,7 @@ class DriverHomeScreen extends StatefulWidget {
 class _DriverHomeScreenState extends State<DriverHomeScreen> {
   static const _loadsTab = 1;
   static const _tripsTab = 2;
+  static const _vehiclePref = 'driver_truck_today';
 
   int _index = 0;
   bool _isOnline = false;
@@ -77,6 +80,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
   final Stream<List<Load>> _openLoads = LoadService.watchOpen().asBroadcastStream();
   final Stream<List<FavouriteRoute>> _favourites = MatchService.watchFavourites().asBroadcastStream();
   DateTime? _loadsSeenAt;
+  String? _vehicleId;
   Map<String, dynamic>? _profile;
 
   @override
@@ -91,6 +95,9 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
         if (u?['online'] == true) _isOnline = true;
       });
     }).catchError((_) {});
+    SharedPreferences.getInstance().then((p) {
+      if (mounted) setState(() => _vehicleId = p.getString(_vehiclePref));
+    }).catchError((_) {});
     MatchService.lastSeenLoads().then((t) {
       if (!mounted) return;
       if (t != null) {
@@ -100,6 +107,13 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
         _markLoadsSeen();
       }
     });
+  }
+
+  Future<void> _pickVehicle(String id) async {
+    setState(() => _vehicleId = id);
+    try {
+      await (await SharedPreferences.getInstance()).setString(_vehiclePref, id);
+    } catch (_) {}
   }
 
   void _markLoadsSeen() {
@@ -270,6 +284,174 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
     );
   }
 
+  /// The tool tiles under the home (shared by the older and the new driver home).
+  List<Widget> _toolRows() => [
+        Row(
+          children: [
+            _tile(Icons.local_shipping_rounded, tr(context, 'myTruck'), onTap: _openVehicles),
+            const SizedBox(width: 12),
+            _tile(Icons.verified_user_rounded, tr(context, 'documentsKyc'), onTap: _openVehicles),
+          ],
+        ),
+        const SizedBox(height: 12),
+        ValueListenableBuilder<Features>(
+          valueListenable: FeaturesService.notifier,
+          builder: (context, f, _) => Row(
+            children: [
+              _tile(
+                Icons.insights_rounded,
+                tr(context, 'cityDemand'),
+                onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const CityDemandScreen())),
+              ),
+              const SizedBox(width: 12),
+              if (f.isOn(FeatureKey.emptyTrucks))
+                _tile(
+                  Icons.local_shipping_outlined,
+                  tr(context, 'emptyTrucks'),
+                  onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const EmptyTrucksScreen())),
+                )
+              else
+                const Expanded(child: SizedBox.shrink()),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            _tile(
+              Icons.local_offer_outlined,
+              tr(context, 'myOffers'),
+              onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                builder: (_) => MyOffersScreen(onOpenBooking: (id) => openDriverTrip(context, id)),
+              )),
+            ),
+            const SizedBox(width: 12),
+            _tile(
+              Icons.account_balance_wallet_outlined,
+              tr(context, 'wallet'),
+              onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => driverWalletPage())),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            _tile(
+              Icons.folder_copy_outlined,
+              tr(context, 'documentsCenter'),
+              onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                builder: (_) => DocumentsCenterScreen(
+                  asDriver: true,
+                  header: OutlinedButton.icon(
+                    onPressed: _openVehicles,
+                    icon: const Icon(Icons.assignment_outlined),
+                    label: Text(tr(context, 'vehiclePapers')),
+                  ),
+                ),
+              )),
+            ),
+            const SizedBox(width: 12),
+            _tile(
+              Icons.bar_chart_rounded,
+              tr(context, 'myAnalytics'),
+              onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const DriverAnalyticsScreen())),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        ValueListenableBuilder<Features>(
+          valueListenable: FeaturesService.notifier,
+          builder: (context, f, _) => Row(
+            children: [
+              _tile(
+                Icons.alt_route_rounded,
+                tr(context, 'favouriteRoutes'),
+                onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const FavouriteRoutesScreen())),
+              ),
+              const SizedBox(width: 12),
+              if (f.isOn(FeatureKey.driverNetwork))
+                _tile(
+                  Icons.groups_2_outlined,
+                  tr(context, 'netTitle'),
+                  onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const NetworkScreen())),
+                )
+              else
+                const Expanded(child: SizedBox.shrink()),
+            ],
+          ),
+        ),
+      ];
+
+  Widget _homeHeader() => Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(_greeting(), style: DsStyle.t24w700),
+                const SizedBox(height: 2),
+                Text(tr(context, 'driver'), style: DsStyle.inherit.copyWith(color: AppColors.muted)),
+              ],
+            ),
+          ),
+          IconButton(
+            key: const ValueKey('driverSearch'),
+            tooltip: tr(context, 'search'),
+            onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const GlobalSearchScreen(isDriver: true))),
+            icon: const Icon(Icons.search_rounded),
+            color: AppColors.primary,
+          ),
+          SahayakButton(
+            role: 'driver',
+            actions: SahayakActions(
+              openBookings: () => _selectTab(_tripsTab),
+              openNearbyLoads: () => _selectTab(_loadsTab),
+            ),
+          ),
+          IconButton(tooltip: tr(context, 'language'), onPressed: () => showLanguageSelector(context), icon: const Icon(Icons.language_rounded), color: AppColors.primary),
+          NotificationBell(isDriver: true, onOpenBooking: (id) => openDriverTrip(context, id)),
+        ],
+      );
+
+  /// U27: the new driver home (switch uiV2). The older cards keep working; they are only arranged differently.
+  Widget _homeV2() => DriverHomeV2(
+        online: _isOnline,
+        onOnline: _setOnline,
+        vehicles: _vehicles,
+        todayTrips: _todayTrips,
+        vehicleId: _vehicleId,
+        onVehicle: _pickVehicle,
+        onAddVehicle: () => openAddVehicle(context, prefillFromProfile: true),
+        onOpenLoads: () => _selectTab(_loadsTab),
+        header: _homeHeader(),
+        banners: [
+          SyncIndicator(onFlushed: (r) => showFlushResult(context, r)),
+          const AnnouncementBanner(role: 'driver'),
+          const DispatchSuggestionsCard(),
+          const PaymentNudgeCard(target: 'driver'),
+          const RoleTourCard(role: RoleTour.driver),
+          const SimpleModePrompt(),
+          const ReviewFlagBanner(),
+          RemindersBanner(isDriver: true, onOpen: _openReminder),
+          DocSuspensionBanner(vehicles: _vehicles, profile: _profile, onOpenVehicles: _openVehicles, onOpenLicence: _openLicence),
+          VehicleAlertsBanner(vehicles: _vehicles, onTap: _openVehicles),
+        ],
+        trips: [
+          _title(tr(context, 'activeTrip')),
+          const SizedBox(height: 12),
+          ActiveTripCard(
+            bookings: BookingService.watchForDriver,
+            onOpen: (id) => openDriverTrip(context, id),
+            empty: _emptyCard(Icons.route_rounded, tr(context, 'noActiveTrip')),
+          ),
+          const SizedBox(height: 12),
+          AssignedTripsCard(onOpen: (id) => openDriverTrip(context, id)),
+          const FleetInvitesCard(),
+          UpcomingTripsCard(onOpen: (id) => openDriverTrip(context, id)),
+        ],
+        more: _toolRows(),
+      );
+
   Widget _homeTab() {
     return SafeArea(
       child: SingleChildScrollView(
@@ -374,100 +556,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
             const FleetInvitesCard(),
             _isOnline ? _homeLoads() : _emptyCard(Icons.wifi_off_rounded, tr(context, 'goOnlineToSee')),
             const SizedBox(height: 24),
-            Row(
-              children: [
-                _tile(Icons.local_shipping_rounded, tr(context, 'myTruck'), onTap: _openVehicles),
-                const SizedBox(width: 12),
-                _tile(Icons.verified_user_rounded, tr(context, 'documentsKyc'), onTap: _openVehicles),
-              ],
-            ),
-            const SizedBox(height: 12),
-            ValueListenableBuilder<Features>(
-              valueListenable: FeaturesService.notifier,
-              builder: (context, f, _) => Row(
-                children: [
-                  _tile(
-                    Icons.insights_rounded,
-                    tr(context, 'cityDemand'),
-                    onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const CityDemandScreen())),
-                  ),
-                  const SizedBox(width: 12),
-                  if (f.isOn(FeatureKey.emptyTrucks))
-                    _tile(
-                      Icons.local_shipping_outlined,
-                      tr(context, 'emptyTrucks'),
-                      onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const EmptyTrucksScreen())),
-                    )
-                  else
-                    const Expanded(child: SizedBox.shrink()),
-                ],
-              ),
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                _tile(
-                  Icons.local_offer_outlined,
-                  tr(context, 'myOffers'),
-                  onTap: () => Navigator.of(context).push(MaterialPageRoute(
-                    builder: (_) => MyOffersScreen(onOpenBooking: (id) => openDriverTrip(context, id)),
-                  )),
-                ),
-                const SizedBox(width: 12),
-                _tile(
-                  Icons.account_balance_wallet_outlined,
-                  tr(context, 'wallet'),
-                  onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => driverWalletPage())),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                _tile(
-                  Icons.folder_copy_outlined,
-                  tr(context, 'documentsCenter'),
-                  onTap: () => Navigator.of(context).push(MaterialPageRoute(
-                    builder: (_) => DocumentsCenterScreen(
-                      asDriver: true,
-                      header: OutlinedButton.icon(
-                        onPressed: _openVehicles,
-                        icon: const Icon(Icons.assignment_outlined),
-                        label: Text(tr(context, 'vehiclePapers')),
-                      ),
-                    ),
-                  )),
-                ),
-                const SizedBox(width: 12),
-                _tile(
-                  Icons.bar_chart_rounded,
-                  tr(context, 'myAnalytics'),
-                  onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const DriverAnalyticsScreen())),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            ValueListenableBuilder<Features>(
-              valueListenable: FeaturesService.notifier,
-              builder: (context, f, _) => Row(
-                children: [
-                  _tile(
-                    Icons.alt_route_rounded,
-                    tr(context, 'favouriteRoutes'),
-                    onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const FavouriteRoutesScreen())),
-                  ),
-                  const SizedBox(width: 12),
-                  if (f.isOn(FeatureKey.driverNetwork))
-                    _tile(
-                      Icons.groups_2_outlined,
-                      tr(context, 'netTitle'),
-                      onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const NetworkScreen())),
-                    )
-                  else
-                    const Expanded(child: SizedBox.shrink()),
-                ],
-              ),
-            ),
+            ..._toolRows(),
           ],
         ),
       ),
@@ -485,7 +574,10 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
 
   Widget _fullHome(BuildContext context) {
     final pages = [
-      _homeTab(),
+      ValueListenableBuilder<Features>(
+        valueListenable: FeaturesService.notifier,
+        builder: (context, f, _) => f.isOn(FeatureKey.uiV2) ? _homeV2() : _homeTab(),
+      ),
       AvailableLoadsView(loads: LoadService.watchOpenPage, nearby: LoadService.watchNearby, onAccepted: _onAccepted),
       BookingListView(
         title: tr(context, 'trips'),
