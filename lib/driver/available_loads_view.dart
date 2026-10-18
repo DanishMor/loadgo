@@ -22,12 +22,13 @@ import '../core/voice/voice_input.dart';
 import '../core/voice/voice_parser.dart';
 import 'recommended_loads.dart';
 import '../core/services/match_service.dart';
-import '../core/matching/load_ranker.dart' show PlannedRoute;
+import '../core/matching/load_ranker.dart' show PlannedRoute, FavouriteRoute, DriverContext;
 import '../core/theme/design_tokens.dart';
 import '../core/dispatch/dispatch_config_service.dart';
 import '../core/dispatch/dispatch_window.dart';
 import '../core/features/features.dart';
 import '../core/services/backend.dart';
+import 'v2/loads_feed_v2.dart';
 import '../core/services/features_service.dart';
 
 /// Accept button wired to the full accept flow, with its own busy state.
@@ -35,7 +36,11 @@ class AcceptLoadButton extends StatefulWidget {
   final Load load;
   final ValueChanged<String>? onAccepted;
 
-  const AcceptLoadButton({super.key, required this.load, this.onAccepted});
+  /// uiV2: the price goes through the bid sheet.
+  final bool v2;
+  final int? pickupKm;
+
+  const AcceptLoadButton({super.key, required this.load, this.onAccepted, this.v2 = false, this.pickupKm});
 
   @override
   State<AcceptLoadButton> createState() => _AcceptLoadButtonState();
@@ -69,9 +74,9 @@ class _AcceptLoadButtonState extends State<AcceptLoadButton> {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Expanded(child: _acceptButton()),
+        Expanded(flex: widget.v2 ? 3 : 1, child: _acceptButton()),
         const SizedBox(width: 8),
-        MakeOfferButton(load: widget.load),
+        if (widget.v2) Expanded(flex: 2, child: FeedBidButton(load: widget.load, pickupKm: widget.pickupKm)) else MakeOfferButton(load: widget.load),
         IconButton(
           key: ValueKey('saveRoute_${widget.load.id}'),
           tooltip: tr(context, 'saveRoute'),
@@ -128,6 +133,12 @@ class _AvailableLoadsViewState extends State<AvailableLoadsView> {
   StreamSubscription<List<Load>>? _nearSub;
   List<Load> _nearby = const [];
   Timer? _waveTick;
+  FeedSort _sort = FeedSort.nearest;
+  FavouriteRoute? _route;
+  DriverContext? _ctx;
+  Stream<List<FavouriteRoute>>? _routes;
+
+  bool get _v2 => FeaturesService.isOn(FeatureKey.uiV2);
 
   @override
   void initState() {
@@ -136,11 +147,31 @@ class _AvailableLoadsViewState extends State<AvailableLoadsView> {
     _waveTick = Timer.periodic(const Duration(seconds: 5), (_) {
       if (mounted && FeaturesService.isOn(FeatureKey.dispatchV2)) setState(() {});
     });
+    if (_v2) _loadV2();
     if (_origin == null) {
       _loadOrigin();
     } else {
       _watchNearby();
     }
+  }
+
+  /// uiV2: the match reasons need the driver's trucks and routes; the saved routes become filter chips.
+  Future<void> _loadV2() async {
+    try {
+      _routes = MatchService.watchFavourites();
+      final c = await MatchService.driverContext();
+      if (mounted) setState(() => _ctx = c);
+    } catch (_) {
+      // No profile or no network: the feed still works, without reasons.
+    }
+  }
+
+  void _pickRoute(FavouriteRoute? r) {
+    _searchCtrl.text = r?.pickup ?? '';
+    setState(() {
+      _route = r;
+      _filter = _filter.copyWith(pickupQuery: r?.pickup ?? '', dropQuery: r?.drop ?? '');
+    });
   }
 
   void _watchNearby() {
@@ -216,6 +247,7 @@ class _AvailableLoadsViewState extends State<AvailableLoadsView> {
   }
 
   void _clearAll() {
+    _route = null;
     _searchCtrl.clear();
     setState(() => _filter = LoadFilter.none);
   }
@@ -353,6 +385,7 @@ class _AvailableLoadsViewState extends State<AvailableLoadsView> {
               },
             ),
           ),
+          if (_v2) FeedHeaderV2(sort: _sort, onSort: (v) => setState(() => _sort = v), route: _route, onRoute: _pickRoute, routes: _routes),
           _activeChips(),
           const SizedBox(height: 8),
           Expanded(
@@ -360,7 +393,7 @@ class _AvailableLoadsViewState extends State<AvailableLoadsView> {
               stream: widget.loads,
               builder: (context, page, loadMore) {
                 final all = _wave(_withNearby(page));
-                final list = _ordered(_filter.apply(all));
+                final list = _v2 ? sortFeed(_ordered(_filter.apply(all)), _sort) : _ordered(_filter.apply(all));
                 if (all.isEmpty) {
                   return EmptyState(icon: Icons.inventory_2_rounded, title: tr(context, 'noAvailableLoads'));
                 }
@@ -395,7 +428,7 @@ class _AvailableLoadsViewState extends State<AvailableLoadsView> {
                               key: ValueKey('rec_${m.load.id}'),
                               load: m.load,
                               networkShare: true,
-                              action: AcceptLoadButton(load: m.load, onAccepted: widget.onAccepted),
+                              action: AcceptLoadButton(load: m.load, onAccepted: widget.onAccepted, v2: _v2),
                             ),
                           ],
                         ),
@@ -408,11 +441,12 @@ class _AvailableLoadsViewState extends State<AvailableLoadsView> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         _distanceChip(item.km),
+                        if (_v2) MatchReasonChips(reasons: reasonsFor(item.load, _ctx)),
                         LoadCard(
                           key: ValueKey(item.load.id),
                           load: item.load,
                           networkShare: true,
-                          action: AcceptLoadButton(load: item.load, onAccepted: widget.onAccepted),
+                          action: AcceptLoadButton(load: item.load, onAccepted: widget.onAccepted, v2: _v2, pickupKm: item.km),
                         ),
                       ],
                     );
