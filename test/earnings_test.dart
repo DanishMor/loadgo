@@ -67,8 +67,8 @@ void main() {
       home: Scaffold(body: EarningsView(bookings: () => Stream.value(list), onOpenTrip: (id) => opened = id, now: () => now)),
     ));
     await settle(tester);
-    expect(find.text('₹ 17000'), findsOneWidget);
-    expect(find.text('₹ 10000'), findsNWidgets(2), reason: 'this week + trip row');
+    expect(find.text('₹ 17,000'), findsNWidgets(2), reason: 'total and last 7 days');
+    expect(find.text('₹ 10,000'), findsWidgets, reason: 'today, this week, last 7 days and the trip row');
     expect(find.text('2'), findsNWidgets(2), reason: 'trips completed + the bar label of the 2nd');
     await tester.tap(find.text('Pa → Da'));
     expect(opened, 'a');

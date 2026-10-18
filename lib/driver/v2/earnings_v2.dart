@@ -102,9 +102,9 @@ class EarningsV2 extends StatelessWidget {
         ),
         const SizedBox(height: DsSpace.s3),
         Row(children: [
-          _stat(context, tr(context, 'totalEarnings'), formatRupees(e.total)),
+          _stat(context, tr(context, 'totalEarnings'), formatPaise((e.total * 100).round())),
           const SizedBox(width: DsSpace.s3),
-          _stat(context, tr(context, 'thisWeek'), formatRupees(e.thisWeek)),
+          _stat(context, tr(context, 'thisWeek'), formatPaise((e.thisWeek * 100).round())),
         ]),
         const SizedBox(height: DsSpace.s3),
         Row(children: [
@@ -171,7 +171,7 @@ class EarningsV2 extends StatelessWidget {
                     StatusBadge(label: tr(context, moneyStageKey(moneyStageOf(b))), tone: moneyTone(moneyStageOf(b))),
                   ]),
                 ),
-                Text(b.budget == null ? tr(context, 'budgetNegotiable') : formatRupees(b.budget!), style: DsType.label.copyWith(color: c.success)),
+                Text(b.budget == null ? tr(context, 'budgetNegotiable') : formatPaise((b.budget! * 100).round()), style: DsType.label.copyWith(color: c.success)),
               ]),
             ),
             const SizedBox(height: DsSpace.s3),

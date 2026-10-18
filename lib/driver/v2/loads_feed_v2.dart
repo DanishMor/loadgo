@@ -110,7 +110,7 @@ class _FeedBidButtonState extends State<FeedBidButton> {
   }
 
   @override
-  Widget build(BuildContext context) => AppButton(key: ValueKey('makeOffer_${widget.load.id}'), label: tr(context, 'ilSendPrice'), kind: AppButtonKind.secondary, onPressed: _busy ? null : _open);
+  Widget build(BuildContext context) => AppButton(key: ValueKey('makeOffer_${widget.load.id}'), label: tr(context, 'fdBid'), kind: AppButtonKind.secondary, onPressed: _busy ? null : _open);
 }
 
 /// The reasons a load fits this driver, or none without a context or a fitting truck.
