@@ -5,7 +5,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:transport_app/core/features/features.dart';
 import 'package:transport_app/core/l10n/l10n.dart';
+import 'package:transport_app/core/models/booking.dart';
 import 'package:transport_app/core/models/load.dart';
+import 'package:transport_app/core/models/paged.dart';
 import 'package:transport_app/core/services/backend.dart';
 import 'package:transport_app/core/services/features_service.dart';
 import 'package:transport_app/core/services/load_service.dart';
@@ -13,6 +15,7 @@ import 'package:transport_app/core/theme/app_theme.dart';
 import 'package:transport_app/customer/customer_home_screen.dart';
 import 'package:transport_app/customer/v2/customer_home_v2.dart';
 import 'package:transport_app/customer/v2/customer_shell_v2.dart';
+import 'package:transport_app/customer/v2/trips_tab_v2.dart';
 
 /// U18/U23: the new customer app (Home, Trips, Help, Profile) and the old home behind the switch.
 void main() {
@@ -100,5 +103,31 @@ void main() {
     await t.tap(find.text('Past'));
     await settle(t);
     expect(find.text('Finished trips will show here.'), findsOneWidget);
+  });
+
+  Widget tripsHost({required Stream<Paged<Booking>> Function(int) bookings, required Stream<List<Load>> Function() loads, VoidCallback? onBook}) => LanguageScope(
+        notifier: languageNotifier,
+        child: MaterialApp(
+          theme: AppTheme.build(Brightness.light),
+          home: Scaffold(
+            body: TripsTabV2(bookings: bookings, loads: loads, onOpenBooking: (_) {}, onOpenLoad: (_) {}, onBookAgain: (_) {}, onBook: onBook),
+          ),
+        ),
+      );
+
+  testWidgets('Trips tab, empty: says so and offers Book a truck (Active only)', (t) async {
+    var booked = 0;
+    await t.pumpWidget(tripsHost(bookings: (_) => Stream.value(const Paged<Booking>.all([])), loads: () => Stream.value(const <Load>[]), onBook: () => booked++));
+    await settle(t);
+    expect(find.text('No trip right now. Book a truck to start.'), findsOneWidget);
+    await t.tap(find.byKey(const ValueKey('tripsBook')));
+    expect(booked, 1);
+  });
+
+  testWidgets('Trips tab, error: a friendly message with Retry, not a raw exception', (t) async {
+    await t.pumpWidget(tripsHost(bookings: (_) => Stream.value(const Paged<Booking>.all([])), loads: () => Stream<List<Load>>.error(StateError('boom'))));
+    await settle(t);
+    expect(find.textContaining('boom'), findsNothing);
+    expect(find.text('Retry'), findsWidgets);
   });
 }

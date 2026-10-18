@@ -2,8 +2,8 @@
 
 Plan: docs/MASTER_PLAN_PART4.md. Read it, then continue from NEXT.
 
-LAST_DONE: U24 (Bilty in plain sight: core/bilty/bilty_entry_card.dart on the v2 trip page for customer, big tonal Bilty button on the transporter trips list when the bilty switch is on; 3 copy chips Full, Driver, Consignee). Before: U22 delivery on the v2 trip page, U21 tracking v2, U18 shell, U23 trips tab, U19, U20; phases 1 to 3 tagged.
-NEXT: U25 profile, settings, help polish; U26 loading, empty, error, offline states on every new screen; then tag ux-v2-phase4 and push; Phase 5 driver (U27 to U34), 6, 7, 8.
+LAST_DONE: Phase 4 finished (U18 to U26) and tagged ux-v2-phase4: customer shell + home, wizard, Bid Room, trip page v2, delivery, trips tab, bilty button, profile logout confirm, loading/empty/error tests (a double-padding overflow in the Trips skeleton was found and fixed).
+NEXT: Phase 5 driver UX v2: U27 driver home (online switch, earnings today, vehicle selector, Radar status, upcoming, document expiry, Simple Mode compatible) behind uiV2 with the old driver home kept when uiV2 is OFF, U28 Incoming Load Card (LoadRadar), U29 to U34, then Phase 6, 7, 8. Customer-side extras still open: none.
 
 Unfinished / to remember:
 - The old CustomerHomeScreen must stay reachable with uiV2 OFF.

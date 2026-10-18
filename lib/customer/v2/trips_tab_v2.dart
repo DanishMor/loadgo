@@ -111,7 +111,7 @@ class _TripsTabV2State extends State<TripsTabV2> {
             stream: widget.bookings ?? BookingService.watchForCustomerPage,
             builder: (context, bookings, loadMore) => LiveStream<List<Load>>(
               stream: widget.loads ?? LoadService.watchMine,
-              loadingBuilder: (_) => const Padding(padding: EdgeInsets.all(DsSpace.gutter), child: SkeletonList()),
+              loadingBuilder: (_) => const SkeletonList(),
               builder: (context, loads) {
                 final now = widget.now?.call() ?? ServerClock.now();
                 final buckets = TripBuckets.compute(bookings: bookings, loads: loads, now: now, rules: PricingService.config.schedule);
