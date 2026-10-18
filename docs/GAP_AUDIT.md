@@ -241,3 +241,19 @@ Read again after the paid-services code, the new features and the bug hunt. Each
 
 Free gaps: 0
 Open bugs: 0 (free)
+
+## Part 4 (U1 to U44)
+
+Read again after the premium flow, the bid engine and the bug hunt. Each gap is FREE (closed), or needs a paid service, the owner, a real phone or a decision.
+
+| ID | Gap | Class | State |
+|---|---|---|---|
+| P4.1 | Incoming Load Card rings only while the app is open | paid (Cloud Functions, Blaze) | `docs/BLOCKED.md` |
+| P4.2 | Server wave and server auto-accept written and tested on the emulator, not deployed | owner step | `docs/BLOCKED.md`, `docs/RELEASE_CANDIDATE.md` |
+| P4.3 | Skip reasons are asked but not stored | owner decision (needs a rules and functions change) | `docs/DECISIONS.md`, `docs/KNOWN_ISSUES.md` |
+| P4.4 | Part 4 screens on a real phone, 13 rows | real phone | `docs/RELEASE_CANDIDATE.md` section G |
+| P4.5 | Native reader for the new texts | manual (owner) | `docs/TRANSLATION_REVIEW_PART4.csv`, `docs/TRANSLATION_REVIEW_PART5.csv` |
+| P4.6 | 12 bugs of the Part 4 hunt, and 4 failures of the full run (structure rule, empty and error branches, one overflow) | FREE | Closed, `docs/BUG_REPORT.md`, `docs/PART4_PROGRESS.md` |
+
+Free gaps: 0
+Open bugs: 0 (free)
