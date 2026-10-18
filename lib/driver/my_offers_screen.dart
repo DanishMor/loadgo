@@ -8,6 +8,9 @@ import '../core/widgets/common.dart';
 import '../core/widgets/live_stream.dart';
 import '../core/widgets/logistics_labels.dart';
 import '../core/theme/design_tokens.dart';
+import '../core/features/features.dart';
+import '../core/services/features_service.dart';
+import 'v2/my_bids_v2.dart';
 
 /// The driver's offers with what they can do next: withdraw, accept the
 /// customer's counter, or confirm a selected offer (creates the booking).
@@ -27,7 +30,7 @@ class MyOffersScreen extends StatelessWidget {
         title: Text(tr(context, 'myOffers'), style: DsStyle.w700),
       ),
       body: SafeArea(
-        child: LiveStream<List<Offer>>(
+        child: FeaturesService.isOn(FeatureKey.uiV2) ? MyBidsV2(onOpenBooking: onOpenBooking) : LiveStream<List<Offer>>(
           stream: OfferService.watchMine,
           builder: (context, offers) {
             if (offers.isEmpty) {
