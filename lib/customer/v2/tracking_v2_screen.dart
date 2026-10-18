@@ -34,6 +34,7 @@ import '../../core/widgets/trip_eta_card.dart';
 import '../cancel_scheduled_button.dart';
 import '../delivered_actions.dart' show DeliveredWatcher, reportIssue;
 import 'bid_room_screen.dart';
+import '../../core/bilty/bilty_entry_card.dart';
 import 'booking_wizard_screen.dart';
 import 'trips_model.dart';
 import '../trip_otp_card.dart';
@@ -202,6 +203,8 @@ class _TrackingV2BodyState extends State<TrackingV2Body> {
         ],
         const SizedBox(height: DsSpace.s3),
         _timeline(),
+        const SizedBox(height: DsSpace.s3),
+        BiltyEntryCard(booking: b),
         const SizedBox(height: DsSpace.s3),
         if (driver.isNotEmpty)
           AppCard(

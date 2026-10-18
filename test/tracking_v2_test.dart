@@ -13,6 +13,7 @@ import 'package:transport_app/core/services/load_service.dart';
 import 'package:transport_app/core/services/vehicle_service.dart';
 import 'package:transport_app/core/theme/app_theme.dart';
 import 'package:transport_app/customer/booking_tracking_screen.dart';
+import 'package:transport_app/core/bilty/lr_form_screen.dart';
 import 'package:transport_app/customer/v2/booking_wizard_screen.dart';
 import 'package:transport_app/customer/v2/tracking_v2_screen.dart';
 
@@ -109,6 +110,26 @@ void main() {
     await t.tap(find.byKey(const ValueKey('bookAgain')));
     await settle(t);
     expect(find.byType(BookWizardScreen), findsOneWidget);
+  });
+
+  testWidgets('the customer sees a clear Make bilty button (switch bilty on); it opens the bilty form; off hides it', (t) async {
+    t.view.physicalSize = const Size(360 * 2, 640 * 2);
+    t.view.devicePixelRatio = 2;
+    addTearDown(t.view.reset);
+    FeaturesService.notifier.value = const Features(flags: {FeatureKey.bilty: true});
+    await t.pumpWidget(host());
+    await settle(t);
+    await t.scrollUntilVisible(find.byKey(const ValueKey('biltyMake')), 300, scrollable: find.byType(Scrollable).first);
+    await t.ensureVisible(find.byKey(const ValueKey('biltyMake')));
+    await t.pump();
+    await t.tap(find.byKey(const ValueKey('biltyMake')));
+    await settle(t);
+    expect(find.byType(LrFormScreen), findsOneWidget);
+
+    FeaturesService.notifier.value = const Features(flags: {FeatureKey.bilty: false});
+    await t.pumpWidget(host());
+    await settle(t);
+    expect(find.byKey(const ValueKey('biltyEntry'), skipOffstage: false), findsNothing);
   });
 
   testWidgets('openBookingTracking picks the new page with uiV2 on and the older one with it off', (t) async {

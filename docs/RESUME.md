@@ -2,8 +2,8 @@
 
 Plan: docs/MASTER_PLAN_PART4.md. Read it, then continue from NEXT.
 
-LAST_DONE: U21 (trip tracking v2: customer/v2/tracking_v2_screen.dart, route ribbon + status, big OTP card, timeline, driver mini card, SOS and 112, map button; openBookingTracking picks it with uiV2, legacy BookingTrackingScreen kept). Before: U18 shell, U23 trips tab, U19, U20; phases 1 to 3 tagged.
-NEXT: U22 delivery (POD, payment record, tip, rating, 1-tap reorder on the v2 trip page), U24 bilty button, U25, U26, tag ux-v2-phase4, then Phase 5 driver (U27 to U34), 6, 7, 8. Push is due.
+LAST_DONE: U24 (Bilty in plain sight: core/bilty/bilty_entry_card.dart on the v2 trip page for customer, big tonal Bilty button on the transporter trips list when the bilty switch is on; 3 copy chips Full, Driver, Consignee). Before: U22 delivery on the v2 trip page, U21 tracking v2, U18 shell, U23 trips tab, U19, U20; phases 1 to 3 tagged.
+NEXT: U25 profile, settings, help polish; U26 loading, empty, error, offline states on every new screen; then tag ux-v2-phase4 and push; Phase 5 driver (U27 to U34), 6, 7, 8.
 
 Unfinished / to remember:
 - The old CustomerHomeScreen must stay reachable with uiV2 OFF.

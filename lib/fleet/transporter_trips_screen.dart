@@ -1,3 +1,5 @@
+import '../core/features/features.dart';
+import '../core/services/features_service.dart';
 import '../core/errors/error_text.dart';
 import 'package:flutter/material.dart';
 
@@ -203,12 +205,21 @@ class _TransporterTripsScreenState extends State<TransporterTripsScreen> {
                 icon: const Icon(Icons.assignment_ind_outlined, size: 18),
                 label: Text(tr(context, b.assignedDriverId == null ? 'trpAssign' : 'trpReassign')),
               ),
-            TextButton.icon(
-              key: ValueKey('trpLr_${b.id}'),
-              onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => LrScreen(bookingId: b.id))),
-              icon: const Icon(Icons.description_outlined, size: 18),
-              label: Text(tr(context, 'trpLr')),
-            ),
+            // U24: with the bilty switch on this is a clear button, not a small text link.
+            if (FeaturesService.isOn(FeatureKey.bilty))
+              FilledButton.tonalIcon(
+                key: ValueKey('trpLr_${b.id}'),
+                onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => LrScreen(bookingId: b.id))),
+                icon: const Icon(Icons.receipt_long_rounded, size: 18),
+                label: Text(tr(context, 'tkBilty')),
+              )
+            else
+              TextButton.icon(
+                key: ValueKey('trpLr_${b.id}'),
+                onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => LrScreen(bookingId: b.id))),
+                icon: const Icon(Icons.description_outlined, size: 18),
+                label: Text(tr(context, 'trpLr')),
+              ),
             if (b.isCompanyBooking)
               TextButton.icon(
                 key: ValueKey('trpBooksButton_${b.id}'),
