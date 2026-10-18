@@ -37,3 +37,4 @@ One line per assumption taken without asking.
 - G12: login OTP via MSG91 custom token is documented only (risks in OTP_SECURITY.md), not built; recommended to keep Firebase (2026-10-16).
 - G14: invoice shows reverse charge 'No' and IGST when seller and place of supply differ; both need CA confirmation (docs/GST_EWAY.md) (2026-10-16).
 - G18: audit showed most planned features already exist; Phase 4 builds only the real gaps (trust card, route rates, payment hold, safety check-in, khata, business card) (2026-10-17).
+- U5-U9: the system alert sound is used for the incoming-load sound (no audio plugin or asset added, keeps the app small); quiet hours default 22:00-06:00 and Low-end mode mutes it.

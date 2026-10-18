@@ -123,6 +123,7 @@ import 'khata_strings.dart';
 import 'biz_card_strings.dart';
 import 'admin_web_strings.dart';
 import 'broadcast_strings.dart';
+import 'ux2_strings.dart';
 
 import 'app_control_strings.dart';
 import 'admin_tools_strings.dart';
@@ -285,6 +286,7 @@ const List<Map<String, List<String>>> stringTables = [
   bizCardStrings,
   adminWebStrings,
   broadcastStrings,
+  ux2Strings,
 ];
 
 final Map<String, List<String>> extraStrings = {
