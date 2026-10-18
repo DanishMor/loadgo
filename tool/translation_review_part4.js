@@ -40,6 +40,6 @@ for (const f of files) {
   }
 }
 const q = (s) => '"' + String(s).replace(/"/g, '""').replace(/\r?\n/g, ' ') + '"';
-const csv = ['key,file,language,text,reviewer_ok,reviewer_fix,reviewer_name', ...rows.map((r) => [q(r[0]), q(r[1]), r[2], q(r[3]), '', '', ''].join(','))].join('\n') + '\n';
+const csv = ['key,language,text,reviewer,status', ...rows.map((r) => [q(r[0]), r[2], q(r[3]), '', 'pending'].join(','))].join(String.fromCharCode(10)) + String.fromCharCode(10);
 fs.writeFileSync('docs/TRANSLATION_REVIEW_PART4.csv', '﻿' + csv);
 console.log(`${rows.length / 12} texts x 12 languages -> docs/TRANSLATION_REVIEW_PART4.csv`);
