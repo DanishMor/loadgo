@@ -24,6 +24,11 @@ import 'recommended_loads.dart';
 import '../core/services/match_service.dart';
 import '../core/matching/load_ranker.dart' show PlannedRoute;
 import '../core/theme/design_tokens.dart';
+import '../core/dispatch/dispatch_config_service.dart';
+import '../core/dispatch/dispatch_window.dart';
+import '../core/features/features.dart';
+import '../core/services/backend.dart';
+import '../core/services/features_service.dart';
 
 /// Accept button wired to the full accept flow, with its own busy state.
 class AcceptLoadButton extends StatefulWidget {
@@ -122,10 +127,15 @@ class _AvailableLoadsViewState extends State<AvailableLoadsView> {
   late LatLng? _origin = widget.origin;
   StreamSubscription<List<Load>>? _nearSub;
   List<Load> _nearby = const [];
+  Timer? _waveTick;
 
   @override
   void initState() {
     super.initState();
+    // dispatchV2: a load shows when the driver's ring unlocks, so the list is checked again every few seconds.
+    _waveTick = Timer.periodic(const Duration(seconds: 5), (_) {
+      if (mounted && FeaturesService.isOn(FeatureKey.dispatchV2)) setState(() {});
+    });
     if (_origin == null) {
       _loadOrigin();
     } else {
@@ -140,6 +150,13 @@ class _AvailableLoadsViewState extends State<AvailableLoadsView> {
     _nearSub = widget.nearby!(o).listen((l) {
       if (mounted) setState(() => _nearby = l);
     }, onError: (_) {});
+  }
+
+  /// U11 (dispatchV2): only the loads whose ring has unlocked for this driver. A client layer for a calm
+  /// feed; the server wave enforces it after the functions deploy (docs/FLOW_SPEC.md).
+  List<Load> _wave(List<Load> loads) {
+    if (!FeaturesService.isOn(FeatureKey.dispatchV2)) return loads;
+    return DispatchWindow(DispatchConfigService.current).filter(loads, origin: _origin, now: DateTime.now(), driverId: Backend.uid);
   }
 
   /// The loaded page plus the nearby loads, without duplicates.
@@ -192,6 +209,7 @@ class _AvailableLoadsViewState extends State<AvailableLoadsView> {
 
   @override
   void dispose() {
+    _waveTick?.cancel();
     _nearSub?.cancel();
     _searchCtrl.dispose();
     super.dispose();
@@ -341,7 +359,7 @@ class _AvailableLoadsViewState extends State<AvailableLoadsView> {
             child: PagedLiveStream<Load>(
               stream: widget.loads,
               builder: (context, page, loadMore) {
-                final all = _withNearby(page);
+                final all = _wave(_withNearby(page));
                 final list = _ordered(_filter.apply(all));
                 if (all.isEmpty) {
                   return EmptyState(icon: Icons.inventory_2_rounded, title: tr(context, 'noAvailableLoads'));
