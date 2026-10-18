@@ -126,6 +126,7 @@ import 'broadcast_strings.dart';
 import 'ux2_strings.dart';
 import 'ux2_dispatch_strings.dart';
 import 'ux2_admin_strings.dart';
+import 'ux2_book_strings.dart';
 
 import 'app_control_strings.dart';
 import 'admin_tools_strings.dart';
@@ -291,6 +292,7 @@ const List<Map<String, List<String>>> stringTables = [
   ux2Strings,
   ux2DispatchStrings,
   ux2AdminStrings,
+  ux2BookStrings,
 ];
 
 final Map<String, List<String>> extraStrings = {
