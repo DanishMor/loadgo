@@ -23,7 +23,9 @@ Future<void> settle(WidgetTester tester) async {
 Future<void> tapButton(WidgetTester tester, String label) async {
   await tester.pump(const Duration(seconds: 5));
   await tester.pumpAndSettle();
-  // The trip screen is a lazy list; scroll until the button is built.
+  // The trip screen is a lazy list; the v2 step card sits at the top, so start from there, then scroll until the button is built.
+  tester.state<ScrollableState>(find.byType(Scrollable).first).position.jumpTo(0);
+  await tester.pump();
   await tester.scrollUntilVisible(find.text(label), 200, scrollable: find.byType(Scrollable).first);
   await tester.ensureVisible(find.text(label));
   await tester.pumpAndSettle();
@@ -130,6 +132,8 @@ void main() {
     await tester.enterText(find.byKey(const ValueKey('weightField')), '7.5');
     await tester.tap(find.byKey(const ValueKey('proofSubmit')));
     await settle(tester);
+    // the v2 step card is taller than the old button, so the papers can sit below the fold
+    await tester.scrollUntilVisible(find.byKey(const ValueKey('viewPod')), 200, scrollable: find.byType(Scrollable).first);
     expect(find.byKey(const ValueKey('viewPod')), findsOneWidget);
 
     await tapButton(tester, 'Start Trip (In Transit)');
@@ -146,6 +150,7 @@ void main() {
     await tester.enterText(find.byKey(const ValueKey('receiverField')), 'Anil');
     await tester.tap(find.byKey(const ValueKey('proofSubmit')));
     await settle(tester);
+    await tester.scrollUntilVisible(find.text('Trip completed'), 300, scrollable: find.byType(Scrollable).first);
     expect(find.text('Trip completed'), findsOneWidget);
 
     // Customer tracking screen reflects the delivered state and driver info.

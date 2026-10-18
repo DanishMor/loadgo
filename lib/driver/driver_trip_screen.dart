@@ -37,6 +37,10 @@ import '../core/documents/payment_card.dart';
 import '../core/payments/payment_timeline_card.dart';
 import '../core/services/server_clock.dart';
 import '../core/theme/design_tokens.dart';
+import '../core/features/features.dart';
+import '../core/services/features_service.dart';
+import '../core/widgets/ds/app_button.dart';
+import '../core/widgets/ds/route_ribbon.dart';
 
 void openDriverTrip(BuildContext context, String bookingId) {
   Navigator.of(context).push(MaterialPageRoute(builder: (_) => DriverTripScreen(bookingId: bookingId)));
@@ -57,6 +61,9 @@ class DriverTripScreen extends StatelessWidget {
     );
   }
 
+  /// uiV2: the next step is one big card at the top, not a button at the bottom of a long page.
+  static bool _stepOnTop(Booking b) => FeaturesService.isOn(FeatureKey.uiV2) && b.status != BookingStatus.cancelled && b.nextStatus != null;
+
   /// A driver a transporter assigned (not the booking holder) moves the trip
   /// and talks to the customer; money, papers and cancelling stay with the
   /// transporter who holds the booking.
@@ -67,6 +74,7 @@ class DriverTripScreen extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(20, 10, 20, 100),
         children: [
           SyncIndicator(onFlushed: (r) => showFlushResult(context, r)),
+          if (_stepOnTop(booking)) ...[_StepCard(booking: booking), const SizedBox(height: 10)],
           BookingSummary(booking: booking),
           if (booking.isActive) ...[
             const SizedBox(height: 10),
@@ -126,7 +134,7 @@ class DriverTripScreen extends StatelessWidget {
             ReturnLoadsSection(booking: booking, onAccepted: (id) => openDriverTrip(context, id)),
             const SizedBox(height: 14),
           ],
-          _NextStatusButton(booking: booking),
+          if (!_stepOnTop(booking)) _NextStatusButton(booking: booking),
           if (holder && booking.canDriverCancel) ...[
             const SizedBox(height: 10),
             _CancelBookingButton(booking: booking),
@@ -144,7 +152,10 @@ class DriverTripScreen extends StatelessWidget {
 
 class _NextStatusButton extends StatefulWidget {
   final Booking booking;
-  const _NextStatusButton({required this.booking});
+
+  /// uiV2: the large button of the step card.
+  final bool big;
+  const _NextStatusButton({required this.booking, this.big = false});
 
   @override
   State<_NextStatusButton> createState() => _NextStatusButtonState();
@@ -259,11 +270,55 @@ class _NextStatusButtonState extends State<_NextStatusButton> {
         child: StatusChip(label: tr(context, 'tripCompleted'), color: AppColors.success),
       );
     }
+    if (widget.big) {
+      return AppButton(
+        key: const ValueKey('tfNext'),
+        label: tr(context, _labelKey(next)),
+        icon: next == BookingStatus.delivered ? Icons.flag_rounded : Icons.arrow_forward_rounded,
+        big: true,
+        loading: _busy,
+        onPressed: _busy ? null : () => _advance(next),
+      );
+    }
     return PrimaryButton(
       label: tr(context, _labelKey(next)),
       icon: next == BookingStatus.delivered ? Icons.flag_rounded : Icons.arrow_forward_rounded,
       loading: _busy,
       onPressed: () => _advance(next),
+    );
+  }
+}
+
+/// U32: where the trip is, what to do now, and the big button that does it. The pickup and delivery steps say what
+/// the driver will be asked for (the photo and the code).
+class _StepCard extends StatelessWidget {
+  final Booking booking;
+  const _StepCard({required this.booking});
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.ds;
+    final next = booking.nextStatus!;
+    final total = BookingStatus.flow.length - 1;
+    final at = BookingStatus.flow.indexOf(next);
+    final hint = switch (next) {
+      BookingStatus.pickedUp => 'tfHintPickup',
+      BookingStatus.delivered => 'tfHintDelivered',
+      _ => null,
+    };
+    return AppCard(
+      key: const ValueKey('tfStep'),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        Text(trf(context, 'tfStep', {'n': at, 'total': total}), style: DsType.label.copyWith(color: c.textMuted)),
+        const SizedBox(height: DsSpace.s2),
+        RouteRibbon(from: booking.pickup, to: booking.drop, progress: (at - 1) / (total - 1)),
+        if (hint != null) ...[
+          const SizedBox(height: DsSpace.s2),
+          Text(tr(context, hint), key: const ValueKey('tfHint'), style: DsType.body.copyWith(color: c.text)),
+        ],
+        const SizedBox(height: DsSpace.s3),
+        _NextStatusButton(booking: booking, big: true),
+      ]),
     );
   }
 }
