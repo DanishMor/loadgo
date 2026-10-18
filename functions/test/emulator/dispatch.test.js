@@ -38,7 +38,8 @@ test('the cheapest bid that fits the rule is selected and the other open bids ar
 
 test('no rule, a closed load or no bid that fits changes nothing', async () => {
   const db = getDb();
-  await seed(db, { autoAccept: FieldValue.delete() });
+  await seed(db);
+  await db.collection('loads').doc('L1').update({ autoAccept: FieldValue.delete() });
   assert.equal((await autoAccept(db, 'L1', FieldValue)).accepted, null);
   await db.collection('loads').doc('L1').set({ status: 'open', autoAccept: { ...RULE, maxPaise: 1000 } }, { merge: true });
   assert.equal((await autoAccept(db, 'L1', FieldValue)).accepted, null);

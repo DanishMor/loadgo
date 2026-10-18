@@ -6548,6 +6548,9 @@ describe('U10 dispatch fields: mode, bid window, auto-accept, bid extras', () =>
     await assertFails(setDoc(offerRef(as('driver2'), 'L1_driver2'), { ...OFFER, driverId: 'driver2', vehicleId: 'v2', vehicleNumber: 'KA01CD5678', etaMinutes: 5.5 }));
     await assertFails(setDoc(offerRef(as('driver2'), 'L1_driver2'), { ...OFFER, driverId: 'driver2', vehicleId: 'v2', vehicleNumber: 'KA01CD5678', noteChip: 'call me on 9800000000' }));
     await assertFails(setDoc(offerRef(as('driver2'), 'L1_driver2'), { ...OFFER, driverId: 'driver2', vehicleId: 'v2', vehicleNumber: 'KA01CD5678', edited: true }));
+    await assertFails(setDoc(offerRef(as('driver2'), 'L1_driver2'), { ...OFFER, driverId: 'driver2', vehicleId: 'v2', vehicleNumber: 'KA01CD5678', pickupKm: 3001 }));
+    await assertFails(setDoc(offerRef(as('driver2'), 'L1_driver2'), { ...OFFER, driverId: 'driver2', vehicleId: 'v2', vehicleNumber: 'KA01CD5678', pickupKm: -1 }));
+    await assertSucceeds(setDoc(offerRef(as('driver2'), 'L1_driver2'), { ...OFFER, driverId: 'driver2', vehicleId: 'v2', vehicleNumber: 'KA01CD5678', pickupKm: 14, etaMinutes: 30 }));
   });
 
   test('bids are accepted only while the bid window is open', async () => {
@@ -6590,5 +6593,98 @@ describe('U10 dispatch fields: mode, bid window, auto-accept, bid extras', () =>
     await assertSucceeds(getDoc(doc(as('driver1'), 'config', 'dispatch')));
     await assertFails(getDoc(doc(anon(), 'config', 'dispatch')));
     await assertFails(setDoc(doc(as('driver1'), 'config', 'dispatch'), { acceptSeconds: 1 }));
+  });
+});
+
+describe('U15 fairness and abuse: the race, the price limits, bids that stay private', () => {
+  const OFFER = {
+    loadId: 'L1', driverId: 'driver1', customerId: 'customer1', vehicleId: 'v1', vehicleNumber: VEHICLE.number,
+    vehicleType: '20ft', driverName: 'Ramesh', pricePaise: 2000000, originalPaise: 2000000, status: 'pending',
+  };
+  const offerRef = (db, id = 'L1_driver1') => doc(db, 'offers', id);
+  const bookingBatch = (db, bookingId, driver, vehicleId) => {
+    const b = writeBatch(db);
+    b.set(doc(db, 'bookings', bookingId), bookingFor('L1', { driverId: driver, vehicleId }));
+    b.update(doc(db, 'loads', 'L1'), { status: 'matched', driverId: driver, bookingId, matchedAt: serverTimestamp() });
+    b.update(doc(db, 'vehicles', vehicleId), { availability: 'on_trip' });
+    return b.commit();
+  };
+
+  test('two drivers accept the same open load at the same moment: exactly one booking is made', async () => {
+    for (let round = 0; round < 5; round++) {
+      await env.clearFirestore();
+      await seed((db) => setDoc(doc(db, 'admins', 'admin1'), { createdBy: 'console' }));
+      await seedOpenLoad();
+      const results = await Promise.allSettled([
+        bookingBatch(as('driver1'), 'B1', 'driver1', 'v1'),
+        bookingBatch(as('driver2'), 'B2', 'driver2', 'v2'),
+      ]);
+      const won = results.filter((r) => r.status === 'fulfilled').length;
+      assert.equal(won, 1, `round ${round}: ${results.map((r) => r.status).join(', ')}`);
+      const load = (await getDoc(doc(asAdmin(), 'loads', 'L1'))).data();
+      assert.equal(load.status, 'matched');
+      const bookings = await getDocs(collection(asAdmin(), 'bookings'));
+      assert.equal(bookings.size, 1);
+    }
+  });
+
+  test('a bid below 30% or above 300% of the estimate is refused; the exact edges are allowed', async () => {
+    await seedOpenLoad();
+    await seed((db) => setDoc(doc(db, 'loads', 'L1'), { ...LOAD, estimate: { total: 2000000 } }));
+    const bid = (price, uid = 'driver1', vehicle = 'v1', number = VEHICLE.number, id = 'L1_driver1') =>
+      setDoc(offerRef(as(uid), id), { ...OFFER, driverId: uid, vehicleId: vehicle, vehicleNumber: number, pricePaise: price, originalPaise: price });
+    await assertFails(bid(599999));
+    await assertFails(bid(6000001));
+    await assertFails(bid(0));
+    await assertFails(bid(-5));
+    await assertSucceeds(bid(600000));
+    await assertSucceeds(bid(6000000, 'driver2', 'v2', 'KA01CD5678', 'L1_driver2'));
+  });
+
+  test('a bid is a whole number of paise with a ceiling of 10 lakh rupees', async () => {
+    await seedOpenLoad();
+    await assertFails(setDoc(offerRef(as('driver1')), { ...OFFER, pricePaise: 100000001, originalPaise: 100000001 }));
+    await assertFails(setDoc(offerRef(as('driver1')), { ...OFFER, pricePaise: 1000.5, originalPaise: 1000.5 }));
+    await assertSucceeds(setDoc(offerRef(as('driver1')), { ...OFFER, pricePaise: 100000000, originalPaise: 100000000 }));
+  });
+
+  test('a countered or selected bid cannot be edited; only a pending one, once', async () => {
+    await seedOpenLoad();
+    await seed((db) => setDoc(offerRef(db), { ...OFFER, status: 'countered', counterPaise: 1800000 }));
+    await assertFails(updateDoc(offerRef(as('driver1')), { edited: true, pricePaise: 1900000, updatedAt: serverTimestamp() }));
+    await seed((db) => setDoc(offerRef(db), { ...OFFER, status: 'selected' }));
+    await assertFails(updateDoc(offerRef(as('driver1')), { edited: true, pricePaise: 1900000, updatedAt: serverTimestamp() }));
+    await seed((db) => setDoc(offerRef(db), { ...OFFER, edited: true }));
+    await assertFails(updateDoc(offerRef(as('driver1')), { edited: true, pricePaise: 1900000, updatedAt: serverTimestamp() }));
+  });
+
+  test('the bid hourly limit still applies: a driver cannot send a second bid inside the counter rules', async () => {
+    await seedOpenLoad();
+    // the raw functions skip the test helper that pre-seeds the counter, so the real counter rules are in force
+    await assertFails(rawSetDoc(offerRef(as('driver1')), OFFER), 'a bid without its counter bump is refused');
+  });
+
+  test('a customer cannot accept or counter bids on a load that belongs to someone else', async () => {
+    await seedOpenLoad();
+    await seed((db) => setDoc(offerRef(db), OFFER));
+    await assertFails(updateDoc(offerRef(as('customer2')), { status: 'selected', updatedAt: serverTimestamp() }));
+    await assertFails(updateDoc(offerRef(as('customer2')), { status: 'countered', counterPaise: 1000, updatedAt: serverTimestamp() }));
+    await assertFails(updateDoc(offerRef(as('driver2')), { status: 'withdrawn', updatedAt: serverTimestamp() }));
+    await assertSucceeds(updateDoc(offerRef(as('customer1')), { status: 'selected', updatedAt: serverTimestamp() }));
+  });
+
+  test('accepting a bid closes the others in one batch, and a driver cannot reopen a rejected bid', async () => {
+    await seedOpenLoad();
+    await seed(async (db) => {
+      await setDoc(offerRef(db), OFFER);
+      await setDoc(offerRef(db, 'L1_driver2'), { ...OFFER, driverId: 'driver2', vehicleId: 'v2' });
+    });
+    const c = as('customer1');
+    const b = writeBatch(c);
+    b.update(offerRef(c), { status: 'selected', updatedAt: serverTimestamp() });
+    b.update(offerRef(c, 'L1_driver2'), { status: 'rejected', updatedAt: serverTimestamp() });
+    await assertSucceeds(b.commit());
+    await assertFails(updateDoc(offerRef(as('driver2'), 'L1_driver2'), { status: 'pending', updatedAt: serverTimestamp() }));
+    await assertFails(updateDoc(offerRef(as('driver2'), 'L1_driver2'), { status: 'withdrawn', updatedAt: serverTimestamp() }));
   });
 });
