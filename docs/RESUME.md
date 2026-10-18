@@ -2,8 +2,8 @@
 
 Plan: docs/MASTER_PLAN_PART4.md. Read it, then continue from NEXT.
 
-LAST_DONE: U20 (Bid Room). Phase 1 to 3 are finished and tagged (ux-v2-phase1, -phase2, -phase3): research docs, component kit, data model + rules + rules tests, DispatchWindow, instant mode, bid mode, auto-accept (app + server skeleton), fairness tests, LoadRadar, admin dispatch monitor. Phase 4 so far: U19 booking wizard (customer/v2/booking_wizard_*.dart), U20 BidRoomScreen (customer/v2/bid_room_screen.dart, auto_accept_sheet.dart).
-NEXT: U18 customer home + shell (bottom nav Home, Trips, Help, Profile) behind uiV2 in CustomerHomeScreen (4 test files pump CustomerHomeScreen: identity_test, layout_all_screens_test, task69_test, theme_layout_test: they need uiV2 OFF or the new shell), U21 tracking v2, U22 delivery, U23 trips tab, U24 bilty button, U25, U26, then Phase 5 driver (U27 to U34), Phase 6, 7, 8.
+LAST_DONE: U18 (customer home + shell: Home, Trips, Help, Profile behind uiV2; old home kept with uiV2 off) and U23 (Trips tab: active, upcoming, past, book again). Earlier: U1 to U17, U19 wizard, U20 Bid Room; phases 1 to 3 tagged.
+NEXT: U21 tracking v2, U22 delivery, U24 bilty button, U25, U26, then Phase 5 driver (U27 to U34), Phase 6, 7, 8. Tag ux-v2-phase4 after U26. Push is due (last push was before U17).
 
 Unfinished / to remember:
 - The old CustomerHomeScreen must stay reachable with uiV2 OFF.

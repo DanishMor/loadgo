@@ -3,6 +3,8 @@ import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:firebase_auth_mocks/firebase_auth_mocks.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:transport_app/core/features/features.dart';
+import 'package:transport_app/core/services/features_service.dart';
 import 'package:transport_app/core/constants/logistics.dart';
 import 'package:transport_app/core/documents/payment_card.dart';
 import 'package:transport_app/core/l10n/l10n.dart';
@@ -401,6 +403,9 @@ void main() {
   testWidgets('customer Home has a "More for you" section with the screens that used to hide in Profile', (tester) async {
     final auth = MockFirebaseAuth(signedIn: true, mockUser: MockUser(uid: 'customer1', phoneNumber: '+919800000001'));
     Backend.useFakes(db: db, uid: () => 'customer1', auth: () => auth);
+    // The older home (switch uiV2 off): the new home has its own tests (customer_shell_v2_test).
+    FeaturesService.notifier.value = const Features(flags: {FeatureKey.uiV2: false});
+    addTearDown(FeaturesService.reset);
     await tester.pumpWidget(LanguageScope(notifier: languageNotifier, child: const MaterialApp(home: CustomerHomeScreen())));
     await settle(tester);
     await tester.scrollUntilVisible(find.byKey(const ValueKey('homeMore_history')), 300, scrollable: find.byType(Scrollable).first);

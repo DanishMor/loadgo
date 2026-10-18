@@ -1,4 +1,5 @@
 import '../core/dispatch/auto_accept_watcher.dart';
+import 'v2/customer_shell_v2.dart';
 import '../core/wallet/hub/hub_screens.dart';
 import '../core/assistant/sahayak_screen.dart';
 import '../core/search/global_search_screen.dart';
@@ -116,66 +117,19 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
       onOpenInvoice: (id) => openInvoice(context, id),
     ),
     MyLoadsView(onPostLoad: _postLoad, onOpenBooking: _openBooking),
-    ProfileView(isDriver: false, extraTiles: [
-      ProfileNavTile(
-        key: const ValueKey('profileAnalytics'),
-        icon: Icons.bar_chart_rounded,
-        titleKey: 'myAnalytics',
-        screen: (_) => const CustomerAnalyticsScreen(),
-      ),
-      OffersGate(
-        test: (s) => s.any,
-        child: ProfileNavTile(
-          key: const ValueKey('profileOffers'),
-          icon: Icons.local_offer_outlined,
-          titleKey: 'offersAndCredits',
-          screen: (_) => const OffersScreen(),
-        ),
-      ),
-      FeatureGate(
-        featureKey: FeatureKey.businessTools,
-        child: ProfileNavTile(
-          key: const ValueKey('profileBusiness'),
-          icon: Icons.business_center_outlined,
-          titleKey: 'businessTools',
-          screen: (_) => const BusinessHubScreen(),
-        ),
-      ),
-      ProfileNavTile(
-        key: const ValueKey('profileTransactions'),
-        icon: Icons.account_balance_wallet_outlined,
-        titleKey: 'txnTitle',
-        screen: (_) => const TxnHistoryScreen(isDriver: false),
-      ),
-      ProfileNavTile(
-        key: const ValueKey('profileSpending'),
-        icon: Icons.savings_outlined,
-        titleKey: 'ehSpendTitle',
-        screen: (_) => const SpendingScreen(),
-      ),
-      ProfileNavTile(
-        key: const ValueKey('profileHistory'),
-        icon: Icons.history_rounded,
-        titleKey: 'ehHistoryTitle',
-        screen: (c) => TripHistoryScreen(bookings: BookingService.watchForCustomer, onOpen: (id) => openBookingTracking(c, id)),
-      ),
-      ProfileNavTile(
-        key: const ValueKey('profileTemplates'),
-        icon: Icons.bookmarks_outlined,
-        titleKey: 'templatesTitle',
-        screen: (_) => const TemplatesScreen(),
-      ),
-      ProfileNavTile(
-        key: const ValueKey('profileMyDrivers'),
-        icon: Icons.favorite_border_rounded,
-        titleKey: 'favouriteDrivers',
-        screen: (_) => const MyDriversScreen(),
-      ),
-    ]),
+    customerProfileView(),
   ];
 
+  /// U18: the new home (switch `uiV2`, default ON) or, with the switch off, the home the app had before.
   @override
   Widget build(BuildContext context) {
+    return ValueListenableBuilder<Features>(
+      valueListenable: FeaturesService.notifier,
+      builder: (context, f, _) => f.isOn(FeatureKey.uiV2) ? const CustomerShellV2() : _legacy(context),
+    );
+  }
+
+  Widget _legacy(BuildContext context) {
     return DeepLinkListener(
       isDriver: false,
       child: Scaffold(
@@ -627,4 +581,64 @@ class _ServiceCard extends StatelessWidget {
       ),
     );
   }
+}
+
+/// The customer's Profile page: the same tiles in the old and the new (uiV2) home.
+Widget customerProfileView() {
+  return ProfileView(isDriver: false, extraTiles: [
+    ProfileNavTile(
+      key: const ValueKey('profileAnalytics'),
+      icon: Icons.bar_chart_rounded,
+      titleKey: 'myAnalytics',
+      screen: (_) => const CustomerAnalyticsScreen(),
+    ),
+    OffersGate(
+      test: (s) => s.any,
+      child: ProfileNavTile(
+        key: const ValueKey('profileOffers'),
+        icon: Icons.local_offer_outlined,
+        titleKey: 'offersAndCredits',
+        screen: (_) => const OffersScreen(),
+      ),
+    ),
+    FeatureGate(
+      featureKey: FeatureKey.businessTools,
+      child: ProfileNavTile(
+        key: const ValueKey('profileBusiness'),
+        icon: Icons.business_center_outlined,
+        titleKey: 'businessTools',
+        screen: (_) => const BusinessHubScreen(),
+      ),
+    ),
+    ProfileNavTile(
+      key: const ValueKey('profileTransactions'),
+      icon: Icons.account_balance_wallet_outlined,
+      titleKey: 'txnTitle',
+      screen: (_) => const TxnHistoryScreen(isDriver: false),
+    ),
+    ProfileNavTile(
+      key: const ValueKey('profileSpending'),
+      icon: Icons.savings_outlined,
+      titleKey: 'ehSpendTitle',
+      screen: (_) => const SpendingScreen(),
+    ),
+    ProfileNavTile(
+      key: const ValueKey('profileHistory'),
+      icon: Icons.history_rounded,
+      titleKey: 'ehHistoryTitle',
+      screen: (c) => TripHistoryScreen(bookings: BookingService.watchForCustomer, onOpen: (id) => openBookingTracking(c, id)),
+    ),
+    ProfileNavTile(
+      key: const ValueKey('profileTemplates'),
+      icon: Icons.bookmarks_outlined,
+      titleKey: 'templatesTitle',
+      screen: (_) => const TemplatesScreen(),
+    ),
+    ProfileNavTile(
+      key: const ValueKey('profileMyDrivers'),
+      icon: Icons.favorite_border_rounded,
+      titleKey: 'favouriteDrivers',
+      screen: (_) => const MyDriversScreen(),
+    ),
+  ]);
 }
