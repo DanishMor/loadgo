@@ -1155,6 +1155,21 @@ service cloud.firestore {
               && d.get('allowedDriverIds', []).size() >= 1 && d.get('allowedDriverIds', []).size() <= 20);
     }
 
+    // Part 4 (dispatchV2): how a load is offered. All optional; an old load has none (= instant).
+    function validAutoAccept(a) {
+      return a is map && a.keys().hasOnly(['maxPaise', 'minRating', 'verifiedOnly'])
+          && a.maxPaise is int && a.maxPaise > 0 && a.maxPaise <= 100000000
+          && a.minRating is number && a.minRating >= 0 && a.minRating <= 5
+          && a.verifiedOnly is bool;
+    }
+
+    function validDispatchFields(d) {
+      return d.get('mode', 'instant') in ['instant', 'bid', 'scheduled']
+          && (!('bidWindowEnds' in d) || (d.bidWindowEnds is timestamp && d.bidWindowEnds <= request.time + duration.value(24, 'h')))
+          && (!('autoAccept' in d) || validAutoAccept(d.autoAccept))
+          && (!('ringBoost' in d) || (d.ringBoost is int && d.ringBoost >= 0 && d.ringBoost <= 3));
+    }
+
     function validLoad(d) {
       return d.pickup is string && d.pickup.size() > 1 && d.pickup.size() <= 200
           && d.drop is string && d.drop.size() > 1 && d.drop.size() <= 200
@@ -1181,6 +1196,7 @@ service cloud.firestore {
           && (!('fragile' in d) || d.fragile is bool)
           && (!('highValue' in d) || d.highValue is bool)
           && (!('declaredValuePaise' in d) || (d.declaredValuePaise is int && d.declaredValuePaise >= 0 && d.declaredValuePaise <= 10000000000))
+          && validDispatchFields(d)
           && validPromoShape(d)
           && d.get('creditsUsedPaise', 0) is int
           && (!('pickupGeohash' in d) || (d.pickupGeohash is string && d.pickupGeohash.matches('^[0-9b-hjkmnp-z]{4,12}$')))
@@ -1284,7 +1300,9 @@ service cloud.firestore {
           && existsAfter(docPath('bookings', bookingId))
           && booking.data.driverId == request.auth.uid
           && booking.data.loadId == loadId
-          && booking.data.status == 'accepted';
+          && booking.data.status == 'accepted'
+          // A bid-mode load is taken only through a bid the customer selected, never by a direct accept.
+          && (resource.data.get('mode', 'instant') != 'bid' || booking.data.get('offerId', null) != null);
     }
 
     // Driver delivers: matched -> closed, together with booking -> delivered.
@@ -1934,13 +1952,26 @@ service cloud.firestore {
           || (price * 100 >= est.total * 30 && price * 100 <= est.total * 300);
     }
 
+    // Part 4: how soon the driver can be there and one note chip; nothing typed by hand.
+    function validBidExtras(o) {
+      return (!('etaMinutes' in o) || (o.etaMinutes is int && o.etaMinutes >= 1 && o.etaMinutes <= 1440))
+          && (!('noteChip' in o) || o.noteChip in ['on_the_way', 'empty_return', 'loading_help', 'flexible_time', 'clean_truck']);
+    }
+
+    // A bid in bid mode is open only while its window is; the other modes have no window.
+    function bidWindowOpen(load) {
+      return load.get('mode', 'instant') != 'bid' || !('bidWindowEnds' in load) || load.bidWindowEnds > request.time;
+    }
+
     function validOfferCreate(offerId) {
       let o = request.resource.data;
       let load = get(docPath('loads', o.loadId)).data;
       let vehicle = get(docPath('vehicles', o.vehicleId)).data;
       return offerId == o.loadId + '_' + request.auth.uid
           && o.keys().hasOnly(['loadId', 'driverId', 'customerId', 'pickup', 'drop', 'vehicleId', 'vehicleNumber', 'vehicleType',
-                               'driverName', 'pricePaise', 'originalPaise', 'status', 'fleetOwnerId', 'companyVerified', 'createdAt', 'updatedAt'])
+                               'driverName', 'pricePaise', 'originalPaise', 'status', 'fleetOwnerId', 'companyVerified', 'createdAt', 'updatedAt',
+                               'etaMinutes', 'noteChip'])
+          && validBidExtras(o)
           && o.driverId == request.auth.uid
           && (!('fleetOwnerId' in o) || (o.fleetOwnerId == request.auth.uid && isTransporter(request.auth.uid)))
           // The "Verified transporter" mark on a bid is only true for an admin-approved account.
@@ -1952,6 +1983,7 @@ service cloud.firestore {
           && offerWithinEstimate(o.pricePaise, load)
           && o.originalPaise == o.pricePaise
           && load.status == 'open'
+          && bidWindowOpen(load)
           && load.shipperId != request.auth.uid
           && o.customerId == load.shipperId
           && o.get('driverName', '') is string && o.get('driverName', '').size() <= 80
@@ -1967,6 +1999,15 @@ service cloud.firestore {
       let after = request.resource.data;
       return before.driverId == request.auth.uid
           && ((before.status in ['pending', 'countered', 'selected'] && after.status == 'withdrawn' && offerKeysSame([]))
+              // One edit of a pending bid: a new price inside the same 30% to 300% limits, a new ETA or note, then it is locked.
+              || (before.status == 'pending' && after.status == 'pending' && !before.get('edited', false) && after.edited == true
+                  && offerKeysSame(['pricePaise', 'edited', 'etaMinutes', 'noteChip'])
+                  && after.originalPaise == before.originalPaise
+                  && after.pricePaise is int && after.pricePaise > 0 && after.pricePaise <= 100000000
+                  && validBidExtras(after)
+                  && get(docPath('loads', before.loadId)).data.status == 'open'
+                  && bidWindowOpen(get(docPath('loads', before.loadId)).data)
+                  && offerWithinEstimate(after.pricePaise, get(docPath('loads', before.loadId)).data))
               || (before.status == 'countered' && after.status == 'pending'
                   && after.pricePaise == before.counterPaise && offerKeysSame(['pricePaise']))
               || (before.status == 'selected' && after.status == 'confirmed'

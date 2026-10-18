@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../constants/logistics.dart';
+import '../dispatch/dispatch_models.dart';
 import '../pricing/fare_calculator.dart';
 
 /// Who may see and accept a load. `favourites` and `invite` copy the allowed
@@ -111,6 +112,18 @@ class Load {
   final int promoDiscountPaise;
   final int creditsUsedPaise;
 
+  /// Part 4 (dispatchV2): how the load is offered. Old loads have none and are `instant`.
+  final LoadMode mode;
+
+  /// When bidding closes (bid mode).
+  final DateTime? bidWindowEnds;
+
+  /// The customer's own rule for taking a bid while their app is open.
+  final AutoAccept? autoAccept;
+
+  /// How many rings wider the customer asked the search to go (0 to 3).
+  final int ringBoost;
+
   const Load({
     required this.id,
     required this.shipperId,
@@ -158,6 +171,10 @@ class Load {
     this.promoCode,
     this.promoDiscountPaise = 0,
     this.creditsUsedPaise = 0,
+    this.mode = LoadMode.instant,
+    this.bidWindowEnds,
+    this.autoAccept,
+    this.ringBoost = 0,
   });
 
   bool get isOpen => status == LoadStatus.open;
@@ -222,6 +239,10 @@ class Load {
       promoCode: (d['promo'] as Map?)?['code'] as String?,
       promoDiscountPaise: ((d['promo'] as Map?)?['discountPaise'] as num?)?.toInt() ?? 0,
       creditsUsedPaise: (d['creditsUsedPaise'] as num?)?.toInt() ?? 0,
+      mode: LoadMode.fromValue(d['mode']),
+      bidWindowEnds: (d['bidWindowEnds'] as Timestamp?)?.toDate(),
+      autoAccept: AutoAccept.fromMap(d['autoAccept']),
+      ringBoost: ((d['ringBoost'] as num?)?.toInt() ?? 0).clamp(0, 3),
     );
   }
 }

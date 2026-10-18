@@ -6471,3 +6471,124 @@ describe('G20 route rates are written by the server only', () => {
     }
   });
 });
+
+describe('U10 dispatch fields: mode, bid window, auto-accept, bid extras', () => {
+  const inMinutes = (m) => Timestamp.fromMillis(Date.now() + m * 60000);
+  const OFFER = {
+    loadId: 'L1', driverId: 'driver1', customerId: 'customer1', vehicleId: 'v1', vehicleNumber: VEHICLE.number,
+    vehicleType: '20ft', driverName: 'Ramesh', pricePaise: 2400000, originalPaise: 2400000, status: 'pending',
+  };
+  const offerRef = (db, id = 'L1_driver1') => doc(db, 'offers', id);
+  const newLoad = (extra = {}) => ({ ...LOAD, createdAt: serverTimestamp(), ...extra });
+
+  test('a load may carry a mode, a bid window up to 24 hours, an auto-accept rule and a ring boost', async () => {
+    const AA = { maxPaise: 2500000, minRating: 4, verifiedOnly: true };
+    await assertSucceeds(setDoc(doc(as('customer1'), 'loads', 'M1'), newLoad({ mode: 'bid', bidWindowEnds: inMinutes(10), autoAccept: AA, ringBoost: 1 })));
+    await assertSucceeds(setDoc(doc(as('customer1'), 'loads', 'M2'), newLoad({ mode: 'instant' })));
+    await assertSucceeds(setDoc(doc(as('customer1'), 'loads', 'M3'), newLoad({ mode: 'scheduled', scheduledAt: inMinutes(120) })));
+    await assertSucceeds(setDoc(doc(as('customer1'), 'loads', 'M4'), newLoad()));
+  });
+
+  test('bad shapes are refused: unknown mode, window not a time or over 24 hours, a damaged rule, a ring boost out of range', async () => {
+    const bad = [
+      { mode: 'auction' },
+      { mode: 5 },
+      { mode: 'bid', bidWindowEnds: 'soon' },
+      { mode: 'bid', bidWindowEnds: inMinutes(25 * 60) },
+      { autoAccept: { maxPaise: 0, minRating: 4, verifiedOnly: true } },
+      { autoAccept: { maxPaise: 1.5, minRating: 4, verifiedOnly: true } },
+      { autoAccept: { maxPaise: 100000001, minRating: 4, verifiedOnly: true } },
+      { autoAccept: { maxPaise: 1000, minRating: 6, verifiedOnly: true } },
+      { autoAccept: { maxPaise: 1000, minRating: -1, verifiedOnly: true } },
+      { autoAccept: { maxPaise: 1000, minRating: 4, verifiedOnly: 'yes' } },
+      { autoAccept: { maxPaise: 1000, minRating: 4, verifiedOnly: true, driverId: 'x' } },
+      { autoAccept: 'cheap' },
+      { ringBoost: 4 },
+      { ringBoost: -1 },
+      { ringBoost: 1.5 },
+    ];
+    let i = 0;
+    for (const extra of bad) await assertFails(setDoc(doc(as('customer1'), 'loads', `B${i++}`), newLoad(extra)));
+  });
+
+  test('the owner raises the price or widens the range of an open load; nobody else can, and the owner cannot change who it belongs to', async () => {
+    await seed((db) => setDoc(doc(db, 'loads', 'L1'), { ...LOAD, mode: 'instant', ringBoost: 0 }));
+    await assertSucceeds(updateDoc(doc(as('customer1'), 'loads', 'L1'), { ...LOAD, mode: 'instant', ringBoost: 1, budget: 26250, updatedAt: serverTimestamp() }));
+    await assertFails(updateDoc(doc(as('driver1'), 'loads', 'L1'), { ringBoost: 3 }));
+    await assertFails(updateDoc(doc(as('customer2'), 'loads', 'L1'), { ...LOAD, ringBoost: 3 }));
+    await assertFails(updateDoc(doc(as('customer1'), 'loads', 'L1'), { ...LOAD, ringBoost: 9 }));
+  });
+
+  test('a bid-mode load cannot be taken by a direct accept; only through a bid the customer selected', async () => {
+    await seedOpenLoad();
+    await seed((db) => setDoc(doc(db, 'loads', 'L1'), { ...LOAD, mode: 'bid', bidWindowEnds: inMinutes(5) }));
+    await assertFails(acceptBatch(as('driver1'), 'L1'));
+    await seed((db) => setDoc(doc(db, 'offers', 'L1_driver1'), { ...OFFER, status: 'selected' }));
+    const d1 = as('driver1');
+    const b = writeBatch(d1);
+    b.set(doc(d1, 'bookings', 'B1'), bookingFor('L1', { offerId: 'L1_driver1', agreedFarePaise: OFFER.pricePaise }));
+    b.update(doc(d1, 'loads', 'L1'), { status: 'matched', driverId: 'driver1', bookingId: 'B1', matchedAt: serverTimestamp() });
+    b.update(doc(d1, 'vehicles', 'v1'), { availability: 'on_trip' });
+    b.update(doc(d1, 'offers', 'L1_driver1'), { status: 'confirmed', bookingId: 'B1', updatedAt: serverTimestamp() });
+    await assertSucceeds(b.commit());
+  });
+
+  test('an instant load is still taken by a direct accept, and a second driver loses the race', async () => {
+    await seedOpenLoad();
+    await seed((db) => setDoc(doc(db, 'loads', 'L1'), { ...LOAD, mode: 'instant' }));
+    await assertSucceeds(acceptBatch(as('driver1'), 'L1'));
+    await assertFails(acceptBatch(as('driver2'), 'L1', 'driver2'));
+  });
+
+  test('a bid carries an ETA of 1 to 1440 minutes and one note chip from the list; free text is refused', async () => {
+    await seedOpenLoad();
+    await assertSucceeds(setDoc(offerRef(as('driver1')), { ...OFFER, etaMinutes: 25, noteChip: 'on_the_way' }));
+    await assertFails(setDoc(offerRef(as('driver2'), 'L1_driver2'), { ...OFFER, driverId: 'driver2', vehicleId: 'v2', vehicleNumber: 'KA01CD5678', etaMinutes: 0 }));
+    await assertFails(setDoc(offerRef(as('driver2'), 'L1_driver2'), { ...OFFER, driverId: 'driver2', vehicleId: 'v2', vehicleNumber: 'KA01CD5678', etaMinutes: 1441 }));
+    await assertFails(setDoc(offerRef(as('driver2'), 'L1_driver2'), { ...OFFER, driverId: 'driver2', vehicleId: 'v2', vehicleNumber: 'KA01CD5678', etaMinutes: 5.5 }));
+    await assertFails(setDoc(offerRef(as('driver2'), 'L1_driver2'), { ...OFFER, driverId: 'driver2', vehicleId: 'v2', vehicleNumber: 'KA01CD5678', noteChip: 'call me on 9800000000' }));
+    await assertFails(setDoc(offerRef(as('driver2'), 'L1_driver2'), { ...OFFER, driverId: 'driver2', vehicleId: 'v2', vehicleNumber: 'KA01CD5678', edited: true }));
+  });
+
+  test('bids are accepted only while the bid window is open', async () => {
+    await seedOpenLoad();
+    await seed((db) => setDoc(doc(db, 'loads', 'L1'), { ...LOAD, mode: 'bid', bidWindowEnds: Timestamp.fromMillis(Date.now() - 60000) }));
+    await assertFails(setDoc(offerRef(as('driver1')), OFFER));
+    await seed((db) => setDoc(doc(db, 'loads', 'L1'), { ...LOAD, mode: 'bid', bidWindowEnds: inMinutes(5) }));
+    await assertSucceeds(setDoc(offerRef(as('driver1')), OFFER));
+  });
+
+  test('a driver edits a pending bid once, inside the 30% to 300% limits; the price history stays', async () => {
+    await seedOpenLoad();
+    await seed((db) => setDoc(doc(db, 'loads', 'L1'), { ...LOAD, estimate: { total: 2000000 } }));
+    await seed((db) => setDoc(offerRef(db), OFFER));
+    const edit = (extra) => updateDoc(offerRef(as('driver1')), { edited: true, updatedAt: serverTimestamp(), ...extra });
+    await assertFails(updateDoc(offerRef(as('driver1')), { pricePaise: 2300000, updatedAt: serverTimestamp() }), 'must mark edited');
+    await assertFails(edit({ pricePaise: 500000 }), 'under 30%');
+    await assertFails(edit({ pricePaise: 6100000 }), 'over 300%');
+    await assertFails(edit({ pricePaise: 2200000, originalPaise: 2200000 }), 'history stays');
+    await assertFails(updateDoc(offerRef(as('customer1')), { edited: true, pricePaise: 2200000, updatedAt: serverTimestamp() }));
+    await assertFails(edit({ pricePaise: 2200000, noteChip: 'x' }));
+    await assertSucceeds(edit({ pricePaise: 2200000, etaMinutes: 40, noteChip: 'flexible_time' }));
+    await assertFails(edit({ pricePaise: 2100000 }), 'only one edit');
+  });
+
+  test('a driver never reads another driver\'s bid, and the customer reads all of them', async () => {
+    await seedOpenLoad();
+    await seed(async (db) => {
+      await setDoc(offerRef(db), OFFER);
+      await setDoc(offerRef(db, 'L1_driver2'), { ...OFFER, driverId: 'driver2', vehicleId: 'v2' });
+    });
+    await assertFails(getDoc(offerRef(as('driver2'))));
+    await assertFails(getDocs(query(collection(as('driver2'), 'offers'), where('loadId', '==', 'L1'))));
+    await assertSucceeds(getDocs(query(collection(as('customer1'), 'offers'), where('customerId', '==', 'customer1'))));
+    await assertSucceeds(getDoc(offerRef(as('driver2'), 'L1_driver2')));
+  });
+
+  test('config/dispatch is read by anyone signed in and written only by a super admin', async () => {
+    await seed((db) => setDoc(doc(db, 'config', 'dispatch'), { ringsKm: [3, 7, 15], ringDelaySeconds: [0, 30, 60], acceptSeconds: 30, bidWindowMinutes: 10 }));
+    await assertSucceeds(getDoc(doc(as('driver1'), 'config', 'dispatch')));
+    await assertFails(getDoc(doc(anon(), 'config', 'dispatch')));
+    await assertFails(setDoc(doc(as('driver1'), 'config', 'dispatch'), { acceptSeconds: 1 }));
+  });
+});

@@ -26,6 +26,7 @@ const FLAGS = Object.freeze([
   'appCheckEnforce',
   'rateRange',
   'payHold',
+  'dispatchV2',
 ]);
 
 const FLAG_TTL_MS = 30 * 1000;

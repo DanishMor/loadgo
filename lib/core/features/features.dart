@@ -51,6 +51,8 @@ class FeatureKey {
   static const pushNotifications = 'pushNotifications';
   static const adminBroadcast = 'adminBroadcast';
   static const photoUploads = 'photoUploads';
+  static const dispatchV2 = 'dispatchV2';
+  static const uiV2 = 'uiV2';
   static const bizCard = 'bizCard';
   static const khata = 'khata';
   static const safetyCheckin = 'safetyCheckin';
@@ -105,6 +107,8 @@ class Features {
     FeatureSpec(FeatureKey.pushNotifications, pilotOn: false, normalOn: false),
     FeatureSpec(FeatureKey.adminBroadcast, pilotOn: false, normalOn: false),
     FeatureSpec(FeatureKey.photoUploads, pilotOn: false, normalOn: false),
+    FeatureSpec(FeatureKey.dispatchV2, pilotOn: false, normalOn: false),
+    FeatureSpec(FeatureKey.uiV2, pilotOn: true, normalOn: true),
     FeatureSpec(FeatureKey.bizCard, pilotOn: false, normalOn: false),
     FeatureSpec(FeatureKey.khata, pilotOn: false, normalOn: false),
     FeatureSpec(FeatureKey.safetyCheckin, pilotOn: false, normalOn: false),

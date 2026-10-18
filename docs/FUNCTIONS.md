@@ -35,6 +35,7 @@ Every function first asks `flagOn(db, name)`: it reads `config/features.flags.<n
 | `paymentGateway` | Razorpay order, signature check, webhook, refund, ledger lines (test mode first) | F34, G9 |
 | `kycVerify` | ID check answers for the admin (kycVerify) | G13 |
 | `appCheckEnforce` | refuse paid calls that do not carry the app's App Check proof (off: only counted in the logs) | G15 |
+| `dispatchV2` | nearby-first rings and bid engine: the server wave (dispatchWave) and auto-accept with the app closed (autoAcceptBids); skeletons only, switch OFF | U14 |
 | `smsGateway` | trip SMS fallback and the SOS text (MSG91) | G12 |
 | `rateRange` | usual price of a route from finished trips | G20 |
 | `payHold` | online payment held until delivery | G21 |

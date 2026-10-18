@@ -35,6 +35,8 @@ force any flag On or Off; a forced value always wins. A flag that is OFF hides i
 | `pushNotifications` | Phones get push messages for new loads, offers, trip steps and chat. Needs the functions deployed. | OFF | OFF | Admin > Features > Push notifications |
 | `adminBroadcast` | Admins can send an announcement push to a role or to everyone. | OFF | OFF | Admin > Features > Admin announcements by push |
 | `photoUploads` | Documents and trip photos can be added from the phone camera or gallery. Needs Storage switched on. | OFF | OFF | Admin > Features > Photo uploads |
+| `dispatchV2` | Loads go to the nearest drivers first, then wider rings. Customers can pick Instant, Bid or Schedule. Turn on only after the new Firestore rules are published. Off: the old open load and offers work as before. | OFF | OFF | Customer > book a truck; Driver > incoming load card; Admin > dispatch monitor |
+| `uiV2` | The new home, 5-step booking, bid room, incoming-load card and trip screens. Turn it off to go back to the old screens. Works with or without the new dispatch switch. | ON | ON | Every role > home, booking, bids and trip screens |
 | `bizCard` | Transporters and drivers can make a card (name, city, trucks, routes, verified mark) from their profile and send it as a picture on WhatsApp. The phone number is only on the card if the person turns it on each time. | OFF | OFF | Transporter and Driver > Profile > My business card |
 | `khata` | A private notebook in Profile: add the people you do business with, write what they owe you or what you owe them, see the balance and send a statement on WhatsApp. Records only, no money moves. | OFF | OFF | Profile > Party khata |
 | `safetyCheckin` | When the truck stands for 30 minutes on the road, the driver is asked "Are you OK?". One tap for fine, one tap for help (an SOS to support and, with SMS on, to saved contacts). No answer in 10 minutes tells support too. | OFF | OFF | Driver > trip screen (in transit) |
@@ -248,3 +250,15 @@ Every row sits behind a switch that is OFF (see the flag table above). Setup doc
 | Cost guards (switch, daily limits, App Check) | owner | Admin > Features; `config/*Limits` | `functions/src/quota.js` | COST_WATCH |
 | Go-live | owner | none | `tool/golive_check.ps1`, `tool/status.ps1`, `tool/regression_batches.ps1` | GO_LIVE_RUNBOOK, PHONE_TEST_SHEET |
 | Partner ideas not built | owner | none | none | PARTNER_OFFERS, COMPETITOR_MATRIX |
+
+## Part 4 (UX v2 and the bid engine)
+
+| What | Where |
+|---|---|
+| Switches `uiV2` (new screens, default ON) and `dispatchV2` (rings and bids, default OFF) | lib/core/features/features.dart, Admin > Features |
+| Load mode, bid window, auto-accept, ring boost (data model) | lib/core/dispatch/dispatch_models.dart, lib/core/models/load.dart, firestore.rules (`validDispatchFields`) |
+| Rings, delays, accept time, bid window by city (`config/dispatch`) | lib/core/dispatch/dispatch_config_service.dart |
+| Bid extras (ETA, note chip, one edit) | firestore.rules (`validBidExtras`, `driverOfferUpdate`) |
+| Component kit (RouteRibbon, FareMeter, CountdownRing, SlideToConfirm, BidCard, DriverMiniCard, StatusTimelineV2, sheets, chips, FeedbackKit) | lib/core/widgets/ds/ |
+| Draw the kit to PNG | `flutter test tool/render_kit_test.dart` (writes build/ux_png) |
+| Migrate old loads | tool/migrate_loads_mode.js (dry run first), docs/MIGRATIONS.md |

@@ -42,6 +42,8 @@ void main() {
       FeatureKey.pushNotifications: 'Push notifications',
       FeatureKey.adminBroadcast: 'Admin announcements by push',
       FeatureKey.photoUploads: 'Photo uploads',
+      FeatureKey.dispatchV2: 'Nearby-first dispatch and bidding',
+      FeatureKey.uiV2: 'New look and booking steps',
       FeatureKey.bizCard: 'Business card to share',
       FeatureKey.khata: 'Party khata',
       FeatureKey.safetyCheckin: 'Safety check-in on a long stop',
