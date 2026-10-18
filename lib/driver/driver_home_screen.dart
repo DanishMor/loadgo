@@ -11,6 +11,8 @@ import '../core/network/network_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'v2/driver_home_v2.dart';
+import 'v2/incoming_load_host.dart';
+import '../core/dispatch/load_radar.dart';
 
 import '../core/profile/profile_nav_tile.dart';
 import '../auth/driver_kyc_screen.dart';
@@ -81,6 +83,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
   final Stream<List<FavouriteRoute>> _favourites = MatchService.watchFavourites().asBroadcastStream();
   DateTime? _loadsSeenAt;
   String? _vehicleId;
+  LoadRadar? _radar;
   Map<String, dynamic>? _profile;
 
   @override
@@ -420,6 +423,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
         vehicles: _vehicles,
         todayTrips: _todayTrips,
         vehicleId: _vehicleId,
+        radar: _radar?.states,
         onVehicle: _pickVehicle,
         onAddVehicle: () => openAddVehicle(context, prefillFromProfile: true),
         onOpenLoads: () => _selectTab(_loadsTab),
@@ -611,7 +615,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
       ]),
     ];
 
-    return Scaffold(
+    final scaffold = Scaffold(
       backgroundColor: AppColors.background,
       body: IndexedStack(index: _index, children: pages),
       bottomNavigationBar: NavigationBar(
@@ -626,6 +630,19 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
           NavigationDestination(icon: const Icon(Icons.account_balance_wallet_outlined), selectedIcon: const Icon(Icons.account_balance_wallet_rounded), label: tr(context, 'earnings')),
           NavigationDestination(icon: const Icon(Icons.person_outline_rounded), selectedIcon: const Icon(Icons.person_rounded), label: tr(context, 'profile')),
         ],
+      ),
+    );
+    // U28: the Incoming Load Card rings while the driver is online (switch uiV2).
+    return ValueListenableBuilder<Features>(
+      valueListenable: FeaturesService.notifier,
+      builder: (context, f, _) => IncomingLoadHost(
+        enabled: f.isOn(FeatureKey.uiV2) && _isOnline,
+        preferredVehicleId: _vehicleId,
+        onAccepted: _onAccepted,
+        onRadar: (r) {
+          if (mounted) setState(() => _radar = r);
+        },
+        child: scaffold,
       ),
     );
   }

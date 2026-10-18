@@ -2,8 +2,8 @@
 
 Plan: docs/MASTER_PLAN_PART4.md. Read it, then continue from NEXT.
 
-LAST_DONE: U27 driver home v2 (driver/v2/driver_home_v2.dart: big online switch + today earnings + Radar line + truck-for-today chips + trips + banners + More; DriverHomeScreen picks it with uiV2, old _homeTab kept; _toolRows shared). Phase 4 tagged ux-v2-phase4.
-NEXT: U28 Incoming Load Card (full-screen card from LoadRadar, hosted by DriverHomeScreen when uiV2 and online; DriverHomeV2.radar stream is ready to take RadarState), U29 bid sheet, U30 feed, U31 my bids, U32 trip flow, U33 earnings, U34 onboarding; then Phase 6, 7, 8.
+LAST_DONE: U28 Incoming Load Card (driver/v2/incoming_load_screen.dart + incoming_load_host.dart: full-screen card from LoadRadar, ring, slide to accept, send price, skip with optional reason, taken/time-up message, queue; host wired in DriverHomeScreen when uiV2 and online; push to a closed app waits for the server wave) and U29 bid sheet (driver_bid_sheet.dart: percent chips, FareMeter, ETA and note chips, edit once, withdraw). Skip reasons are asked but not stored (no server field).
+NEXT: U30 loads feed (filters, saved routes, match reasons; use the bid sheet), U31 My bids statuses (pending, countered, selected, lost; edit/withdraw through DriverBidSheet), U32 trip flow big buttons, U33 earnings, U34 onboarding; then Phase 6, 7, 8. Push is due.
 
 Unfinished / to remember:
 - The old CustomerHomeScreen must stay reachable with uiV2 OFF.

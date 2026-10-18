@@ -41,3 +41,4 @@ One line per assumption taken without asking.
 - U15: no new no-show cancel code (the cancel-reason lists are pinned by tests): a no-show is the existing reasons `customer_unreachable` (driver cancels) and `driver_delay` (customer cancels); the admin dispatch monitor (U17) counts them. A per-load cap on the number of bids is not in the rules (they cannot count documents); the hourly bid limit (rate_limits) and one bid per driver per load already bound it.
 - U12/U14: bid-mode accept is two steps as before (customer selects, driver confirms) so the driver stays in control of their truck; the auto-accept rule does the selecting, the driver app shows "customer chose you, confirm".
 - U10/U11: the wave layer in the app is a visibility filter only (docs/FLOW_SPEC.md); the server wave and push come after the functions deploy.
+- U28: skip reasons are shown but not stored (no server field for them); back on the card counts as Skip.
