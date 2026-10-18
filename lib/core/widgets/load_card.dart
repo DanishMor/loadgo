@@ -44,7 +44,7 @@ class LoadCard extends StatelessWidget {
         children: [
           Icon(icon, size: 16, color: AppColors.muted),
           const SizedBox(width: 4),
-          Text(text, style: DsStyle.t14w600.copyWith(color: AppColors.body)),
+          Flexible(child: Text(text, style: DsStyle.t14w600.copyWith(color: AppColors.body))),
         ],
       );
 
