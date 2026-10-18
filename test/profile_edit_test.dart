@@ -69,4 +69,22 @@ void main() {
     expect(find.text('asha@example.com'), findsOneWidget);
     expect(find.text('Rao Traders'), findsOneWidget);
   });
+
+  testWidgets('Log out on the profile asks first; Cancel keeps the person signed in', (tester) async {
+    tester.view.physicalSize = const Size(800, 1800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    Backend.useFakes(db: db, uid: () => 'customer1');
+    await tester.runAsync(() => db.collection('users').doc('customer1').set({'name': 'Asha', 'phone': '+919900000000'}));
+    await tester.pumpWidget(const MaterialApp(home: Scaffold(body: ProfileView(isDriver: false))));
+    await settle(tester);
+    await tester.scrollUntilVisible(find.byKey(const ValueKey('profileLogout')), 300, scrollable: find.byType(Scrollable).first);
+    await tester.tap(find.byKey(const ValueKey('profileLogout')));
+    await tester.pumpAndSettle();
+    expect(find.text('Log out of this phone?'), findsOneWidget);
+    await tester.tap(find.text('Cancel'));
+    await tester.pumpAndSettle();
+    expect(find.text('Log out of this phone?'), findsNothing);
+    expect(find.byKey(const ValueKey('profileLogout')), findsOneWidget);
+  });
 }

@@ -1,5 +1,6 @@
 import '../bilty/lr_register_screen.dart';
 import 'package:flutter/material.dart';
+import '../widgets/ds/app_dialogs.dart';
 
 import '../models/rating.dart';
 import '../services/auth_helpers.dart';
@@ -47,6 +48,12 @@ class _ProfileViewState extends State<ProfileView> {
   late final Stream<RatingSummary> _rating = RatingService.watchSummary(Backend.uid ?? '');
 
   Future<void> _logout() => AppRoutes.logout(context);
+
+  /// U25: the Log out button asks first (the Settings screen has its own flow).
+  Future<void> _askLogout() async {
+    final ok = await showConfirmDialog(context, title: tr(context, 'pfLogoutAsk'), confirmLabel: tr(context, 'logout'), danger: true);
+    if (ok && mounted) await _logout();
+  }
 
   Widget _detail(IconData icon, String label, String? value) {
     if (value == null || value.isEmpty) return const SizedBox.shrink();
@@ -254,7 +261,8 @@ class _ProfileViewState extends State<ProfileView> {
               _verificationCard(data),
               const SizedBox(height: 20),
               OutlinedButton.icon(
-                onPressed: _logout,
+                key: const ValueKey('profileLogout'),
+                onPressed: _askLogout,
                 icon: const Icon(Icons.logout_rounded),
                 label: Text(tr(context, 'logout')),
                 style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(50)),
