@@ -2034,8 +2034,9 @@ service cloud.firestore {
     }
 
     match /offers/{offerId} {
+      // The two people of the bid, and the dispatch monitor (super and ops) which only counts and times bids.
       allow read: if signedIn()
-          && (resource.data.driverId == request.auth.uid || resource.data.customerId == request.auth.uid);
+          && (resource.data.driverId == request.auth.uid || resource.data.customerId == request.auth.uid || adminIn(['super', 'ops']));
       allow create: if signedIn() && validOfferCreate(offerId);
       allow update: if signedIn() && (driverOfferUpdate(offerId) || customerOfferUpdate());
       allow delete: if false;

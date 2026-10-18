@@ -169,6 +169,7 @@ Admin Panel: **Profile > Admin** (only for accounts in `admins/{uid}`). The pane
 | Pilot cohorts | per week of posting: time to first bid and to a driver, customers who came back, cancel reasons; copy as CSV | super, ops |
 | Pilot report | today's or last 7 days' numbers as plain text to copy into WhatsApp | super, ops |
 | Manual dispatch | loads waiting 30+ minutes: suggest a nearby fitting driver (the driver sees it on Home and accepts as usual), add a call-back note about the customer | super, ops |
+| Dispatch monitor | live loads with ring and bids; time to first bid, time to fill, taken out of finished, price against estimate, loads that ended with no bid, no-show cancels (read once, Refresh) | super, ops |
 | Waitlist | people who asked to hear when a closed route opens (search, CSV) | super, ops |
 | Invite codes | pilot codes per role / route with uses and last day; let a phone number in without a code | super, ops |
 | Pilot funnel | where customers, drivers and transporters stop before a first delivery | super, ops |

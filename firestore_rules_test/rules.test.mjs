@@ -6688,3 +6688,23 @@ describe('U15 fairness and abuse: the race, the price limits, bids that stay pri
     await assertFails(updateDoc(offerRef(as('driver2'), 'L1_driver2'), { status: 'withdrawn', updatedAt: serverTimestamp() }));
   });
 });
+
+describe('U17 the dispatch monitor reads bids (super and ops only)', () => {
+  test('super and ops admins read any bid; support, finance, other drivers and customers do not', async () => {
+    await seedOpenLoad();
+    await seed(async (db) => {
+      await setDoc(doc(db, 'offers', 'L1_driver1'), { loadId: 'L1', driverId: 'driver1', customerId: 'customer1', status: 'pending', pricePaise: 1000 });
+      await setDoc(doc(db, 'admins', 'ops1'), { role: 'ops' });
+      await setDoc(doc(db, 'admins', 'sup1'), { role: 'support' });
+      await setDoc(doc(db, 'admins', 'fin1'), { role: 'finance' });
+    });
+    const ref = (uid) => doc(as(uid), 'offers', 'L1_driver1');
+    await assertSucceeds(getDoc(doc(asAdmin(), 'offers', 'L1_driver1')));
+    await assertSucceeds(getDoc(ref('ops1')));
+    await assertFails(getDoc(ref('sup1')));
+    await assertFails(getDoc(ref('fin1')));
+    await assertFails(getDoc(ref('driver2')));
+    await assertSucceeds(getDocs(query(collection(as('ops1'), 'offers'), orderBy('createdAt', 'desc'), limit(400))));
+    await assertFails(updateDoc(ref('ops1'), { status: 'rejected' }));
+  });
+});

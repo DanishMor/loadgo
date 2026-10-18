@@ -127,6 +127,10 @@ class Load {
   /// Last change by the customer (a price raise or a wider search writes it): the drivers are asked again.
   final Timestamp? updatedAt;
 
+  /// When a driver took it, and why a closed load was closed (`expired` by the daily job): for the dispatch monitor.
+  final Timestamp? matchedAt;
+  final String? closedReason;
+
   const Load({
     required this.id,
     required this.shipperId,
@@ -179,6 +183,8 @@ class Load {
     this.autoAccept,
     this.ringBoost = 0,
     this.updatedAt,
+    this.matchedAt,
+    this.closedReason,
   });
 
   bool get isOpen => status == LoadStatus.open;
@@ -248,6 +254,8 @@ class Load {
       autoAccept: AutoAccept.fromMap(d['autoAccept']),
       ringBoost: ((d['ringBoost'] as num?)?.toInt() ?? 0).clamp(0, 3),
       updatedAt: d['updatedAt'] is Timestamp ? d['updatedAt'] as Timestamp : null,
+      matchedAt: d['matchedAt'] is Timestamp ? d['matchedAt'] as Timestamp : null,
+      closedReason: d['closedReason'] as String?,
     );
   }
 }

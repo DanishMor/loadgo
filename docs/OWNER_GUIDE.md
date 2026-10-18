@@ -54,6 +54,7 @@ Kaun dekh sakta hai (role): super = owner, ops, support, verifier, finance. Jo r
 - **Invite codes**: pilot ke code, whitelist, open cities. super, ops.
 - **Waitlist**: jin routes par service nahi hai wahan ki maang. super, ops.
 - **Manual dispatch**: unfilled load par driver suggest karna aur call-back note. super, ops.
+- **Dispatch monitor**: live loads ka ring aur bids, pehli boli aur load bharne ka samay, kitne load liye gaye, bina boli ke khatam hue load, no-show cancel. super, ops.
 - **Pilot report**: roz aur hafte ka text report. super, ops.
 - **Pilot cohorts**: pehli bid kitni jaldi, load kitni jaldi bhara, dobara use. CSV bhi. super, ops.
 - **Use-again survey**: trip ke baad ka 1-tap jawab. super, ops.

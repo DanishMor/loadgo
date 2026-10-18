@@ -47,6 +47,7 @@ const Map<String, List<String>> staffAreas = {
   'adminCohorts': [StaffRole.superAdmin, StaffRole.ops],
   'adminPilotReport': [StaffRole.superAdmin, StaffRole.ops],
   'adminDispatch': [StaffRole.superAdmin, StaffRole.ops],
+  'adminDispatchMonitor': [StaffRole.superAdmin, StaffRole.ops],
   'adminWaitlist': [StaffRole.superAdmin, StaffRole.ops],
   'adminInvites': [StaffRole.superAdmin, StaffRole.ops],
   'adminPilotFunnel': [StaffRole.superAdmin, StaffRole.ops],
