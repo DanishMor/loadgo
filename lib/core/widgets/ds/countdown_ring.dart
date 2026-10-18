@@ -91,7 +91,7 @@ class _CountdownRingState extends State<CountdownRing> {
         height: widget.size,
         child: CustomPaint(
           painter: CountdownRingPainter(track: c.chip, ring: ring, fraction: left / total),
-          child: Center(child: Directionality(textDirection: TextDirection.ltr, child: Text('$left', key: const ValueKey('ringSeconds'), style: DsType.title.copyWith(color: c.textStrong)))),
+          child: Center(child: Directionality(textDirection: TextDirection.ltr, child: Text(left >= 100 ? '${left ~/ 60}:${(left % 60).toString().padLeft(2, '0')}' : '$left', key: const ValueKey('ringSeconds'), style: DsType.title.copyWith(color: c.textStrong)))),
         ),
       ),
     ));

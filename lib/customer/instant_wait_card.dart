@@ -63,7 +63,7 @@ class _InstantWaitCardState extends State<InstantWaitCard> {
   Future<void> _raise(int percent) => _run(() async {
         final next = await LoadDispatchService.raisePrice(widget.load, percent);
         if (!mounted) return;
-        showSnack(context, next == null ? tr(context, 'uxPriceLimit') : trf(context, 'uxPriceRaised', {'amount': formatRupees(next)}));
+        showSnack(context, next == null ? tr(context, 'uxPriceLimit') : trf(context, 'uxPriceRaised', {'amount': formatPaise(next * 100)}));
       });
 
   Future<void> _widen() => _run(() async {
@@ -102,7 +102,7 @@ class _InstantWaitCardState extends State<InstantWaitCard> {
         if (p == null) const LinearProgressIndicator(),
         if (load.budget != null) ...[
           const SizedBox(height: DsSpace.s3),
-          Text(trf(context, 'uxPriceNow', {'amount': formatRupees(load.budget!)}), key: const ValueKey('instPrice'), style: DsType.body.copyWith(color: c.text)),
+          Text(trf(context, 'uxPriceNow', {'amount': formatPaise((load.budget! * 100).round())}), key: const ValueKey('instPrice'), style: DsType.body.copyWith(color: c.text)),
         ],
         if (p?.stalled == true) ...[
           const SizedBox(height: DsSpace.s2),

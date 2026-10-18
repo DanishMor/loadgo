@@ -76,6 +76,7 @@ class _SlideToConfirmState extends State<SlideToConfirm> {
               : null,
           child: Container(
             key: const ValueKey('slideTrack'),
+            width: double.infinity,
             height: DsSpace.tapBig,
             decoration: BoxDecoration(color: bg, borderRadius: DsRadius.all(DsRadius.pill)),
             child: Stack(alignment: Alignment.center, children: [

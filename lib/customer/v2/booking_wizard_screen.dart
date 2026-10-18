@@ -249,6 +249,7 @@ class _BookWizardScreenState extends State<BookWizardScreen> {
     final w = _d.weightTons ?? 2.0;
     return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
       QuickChipRow<String>(
+        padding: EdgeInsets.zero,
         options: [for (final k in cargoTypes) (k, k)],
         selected: _d.cargo,
         onChanged: (v) => _change(_d.copyWith(cargo: v ?? _d.cargo)),
@@ -277,8 +278,15 @@ class _BookWizardScreenState extends State<BookWizardScreen> {
     final w = _d.weightTons;
     final suggested = WizardDraft.suggest(w, _types);
     final km = _d.km;
+    // The trucks that carry the load come first, the suggested one on top; the ones that are too small go last.
+    final ordered = [..._types]..sort((a, b) {
+        final fa = w == null || a.fits(w), fb = w == null || b.fits(w);
+        if (fa != fb) return fa ? -1 : 1;
+        if (suggested != null && (a.id == suggested.id) != (b.id == suggested.id)) return a.id == suggested.id ? -1 : 1;
+        return a.maxTons.compareTo(b.maxTons);
+      });
     return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-      for (final t in _types)
+      for (final t in ordered)
         Builder(builder: (context) {
           final fits = w == null || t.fits(w);
           final selected = _d.vehicleType == t.id;

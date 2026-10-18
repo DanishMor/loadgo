@@ -1,48 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../l10n/l10n.dart';
 import '../../theme/design_tokens.dart';
 import 'skeleton.dart';
-
-/// The one bottom sheet of the app's new screens: a drag handle, a title, the content in
-/// a scroll view that keeps clear of the keyboard, and a Close button for screen readers.
-/// Returns what the content passes to `Navigator.pop`.
-Future<R?> showAppSheet<R>(BuildContext context, {required String title, required Widget child, bool dismissible = true}) {
-  return showModalBottomSheet<R>(
-    context: context,
-    isScrollControlled: true,
-    useSafeArea: true,
-    isDismissible: dismissible,
-    enableDrag: dismissible,
-    showDragHandle: true,
-    builder: (ctx) => AppSheetBody(title: title, child: child),
-  );
-}
-
-class AppSheetBody extends StatelessWidget {
-  final String title;
-  final Widget child;
-  const AppSheetBody({super.key, required this.title, required this.child});
-
-  @override
-  Widget build(BuildContext context) {
-    final c = context.ds;
-    return Padding(
-      padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(DsSpace.gutter, 0, DsSpace.gutter, DsSpace.s5),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, mainAxisSize: MainAxisSize.min, children: [
-          Row(children: [
-            Expanded(child: Semantics(header: true, child: Text(title, style: DsType.title.copyWith(color: c.textStrong)))),
-            IconButton(tooltip: tr(context, 'uxClose'), icon: const Icon(Icons.close_rounded), onPressed: () => Navigator.of(context).maybePop()),
-          ]),
-          const SizedBox(height: DsSpace.s2),
-          child,
-        ]),
-      ),
-    );
-  }
-}
 
 /// One row of quick choices (goods, ETA, note, sort). One chip can be selected; tapping the
 /// selected one again clears it when [clearable]. Scrolls sideways, chips at least 48 dp tall.
@@ -52,7 +11,10 @@ class QuickChipRow<V> extends StatelessWidget {
   final ValueChanged<V?> onChanged;
   final bool clearable;
 
-  const QuickChipRow({super.key, required this.options, required this.selected, required this.onChanged, this.clearable = false});
+  /// Space at both ends of the row; zero when the row already sits inside a padded page.
+  final EdgeInsetsGeometry padding;
+
+  const QuickChipRow({super.key, required this.options, required this.selected, required this.onChanged, this.clearable = false, this.padding = const EdgeInsets.symmetric(horizontal: DsSpace.gutter)});
 
   @override
   Widget build(BuildContext context) {
@@ -60,7 +22,7 @@ class QuickChipRow<V> extends StatelessWidget {
       height: DsSpace.tapMin + DsSpace.s2,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: DsSpace.gutter),
+        padding: padding,
         itemCount: options.length,
         separatorBuilder: (_, _) => const SizedBox(width: DsSpace.s2),
         itemBuilder: (context, i) {

@@ -84,17 +84,6 @@ void main() {
     expect(sel, isNull);
   });
 
-  testWidgets('showAppSheet shows a title, content and closes with the close button', (t) async {
-    await t.pumpWidget(host(Builder(builder: (c) => TextButton(onPressed: () => showAppSheet<void>(c, title: 'Pick', child: const Text('inside')), child: const Text('open')))));
-    await t.tap(find.text('open'));
-    await t.pumpAndSettle();
-    expect(find.text('Pick'), findsOneWidget);
-    expect(find.text('inside'), findsOneWidget);
-    await t.tap(find.byTooltip('Close'));
-    await t.pumpAndSettle();
-    expect(find.text('inside'), findsNothing);
-  });
-
   testWidgets('the heads-up banner shows, runs onTap once, and goes away by itself', (t) async {
     var taps = 0;
     await t.pumpWidget(host(Builder(builder: (c) => TextButton(onPressed: () => showHeadsUp(c, title: 'New load', body: 'Delhi to Jaipur', seconds: 2, onTap: () => taps++), child: const Text('go')))));

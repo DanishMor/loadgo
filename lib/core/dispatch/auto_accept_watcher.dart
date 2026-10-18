@@ -9,6 +9,7 @@ import '../services/load_service.dart';
 import '../services/offer_service.dart';
 import '../trust/public_trust.dart';
 import 'bid_ranking.dart';
+import 'trust_lookup.dart';
 
 /// U14: the customer's auto-accept rule, applied while the customer's app is open. When a bid on one of the
 /// customer's open loads fits the rule (price up to the limit, rating at least the minimum, verified when asked),
@@ -28,15 +29,7 @@ class AutoAcceptWatcher {
   static final Map<String, PublicTrust?> _trust = {};
 
   /// Tests replace how a driver's trust summary is read.
-  static Future<PublicTrust?> Function(String uid) trustReader = _readTrust;
-
-  static Future<PublicTrust?> _readTrust(String uid) async {
-    try {
-      return await PublicTrust.watch(uid).first.timeout(const Duration(seconds: 4));
-    } catch (_) {
-      return null;
-    }
-  }
+  static Future<PublicTrust?> Function(String uid) trustReader = TrustLookup.of;
 
   /// Starts listening (only while `dispatchV2` is on and someone is signed in). Safe to call twice.
   static void start() {
@@ -113,6 +106,6 @@ class AutoAcceptWatcher {
   /// For tests: forget the tried set.
   static void resetForTest() {
     stop();
-    trustReader = _readTrust;
+    trustReader = TrustLookup.of;
   }
 }

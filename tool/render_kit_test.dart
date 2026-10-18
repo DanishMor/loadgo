@@ -14,6 +14,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:transport_app/core/l10n/l10n.dart';
+import 'package:transport_app/core/theme/app_theme.dart';
 
 import '../test/ux2_kit_test.dart' as k;
 
@@ -45,6 +46,40 @@ Future<File> renderScene(WidgetTester t, String name, Widget scene, {double scal
   await t.pumpWidget(k.host(scene, scale: scale, b: b, lang: lang));
   await t.pump(const Duration(milliseconds: 400));
   final boundary = find.byType(RepaintBoundary).first.evaluate().first.renderObject! as RenderRepaintBoundary;
+  late final File file;
+  await t.runAsync(() async {
+    final image = await boundary.toImage(pixelRatio: 1);
+    final bytes = (await image.toByteData(format: ui.ImageByteFormat.png))!;
+    file = File('$out/$name.png')..writeAsBytesSync(bytes.buffer.asUint8List());
+  });
+  return file;
+}
+
+/// Renders a whole screen (it brings its own Scaffold) at 360 x 640 dp, saved at 2x.
+Future<File> renderPage(WidgetTester t, String name, Widget page, {double scale = 1.0, Brightness b = Brightness.light, AppLanguage lang = AppLanguage.english, bool settle = true}) async {
+  const out = String.fromEnvironment('OUT', defaultValue: 'build/ux_png');
+  Directory(out).createSync(recursive: true);
+  t.view.physicalSize = const Size(720, 1280);
+  t.view.devicePixelRatio = 2;
+  addTearDown(t.view.reset);
+  final language = ValueNotifier(lang);
+  final dir = (lang == AppLanguage.urdu || lang == AppLanguage.kashmiri) ? TextDirection.rtl : TextDirection.ltr;
+  await t.pumpWidget(const SizedBox()); // a fresh tree: the state of the previous screen must not be reused
+  await t.pumpWidget(LanguageScope(
+    notifier: language,
+    child: MaterialApp(
+      debugShowCheckedModeBanner: false,
+      theme: AppTheme.build(b),
+      builder: (c, w) => MediaQuery(data: MediaQuery.of(c).copyWith(textScaler: TextScaler.linear(scale)), child: Directionality(textDirection: dir, child: w!)),
+      home: RepaintBoundary(child: page),
+    ),
+  ));
+  if (settle) {
+    await t.pumpAndSettle(const Duration(milliseconds: 100), EnginePhase.sendSemanticsUpdate, const Duration(seconds: 3));
+  } else {
+    await t.pump(const Duration(milliseconds: 400));
+  }
+  final boundary = find.byType(RepaintBoundary).evaluate().map((e) => e.renderObject).whereType<RenderRepaintBoundary>().first;
   late final File file;
   await t.runAsync(() async {
     final image = await boundary.toImage(pixelRatio: 1);
