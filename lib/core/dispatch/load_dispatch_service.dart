@@ -47,6 +47,13 @@ class LoadDispatchService {
     return end;
   }
 
+  /// No bid came: the customer turns the load into an instant one (drivers within the widest ring see it at once).
+  static Future<bool> switchToInstant(Load load) async {
+    if (!load.isOpen || load.shipperId != Backend.uid || load.mode != LoadMode.bid) return false;
+    await _ref(load.id).update({'mode': LoadMode.instant.value, 'updatedAt': FieldValue.serverTimestamp()});
+    return true;
+  }
+
   /// Save or clear the auto-accept rule (U14).
   static Future<void> setAutoAccept(Load load, AutoAccept? rule) async {
     if (!load.isOpen || load.shipperId != Backend.uid) return;

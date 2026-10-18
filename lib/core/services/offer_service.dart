@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import '../dispatch/dispatch_models.dart';
 import '../models/load.dart';
+import 'server_clock.dart';
 import '../pricing/offer_bounds.dart';
 import '../models/offer.dart';
 import '../models/vehicle.dart';
@@ -28,10 +30,12 @@ class OfferService {
   /// With [asCompany] a transporter bids for the company (Task 67): the
   /// offer shows the company name, carries `fleetOwnerId`, and may use an
   /// attached vehicle. The vehicle and driver are assigned after winning.
-  static Future<String> send({required Load load, required Vehicle vehicle, required int pricePaise, bool asCompany = false}) async {
+  static Future<String> send({required Load load, required Vehicle vehicle, required int pricePaise, bool asCompany = false, int? etaMinutes, BidNote? note, int? pickupKm}) async {
     final uid = Backend.requireUid();
     if (!validPrice(pricePaise)) throw ArgumentError.value(pricePaise, 'pricePaise');
+    _checkExtras(etaMinutes, pickupKm);
     if (!load.isOpen || load.shipperId == uid) throw OfferStateException();
+    if (_windowClosed(load)) throw BidWindowClosedException();
     final est = load.estimate?.total;
     final range = OfferBounds.check(pricePaise, est);
     if (range != null) throw OfferOutOfRangeException(minPaise: OfferBounds.minPaise(est!), maxPaise: OfferBounds.maxPaise(est), tooLow: range == 'low');
@@ -56,6 +60,9 @@ class OfferService {
         if (asCompany && profile['verified'] == true) 'companyVerified': true,
         'pricePaise': pricePaise,
         'originalPaise': pricePaise,
+        'etaMinutes': ?etaMinutes,
+        'pickupKm': ?pickupKm,
+        if (note != null) 'noteChip': note.value,
         'status': OfferStatus.pending,
         'createdAt': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp(),
@@ -64,6 +71,50 @@ class OfferService {
     if (asCompany) AnalyticsEvents.log(AnalyticsEvents.companyBid);
     Funnel.mark(FunnelStep.firstBid, role: asCompany ? 'fleet' : 'driver').ignore();
     return ref.id;
+  }
+
+  static void _checkExtras(int? etaMinutes, int? pickupKm) {
+    if (etaMinutes != null && (etaMinutes < 1 || etaMinutes > 1440)) throw ArgumentError.value(etaMinutes, 'etaMinutes');
+    if (pickupKm != null && (pickupKm < 0 || pickupKm > 3000)) throw ArgumentError.value(pickupKm, 'pickupKm');
+  }
+
+  /// A bid-mode load whose window has ended takes no new bids and no edits.
+  static bool _windowClosed(Load load) => load.mode == LoadMode.bid && load.bidWindowEnds != null && !load.bidWindowEnds!.isAfter(ServerClock.now());
+
+  /// The driver changes a pending bid once: a new price (inside 30% to 300% of the estimate), ETA or note. Then it is locked.
+  static Future<void> edit(Offer offer, {required int pricePaise, int? etaMinutes, BidNote? note, int? pickupKm}) async {
+    final uid = Backend.requireUid();
+    if (offer.driverId != uid || offer.status != OfferStatus.pending) throw OfferStateException();
+    if (offer.edited) throw BidAlreadyEditedException();
+    if (!validPrice(pricePaise)) throw ArgumentError.value(pricePaise, 'pricePaise');
+    _checkExtras(etaMinutes, pickupKm);
+    final load = Load.fromDoc(await Backend.db.collection('loads').doc(offer.loadId).get());
+    if (!load.isOpen) throw OfferStateException();
+    if (_windowClosed(load)) throw BidWindowClosedException();
+    final est = load.estimate?.total;
+    final range = OfferBounds.check(pricePaise, est);
+    if (range != null) throw OfferOutOfRangeException(minPaise: OfferBounds.minPaise(est!), maxPaise: OfferBounds.maxPaise(est), tooLow: range == 'low');
+    await _transition(
+      offer.id,
+      (o) => o.status == OfferStatus.pending && !o.edited && o.driverId == uid,
+      (_) => {'pricePaise': pricePaise, 'edited': true, 'etaMinutes': ?etaMinutes, 'pickupKm': ?pickupKm, if (note != null) 'noteChip': note.value},
+    );
+  }
+
+  /// The customer accepts [offer]: it is selected and every other bid on the load that is still pending or selected is
+  /// closed (rejected) in the same batch, so the driver is asked to confirm and nobody else keeps waiting.
+  static Future<void> acceptBid(Offer offer, Iterable<Offer> others) async {
+    final uid = Backend.requireUid();
+    if (offer.customerId != uid || offer.status != OfferStatus.pending) throw OfferStateException();
+    final batch = Backend.db.batch();
+    for (final o in others) {
+      if (o.id == offer.id || o.customerId != uid || o.loadId != offer.loadId) continue;
+      if (o.status == OfferStatus.pending || o.status == OfferStatus.selected) {
+        batch.update(_col.doc(o.id), {'status': OfferStatus.rejected, 'updatedAt': FieldValue.serverTimestamp()});
+      }
+    }
+    batch.update(_col.doc(offer.id), {'status': OfferStatus.selected, 'updatedAt': FieldValue.serverTimestamp()});
+    await batch.commit();
   }
 
   static Future<void> _transition(String offerId, bool Function(Offer o) allowed, Map<String, Object?> Function(Offer o) data) {

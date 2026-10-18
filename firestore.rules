@@ -1163,11 +1163,14 @@ service cloud.firestore {
           && a.verifiedOnly is bool;
     }
 
+    // One cheap check first: a load without any of these fields (every old load) costs a single expression,
+    // which matters because a load with a promo is already close to the rules' limit of 1000 expressions.
     function validDispatchFields(d) {
-      return d.get('mode', 'instant') in ['instant', 'bid', 'scheduled']
-          && (!('bidWindowEnds' in d) || (d.bidWindowEnds is timestamp && d.bidWindowEnds <= request.time + duration.value(24, 'h')))
-          && (!('autoAccept' in d) || validAutoAccept(d.autoAccept))
-          && (!('ringBoost' in d) || (d.ringBoost is int && d.ringBoost >= 0 && d.ringBoost <= 3));
+      return !d.keys().hasAny(['mode', 'bidWindowEnds', 'autoAccept', 'ringBoost'])
+          || (d.get('mode', 'instant') in ['instant', 'bid', 'scheduled']
+              && (!('bidWindowEnds' in d) || (d.bidWindowEnds is timestamp && d.bidWindowEnds <= request.time + duration.value(24, 'h')))
+              && (!('autoAccept' in d) || validAutoAccept(d.autoAccept))
+              && (!('ringBoost' in d) || (d.ringBoost is int && d.ringBoost >= 0 && d.ringBoost <= 3)));
     }
 
     function validLoad(d) {
@@ -1955,6 +1958,7 @@ service cloud.firestore {
     // Part 4: how soon the driver can be there and one note chip; nothing typed by hand.
     function validBidExtras(o) {
       return (!('etaMinutes' in o) || (o.etaMinutes is int && o.etaMinutes >= 1 && o.etaMinutes <= 1440))
+          && (!('pickupKm' in o) || (o.pickupKm is int && o.pickupKm >= 0 && o.pickupKm <= 3000))
           && (!('noteChip' in o) || o.noteChip in ['on_the_way', 'empty_return', 'loading_help', 'flexible_time', 'clean_truck']);
     }
 
@@ -1970,7 +1974,7 @@ service cloud.firestore {
       return offerId == o.loadId + '_' + request.auth.uid
           && o.keys().hasOnly(['loadId', 'driverId', 'customerId', 'pickup', 'drop', 'vehicleId', 'vehicleNumber', 'vehicleType',
                                'driverName', 'pricePaise', 'originalPaise', 'status', 'fleetOwnerId', 'companyVerified', 'createdAt', 'updatedAt',
-                               'etaMinutes', 'noteChip'])
+                               'etaMinutes', 'pickupKm', 'noteChip'])
           && validBidExtras(o)
           && o.driverId == request.auth.uid
           && (!('fleetOwnerId' in o) || (o.fleetOwnerId == request.auth.uid && isTransporter(request.auth.uid)))
@@ -2001,7 +2005,7 @@ service cloud.firestore {
           && ((before.status in ['pending', 'countered', 'selected'] && after.status == 'withdrawn' && offerKeysSame([]))
               // One edit of a pending bid: a new price inside the same 30% to 300% limits, a new ETA or note, then it is locked.
               || (before.status == 'pending' && after.status == 'pending' && !before.get('edited', false) && after.edited == true
-                  && offerKeysSame(['pricePaise', 'edited', 'etaMinutes', 'noteChip'])
+                  && offerKeysSame(['pricePaise', 'edited', 'etaMinutes', 'pickupKm', 'noteChip'])
                   && after.originalPaise == before.originalPaise
                   && after.pricePaise is int && after.pricePaise > 0 && after.pricePaise <= 100000000
                   && validBidExtras(after)

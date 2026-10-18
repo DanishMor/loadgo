@@ -126,6 +126,24 @@ exports.jobSuspendExpiredDocs = onSchedule({ schedule: 'every day 03:30', timeZo
   await jobs.suspendExpiredDocs(db);
 });
 
+// U14 (switch: dispatchV2, OFF): a bid arrives and the customer's own auto-accept rule takes it, even with the app closed.
+const dispatch = require('./src/dispatch');
+const { FieldValue } = require('firebase-admin/firestore');
+exports.autoAcceptBids = onDocumentCreated('offers/{id}', async (event) => {
+  const o = event.data && event.data.data();
+  if (!o || !o.loadId || o.status !== 'pending') return;
+  const db = getFirestore();
+  if (!(await flagOn(db, 'dispatchV2'))) return;
+  await dispatch.autoAccept(db, o.loadId, FieldValue);
+});
+
+// U11/U12 (switch: dispatchV2, OFF): records which ring of an instant load is open. Skeleton: the push to the ring comes later.
+exports.dispatchWave = onSchedule({ schedule: 'every 1 minutes', timeZone: IST }, async () => {
+  const db = getFirestore();
+  if (!(await flagOn(db, 'dispatchV2'))) return;
+  await dispatch.runWave(db, Date.now());
+});
+
 // G11: a finished trip does not keep the driver's last position for more than a day (docs/LIVE_LOCATION.md).
 exports.jobClearLocations = onSchedule({ schedule: 'every day 04:30', timeZone: IST }, async () => {
   const db = getFirestore();

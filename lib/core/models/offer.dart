@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import '../dispatch/dispatch_models.dart';
+
 /// This driver already has an offer on the load.
 class OfferExistsException implements Exception {}
 
@@ -13,6 +15,12 @@ class OfferOutOfRangeException implements Exception {
 
 /// The offer is no longer in a state that allows this action.
 class OfferStateException implements Exception {}
+
+/// The load's bid window has ended (bid mode): no new bid and no edit.
+class BidWindowClosedException implements Exception {}
+
+/// A bid can be edited once.
+class BidAlreadyEditedException implements Exception {}
 
 /// Offer lifecycle. Must stay in sync with firestore.rules.
 ///
@@ -62,6 +70,12 @@ class Offer {
   /// A company bid from an admin-approved ("Verified") transporter.
   final bool companyVerified;
 
+  /// Part 4: how soon the driver can be at the pickup, how far they are (km), a note chip and whether the one edit is used.
+  final int? etaMinutes;
+  final int? pickupKm;
+  final BidNote? note;
+  final bool edited;
+
   const Offer({
     required this.id,
     required this.loadId,
@@ -81,6 +95,10 @@ class Offer {
     this.createdAt,
     this.fleetOwnerId,
     this.companyVerified = false,
+    this.etaMinutes,
+    this.pickupKm,
+    this.note,
+    this.edited = false,
   });
 
   bool get isCompanyBid => fleetOwnerId != null;
@@ -113,6 +131,10 @@ class Offer {
       createdAt: d['createdAt'] as Timestamp?,
       fleetOwnerId: d['fleetOwnerId'] as String?,
       companyVerified: d['companyVerified'] == true,
+      etaMinutes: (d['etaMinutes'] as num?)?.round(),
+      pickupKm: (d['pickupKm'] as num?)?.round(),
+      note: BidNote.fromValue(d['noteChip']),
+      edited: d['edited'] == true,
     );
   }
 }

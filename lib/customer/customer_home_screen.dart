@@ -1,3 +1,4 @@
+import '../core/dispatch/auto_accept_watcher.dart';
 import '../core/wallet/hub/hub_screens.dart';
 import '../core/assistant/sahayak_screen.dart';
 import '../core/search/global_search_screen.dart';
@@ -60,6 +61,21 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
   static const _loadsTab = 2;
 
   int _currentIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    // U14 (switch dispatchV2): the customer's auto-accept rule runs while the app is open; the switch may arrive a moment later.
+    AutoAcceptWatcher.start();
+    FeaturesService.notifier.addListener(AutoAcceptWatcher.start);
+  }
+
+  @override
+  void dispose() {
+    FeaturesService.notifier.removeListener(AutoAcceptWatcher.start);
+    AutoAcceptWatcher.stop();
+    super.dispose();
+  }
 
   Future<void> _postLoad() async {
     final posted = await Navigator.of(context).push<bool>(
