@@ -46,6 +46,7 @@ import 'admin_signals_screen.dart';
 import 'admin_verification_screen.dart';
 import 'flagged_users_screen.dart';
 import '../core/theme/design_tokens.dart';
+import '../core/widgets/ds/app_top_bar.dart';
 
 String staffRoleKey(String role) => switch (role) {
       StaffRole.support => 'staffRoleSupport',
@@ -54,6 +55,22 @@ String staffRoleKey(String role) => switch (role) {
       StaffRole.finance => 'staffRoleFinance',
       _ => 'staffRoleSuper',
     };
+
+/// The five groups of the admin home (uiV2), in the order they are shown.
+const adminGroups = ['adGroupPeople', 'adGroupOps', 'adGroupSafety', 'adGroupMoney', 'adGroupTools'];
+
+/// Which group an admin screen sits in; a screen not listed here goes to the last one.
+String adminGroupOf(String key) {
+  const people = {'adminUsers', 'driverVerification', 'adminVehicles', 'flaggedUsers', 'adminDeletionRequests', 'adminWaitlist', 'adminInvites', 'adminSearch', 'adminDriverRewards'};
+  const ops = {'adminAnalytics', 'adminLoads', 'adminBookings', 'adminDispatch', 'adminDispatchMonitor', 'adminSupplyDemand'};
+  const safety = {'adminSos', 'adminReports', 'pcAdminViolations', 'adminSignals', 'adminFraudCases', 'adminDisputes', 'adminRatingFlags', 'adminRatingBurst', 'adminAppeals', 'adminAlerts', 'adminHealth'};
+  const money = {'adminPayAging', 'adminPayouts', 'adminFinance', 'adminOffers', 'adminUnitEconomics'};
+  if (people.contains(key)) return 'adGroupPeople';
+  if (ops.contains(key)) return 'adGroupOps';
+  if (safety.contains(key)) return 'adGroupSafety';
+  if (money.contains(key)) return 'adGroupMoney';
+  return 'adGroupTools';
+}
 
 /// Entry to every admin screen. Reached from the profile menu for admins.
 class AdminDashboardScreen extends StatefulWidget {
@@ -65,6 +82,45 @@ class AdminDashboardScreen extends StatefulWidget {
 
 class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   late final Future<String> _role = AdminConsoleService.staffRole();
+
+  /// uiV2: the same screens in five groups, one card per group, with the staff role in the top bar.
+  Widget _grouped(BuildContext context, String? role, List<(String, String, IconData, Widget)> items, void Function(Widget) open) {
+    final c = context.ds;
+    final allowed = [for (final i in items) if (role == null || staffCan(role, i.$1)) i];
+    return Scaffold(
+      appBar: AppTopBar(
+        title: tr(context, 'adminPanel'),
+        onBack: () => Navigator.of(context, rootNavigator: true).maybePop(),
+        actions: [
+          if (role != null) Padding(padding: const EdgeInsets.only(right: DsSpace.gutter), child: Center(child: Text(tr(context, staffRoleKey(role)), key: const ValueKey('staffRole'), style: DsType.caption.copyWith(color: c.textMuted)))),
+        ],
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(DsSpace.gutter),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+          for (final g in adminGroups)
+            if (allowed.any((i) => adminGroupOf(i.$1) == g)) ...[
+              Semantics(header: true, child: Text(tr(context, g), key: ValueKey('adminGroup_$g'), style: DsType.title.copyWith(color: c.textStrong))),
+              const SizedBox(height: DsSpace.s2),
+              AppCard(
+                child: Column(children: [
+                  for (final (key, label, icon, screen) in allowed)
+                    if (adminGroupOf(key) == g)
+                      ListTile(
+                        key: ValueKey('admin_$key'),
+                        leading: Icon(icon, color: c.primary),
+                        title: Text(tr(context, label), style: DsType.body.copyWith(color: c.text)),
+                        trailing: const Icon(Icons.chevron_right_rounded),
+                        onTap: () => open(screen),
+                      ),
+                ]),
+              ),
+              const SizedBox(height: DsSpace.s4),
+            ],
+        ]),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -120,6 +176,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       future: _role,
       builder: (context, snap) {
         final role = snap.data;
+        if (FeaturesService.isOn(FeatureKey.uiV2)) return _grouped(context, role, items, open);
         return Scaffold(
           appBar: AppBar(
             leading: BackButton(onPressed: () => Navigator.of(context, rootNavigator: true).maybePop()),
