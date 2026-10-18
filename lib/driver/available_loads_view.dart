@@ -140,6 +140,9 @@ class _AvailableLoadsViewState extends State<AvailableLoadsView> {
 
   bool get _v2 => FeaturesService.isOn(FeatureKey.uiV2);
 
+  /// The saved-route chip stays lit only while its two places are still in the filter (removing the drop chip unlights it).
+  bool get _routeApplies => _route != null && _filter.pickupQuery == _route!.pickup && _filter.dropQuery == _route!.drop;
+
   @override
   void initState() {
     super.initState();
@@ -385,7 +388,7 @@ class _AvailableLoadsViewState extends State<AvailableLoadsView> {
               },
             ),
           ),
-          if (_v2) FeedHeaderV2(sort: _sort, onSort: (v) => setState(() => _sort = v), route: _route, onRoute: _pickRoute, routes: _routes),
+          if (_v2) FeedHeaderV2(sort: _sort, onSort: (v) => setState(() => _sort = v), route: _routeApplies ? _route : null, onRoute: _pickRoute, routes: _routes),
           _activeChips(),
           const SizedBox(height: 8),
           Expanded(

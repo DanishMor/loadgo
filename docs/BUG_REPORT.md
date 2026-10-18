@@ -164,3 +164,43 @@ Known and accepted: a person can still find out, with the partner switched on, w
 | ID | File | What was wrong | Fix | Severity |
 |---|---|---|---|---|
 | P3-B9 | lib/core/khata/khata_screens.dart | the party list (up to 100) and the line list (hundreds) were `ListView(children: [for ...])`, which builds every row at once | `ListView.builder` with the totals as row 0 and the note as the last row; `test/performance_guard_test.dart` found it | Low (speed on cheap phones) |
+
+## Part 4 bug hunt (U43, three rounds)
+
+Method: read every Part 4 file against the rules (permission-denied), the indexes (queries), the crash paths (null, offline, no answer), money (paise), races, leaks (timers, subscriptions), dark mode, right to left and abuse; then ran the layout matrix (U39), the e2e flows (U40), the rules and concurrency tests (U41) and the PNG check (U42). Every bug has its fix; most have a test.
+
+### Round 1: crashes, error texts and leaks
+
+| ID | File | What was wrong | Fix | Test |
+|---|---|---|---|---|
+| P4-B1 | lib/driver/v2/driver_bid_sheet.dart | A driver who hit the hourly bid limit or a restricted account saw the generic error, not the minutes left or the restriction text (the old offer button had both) | the same two messages are mapped | none: needs the rate-limit service to trip; same mapping as `MakeOfferButton` |
+| P4-B2 | lib/driver/v2/loads_feed_v2.dart | "Bid" on a feed card: a failed truck lookup (offline) threw out of the button and was never shown | caught and shown with the normal error text | none: needs a failing vehicle read |
+| P4-B3 | lib/driver/v2/incoming_load_host.dart | the host listened to the radar and never cancelled that listener when the driver went offline or left | the subscription is kept and cancelled with the radar | none (leak, no visible symptom) |
+| P4-B4 | lib/core/widgets/evidence_cards.dart (old, also used by the new trip page) | the odometer field and its Save button side by side were 24 px too wide on a 360 px phone; found only by scrolling the whole trip page | field above, button below | test/trip_scroll_layout_test.dart (uiV2 on and off) |
+
+### Round 2: money (paise) and price entry
+
+| ID | File | What was wrong | Fix | Test |
+|---|---|---|---|---|
+| P4-B5 | lib/driver/v2/driver_bid_sheet.dart | A load with no estimate and no customer price gave the driver no way to type a price: the sheet opened at 10 rupees and the percent chips of 0 stayed at 10 rupees | a "type your price (in rupees)" field (digits only, 8 at most); the sheet starts at 0 for a load with no price, hides the percent chips, and does not send until a price is typed; the plan asked for a custom price too | driver_bid_sheet_test (typed price, load with no price) |
+| P4-B6 | lib/driver/v2/driver_bid_sheet.dart | The percent steps used floating point (`fare * 105 / 100`) | whole-number maths, same answers | driver_bid_sheet_test "no float drift" |
+| P4-B7 | lib/driver/v2/earnings_v2.dart | One screen showed the same kind of amount two ways (12000 and 12,000) | every amount uses the Indian grouping | earnings_test, earnings_v2_test |
+
+### Round 3: races, abuse, dark mode, right to left, small screens
+
+| ID | File | What was wrong | Fix | Test |
+|---|---|---|---|---|
+| P4-B8 | lib/driver/available_loads_view.dart | The saved-route chip stayed lit after the driver removed its drop-city chip | the chip is lit only while both places are still in the filter | loads_feed_v2_test |
+| P4-B9 | lib/core/widgets/load_card.dart (old) | the cargo line (weight, type, goods) overflowed at 2.0x text with a long city name | the text can wrap | layout_part4_test (loads feed, dark 2.0x Hindi) |
+| P4-B10 | lib/customer/trip_otp_card.dart (old) | the "Trip codes" title overflowed in Urdu at 1.6x | the title can wrap | layout_part4_test (tracking, Urdu) |
+| P4-B11 | lib/driver/available_loads_view.dart | "Send my price" wrapped to three lines on a feed card | a short "Bid" label | PNG check, loads_feed_v2_test |
+| P4-B12 | docs | two docs tests had been failing since the Part 4 functions: the function count in KNOWN_ISSUES (46) and the cost table rows for autoAcceptBids and dispatchWave | both fixed | known_issues_test, cost_security_docs_test |
+
+### Checked and found fine (no change)
+
+- **Permission-denied against the rules**: every write the new screens make already goes through a path with a rules test: send, edit once, withdraw, counter, select, confirm (U10, U15, U17, U41). The new reads (favourite routes, one load, my bids) exist in the old screens and the rules allow them.
+- **Missing indexes**: no new composite query. The feed sorts and filters on the phone; the Trips tab, My bids groups and Earnings work on lists already loaded.
+- **Races**: two drivers on one instant load, two confirms on one bid-mode load, select against withdraw: one winner each (rules emulator, 5 rounds each; fake Firestore does not overlap transactions, so the e2e test checks the second arrival).
+- **Leaks**: every timer (card countdown, gone timer, feed wave tick) and subscription is cancelled in `dispose`.
+- **Abuse**: a bid is one document per driver per load, one edit, withdraw only while open; the typed price is digits only and the rules cap it; a skip reason is never stored.
+- **Dark mode, right to left, big text**: 48 layout cases (U39) and the pictures (U42).

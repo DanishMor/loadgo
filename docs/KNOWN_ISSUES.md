@@ -53,5 +53,4 @@ Write the phone model, Android version, language, screen and what you did. Add i
 - Skip reasons on the card are asked but not stored: the server has no field for them (`docs/DECISIONS.md`).
 - My bids: Lost means rejected or withdrawn; the data does not say that another driver was chosen.
 - `dispatchV2` (rings, bid window) is a client layer until the rules and functions are published; keep it OFF until then.
-- The old trip page overflows by about 50 px on a 360 px wide phone in one old card (seen when `uiV2` is OFF). Not changed on purpose: the old screens stay as they were.
 - New texts of Part 4 wait for the native reader (`docs/TRANSLATION_REVIEW_PART4.csv`; the Part 5 sheet covers U30 to U44).

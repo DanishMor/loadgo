@@ -87,4 +87,45 @@ void main() {
     expect(find.byKey(const ValueKey('bsSend')), findsNothing);
     expect(find.byKey(const ValueKey('bsWithdraw')), findsOneWidget);
   });
+
+  testWidgets('a typed price is sent as it is, in whole rupees', (t) async {
+    await open(t);
+    await t.enterText(find.byKey(const ValueKey('bsCustom')), '24500');
+    await t.pump();
+    expect(t.widget<Text>(find.byKey(const ValueKey('bsPrice'))).data, '₹ 24,500');
+    await t.ensureVisible(find.byKey(const ValueKey('bsSend')));
+    await t.tap(find.byKey(const ValueKey('bsSend')));
+    await settle(t);
+    final offers = await t.runAsync(() => db.collection('offers').get());
+    expect(offers!.docs.single.data()['pricePaise'], 2450000);
+  });
+
+  testWidgets('a load with no price at all starts at nothing, has no percent chips, and does not send until a price is typed', (t) async {
+    uid = 'customer1';
+    final bare = await t.runAsync(() => LoadService.post(pickup: 'Pune', drop: 'Surat', cargoType: 'FMCG', weight: 2, vehicleType: '14ft', budget: null, pickupDate: DateTime(2030, 10, 5), notes: ''));
+    uid = 'driver1';
+    loadId = bare!;
+    await open(t);
+    expect(t.widget<Text>(find.byKey(const ValueKey('bsPrice'))).data, '₹ 0');
+    expect(find.byKey(const ValueKey('bsPct_5')), findsNothing);
+    await t.ensureVisible(find.byKey(const ValueKey('bsSend')));
+    await t.tap(find.byKey(const ValueKey('bsSend')));
+    await settle(t);
+    expect((await t.runAsync(() => db.collection('offers').get()))!.docs, isEmpty);
+    await t.enterText(find.byKey(const ValueKey('bsCustom')), '9000');
+    await t.pump();
+    await t.tap(find.byKey(const ValueKey('bsSend')));
+    await settle(t);
+    expect((await t.runAsync(() => db.collection('offers').get()))!.docs.single.data()['pricePaise'], 900000);
+  });
+
+  test('the percent steps use whole numbers: the same answers for any fare, no float drift', () {
+    for (final fare in [1999900, 2500000, 3333300, 99999000]) {
+      final m = BidSheetModel(farePaise: fare, estimatePaise: null);
+      for (final p in BidSheetModel.percents) {
+        final want = (((fare * (100 + p)) ~/ 100 + 500) ~/ 1000) * 1000;
+        expect(m.priceAt(p), want.clamp(m.lowest, m.highest), reason: 'fare $fare at $p%');
+      }
+    }
+  });
 }

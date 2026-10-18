@@ -82,17 +82,16 @@ class _DriverEvidenceCardState extends State<DriverEvidenceCard> {
         if (_b.odometerStart != null && _b.odometerEnd != null)
           Text(trf(context, 'odometerDistance', {'km': _b.odometerEnd! - _b.odometerStart!}), key: const ValueKey('odoDistance'), style: DsStyle.w700),
         if (_canStart || _canEnd)
-          Row(children: [
-            Expanded(
-              child: TextField(
-                key: const ValueKey('odoField'),
-                controller: _km,
-                keyboardType: TextInputType.number,
-                inputFormatters: [LengthLimitingTextInputFormatter(10), FilteringTextInputFormatter.digitsOnly],
-                decoration: InputDecoration(labelText: tr(context, 'odometerKm')),
-              ),
+          // A column, not a row: the field and the button side by side were 24 px too wide on a 360 px phone.
+          Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+            TextField(
+              key: const ValueKey('odoField'),
+              controller: _km,
+              keyboardType: TextInputType.number,
+              inputFormatters: [LengthLimitingTextInputFormatter(10), FilteringTextInputFormatter.digitsOnly],
+              decoration: InputDecoration(labelText: tr(context, 'odometerKm')),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(height: 8),
             FilledButton.tonal(
               key: const ValueKey('odoSave'),
               onPressed: _busy ? null : () => _saveOdometer(start: _canStart),

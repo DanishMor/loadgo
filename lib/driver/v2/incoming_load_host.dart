@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../../core/dispatch/load_radar.dart';
@@ -32,6 +34,7 @@ class IncomingLoadHost extends StatefulWidget {
 
 class _IncomingLoadHostState extends State<IncomingLoadHost> {
   LoadRadar? _radar;
+  StreamSubscription<RadarState>? _sub;
   LatLng? _origin;
   bool _open = false;
 
@@ -50,6 +53,7 @@ class _IncomingLoadHostState extends State<IncomingLoadHost> {
 
   @override
   void dispose() {
+    _sub?.cancel();
     _radar?.dispose();
     super.dispose();
   }
@@ -72,10 +76,12 @@ class _IncomingLoadHostState extends State<IncomingLoadHost> {
             wavesOn: () => FeaturesService.isOn(FeatureKey.dispatchV2),
           );
       _radar = r;
-      r.states.listen(_onState);
+      _sub = r.states.listen(_onState);
       r.start();
       WidgetsBinding.instance.addPostFrameCallback((_) => widget.onRadar?.call(r));
     } else if (!widget.enabled && _radar != null) {
+      _sub?.cancel();
+      _sub = null;
       _radar!.dispose();
       _radar = null;
       WidgetsBinding.instance.addPostFrameCallback((_) => widget.onRadar?.call(null));

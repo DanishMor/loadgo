@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/errors/error_text.dart';
 import '../../core/l10n/l10n.dart';
 import '../../core/matching/load_ranker.dart';
 import '../../core/matching/nearest.dart';
@@ -104,6 +105,8 @@ class _FeedBidButtonState extends State<FeedBidButton> {
       if (v == null) return showSnack(context, tr(context, 'ilNoTruck'));
       final sent = await showDriverBidSheet(context, load: widget.load, vehicle: v, pickupKm: widget.pickupKm);
       if (mounted && sent) showSnack(context, tr(context, 'bsSent'));
+    } catch (e) {
+      if (mounted) showSnack(context, errorText(context, e));
     } finally {
       if (mounted) setState(() => _busy = false);
     }

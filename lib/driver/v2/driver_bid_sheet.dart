@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../core/dispatch/dispatch_models.dart';
 import '../../core/l10n/l10n.dart';
 import '../../core/models/load.dart';
 import '../../core/models/offer.dart';
+import '../../core/models/risk.dart';
+import '../../core/services/rate_limit_service.dart';
 import '../../core/models/vehicle.dart';
 import '../../core/pricing/offer_bounds.dart';
 import '../../core/services/offer_service.dart';
@@ -36,7 +39,7 @@ class BidSheetModel {
   static const etaChoices = [15, 30, 60, 120];
 
   /// [percent] more or less than the fare, rounded to ten rupees, and never outside what the rules allow.
-  int priceAt(int percent) => clamp(((farePaise * (100 + percent) / 100) / stepPaise).round() * stepPaise);
+  int priceAt(int percent) => clamp((((farePaise * (100 + percent)) ~/ 100 + stepPaise ~/ 2) ~/ stepPaise) * stepPaise);
 
   int get lowest => estimatePaise == null ? stepPaise : OfferBounds.minPaise(estimatePaise!);
   int get highest => estimatePaise == null ? OfferService.maxPaise : OfferBounds.maxPaise(estimatePaise!);
@@ -78,10 +81,17 @@ class DriverBidSheet extends StatefulWidget {
 
 class _DriverBidSheetState extends State<DriverBidSheet> {
   late final BidSheetModel _m = BidSheetModel.of(widget.load);
-  late int _price = widget.existing?.pricePaise ?? _m.clamp(_m.farePaise);
+  late int _price = widget.existing?.pricePaise ?? (_m.farePaise > 0 ? _m.clamp(_m.farePaise) : 0);
+  late final TextEditingController _custom = TextEditingController();
   late int? _eta = widget.existing?.etaMinutes;
   late BidNote? _note = widget.existing?.note;
   bool _busy = false;
+
+  @override
+  void dispose() {
+    _custom.dispose();
+    super.dispose();
+  }
 
   bool get _editing => widget.existing != null;
 
@@ -94,6 +104,8 @@ class _DriverBidSheetState extends State<DriverBidSheet> {
     if (e is OfferExistsException) return tr(context, 'bsAlready');
     if (e is BidAlreadyEditedException) return tr(context, 'bsEditOnce');
     if (e is OfferStateException) return tr(context, 'loadUnavailable');
+    if (e is AccountRestrictedException) return tr(context, 'accountRestricted');
+    if (e is RateLimitException) return trf(context, 'rateLimited', {'m': e.minutesLeft});
     return errorText(context, e);
   }
 
@@ -143,14 +155,28 @@ class _DriverBidSheetState extends State<DriverBidSheet> {
       ],
       const SizedBox(height: DsSpace.s3),
       if (!_locked) ...[
-        Wrap(alignment: WrapAlignment.center, spacing: DsSpace.s2, runSpacing: DsSpace.s2, children: [
-          for (final p in BidSheetModel.percents)
-            ActionChip(
-              key: ValueKey('bsPct_$p'),
-              label: Text(p > 0 ? '+$p%' : '$p%'),
-              onPressed: () => setState(() => _price = _m.priceAt(p)),
-            ),
-        ]),
+        if (_m.farePaise > 0) ...[
+          Wrap(alignment: WrapAlignment.center, spacing: DsSpace.s2, runSpacing: DsSpace.s2, children: [
+            for (final p in BidSheetModel.percents)
+              ActionChip(
+                key: ValueKey('bsPct_$p'),
+                label: Text(p > 0 ? '+$p%' : '$p%'),
+                onPressed: () => setState(() {
+                  _price = _m.priceAt(p);
+                  _custom.clear();
+                }),
+              ),
+          ]),
+          const SizedBox(height: DsSpace.s3),
+        ],
+        TextField(
+          key: const ValueKey('bsCustom'),
+          controller: _custom,
+          keyboardType: TextInputType.number,
+          inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(8)],
+          decoration: InputDecoration(labelText: tr(context, 'bsCustom'), prefixText: '₹ '),
+          onChanged: (v) => setState(() => _price = (int.tryParse(v) ?? 0) * 100),
+        ),
         const SizedBox(height: DsSpace.s3),
         if (est != null)
           FareMeter(

@@ -90,5 +90,18 @@ void main() {
       await settle(t);
       expect(find.byKey(const ValueKey('jp')), findsNothing, reason: 'Jaipur load does not go to Mumbai');
     });
+
+    testWidgets('removing the drop chip unlights the saved route chip', (t) async {
+      await t.runAsync(() => db.collection('users').doc('driver1').collection('favourite_routes').doc('x').set({'pickup': 'Delhi', 'drop': 'Mumbai'}));
+      await show(t, [mk('jp', 10000, t0)]);
+      await t.tap(find.text('Delhi → Mumbai'));
+      await settle(t);
+      expect(t.widget<FeedHeaderV2>(find.byType(FeedHeaderV2)).route, isNotNull);
+      final chip = find.widgetWithText(InputChip, '→ Mumbai');
+      expect(chip, findsOneWidget);
+      t.widget<InputChip>(chip).onDeleted!();
+      await settle(t);
+      expect(t.widget<FeedHeaderV2>(find.byType(FeedHeaderV2)).route, isNull);
+    });
   });
 }
