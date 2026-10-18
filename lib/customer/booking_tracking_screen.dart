@@ -23,9 +23,12 @@ import '../core/documents/payment_card.dart';
 import '../core/claims/claim_screens.dart';
 import '../core/safety/share_trip.dart';
 import '../core/documents/eway_status_line.dart';
+import '../core/features/features.dart';
+import '../core/services/features_service.dart';
+import 'v2/tracking_v2_screen.dart';
 
 void openBookingTracking(BuildContext context, String bookingId) {
-  Navigator.of(context).push(MaterialPageRoute(builder: (_) => BookingTrackingScreen(bookingId: bookingId)));
+  Navigator.of(context).push(MaterialPageRoute(builder: (_) => FeaturesService.isOn(FeatureKey.uiV2) ? TrackingV2Screen(bookingId: bookingId) : BookingTrackingScreen(bookingId: bookingId)));
 }
 
 /// Customer view of a booking; updates live as the driver changes status.

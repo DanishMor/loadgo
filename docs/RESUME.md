@@ -2,8 +2,8 @@
 
 Plan: docs/MASTER_PLAN_PART4.md. Read it, then continue from NEXT.
 
-LAST_DONE: U18 (customer home + shell: Home, Trips, Help, Profile behind uiV2; old home kept with uiV2 off) and U23 (Trips tab: active, upcoming, past, book again). Earlier: U1 to U17, U19 wizard, U20 Bid Room; phases 1 to 3 tagged.
-NEXT: U21 tracking v2, U22 delivery, U24 bilty button, U25, U26, then Phase 5 driver (U27 to U34), Phase 6, 7, 8. Tag ux-v2-phase4 after U26. Push is due (last push was before U17).
+LAST_DONE: U21 (trip tracking v2: customer/v2/tracking_v2_screen.dart, route ribbon + status, big OTP card, timeline, driver mini card, SOS and 112, map button; openBookingTracking picks it with uiV2, legacy BookingTrackingScreen kept). Before: U18 shell, U23 trips tab, U19, U20; phases 1 to 3 tagged.
+NEXT: U22 delivery (POD, payment record, tip, rating, 1-tap reorder on the v2 trip page), U24 bilty button, U25, U26, tag ux-v2-phase4, then Phase 5 driver (U27 to U34), 6, 7, 8. Push is due.
 
 Unfinished / to remember:
 - The old CustomerHomeScreen must stay reachable with uiV2 OFF.
