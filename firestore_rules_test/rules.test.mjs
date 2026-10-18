@@ -6708,3 +6708,90 @@ describe('U17 the dispatch monitor reads bids (super and ops only)', () => {
     await assertFails(updateDoc(ref('ops1'), { status: 'rejected' }));
   });
 });
+
+describe('U41 bids under pressure: two confirms at once, select against withdraw, a wrong price, the dispatch config', () => {
+  const inMinutes = (m) => Timestamp.fromMillis(Date.now() + m * 60000);
+  const OFFER = {
+    loadId: 'L1', driverId: 'driver1', customerId: 'customer1', vehicleId: 'v1', vehicleNumber: VEHICLE.number,
+    vehicleType: '20ft', driverName: 'Ramesh', pricePaise: 2400000, originalPaise: 2400000, status: 'selected',
+  };
+  const OFFER2 = { ...OFFER, driverId: 'driver2', vehicleId: 'v2', vehicleNumber: 'KA01CD5678', pricePaise: 2300000, originalPaise: 2300000 };
+  const confirmBatch = (db, driver, offerPrice, overrides = {}) => {
+    const vehicle = driver === 'driver2' ? 'v2' : 'v1';
+    const offerId = overrides.offerId ?? `L1_${driver}`;
+    const bookingId = `B_${driver}`;
+    const b = writeBatch(db);
+    b.set(doc(db, 'bookings', bookingId), bookingFor('L1', { driverId: driver, vehicleId: vehicle, offerId, agreedFarePaise: overrides.agreed ?? offerPrice }));
+    b.update(doc(db, 'loads', 'L1'), { status: 'matched', driverId: driver, bookingId, matchedAt: serverTimestamp() });
+    b.update(doc(db, 'vehicles', vehicle), { availability: 'on_trip' });
+    b.update(doc(db, 'offers', `L1_${driver}`), { status: 'confirmed', bookingId, updatedAt: serverTimestamp() });
+    return b.commit();
+  };
+  const seedBidLoad = async () => {
+    await seedOpenLoad();
+    await seed((db) => setDoc(doc(db, 'loads', 'L1'), { ...LOAD, mode: 'bid', bidWindowEnds: inMinutes(5) }));
+  };
+
+  test('two selected bids on one bid-mode load: both drivers confirm at the same moment, exactly one booking is made', async () => {
+    for (let round = 0; round < 5; round++) {
+      await env.clearFirestore();
+      await seed((db) => setDoc(doc(db, 'admins', 'admin1'), { createdBy: 'console' }));
+      await seedBidLoad();
+      await seed(async (db) => {
+        await setDoc(doc(db, 'offers', 'L1_driver1'), OFFER);
+        await setDoc(doc(db, 'offers', 'L1_driver2'), OFFER2);
+      });
+      const results = await Promise.allSettled([
+        confirmBatch(as('driver1'), 'driver1', OFFER.pricePaise),
+        confirmBatch(as('driver2'), 'driver2', OFFER2.pricePaise),
+      ]);
+      const won = results.filter((r) => r.status === 'fulfilled').length;
+      assert.equal(won, 1, `round ${round}: ${results.map((r) => r.status).join(', ')}`);
+      const bookings = await getDocs(collection(asAdmin(), 'bookings'));
+      assert.equal(bookings.size, 1);
+      assert.equal((await getDoc(doc(asAdmin(), 'loads', 'L1'))).data().status, 'matched');
+    }
+  });
+
+  test('the customer selects while the driver withdraws: the final state is one of the two, never a mix', async () => {
+    for (let round = 0; round < 5; round++) {
+      await env.clearFirestore();
+      await seed((db) => setDoc(doc(db, 'admins', 'admin1'), { createdBy: 'console' }));
+      await seedBidLoad();
+      await seed((db) => setDoc(doc(db, 'offers', 'L1_driver1'), { ...OFFER, status: 'pending' }));
+      const results = await Promise.allSettled([
+        updateDoc(doc(as('customer1'), 'offers', 'L1_driver1'), { status: 'selected', updatedAt: serverTimestamp() }),
+        updateDoc(doc(as('driver1'), 'offers', 'L1_driver1'), { status: 'withdrawn', updatedAt: serverTimestamp() }),
+      ]);
+      const final = (await getDoc(doc(asAdmin(), 'offers', 'L1_driver1'))).data().status;
+      assert.ok(['selected', 'withdrawn'].includes(final), `round ${round}: ${final}`);
+      if (results[1].status === 'fulfilled') assert.equal(final, 'withdrawn', `round ${round}: a withdraw that worked must be the last word`);
+      if (results[1].status === 'rejected') assert.equal(final, 'selected', `round ${round}: a refused withdraw leaves the selection`);
+    }
+  });
+
+  test('a confirm with another price, with another driver\'s bid, or on a bid that is only pending is refused', async () => {
+    await seedBidLoad();
+    await seed(async (db) => {
+      await setDoc(doc(db, 'offers', 'L1_driver1'), OFFER);
+      await setDoc(doc(db, 'offers', 'L1_driver2'), { ...OFFER2, status: 'pending' });
+    });
+    await assertFails(confirmBatch(as('driver1'), 'driver1', OFFER.pricePaise, { agreed: OFFER.pricePaise - 100000 }));
+    await assertFails(confirmBatch(as('driver1'), 'driver1', OFFER.pricePaise, { offerId: 'L1_driver2' }));
+    await assertFails(confirmBatch(as('driver2'), 'driver2', OFFER2.pricePaise));
+    await assertSucceeds(confirmBatch(as('driver1'), 'driver1', OFFER.pricePaise));
+  });
+
+  test('config/dispatch is written only by a super admin; every signed-in user reads it; nobody deletes it', async () => {
+    await seed(async (db) => {
+      await setDoc(doc(db, 'admins', 'ops1'), { role: 'ops' });
+      await setDoc(doc(db, 'admins', 'sup1'), { role: 'super' });
+    });
+    const cfg = { acceptSeconds: 30, ringsKm: [5, 15, 40] };
+    await assertFails(setDoc(doc(as('driver1'), 'config', 'dispatch'), cfg));
+    await assertFails(setDoc(doc(as('ops1'), 'config', 'dispatch'), cfg));
+    await assertSucceeds(setDoc(doc(as('sup1'), 'config', 'dispatch'), cfg));
+    await assertSucceeds(getDoc(doc(as('driver1'), 'config', 'dispatch')));
+    await assertFails(deleteDoc(doc(as('sup1'), 'config', 'dispatch')));
+  });
+});

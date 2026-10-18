@@ -143,4 +143,4 @@ Run order and memory rule: tests run in batches of about 30 files with `--concur
 | Transporter and admin | company bid through the sheet, admin groups and roles | test/transporter_bid_v2_test.dart, test/admin_dashboard_v2_test.dart |
 | Old screens | every v2 test also has a uiV2 OFF case that shows the old screen | same files |
 | Guards | no new hard-coded colours, no new eager lists, no state set after await | test/theme_guard_test.dart, test/performance_guard_test.dart, test/setstate_future_guard_test.dart |
-| Rules | bid-mode load only through a selected bid, bid window, two-driver race | firestore_rules_test (U10, U15, U17 blocks) |
+| Rules | bid-mode load only through a selected bid, bid window, two-driver race | firestore_rules_test (U10, U15, U17, U41 blocks) |
