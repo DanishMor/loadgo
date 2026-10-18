@@ -7,6 +7,8 @@ import '../location/geohash.dart';
 import '../constants/cancel_reasons.dart';
 import '../constants/logistics.dart';
 import '../models/load.dart';
+import '../dispatch/dispatch_config_service.dart';
+import '../dispatch/dispatch_models.dart';
 import '../constants/prohibited_cargo.dart';
 import '../matching/nearest.dart';
 import '../risk/risk_rules.dart';
@@ -91,7 +93,12 @@ class LoadService {
     String visibility = LoadVisibility.public,
     List<String> allowedDriverIds = const [],
     bool instant = false,
+    LoadMode mode = LoadMode.instant,
+    DateTime? bidWindowEnds,
+    AutoAccept? autoAccept,
   }) async {
+    if (mode == LoadMode.scheduled && scheduledAt == null) throw ArgumentError.value(mode, 'mode', 'a scheduled load needs scheduledAt');
+    if (autoAccept != null && mode != LoadMode.bid && mode != LoadMode.instant) throw ArgumentError.value(autoAccept, 'autoAccept');
     if (scheduledAt != null) {
       final problem = Schedule.check(scheduledAt, ServerClock.now(), PricingService.config.schedule);
       if (problem != null) throw ScheduleException(problem);
@@ -131,6 +138,10 @@ class LoadService {
       if (visibility != LoadVisibility.public) 'visibility': visibility,
       if (visibility != LoadVisibility.public) 'allowedDriverIds': allowedDriverIds,
       if (instant) 'instant': true,
+      // Part 4 (dispatchV2): written only when it is not the plain old behaviour, so old rules and old readers are not affected.
+      if (mode != LoadMode.instant) 'mode': mode.value,
+      if (mode == LoadMode.bid) 'bidWindowEnds': Timestamp.fromDate(bidWindowEnds ?? ServerClock.now().add(Duration(minutes: DispatchConfigService.current.bidWindowMinutes))),
+      if (autoAccept != null) 'autoAccept': autoAccept.toMap(),
       if (role == 'fleet') 'postedByRole': 'fleet',
       'pickupGeohash': ?geohash,
       'bookingType': bookingType,

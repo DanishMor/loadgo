@@ -124,6 +124,7 @@ import 'biz_card_strings.dart';
 import 'admin_web_strings.dart';
 import 'broadcast_strings.dart';
 import 'ux2_strings.dart';
+import 'ux2_dispatch_strings.dart';
 
 import 'app_control_strings.dart';
 import 'admin_tools_strings.dart';
@@ -287,6 +288,7 @@ const List<Map<String, List<String>>> stringTables = [
   adminWebStrings,
   broadcastStrings,
   ux2Strings,
+  ux2DispatchStrings,
 ];
 
 final Map<String, List<String>> extraStrings = {

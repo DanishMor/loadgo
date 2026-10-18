@@ -1,5 +1,6 @@
 import '../matching/nearest.dart';
 import '../models/load.dart';
+import '../pricing/cities.dart';
 import 'dispatch_models.dart';
 
 /// Which drivers see a load, and when (U11). A load goes out in rings: the first ring (the
@@ -72,7 +73,10 @@ class DispatchWindow {
   /// [isVisible] for a load and a driver at [origin] (null when the driver's place is unknown).
   bool isVisibleTo(Load load, {required LatLng? origin, required DateTime now, String? driverId}) {
     final km = origin == null ? null : kmToPickup(origin, load)?.toDouble();
-    return isVisible(
+    // A city may have its own rings and times (config/dispatch, `cities`).
+    final city = config.cities.isEmpty ? null : findCity(load.pickup)?.name;
+    final w = city == null ? this : DispatchWindow(config.forCity(city));
+    return w.isVisible(
       km: km,
       createdAt: load.createdAt?.toDate(),
       now: now,

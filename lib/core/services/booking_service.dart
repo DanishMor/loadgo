@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../constants/cancel_reasons.dart';
 import '../constants/logistics.dart';
 import '../models/booking.dart';
+import '../dispatch/dispatch_models.dart';
 import '../models/load.dart';
 import '../models/paged.dart';
 import '../models/app_notification.dart';
@@ -84,6 +85,8 @@ class BookingService {
         if (!snap.exists) throw LoadUnavailableException();
         final load = Load.fromDoc(snap);
         if (!load.isOpen || load.shipperId == uid || load.blocks(uid)) throw LoadUnavailableException();
+        // A bid-mode load is taken only through a bid the customer selected (the rules say the same).
+        if (load.mode == LoadMode.bid && offerId == null) throw LoadUnavailableException();
         final vehicleRef = Backend.db.collection('vehicles').doc(vehicle.id);
         final vehicleSnap = await tx.get(vehicleRef);
         if (vehicleSnap.exists && Vehicle.fromDoc(vehicleSnap).papersBlocked(ServerClock.now())) throw DocsExpiredException('vehicle');
