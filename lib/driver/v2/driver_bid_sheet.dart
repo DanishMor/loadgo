@@ -52,11 +52,11 @@ class BidSheetModel {
 
 /// Opens the bid sheet: a new price for [load] with [vehicle], or with [existing] the one allowed change (and a
 /// withdraw). Returns true when something was sent, changed or withdrawn.
-Future<bool> showDriverBidSheet(BuildContext context, {required Load load, required Vehicle vehicle, int? pickupKm, Offer? existing}) async {
+Future<bool> showDriverBidSheet(BuildContext context, {required Load load, required Vehicle vehicle, int? pickupKm, Offer? existing, bool asCompany = false}) async {
   final r = await showAppSheet<bool>(
     context,
     title: tr(context, 'bsTitle'),
-    builder: (_) => DriverBidSheet(load: load, vehicle: vehicle, pickupKm: pickupKm, existing: existing),
+    builder: (_) => DriverBidSheet(load: load, vehicle: vehicle, pickupKm: pickupKm, existing: existing, asCompany: asCompany),
   );
   return r == true;
 }
@@ -67,7 +67,10 @@ class DriverBidSheet extends StatefulWidget {
   final int? pickupKm;
   final Offer? existing;
 
-  const DriverBidSheet({super.key, required this.load, required this.vehicle, this.pickupKm, this.existing});
+  /// U35: a transporter bids for the company (the offer carries the company name and the Verified mark).
+  final bool asCompany;
+
+  const DriverBidSheet({super.key, required this.load, required this.vehicle, this.pickupKm, this.existing, this.asCompany = false});
 
   @override
   State<DriverBidSheet> createState() => _DriverBidSheetState();
@@ -117,7 +120,7 @@ class _DriverBidSheetState extends State<DriverBidSheet> {
       if (_editing) {
         await OfferService.edit(widget.existing!, pricePaise: _price, etaMinutes: _eta, note: _note, pickupKm: widget.pickupKm ?? widget.existing!.pickupKm);
       } else {
-        await OfferService.send(load: widget.load, vehicle: widget.vehicle, pricePaise: _price, etaMinutes: _eta, note: _note, pickupKm: widget.pickupKm);
+        await OfferService.send(load: widget.load, vehicle: widget.vehicle, pricePaise: _price, etaMinutes: _eta, note: _note, pickupKm: widget.pickupKm, asCompany: widget.asCompany);
       }
     });
   }

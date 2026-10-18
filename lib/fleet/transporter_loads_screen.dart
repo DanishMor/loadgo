@@ -24,6 +24,10 @@ import '../core/widgets/common.dart';
 import '../core/widgets/live_stream.dart';
 import '../core/widgets/logistics_labels.dart';
 import '../core/theme/design_tokens.dart';
+import '../core/features/features.dart';
+import '../core/services/features_service.dart';
+import '../core/widgets/ds/route_ribbon.dart';
+import '../driver/v2/driver_bid_sheet.dart';
 
 /// Open loads for a transporter: look, bid for the company (the vehicle and
 /// driver are assigned after the customer picks the bid), and post a load
@@ -98,6 +102,12 @@ class _TransporterLoadsScreenState extends State<TransporterLoadsScreen> {
         ),
       );
       if (vehicle == null || !mounted) return;
+      if (FeaturesService.isOn(FeatureKey.uiV2)) {
+        // U35: the same bid sheet as the driver's, for the company (price chips, usual range, ETA, note).
+        final sent = await showDriverBidSheet(context, load: load, vehicle: vehicle, asCompany: true);
+        if (sent && mounted) showSnack(context, tr(context, 'trpBidSent'));
+        return;
+      }
       final price = await askPricePaise(context,
           title: tr(context, 'trpBid'), label: tr(context, 'yourPrice'), initialPaise: load.estimate?.total, note: tr(context, 'trpBidNote'));
       if (price == null || !mounted) return;
@@ -282,6 +292,8 @@ class _TransporterLoadsScreenState extends State<TransporterLoadsScreen> {
                         onChanged: (v) => setState(() => v == true ? (_selected.length < BulkBid.maxLoads ? _selected.add(l.id) : null) : _selected.remove(l.id)),
                         title: Text('${l.pickup} → ${l.drop}', style: DsStyle.t16w700),
                       )
+                    else if (FeaturesService.isOn(FeatureKey.uiV2))
+                      RouteRibbon(from: l.pickup, to: l.drop, distanceKm: l.estimate?.distanceKm.round())
                     else
                       Text('${l.pickup} → ${l.drop}', style: DsStyle.t16w700),
                     const SizedBox(height: 2),
