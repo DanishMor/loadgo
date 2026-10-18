@@ -145,6 +145,54 @@ void main() {
     }
   }
 
+  // FIX: tour get started. The splash used its own (already replaced) context in onDone; the last button must always leave the tour.
+  for (final mode in ['normal', 'animations off', 'low-end', 'offline (storage fails)']) {
+    testWidgets('Get started on the last slide opens the next screen: $mode', (t) async {
+      if (mode == 'low-end') {
+        SharedPreferences.setMockInitialValues({});
+        await LowEndMode.set(true);
+      }
+      addTearDown(() async {
+        LowEndMode.notifier.value = false;
+      });
+      final nav = GlobalKey<NavigatorState>();
+      await t.pumpWidget(MaterialApp(
+        navigatorKey: nav,
+        theme: AppTheme.build(Brightness.light),
+        builder: (c, w) => MediaQuery(data: MediaQuery.of(c).copyWith(disableAnimations: mode == 'animations off'), child: w!),
+        home: Builder(
+          builder: (c) => OnboardingScreen(
+            // same shape as the splash: the navigator is taken before the screen is replaced
+            onDone: () => nav.currentState!.pushReplacement(MaterialPageRoute<void>(builder: (_) => const Scaffold(body: Text('NEXT SCREEN')))),
+          ),
+        ),
+      ));
+      await t.pumpAndSettle();
+      await t.tap(find.byKey(const ValueKey('onbNext')));
+      await t.pumpAndSettle();
+      await t.tap(find.byKey(const ValueKey('onbNext')));
+      await t.pumpAndSettle();
+      expect(find.text('Get started'), findsOneWidget);
+      await t.tap(find.byKey(const ValueKey('onbNext')));
+      await t.pumpAndSettle();
+      expect(find.text('NEXT SCREEN'), findsOneWidget);
+      expect(find.byType(OnboardingScreen), findsNothing);
+    });
+  }
+
+  testWidgets('Get started still leaves the tour when onDone throws', (t) async {
+    await t.pumpWidget(MaterialApp(
+      theme: AppTheme.build(Brightness.light),
+      home: Builder(builder: (c) => Scaffold(body: ElevatedButton(onPressed: () => Navigator.of(c).push(MaterialPageRoute<void>(builder: (_) => OnboardingScreen(onDone: () => throw StateError('boom')))), child: const Text('tour')))),
+    ));
+    await t.tap(find.text('tour'));
+    await t.pumpAndSettle();
+    await t.tap(find.byKey(const ValueKey('onbSkip')));
+    await t.pumpAndSettle();
+    expect(t.takeException(), isNull);
+    expect(find.byType(OnboardingScreen), findsNothing);
+  });
+
   test('the dots are readable: the current one is navy-on-light, the others 3:1', () {
     for (final b in Brightness.values) {
       final c = DsColors.of(b);

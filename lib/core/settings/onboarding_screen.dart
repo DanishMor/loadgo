@@ -69,14 +69,32 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   Future<void> _finish() async {
-    await OnboardingStore.markSeen();
-    if (!mounted) return;
-    if (widget.onDone != null) {
-      widget.onDone!();
-    } else {
-      Navigator.of(context).pop();
+    if (_finishing) return;
+    _finishing = true;
+    try {
+      await OnboardingStore.markSeen().timeout(const Duration(seconds: 2));
+    } catch (_) {} // saving the flag must never keep the person on the tour
+    if (!mounted) {
+      _finishing = false;
+      return;
+    }
+    try {
+      if (widget.onDone != null) {
+        widget.onDone!();
+      } else {
+        Navigator.of(context).pop();
+      }
+    } catch (_) {
+      // onDone failed: still leave the tour if there is somewhere to go back to.
+      try {
+        if (mounted) await Navigator.of(context).maybePop();
+      } catch (_) {}
+    } finally {
+      _finishing = false;
     }
   }
+
+  bool _finishing = false;
 
   @override
   Widget build(BuildContext context) {

@@ -42,9 +42,11 @@ class _SplashScreenState extends State<SplashScreen> {
 
     if (user == null && !await OnboardingStore.seen()) {
       if (!mounted) return;
-      Navigator.of(context).pushReplacement(MaterialPageRoute(
+      // Take the navigator now: this splash is gone after the replace, so its own context cannot be used later.
+      final nav = Navigator.of(context);
+      nav.pushReplacement(MaterialPageRoute(
         builder: (_) => OnboardingScreen(
-          onDone: () => Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => const RoleSelectionScreen())),
+          onDone: () => nav.pushReplacement(MaterialPageRoute(builder: (_) => const RoleSelectionScreen())),
         ),
       ));
       return;
