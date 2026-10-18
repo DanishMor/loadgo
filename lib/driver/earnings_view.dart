@@ -11,6 +11,8 @@ import '../core/trip/trip_history_screen.dart';
 import '../core/widgets/live_stream.dart';
 import '../core/widgets/mini_bars.dart';
 import 'driver_rewards_screen.dart';
+import '../core/services/features_service.dart';
+import 'v2/earnings_v2.dart';
 import '../core/theme/design_tokens.dart';
 
 /// Driver "Earnings" tab: totals from delivered trips plus recent payouts.
@@ -43,6 +45,7 @@ class EarningsView extends StatelessWidget {
       child: LiveStream<List<Booking>>(
         stream: bookings,
         builder: (context, list) {
+          if (FeaturesService.isOn(FeatureKey.uiV2)) return EarningsV2(list: list, bookings: bookings, onOpenTrip: onOpenTrip, now: now());
           final e = EarningsSummary.from(list, now());
           final days = EarningsBreakdown.from(list, now());
           return ListView(

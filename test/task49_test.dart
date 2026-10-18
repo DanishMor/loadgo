@@ -445,7 +445,7 @@ void main() {
       expect(find.text('Today'), findsOneWidget);
       expect(find.text('Last 7 days'), findsOneWidget);
       expect(find.text('₹ 2,500'), findsOneWidget);
-      expect(find.text('₹ 3,500'), findsOneWidget);
+      expect(find.text('₹ 3,500'), findsWidgets, reason: 'last 7 days, and again in Where your money is');
       expect(find.byKey(const ValueKey('earnBar_6')), findsOneWidget);
       await t.tap(find.byKey(const ValueKey('openHistory')));
       await t.pumpAndSettle();
