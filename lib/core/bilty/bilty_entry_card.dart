@@ -35,6 +35,7 @@ class BiltyEntryCard extends StatelessWidget {
       stream: () => LrService.watchForBooking(booking.id),
       builder: (context, all) {
         final lr = LrService.current(all);
+        if (all.isEmpty && !canIssue) return const SizedBox.shrink();
         if (lr == null && !canIssue) return const SizedBox.shrink();
         final open = lr != null && !lr.isCancelled;
         return Padding(

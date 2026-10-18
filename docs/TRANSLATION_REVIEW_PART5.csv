@@ -1,0 +1,349 @@
+﻿key,language,text,reviewer,status
+"fdSortNearest",en,"Nearest",,pending
+"fdSortNearest",hi,"सबसे पास",,pending
+"fdSortNearest",hinglish,"Sabse paas",,pending
+"fdSortNearest",kn,"ಹತ್ತಿರದ",,pending
+"fdSortNearest",ta,"அருகில்",,pending
+"fdSortNearest",te,"దగ్గరి",,pending
+"fdSortNearest",mr,"सर्वात जवळ",,pending
+"fdSortNearest",gu,"સૌથી નજીક",,pending
+"fdSortNearest",bn,"সবচেয়ে কাছে",,pending
+"fdSortNearest",pa,"ਸਭ ਤੋਂ ਨੇੜੇ",,pending
+"fdSortNearest",ks,"نزدیک",,pending
+"fdSortNearest",ur,"سب سے قریب",,pending
+"fdSortPay",en,"Best pay",,pending
+"fdSortPay",hi,"सबसे ज्यादा भाड़ा",,pending
+"fdSortPay",hinglish,"Sabse zyada bhaada",,pending
+"fdSortPay",kn,"ಹೆಚ್ಚು ಬಾಡಿಗೆ",,pending
+"fdSortPay",ta,"அதிக கட்டணம்",,pending
+"fdSortPay",te,"ఎక్కువ ధర",,pending
+"fdSortPay",mr,"सर्वाधिक भाडे",,pending
+"fdSortPay",gu,"સૌથી વધુ ભાડું",,pending
+"fdSortPay",bn,"সবচেয়ে বেশি ভাড়া",,pending
+"fdSortPay",pa,"ਸਭ ਤੋਂ ਵੱਧ ਕਿਰਾਇਆ",,pending
+"fdSortPay",ks,"زیادہ کرایہ",,pending
+"fdSortPay",ur,"سب سے زیادہ کرایہ",,pending
+"fdSortNew",en,"Newest",,pending
+"fdSortNew",hi,"सबसे नया",,pending
+"fdSortNew",hinglish,"Sabse naya",,pending
+"fdSortNew",kn,"ಹೊಸದು",,pending
+"fdSortNew",ta,"புதியது",,pending
+"fdSortNew",te,"కొత్తవి",,pending
+"fdSortNew",mr,"सर्वात नवीन",,pending
+"fdSortNew",gu,"સૌથી નવું",,pending
+"fdSortNew",bn,"সবচেয়ে নতুন",,pending
+"fdSortNew",pa,"ਸਭ ਤੋਂ ਨਵਾਂ",,pending
+"fdSortNew",ks,"نوو",,pending
+"fdSortNew",ur,"سب سے نیا",,pending
+"mbWaiting",en,"Waiting",,pending
+"mbWaiting",hi,"इंतज़ार में",,pending
+"mbWaiting",hinglish,"Intezaar mein",,pending
+"mbWaiting",kn,"ಕಾಯುತ್ತಿದೆ",,pending
+"mbWaiting",ta,"காத்திருப்பு",,pending
+"mbWaiting",te,"వేచి ఉన్నవి",,pending
+"mbWaiting",mr,"प्रतीक्षेत",,pending
+"mbWaiting",gu,"રાહમાં",,pending
+"mbWaiting",bn,"অপেক্ষায়",,pending
+"mbWaiting",pa,"ਉਡੀਕ ਵਿੱਚ",,pending
+"mbWaiting",ks,"انتظار",,pending
+"mbWaiting",ur,"انتظار میں",,pending
+"mbCountered",en,"Counter price",,pending
+"mbCountered",hi,"ग्राहक का नया भाव",,pending
+"mbCountered",hinglish,"Customer ka naya bhaav",,pending
+"mbCountered",kn,"ಪ್ರತಿ ದರ",,pending
+"mbCountered",ta,"எதிர் விலை",,pending
+"mbCountered",te,"ప్రతి ధర",,pending
+"mbCountered",mr,"प्रति भाव",,pending
+"mbCountered",gu,"સામો ભાવ",,pending
+"mbCountered",bn,"পাল্টা দাম",,pending
+"mbCountered",pa,"ਜਵਾਬੀ ਭਾਅ",,pending
+"mbCountered",ks,"جوابی قیمت",,pending
+"mbCountered",ur,"جوابی قیمت",,pending
+"mbSelected",en,"Selected",,pending
+"mbSelected",hi,"चुने गए",,pending
+"mbSelected",hinglish,"Chune gaye",,pending
+"mbSelected",kn,"ಆಯ್ಕೆಯಾಗಿದೆ",,pending
+"mbSelected",ta,"தேர்ந்தெடுக்கப்பட்டது",,pending
+"mbSelected",te,"ఎంపికైనవి",,pending
+"mbSelected",mr,"निवडले",,pending
+"mbSelected",gu,"પસંદ થયા",,pending
+"mbSelected",bn,"নির্বাচিত",,pending
+"mbSelected",pa,"ਚੁਣੇ ਗਏ",,pending
+"mbSelected",ks,"ژورنہ",,pending
+"mbSelected",ur,"منتخب",,pending
+"mbLost",en,"Lost",,pending
+"mbLost",hi,"नहीं मिले",,pending
+"mbLost",hinglish,"Nahin mile",,pending
+"mbLost",kn,"ಸಿಗಲಿಲ್ಲ",,pending
+"mbLost",ta,"கிடைக்கவில்லை",,pending
+"mbLost",te,"దక్కలేదు",,pending
+"mbLost",mr,"मिळाले नाहीत",,pending
+"mbLost",gu,"ન મળ્યા",,pending
+"mbLost",bn,"পাওয়া যায়নি",,pending
+"mbLost",pa,"ਨਹੀਂ ਮਿਲੇ",,pending
+"mbLost",ks,"ناہ ملیو",,pending
+"mbLost",ur,"نہیں ملے",,pending
+"mbChange",en,"Change or withdraw",,pending
+"mbChange",hi,"बदलें या वापस लें",,pending
+"mbChange",hinglish,"Badlo ya wapas lo",,pending
+"mbChange",kn,"ಬದಲಿಸಿ ಅಥವಾ ಹಿಂಪಡೆಯಿರಿ",,pending
+"mbChange",ta,"மாற்று அல்லது திரும்பப் பெறு",,pending
+"mbChange",te,"మార్చండి లేదా వెనక్కి తీసుకోండి",,pending
+"mbChange",mr,"बदला किंवा मागे घ्या",,pending
+"mbChange",gu,"બદલો અથવા પાછું ખેંચો",,pending
+"mbChange",bn,"বদলান বা ফিরিয়ে নিন",,pending
+"mbChange",pa,"ਬਦਲੋ ਜਾਂ ਵਾਪਸ ਲਓ",,pending
+"mbChange",ks,"بدلاؤ یا واپس",,pending
+"mbChange",ur,"بدلیں یا واپس لیں",,pending
+"mbNoneHere",en,"Nothing here yet",,pending
+"mbNoneHere",hi,"यहाँ अभी कुछ नहीं",,pending
+"mbNoneHere",hinglish,"Yahaan abhi kuchh nahin",,pending
+"mbNoneHere",kn,"ಇಲ್ಲಿ ಇನ್ನೂ ಏನೂ ಇಲ್ಲ",,pending
+"mbNoneHere",ta,"இங்கே இன்னும் எதுவும் இல்லை",,pending
+"mbNoneHere",te,"ఇక్కడ ఇంకా ఏమీ లేదు",,pending
+"mbNoneHere",mr,"इथे अजून काही नाही",,pending
+"mbNoneHere",gu,"અહીં હજી કંઈ નથી",,pending
+"mbNoneHere",bn,"এখানে এখনও কিছু নেই",,pending
+"mbNoneHere",pa,"ਇੱਥੇ ਹਾਲੇ ਕੁਝ ਨਹੀਂ",,pending
+"mbNoneHere",ks,"یتھ ہاوتھ کینہہ نہ",,pending
+"mbNoneHere",ur,"یہاں ابھی کچھ نہیں",,pending
+"tfStep",en,"Step {n} of {total}",,pending
+"tfStep",hi,"कदम {n} / {total}",,pending
+"tfStep",hinglish,"Step {n} / {total}",,pending
+"tfStep",kn,"ಹಂತ {n} / {total}",,pending
+"tfStep",ta,"படி {n} / {total}",,pending
+"tfStep",te,"దశ {n} / {total}",,pending
+"tfStep",mr,"पायरी {n} / {total}",,pending
+"tfStep",gu,"પગલું {n} / {total}",,pending
+"tfStep",bn,"ধাপ {n} / {total}",,pending
+"tfStep",pa,"ਪੜਾਅ {n} / {total}",,pending
+"tfStep",ks,"قدم {n} / {total}",,pending
+"tfStep",ur,"قدم {n} / {total}",,pending
+"tfHintPickup",en,"Take a photo of the loaded goods and ask the customer for the pickup code.",,pending
+"tfHintPickup",hi,"लदे माल की फोटो लें और ग्राहक से पिकअप कोड माँगें।",,pending
+"tfHintPickup",hinglish,"Load hue maal ki photo lo aur customer se pickup code maango.",,pending
+"tfHintPickup",kn,"ಲೋಡ್ ಮಾಡಿದ ಸರಕಿನ ಫೋಟೋ ತೆಗೆದು ಗ್ರಾಹಕರಿಂದ ಪಿಕಪ್ ಕೋಡ್ ಕೇಳಿ.",,pending
+"tfHintPickup",ta,"ஏற்றிய பொருளை படம் எடுத்து, வாடிக்கையாளரிடம் பிக்அப் குறியீடு கேளுங்கள்.",,pending
+"tfHintPickup",te,"లోడ్ చేసిన సరుకు ఫోటో తీసి కస్టమర్ నుండి పికప్ కోడ్ అడగండి.",,pending
+"tfHintPickup",mr,"लादलेल्या मालाचा फोटो घ्या आणि ग्राहकाकडून पिकअप कोड मागा.",,pending
+"tfHintPickup",gu,"લાદેલા માલનો ફોટો લો અને ગ્રાહક પાસે પિકઅપ કોડ માંગો.",,pending
+"tfHintPickup",bn,"বোঝাই মালের ছবি তুলুন এবং গ্রাহকের কাছে পিকআপ কোড চান।",,pending
+"tfHintPickup",pa,"ਲੱਦੇ ਮਾਲ ਦੀ ਫੋਟੋ ਲਓ ਅਤੇ ਗਾਹਕ ਤੋਂ ਪਿਕਅੱਪ ਕੋਡ ਮੰਗੋ।",,pending
+"tfHintPickup",ks,"لوڈ کرنہ آمُت مالچ فوٹو کھیو تہٕ کسٹمرہ پیٹھ پِک اپ کوڈ پرژھو۔",,pending
+"tfHintPickup",ur,"لدے ہوئے مال کی تصویر لیں اور گاہک سے پک اپ کوڈ مانگیں۔",,pending
+"tfHintDelivered",en,"Ask the customer for the delivery code. Delivery cannot be undone.",,pending
+"tfHintDelivered",hi,"ग्राहक से डिलीवरी कोड माँगें। डिलीवरी वापस नहीं हो सकती।",,pending
+"tfHintDelivered",hinglish,"Customer se delivery code maango. Delivery wapas nahin ho sakti.",,pending
+"tfHintDelivered",kn,"ಗ್ರಾಹಕರಿಂದ ಡೆಲಿವರಿ ಕೋಡ್ ಕೇಳಿ. ಡೆಲಿವರಿ ಹಿಂತೆಗೆಯಲು ಸಾಧ್ಯವಿಲ್ಲ.",,pending
+"tfHintDelivered",ta,"வாடிக்கையாளரிடம் டெலிவரி குறியீடு கேளுங்கள். டெலிவரியை திரும்பப் பெற முடியாது.",,pending
+"tfHintDelivered",te,"కస్టమర్ నుండి డెలివరీ కోడ్ అడగండి. డెలివరీని వెనక్కి తీసుకోలేరు.",,pending
+"tfHintDelivered",mr,"ग्राहकाकडून डिलिव्हरी कोड मागा. डिलिव्हरी मागे घेता येत नाही.",,pending
+"tfHintDelivered",gu,"ગ્રાહક પાસે ડિલિવરી કોડ માંગો. ડિલિવરી પાછી ખેંચી શકાતી નથી.",,pending
+"tfHintDelivered",bn,"গ্রাহকের কাছে ডেলিভারি কোড চান। ডেলিভারি ফেরানো যায় না।",,pending
+"tfHintDelivered",pa,"ਗਾਹਕ ਤੋਂ ਡਿਲੀਵਰੀ ਕੋਡ ਮੰਗੋ। ਡਿਲੀਵਰੀ ਵਾਪਸ ਨਹੀਂ ਹੋ ਸਕਦੀ।",,pending
+"tfHintDelivered",ks,"کسٹمرہ پیٹھ ڈیلیوری کوڈ پرژھو۔ ڈیلیوری واپس کٹھ ناہ تھاوُن۔",,pending
+"tfHintDelivered",ur,"گاہک سے ڈیلیوری کوڈ مانگیں۔ ڈیلیوری واپس نہیں ہو سکتی۔",,pending
+"epMoneyTitle",en,"Where your money is",,pending
+"epMoneyTitle",hi,"आपका पैसा कहाँ है",,pending
+"epMoneyTitle",hinglish,"Aapka paisa kahaan hai",,pending
+"epMoneyTitle",kn,"ನಿಮ್ಮ ಹಣ ಎಲ್ಲಿದೆ",,pending
+"epMoneyTitle",ta,"உங்கள் பணம் எங்கே",,pending
+"epMoneyTitle",te,"మీ డబ్బు ఎక్కడ ఉంది",,pending
+"epMoneyTitle",mr,"तुमचे पैसे कुठे आहेत",,pending
+"epMoneyTitle",gu,"તમારા પૈસા ક્યાં છે",,pending
+"epMoneyTitle",bn,"আপনার টাকা কোথায়",,pending
+"epMoneyTitle",pa,"ਤੁਹਾਡਾ ਪੈਸਾ ਕਿੱਥੇ ਹੈ",,pending
+"epMoneyTitle",ks,"توہنز پیسہ کَتھ چھُ",,pending
+"epMoneyTitle",ur,"آپ کا پیسہ کہاں ہے",,pending
+"epWaitCustomer",en,"Waiting for the customer to pay",,pending
+"epWaitCustomer",hi,"ग्राहक के भुगतान का इंतज़ार",,pending
+"epWaitCustomer",hinglish,"Customer ke payment ka intezaar",,pending
+"epWaitCustomer",kn,"ಗ್ರಾಹಕರ ಪಾವತಿಗಾಗಿ ಕಾಯುತ್ತಿದೆ",,pending
+"epWaitCustomer",ta,"வாடிக்கையாளர் பணம் செலுத்த காத்திருப்பு",,pending
+"epWaitCustomer",te,"కస్టమర్ చెల్లింపు కోసం వేచి ఉంది",,pending
+"epWaitCustomer",mr,"ग्राहकाच्या पेमेंटची प्रतीक्षा",,pending
+"epWaitCustomer",gu,"ગ્રાહકની ચુકવણીની રાહ",,pending
+"epWaitCustomer",bn,"গ্রাহকের পেমেন্টের অপেক্ষা",,pending
+"epWaitCustomer",pa,"ਗਾਹਕ ਦੇ ਭੁਗਤਾਨ ਦੀ ਉਡੀਕ",,pending
+"epWaitCustomer",ks,"کسٹمرچ پیمنٹ انتظار",,pending
+"epWaitCustomer",ur,"گاہک کی ادائیگی کا انتظار",,pending
+"epConfirmReceived",en,"Confirm you got the money",,pending
+"epConfirmReceived",hi,"पैसे मिलने की पुष्टि करें",,pending
+"epConfirmReceived",hinglish,"Paise mile, confirm karo",,pending
+"epConfirmReceived",kn,"ಹಣ ಬಂದಿದೆ ಎಂದು ಖಚಿತಪಡಿಸಿ",,pending
+"epConfirmReceived",ta,"பணம் கிடைத்ததை உறுதிசெய்யுங்கள்",,pending
+"epConfirmReceived",te,"డబ్బు అందిందని నిర్ధారించండి",,pending
+"epConfirmReceived",mr,"पैसे मिळाल्याची खात्री करा",,pending
+"epConfirmReceived",gu,"પૈસા મળ્યા તેની પુષ્ટિ કરો",,pending
+"epConfirmReceived",bn,"টাকা পেয়েছেন নিশ্চিত করুন",,pending
+"epConfirmReceived",pa,"ਪੈਸੇ ਮਿਲਣ ਦੀ ਪੁਸ਼ਟੀ ਕਰੋ",,pending
+"epConfirmReceived",ks,"پیسہ ملنچ تصدیق کرو",,pending
+"epConfirmReceived",ur,"رقم ملنے کی تصدیق کریں",,pending
+"epInWallet",en,"Done: in your wallet",,pending
+"epInWallet",hi,"हो गया: वॉलेट में",,pending
+"epInWallet",hinglish,"Ho gaya: wallet mein",,pending
+"epInWallet",kn,"ಮುಗಿದಿದೆ: ವಾಲೆಟ್‌ನಲ್ಲಿ",,pending
+"epInWallet",ta,"முடிந்தது: வாலட்டில்",,pending
+"epInWallet",te,"పూర్తయింది: వాలెట్‌లో",,pending
+"epInWallet",mr,"झाले: वॉलेटमध्ये",,pending
+"epInWallet",gu,"પૂર્ણ: વૉલેટમાં",,pending
+"epInWallet",bn,"হয়ে গেছে: ওয়ালেটে",,pending
+"epInWallet",pa,"ਹੋ ਗਿਆ: ਵਾਲਿਟ ਵਿੱਚ",,pending
+"epInWallet",ks,"ہویُن: والیٹس منز",,pending
+"epInWallet",ur,"مکمل: والٹ میں",,pending
+"obStateDone",en,"Done",,pending
+"obStateDone",hi,"हो गया",,pending
+"obStateDone",hinglish,"Ho gaya",,pending
+"obStateDone",kn,"ಆಯಿತು",,pending
+"obStateDone",ta,"முடிந்தது",,pending
+"obStateDone",te,"పూర్తి",,pending
+"obStateDone",mr,"झाले",,pending
+"obStateDone",gu,"થઈ ગયું",,pending
+"obStateDone",bn,"হয়েছে",,pending
+"obStateDone",pa,"ਹੋ ਗਿਆ",,pending
+"obStateDone",ks,"ہویُن",,pending
+"obStateDone",ur,"ہو گیا",,pending
+"obStateNext",en,"Do this next",,pending
+"obStateNext",hi,"अब यह करें",,pending
+"obStateNext",hinglish,"Ab yeh karo",,pending
+"obStateNext",kn,"ಇದನ್ನು ಮುಂದೆ ಮಾಡಿ",,pending
+"obStateNext",ta,"அடுத்து இதைச் செய்யுங்கள்",,pending
+"obStateNext",te,"తర్వాత ఇది చేయండి",,pending
+"obStateNext",mr,"आता हे करा",,pending
+"obStateNext",gu,"હવે આ કરો",,pending
+"obStateNext",bn,"এরপর এটি করুন",,pending
+"obStateNext",pa,"ਹੁਣ ਇਹ ਕਰੋ",,pending
+"obStateNext",ks,"ہُن یہ کرو",,pending
+"obStateNext",ur,"اب یہ کریں",,pending
+"obStateLater",en,"Later",,pending
+"obStateLater",hi,"बाद में",,pending
+"obStateLater",hinglish,"Baad mein",,pending
+"obStateLater",kn,"ನಂತರ",,pending
+"obStateLater",ta,"பின்னர்",,pending
+"obStateLater",te,"తర్వాత",,pending
+"obStateLater",mr,"नंतर",,pending
+"obStateLater",gu,"પછી",,pending
+"obStateLater",bn,"পরে",,pending
+"obStateLater",pa,"ਬਾਅਦ ਵਿੱਚ",,pending
+"obStateLater",ks,"پتہ",,pending
+"obStateLater",ur,"بعد میں",,pending
+"obDocAdded",en,"Added",,pending
+"obDocAdded",hi,"जोड़ा गया",,pending
+"obDocAdded",hinglish,"Jod diya",,pending
+"obDocAdded",kn,"ಸೇರಿಸಲಾಗಿದೆ",,pending
+"obDocAdded",ta,"சேர்க்கப்பட்டது",,pending
+"obDocAdded",te,"జోడించారు",,pending
+"obDocAdded",mr,"जोडले",,pending
+"obDocAdded",gu,"ઉમેર્યું",,pending
+"obDocAdded",bn,"যোগ করা হয়েছে",,pending
+"obDocAdded",pa,"ਜੋੜਿਆ ਗਿਆ",,pending
+"obDocAdded",ks,"شامل",,pending
+"obDocAdded",ur,"شامل کر دیا",,pending
+"obDocMissing",en,"Missing",,pending
+"obDocMissing",hi,"बाकी है",,pending
+"obDocMissing",hinglish,"Baaki hai",,pending
+"obDocMissing",kn,"ಬಾಕಿ ಇದೆ",,pending
+"obDocMissing",ta,"விடுபட்டது",,pending
+"obDocMissing",te,"లేదు",,pending
+"obDocMissing",mr,"बाकी आहे",,pending
+"obDocMissing",gu,"બાકી છે",,pending
+"obDocMissing",bn,"বাকি আছে",,pending
+"obDocMissing",pa,"ਬਾਕੀ ਹੈ",,pending
+"obDocMissing",ks,"باقی",,pending
+"obDocMissing",ur,"باقی ہے",,pending
+"obWhyRejected",en,"Why it was not approved",,pending
+"obWhyRejected",hi,"मंज़ूर क्यों नहीं हुआ",,pending
+"obWhyRejected",hinglish,"Manzoor kyun nahin hua",,pending
+"obWhyRejected",kn,"ಏಕೆ ಒಪ್ಪಿಗೆ ಸಿಗಲಿಲ್ಲ",,pending
+"obWhyRejected",ta,"ஏன் அங்கீகரிக்கப்படவில்லை",,pending
+"obWhyRejected",te,"ఎందుకు ఆమోదం రాలేదు",,pending
+"obWhyRejected",mr,"मंजूर का झाले नाही",,pending
+"obWhyRejected",gu,"કેમ મંજૂર ન થયું",,pending
+"obWhyRejected",bn,"কেন অনুমোদন হয়নি",,pending
+"obWhyRejected",pa,"ਮਨਜ਼ੂਰ ਕਿਉਂ ਨਹੀਂ ਹੋਇਆ",,pending
+"obWhyRejected",ks,"کیازِ منظور ناہ آو",,pending
+"obWhyRejected",ur,"منظور کیوں نہیں ہوا",,pending
+"adGroupPeople",en,"People and verification",,pending
+"adGroupPeople",hi,"लोग और सत्यापन",,pending
+"adGroupPeople",hinglish,"Log aur verification",,pending
+"adGroupPeople",kn,"ಜನರು ಮತ್ತು ಪರಿಶೀಲನೆ",,pending
+"adGroupPeople",ta,"நபர்கள் மற்றும் சரிபார்ப்பு",,pending
+"adGroupPeople",te,"వ్యక్తులు మరియు ధృవీకరణ",,pending
+"adGroupPeople",mr,"लोक आणि पडताळणी",,pending
+"adGroupPeople",gu,"લોકો અને ચકાસણી",,pending
+"adGroupPeople",bn,"মানুষ ও যাচাই",,pending
+"adGroupPeople",pa,"ਲੋਕ ਅਤੇ ਪੁਸ਼ਟੀ",,pending
+"adGroupPeople",ks,"لُکھ تہٕ تصدیق",,pending
+"adGroupPeople",ur,"لوگ اور تصدیق",,pending
+"adGroupOps",en,"Loads, trips and dispatch",,pending
+"adGroupOps",hi,"लोड, ट्रिप और डिस्पैच",,pending
+"adGroupOps",hinglish,"Load, trips aur dispatch",,pending
+"adGroupOps",kn,"ಲೋಡ್, ಟ್ರಿಪ್ ಮತ್ತು ಡಿಸ್ಪ್ಯಾಚ್",,pending
+"adGroupOps",ta,"சுமை, பயணம் மற்றும் அனுப்புதல்",,pending
+"adGroupOps",te,"లోడ్, ట్రిప్ మరియు డిస్పాచ్",,pending
+"adGroupOps",mr,"लोड, ट्रिप आणि डिस्पॅच",,pending
+"adGroupOps",gu,"લોડ, ટ્રિપ અને ડિસ્પેચ",,pending
+"adGroupOps",bn,"লোড, ট্রিপ ও ডিসপ্যাচ",,pending
+"adGroupOps",pa,"ਲੋਡ, ਟ੍ਰਿੱਪ ਅਤੇ ਡਿਸਪੈਚ",,pending
+"adGroupOps",ks,"لوڈ، ٹرپ تہٕ ڈسپیچ",,pending
+"adGroupOps",ur,"لوڈ، ٹرپ اور ڈسپیچ",,pending
+"adGroupSafety",en,"Safety and trust",,pending
+"adGroupSafety",hi,"सुरक्षा और भरोसा",,pending
+"adGroupSafety",hinglish,"Safety aur bharosa",,pending
+"adGroupSafety",kn,"ಸುರಕ್ಷತೆ ಮತ್ತು ವಿಶ್ವಾಸ",,pending
+"adGroupSafety",ta,"பாதுகாப்பு மற்றும் நம்பிக்கை",,pending
+"adGroupSafety",te,"భద్రత మరియు నమ్మకం",,pending
+"adGroupSafety",mr,"सुरक्षा आणि विश्वास",,pending
+"adGroupSafety",gu,"સુરક્ષા અને વિશ્વાસ",,pending
+"adGroupSafety",bn,"নিরাপত্তা ও বিশ্বাস",,pending
+"adGroupSafety",pa,"ਸੁਰੱਖਿਆ ਅਤੇ ਭਰੋਸਾ",,pending
+"adGroupSafety",ks,"حفاظت تہٕ بھروسہ",,pending
+"adGroupSafety",ur,"حفاظت اور بھروسہ",,pending
+"adGroupMoney",en,"Money",,pending
+"adGroupMoney",hi,"पैसा",,pending
+"adGroupMoney",hinglish,"Paisa",,pending
+"adGroupMoney",kn,"ಹಣ",,pending
+"adGroupMoney",ta,"பணம்",,pending
+"adGroupMoney",te,"డబ్బు",,pending
+"adGroupMoney",mr,"पैसा",,pending
+"adGroupMoney",gu,"પૈસા",,pending
+"adGroupMoney",bn,"টাকা",,pending
+"adGroupMoney",pa,"ਪੈਸਾ",,pending
+"adGroupMoney",ks,"پیسہ",,pending
+"adGroupMoney",ur,"پیسہ",,pending
+"adGroupTools",en,"Pilot, support and settings",,pending
+"adGroupTools",hi,"पायलट, सहायता और सेटिंग",,pending
+"adGroupTools",hinglish,"Pilot, support aur settings",,pending
+"adGroupTools",kn,"ಪೈಲಟ್, ಬೆಂಬಲ ಮತ್ತು ಸೆಟ್ಟಿಂಗ್‌ಗಳು",,pending
+"adGroupTools",ta,"பைலட், ஆதரவு மற்றும் அமைப்புகள்",,pending
+"adGroupTools",te,"పైలట్, సపోర్ట్ మరియు సెట్టింగ్‌లు",,pending
+"adGroupTools",mr,"पायलट, सपोर्ट आणि सेटिंग्ज",,pending
+"adGroupTools",gu,"પાયલોટ, સપોર્ટ અને સેટિંગ્સ",,pending
+"adGroupTools",bn,"পাইলট, সহায়তা ও সেটিংস",,pending
+"adGroupTools",pa,"ਪਾਇਲਟ, ਸਹਾਇਤਾ ਅਤੇ ਸੈਟਿੰਗਾਂ",,pending
+"adGroupTools",ks,"پائلٹ، مدد تہٕ سیٹنگ",,pending
+"adGroupTools",ur,"پائلٹ، سپورٹ اور سیٹنگز",,pending
+"fdBid",en,"Bid",,pending
+"fdBid",hi,"बोली",,pending
+"fdBid",hinglish,"Boli",,pending
+"fdBid",kn,"ಬಿಡ್",,pending
+"fdBid",ta,"ஏலம்",,pending
+"fdBid",te,"బిడ్",,pending
+"fdBid",mr,"बोली",,pending
+"fdBid",gu,"બિડ",,pending
+"fdBid",bn,"বিড",,pending
+"fdBid",pa,"ਬੋਲੀ",,pending
+"fdBid",ks,"بولی",,pending
+"fdBid",ur,"بولی",,pending
+"bsCustom",en,"Or type your price (in rupees)",,pending
+"bsCustom",hi,"या अपना भाड़ा लिखें (रुपये में)",,pending
+"bsCustom",hinglish,"Ya apna bhaada likho (rupaye mein)",,pending
+"bsCustom",kn,"ಅಥವಾ ನಿಮ್ಮ ದರ ಬರೆಯಿರಿ (ರೂಪಾಯಿಯಲ್ಲಿ)",,pending
+"bsCustom",ta,"அல்லது உங்கள் கட்டணத்தை எழுதுங்கள் (ரூபாயில்)",,pending
+"bsCustom",te,"లేదా మీ ధర రాయండి (రూపాయల్లో)",,pending
+"bsCustom",mr,"किंवा तुमचे भाडे लिहा (रुपयांत)",,pending
+"bsCustom",gu,"અથવા તમારું ભાડું લખો (રૂપિયામાં)",,pending
+"bsCustom",bn,"অথবা আপনার ভাড়া লিখুন (টাকায়)",,pending
+"bsCustom",pa,"ਜਾਂ ਆਪਣਾ ਕਿਰਾਇਆ ਲਿਖੋ (ਰੁਪਏ ਵਿੱਚ)",,pending
+"bsCustom",ks,"یا پننۍ کرایہ لیکھ (روپیہ منز)",,pending
+"bsCustom",ur,"یا اپنا کرایہ لکھیں (روپے میں)",,pending

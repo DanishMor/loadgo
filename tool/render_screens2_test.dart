@@ -1,3 +1,4 @@
+// ignore_for_file: invalid_use_of_visible_for_testing_member
 // Draws the Part 4 screens of U27 to U36 (driver, transporter, admin, customer home and tracking) to PNG with the real
 // fonts, so a person can look for overlap, cut text and bad spacing (U42):
 //   flutter test tool/render_screens2_test.dart            -> build/ux_png
@@ -37,7 +38,7 @@ import 'package:transport_app/driver/available_loads_view.dart';
 import 'package:transport_app/driver/driver_trip_screen.dart';
 import 'package:transport_app/driver/earnings_view.dart';
 import 'package:transport_app/driver/my_offers_screen.dart';
-import 'package:transport_app/driver/v2/driver_bid_sheet.dart';
+import 'package:transport_app/core/dispatch/driver_bid_sheet.dart';
 import 'package:transport_app/driver/v2/incoming_load_screen.dart';
 import 'package:transport_app/fleet/transporter_loads_screen.dart';
 

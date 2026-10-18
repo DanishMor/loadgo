@@ -56,11 +56,13 @@ class _DriverOnboardingCardState extends State<DriverOnboardingCard> {
               const SizedBox(width: DsSpace.s2),
               Expanded(child: Text(tr(context, 'obStep_${s.key}'), key: ValueKey('obStep_${s.key}_${s.done ? 'done' : 'todo'}'), style: DsType.body.copyWith(color: c.text))),
               const SizedBox(width: DsSpace.s2),
-              StatusBadge(
-                key: ValueKey('obState_${s.key}'),
-                label: tr(context, s.done ? 'obStateDone' : (s.key == next ? 'obStateNext' : 'obStateLater')),
-                tone: s.done ? StatusTone.success : (s.key == next ? StatusTone.attention : StatusTone.neutral),
-                showIcon: false,
+              Flexible(
+                child: StatusBadge(
+                  key: ValueKey('obState_${s.key}'),
+                  label: tr(context, s.done ? 'obStateDone' : (s.key == next ? 'obStateNext' : 'obStateLater')),
+                  tone: s.done ? StatusTone.success : (s.key == next ? StatusTone.attention : StatusTone.neutral),
+                  showIcon: false,
+                ),
               ),
             ]),
           ),
@@ -71,7 +73,7 @@ class _DriverOnboardingCardState extends State<DriverOnboardingCard> {
             child: Row(children: [
               Expanded(child: Text(tr(context, 'obDoc_${d.key}'), style: DsType.bodySmall.copyWith(color: c.textMuted))),
               const SizedBox(width: DsSpace.s2),
-              StatusBadge(label: tr(context, d.present ? 'obDocAdded' : 'obDocMissing'), tone: d.present ? StatusTone.success : StatusTone.attention),
+              Flexible(child: StatusBadge(label: tr(context, d.present ? 'obDocAdded' : 'obDocMissing'), tone: d.present ? StatusTone.success : StatusTone.attention)),
             ]),
           ),
         if (o.isRejected) ...[

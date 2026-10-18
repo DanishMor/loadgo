@@ -9,7 +9,7 @@ import '../../core/services/vehicle_service.dart';
 import '../../core/widgets/common.dart';
 import '../../core/widgets/ds/app_button.dart';
 import '../../core/widgets/ds/sheet_kit.dart';
-import 'driver_bid_sheet.dart';
+import '../../core/dispatch/driver_bid_sheet.dart';
 import 'incoming_load_screen.dart';
 
 /// U30: how the driver's feed is ordered.
@@ -68,6 +68,7 @@ class FeedHeaderV2 extends StatelessWidget {
         StreamBuilder<List<FavouriteRoute>>(
           stream: routes,
           builder: (context, snap) {
+            if (snap.hasError) return const SizedBox.shrink(); // the chips are an extra; the feed works without them
             final list = snap.data ?? const <FavouriteRoute>[];
             if (list.isEmpty) return const SizedBox.shrink();
             return QuickChipRow<String>(

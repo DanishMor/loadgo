@@ -2,8 +2,8 @@
 
 Plan: docs/MASTER_PLAN_PART4.md. Read it, then continue from NEXT.
 
-LAST_DONE: U28 Incoming Load Card (driver/v2/incoming_load_screen.dart + incoming_load_host.dart: full-screen card from LoadRadar, ring, slide to accept, send price, skip with optional reason, taken/time-up message, queue; host wired in DriverHomeScreen when uiV2 and online; push to a closed app waits for the server wave) and U29 bid sheet (driver_bid_sheet.dart: percent chips, FareMeter, ETA and note chips, edit once, withdraw). Skip reasons are asked but not stored (no server field).
-NEXT: U30 loads feed (filters, saved routes, match reasons; use the bid sheet), U31 My bids statuses (pending, countered, selected, lost; edit/withdraw through DriverBidSheet), U32 trip flow big buttons, U33 earnings, U34 onboarding; then Phase 6, 7, 8. Push is due.
+LAST_DONE: U30 to U44 (see docs/PART4_PROGRESS.md, one line per unit): driver loads feed, My bids, trip step card, earnings, set-up card, transporter company bid through the bid sheet, admin home in groups, docs, layout matrix (48), e2e flows (8), rules and concurrency tests (4), PNG check, bug hunt (12 fixes, docs/BUG_REPORT.md), full regression. Tags ux-v2-phase5 and ux-v2-phase6 are pushed.
+NEXT: nothing is left in docs/MASTER_PLAN_PART4.md. Owner steps are in docs/RELEASE_CANDIDATE.md section G (13 phone rows) and docs/BLOCKED.md (Part 4): publish the rules, deploy the functions, then turn dispatchV2 ON. Native reader: docs/TRANSLATION_REVIEW_PART4.csv and docs/TRANSLATION_REVIEW_PART5.csv.
 
 Unfinished / to remember:
 - The old CustomerHomeScreen must stay reachable with uiV2 OFF.

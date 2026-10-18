@@ -1,3 +1,4 @@
+// ignore_for_file: invalid_use_of_visible_for_testing_member
 // Draws the new UX v2 screens to PNG with the real fonts (see tool/render_kit_test.dart):
 //   flutter test tool/render_screens_test.dart            -> build/ux_png
 // It builds no app and opens no emulator. Screens get fake data; nothing is sent anywhere.

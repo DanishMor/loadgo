@@ -20,7 +20,7 @@ import '../../core/widgets/ds/route_ribbon.dart';
 import '../../core/widgets/ds/app_dialogs.dart';
 import '../../core/widgets/ds/slide_to_confirm.dart';
 import '../../core/widgets/logistics_labels.dart';
-import 'driver_bid_sheet.dart';
+import '../../core/dispatch/driver_bid_sheet.dart';
 
 /// Why a card closed by itself.
 enum CardGone { taken, timeUp }

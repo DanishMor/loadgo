@@ -275,7 +275,7 @@ Every row sits behind a switch that is OFF (see the flag table above). Setup doc
 | Trip tracking v2, delivery section, Bilty card | customer | a booking | lib/customer/v2/tracking_v2_screen.dart, lib/core/bilty/bilty_entry_card.dart |
 | Driver home v2 (online switch, Radar line, truck for today) | driver | opens first | lib/driver/v2/driver_home_v2.dart |
 | Incoming Load Card | driver | rings over any screen while online | lib/driver/v2/incoming_load_screen.dart, incoming_load_host.dart |
-| Driver bid sheet (also used by the transporter, for the company) | driver, transporter | feed card, My bids, Incoming card | lib/driver/v2/driver_bid_sheet.dart |
+| Driver bid sheet (also used by the transporter, for the company) | driver, transporter | feed card, My bids, Incoming card | lib/core/dispatch/driver_bid_sheet.dart |
 | Loads feed (sort chips, saved routes, match reasons) | driver | Loads tab | lib/driver/v2/loads_feed_v2.dart, lib/driver/available_loads_view.dart |
 | My bids (Waiting, Counter price, Selected, Lost) | driver | Home > My bids | lib/driver/v2/my_bids_v2.dart |
 | Trip step card | driver | a trip | lib/driver/driver_trip_screen.dart (_StepCard) |

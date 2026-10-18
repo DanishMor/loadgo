@@ -1,22 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../../core/dispatch/dispatch_models.dart';
-import '../../core/l10n/l10n.dart';
-import '../../core/models/load.dart';
-import '../../core/models/offer.dart';
-import '../../core/models/risk.dart';
-import '../../core/services/rate_limit_service.dart';
-import '../../core/models/vehicle.dart';
-import '../../core/pricing/offer_bounds.dart';
-import '../../core/services/offer_service.dart';
-import '../../core/theme/design_tokens.dart';
-import '../../core/widgets/common.dart';
-import '../../core/widgets/ds/app_button.dart';
-import '../../core/widgets/ds/app_dialogs.dart';
-import '../../core/widgets/ds/fare_meter.dart';
-import '../../core/widgets/ds/sheet_kit.dart';
-import '../../core/errors/error_text.dart';
+import 'dispatch_models.dart';
+import '../l10n/l10n.dart';
+import '../models/load.dart';
+import '../models/offer.dart';
+import '../models/risk.dart';
+import '../services/rate_limit_service.dart';
+import '../models/vehicle.dart';
+import '../pricing/offer_bounds.dart';
+import '../services/offer_service.dart';
+import '../theme/design_tokens.dart';
+import '../widgets/common.dart';
+import '../widgets/ds/app_button.dart';
+import '../widgets/ds/app_dialogs.dart';
+import '../widgets/ds/fare_meter.dart';
+import '../widgets/ds/sheet_kit.dart';
+import '../errors/error_text.dart';
 
 /// The numbers behind the driver's bid sheet (U29). Pure, so every rule can be tested without a screen.
 class BidSheetModel {

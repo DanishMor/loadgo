@@ -27,7 +27,7 @@ import '../core/theme/design_tokens.dart';
 import '../core/features/features.dart';
 import '../core/services/features_service.dart';
 import '../core/widgets/ds/route_ribbon.dart';
-import '../driver/v2/driver_bid_sheet.dart';
+import '../core/dispatch/driver_bid_sheet.dart';
 
 /// Open loads for a transporter: look, bid for the company (the vehicle and
 /// driver are assigned after the customer picks the bid), and post a load

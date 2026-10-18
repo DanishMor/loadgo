@@ -30,7 +30,7 @@ import 'package:transport_app/driver/available_loads_view.dart';
 import 'package:transport_app/driver/driver_trip_screen.dart';
 import 'package:transport_app/driver/earnings_view.dart';
 import 'package:transport_app/driver/my_offers_screen.dart';
-import 'package:transport_app/driver/v2/driver_bid_sheet.dart';
+import 'package:transport_app/core/dispatch/driver_bid_sheet.dart';
 import 'package:transport_app/fleet/transporter_loads_screen.dart';
 
 /// U39: every new Part 4 screen at 360x640 in four ways: plain; dark with 2.0x text in Hindi; Urdu (right to left)

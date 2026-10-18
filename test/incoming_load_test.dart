@@ -8,7 +8,7 @@ import 'package:transport_app/core/l10n/l10n.dart';
 import 'package:transport_app/core/models/load.dart';
 import 'package:transport_app/core/models/vehicle.dart';
 import 'package:transport_app/core/theme/app_theme.dart';
-import 'package:transport_app/driver/v2/driver_bid_sheet.dart';
+import 'package:transport_app/core/dispatch/driver_bid_sheet.dart';
 import 'package:transport_app/driver/v2/incoming_load_screen.dart';
 
 /// U28 and U29: the Incoming Load Card and the bid sheet's numbers.

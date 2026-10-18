@@ -11,7 +11,6 @@ import 'package:transport_app/core/models/vehicle.dart';
 void main() {
   final t0 = DateTime(2030, 1, 1, 12);
   const cfg = DispatchConfig.defaults;
-  const delhi = (lat: 28.6139, lng: 77.2090);
   const near = (lat: 28.6239, lng: 77.2090); // about 2 km
   const mid = (lat: 28.6539, lng: 77.2090); // about 5.6 km
 

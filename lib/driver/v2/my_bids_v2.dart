@@ -15,7 +15,7 @@ import '../../core/widgets/ds/sheet_kit.dart';
 import '../../core/widgets/ds/status_badge.dart';
 import '../../core/widgets/live_stream.dart';
 import '../../core/widgets/logistics_labels.dart';
-import 'driver_bid_sheet.dart';
+import '../../core/dispatch/driver_bid_sheet.dart';
 
 /// U31: the four places a bid can be in.
 enum BidGroup { waiting, countered, selected, lost }

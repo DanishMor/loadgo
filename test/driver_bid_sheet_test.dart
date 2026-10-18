@@ -11,7 +11,7 @@ import 'package:transport_app/core/services/backend.dart';
 import 'package:transport_app/core/services/load_service.dart';
 import 'package:transport_app/core/services/vehicle_service.dart';
 import 'package:transport_app/core/theme/app_theme.dart';
-import 'package:transport_app/driver/v2/driver_bid_sheet.dart';
+import 'package:transport_app/core/dispatch/driver_bid_sheet.dart';
 
 /// U29: the driver's bid sheet: send, change once, withdraw.
 void main() {
