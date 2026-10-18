@@ -43,3 +43,6 @@ Ring r unlocks for a driver when `distanceKm(driver.lastLocation, pickup) <= rin
 
 ## Incoming-load contract (LoadRadar)
 One stream of loads that are open, unlocked for this driver (ring), match the driver's vehicle type, are not expired and not dismissed. Deduped by id, ordered by unlock time, shown one after another.
+
+## State of the build (end of Part 4)
+Customer flow 1 to 6 and driver flow 1 to 4 above are built behind `uiV2` (default ON). `dispatchV2` (rings, the bid window, the driver feed by ring) stays OFF until the rules are published. Differences from the sketch above: skip reasons on the Incoming Load Card are asked but not stored (no field on the server); a bid that was not chosen counts as Lost only when it is rejected or withdrawn (the data does not say another driver was picked); the card rings only while the app is open (push to a closed app waits for the Cloud Functions).

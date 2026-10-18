@@ -156,3 +156,5 @@ Fields in every limits document: `perUserPerDay` and `totalPerDay`, whole number
 | `jobSuspendExpiredDocs` | daily 03:30 | 1 a day, reads users with expired papers |
 | `walletReconcile` | daily 04:00 | 1 a day, reads every wallet and its ledger: **grows with users**, watch the reads |
 | `pushDocExpiry` | daily 09:00 | 1 a day, reads papers close to expiry |
+| `autoAcceptBids` | a new bid (switch `dispatchV2`, OFF) | 1 per bid; returns at once when the switch is OFF; reads the load and its bids when ON |
+| `dispatchWave` | every minute (switch `dispatchV2`, OFF) | 1440 a day but returns at once when the switch is OFF; when ON it reads open instant loads: watch the reads |

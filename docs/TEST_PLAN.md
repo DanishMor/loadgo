@@ -131,3 +131,16 @@ What the ticks above already have as test code, so a release check only needs th
 | Go-live | runbook and check script exist and agree | `test/go_live_docs_test.dart` |
 
 Run order and memory rule: tests run in batches of about 30 files with `--concurrency=1`, never the whole suite at once (`scratchpad/run_batches.ps1` was used; results are in `docs/PROGRESS.md`).
+
+## Part 4 (U1 to U44): what is tested where
+
+| Area | What is checked | Tests |
+|---|---|---|
+| Component kit | sizes, light and dark, 2.0x, Low-end, English, Hindi, Tamil, Urdu | test/ux2_kit_test.dart, test/ux2_kit2_test.dart |
+| Customer v2 | shell, Trips, tracking, delivery, Bilty, states | test/customer_shell_v2_test.dart, test/tracking_v2_test.dart |
+| Driver v2 | home, Incoming Load Card, bid sheet | test/driver_home_v2_test.dart, test/incoming_load_test.dart, test/driver_bid_sheet_test.dart |
+| Driver feed, bids, trip, earnings, set-up | sort, saved routes, groups, step card, money stages, state words | test/loads_feed_v2_test.dart, test/my_bids_v2_test.dart, test/trip_flow_v2_test.dart, test/earnings_v2_test.dart, test/onboarding_v2_test.dart |
+| Transporter and admin | company bid through the sheet, admin groups and roles | test/transporter_bid_v2_test.dart, test/admin_dashboard_v2_test.dart |
+| Old screens | every v2 test also has a uiV2 OFF case that shows the old screen | same files |
+| Guards | no new hard-coded colours, no new eager lists, no state set after await | test/theme_guard_test.dart, test/performance_guard_test.dart, test/setstate_future_guard_test.dart |
+| Rules | bid-mode load only through a selected bid, bid window, two-driver race | firestore_rules_test (U10, U15, U17 blocks) |

@@ -20,7 +20,7 @@ Things that cannot be proved on the laptop, or that need a paid service or a con
 
 | Area | State |
 |---|---|
-| Cloud Functions (44 functions) | Written and tested on the emulator; **not deployed**. Until then every server switch stays OFF and the app does the older thing on the phone. |
+| Cloud Functions (46 functions) | Written and tested on the emulator; **not deployed**. Until then every server switch stays OFF and the app does the older thing on the phone. |
 | Storage (photos) | Rules written and tested; the bucket needs the Blaze plan. |
 | Online payment | G9: Razorpay server code (order, verify, webhook, refund, ledger lines) and the "Pay online" button are ready for **test keys** (the `razorpay_flutter` window is not yet tried on a real phone; the release build may need the plugin's keep rules if a build shows a missing class). No live money. Payouts stay manual with two admins. |
 | KYC and GST check | G13: the sandbox provider, the checks on the phone and the server and the admin chips are ready (switch `kycVerify`). No real partner is chosen (docs/KYC_PARTNER_CHECKLIST.md); admin review of the papers stays the real check. GST/e-way bill: G14. |
@@ -46,3 +46,12 @@ Write the phone model, Android version, language, screen and what you did. Add i
 
 - A booking cancelled while an online payment is held (`payHold`) leaves the money held; finance refunds it with the refund function (the audit trail line `hold_cancelled_<booking>` marks it). No automatic refund yet.
 - Reservations of a refund that died half way stop blocking after 5 minutes; check the gateway's list before refunding again.
+
+## Added in Part 4 (U1 to U44)
+
+- The Incoming Load Card rings only while the app is open. A closed app gets the push after the Cloud Functions are deployed (`dispatchV2` server wave).
+- Skip reasons on the card are asked but not stored: the server has no field for them (`docs/DECISIONS.md`).
+- My bids: Lost means rejected or withdrawn; the data does not say that another driver was chosen.
+- `dispatchV2` (rings, bid window) is a client layer until the rules and functions are published; keep it OFF until then.
+- The old trip page overflows by about 50 px on a 360 px wide phone in one old card (seen when `uiV2` is OFF). Not changed on purpose: the old screens stay as they were.
+- New texts of Part 4 wait for the native reader (`docs/TRANSLATION_REVIEW_PART4.csv`; the Part 5 sheet covers U30 to U44).

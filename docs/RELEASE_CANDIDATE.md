@@ -48,3 +48,19 @@ One page to tick before a build goes to testers or to Play. Nothing here is done
 - [ ] `docs/KNOWN_ISSUES.md` read; nothing in it is a surprise for the testers.
 - [ ] Native reader has returned `docs/TRANSLATION_REVIEW.csv`.
 - [ ] Lawyer and CA answers (`docs/WALLET_LEGAL.md`, `docs/LEGAL_QUESTIONS.md`) in hand before real money moves.
+
+## G. Part 4 screens on a real phone (screen by screen)
+Switch `uiV2` is ON by default. `dispatchV2` stays OFF until the rules are published (`docs/BLAZE_GO_LIVE.md` order), then turn it ON and repeat rows 6 to 9.
+- [ ] 1. Customer home: one big Book action, three modes in one line, recent routes, bottom bar Home / Trips / Help / Profile.
+- [ ] 2. Book wizard: five steps, back keeps the answers, kill the app mid-way and the draft comes back, slide to confirm posts the load.
+- [ ] 3. Bid Room: bids appear live, sort chips work, accept asks first, counter once.
+- [ ] 4. Trip page: OTP cards are big, SOS works, Bilty card shows Full / Driver / Consignee copies.
+- [ ] 5. Delivered trip: payment, rating, papers, Book again.
+- [ ] 6. Driver home: online switch, Radar line, truck for today.
+- [ ] 7. Incoming Load Card: rings with sound and vibration (not in quiet hours), slide to accept, Skip, back counts as Skip, a taken load says so.
+- [ ] 8. Bid sheet: percent chips, range, ETA and note chips, change once, withdraw.
+- [ ] 9. Loads feed: sort chips, saved route chips, reasons on cards. My bids: four groups.
+- [ ] 10. Trip step card: Step n of 6, pickup photo and code, delivery code and confirm, airplane mode keeps the step and sends it later.
+- [ ] 11. Earnings: Today, Where your money is. Set-up card: Done / Do this next / Later, rejection reason and send again.
+- [ ] 12. Transporter: bid for the company through the sheet; bulk bid. Admin: five groups, role shown, Dispatch monitor.
+- [ ] 13. Hindi, Urdu, largest font, dark: no cut-off text on rows 1 to 12.

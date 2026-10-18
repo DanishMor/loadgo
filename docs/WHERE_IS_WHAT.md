@@ -263,3 +263,24 @@ Every row sits behind a switch that is OFF (see the flag table above). Setup doc
 | Component kit (RouteRibbon, FareMeter, CountdownRing, SlideToConfirm, BidCard, DriverMiniCard, StatusTimelineV2, sheets, chips, FeedbackKit) | lib/core/widgets/ds/ |
 | Draw the kit to PNG | `flutter test tool/render_kit_test.dart` (writes build/ux_png) |
 | Migrate old loads | tool/migrate_loads_mode.js (dry run first), docs/MIGRATIONS.md |
+
+### Part 4 screens (all behind `uiV2`, the old screen returns when it is OFF)
+
+| Screen | Who | Where in the app | Code |
+|---|---|---|---|
+| Customer home and shell (Home, Trips, Help, Profile) | customer | opens first | lib/customer/v2/customer_shell_v2.dart, customer_home_v2.dart |
+| Trips tab (Active, Upcoming, Past, Book again) | customer | Trips | lib/customer/v2/trips_tab_v2.dart, trips_model.dart |
+| Book wizard (5 steps, draft saved) | customer | Book a truck | lib/customer/v2/ (wizard files, U19) |
+| Bid Room | customer | a bid-mode load | lib/customer/v2/ (U20) |
+| Trip tracking v2, delivery section, Bilty card | customer | a booking | lib/customer/v2/tracking_v2_screen.dart, lib/core/bilty/bilty_entry_card.dart |
+| Driver home v2 (online switch, Radar line, truck for today) | driver | opens first | lib/driver/v2/driver_home_v2.dart |
+| Incoming Load Card | driver | rings over any screen while online | lib/driver/v2/incoming_load_screen.dart, incoming_load_host.dart |
+| Driver bid sheet (also used by the transporter, for the company) | driver, transporter | feed card, My bids, Incoming card | lib/driver/v2/driver_bid_sheet.dart |
+| Loads feed (sort chips, saved routes, match reasons) | driver | Loads tab | lib/driver/v2/loads_feed_v2.dart, lib/driver/available_loads_view.dart |
+| My bids (Waiting, Counter price, Selected, Lost) | driver | Home > My bids | lib/driver/v2/my_bids_v2.dart |
+| Trip step card | driver | a trip | lib/driver/driver_trip_screen.dart (_StepCard) |
+| Earnings and Where your money is | driver | Earnings tab | lib/driver/v2/earnings_v2.dart |
+| Set-up card with state words and rejection box | driver | waiting-for-review screen | lib/auth/driver_onboarding_card.dart |
+| Company bid through the bid sheet | transporter | Loads tab | lib/fleet/transporter_loads_screen.dart |
+| Admin home in five groups | admin | Admin panel | lib/admin/admin_dashboard_screen.dart |
+| Text of U30 to U36 (12 languages) | all | n/a | lib/core/l10n/ux2_feed_strings.dart |
