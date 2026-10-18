@@ -124,6 +124,9 @@ class Load {
   /// How many rings wider the customer asked the search to go (0 to 3).
   final int ringBoost;
 
+  /// Last change by the customer (a price raise or a wider search writes it): the drivers are asked again.
+  final Timestamp? updatedAt;
+
   const Load({
     required this.id,
     required this.shipperId,
@@ -175,6 +178,7 @@ class Load {
     this.bidWindowEnds,
     this.autoAccept,
     this.ringBoost = 0,
+    this.updatedAt,
   });
 
   bool get isOpen => status == LoadStatus.open;
@@ -243,6 +247,7 @@ class Load {
       bidWindowEnds: (d['bidWindowEnds'] as Timestamp?)?.toDate(),
       autoAccept: AutoAccept.fromMap(d['autoAccept']),
       ringBoost: ((d['ringBoost'] as num?)?.toInt() ?? 0).clamp(0, 3),
+      updatedAt: d['updatedAt'] is Timestamp ? d['updatedAt'] as Timestamp : null,
     );
   }
 }
