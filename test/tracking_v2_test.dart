@@ -13,6 +13,7 @@ import 'package:transport_app/core/services/load_service.dart';
 import 'package:transport_app/core/services/vehicle_service.dart';
 import 'package:transport_app/core/theme/app_theme.dart';
 import 'package:transport_app/customer/booking_tracking_screen.dart';
+import 'package:transport_app/customer/v2/booking_wizard_screen.dart';
 import 'package:transport_app/customer/v2/tracking_v2_screen.dart';
 
 /// U21: the customer's trip page in the new app.
@@ -93,6 +94,21 @@ void main() {
       await settle(t);
       expect(t.takeException(), isNull, reason: lang.name);
     }
+  });
+
+  testWidgets('a delivered trip shows the rating, the papers and one-tap Book again (opens the booking steps)', (t) async {
+    t.view.physicalSize = const Size(360 * 2, 640 * 2);
+    t.view.devicePixelRatio = 2;
+    addTearDown(t.view.reset);
+    await db.collection('bookings').doc(id).update({'status': BookingStatus.delivered});
+    await t.pumpWidget(host());
+    await settle(t);
+    await t.scrollUntilVisible(find.byKey(const ValueKey('bookAgain')), 300, scrollable: find.byType(Scrollable).first);
+    await t.ensureVisible(find.byKey(const ValueKey('bookAgain')));
+    await t.pump();
+    await t.tap(find.byKey(const ValueKey('bookAgain')));
+    await settle(t);
+    expect(find.byType(BookWizardScreen), findsOneWidget);
   });
 
   testWidgets('openBookingTracking picks the new page with uiV2 on and the older one with it off', (t) async {

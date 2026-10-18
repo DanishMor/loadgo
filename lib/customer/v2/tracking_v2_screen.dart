@@ -32,7 +32,10 @@ import '../../core/widgets/rating_widgets.dart';
 import '../../core/widgets/tip_card.dart';
 import '../../core/widgets/trip_eta_card.dart';
 import '../cancel_scheduled_button.dart';
-import '../delivered_actions.dart';
+import '../delivered_actions.dart' show DeliveredWatcher, reportIssue;
+import 'bid_room_screen.dart';
+import 'booking_wizard_screen.dart';
+import 'trips_model.dart';
 import '../trip_otp_card.dart';
 
 /// The steps of a trip as the timeline shows them: all of [BookingStatus.flow], or only "accepted" and "cancelled".
@@ -103,6 +106,14 @@ class _TrackingV2BodyState extends State<TrackingV2Body> {
         AppButton(key: const ValueKey('trkCall112'), label: tr(c, 'call112'), kind: AppButtonKind.danger, icon: Icons.call_rounded, onPressed: () => callNumber(c, '112')),
       ]),
     );
+  }
+
+  /// One tap: the same route, goods and truck in the booking steps, at the price step.
+  Future<void> _bookAgain() async {
+    final nav = Navigator.of(context);
+    final loadId = await nav.push<String>(MaterialPageRoute(builder: (_) => BookWizardScreen(initial: TripItem.booking(b).toDraft())));
+    if (loadId == null || loadId == 'schedule') return;
+    await nav.push<String>(MaterialPageRoute(builder: (_) => BidRoomScreen(loadId: loadId)));
   }
 
   Widget _action(IconData icon, String label, VoidCallback? onTap, {Key? key}) {
@@ -218,9 +229,15 @@ class _TrackingV2BodyState extends State<TrackingV2Body> {
         ],
         if (delivered) ...[
           const SizedBox(height: DsSpace.s4),
+          PaymentCard(booking: b),
+          const SizedBox(height: DsSpace.s3),
           RatingPrompt(booking: b, titleKey: 'rateDriver'),
           const SizedBox(height: DsSpace.s2),
-          DeliveredActionsCard(booking: b),
+          TripDocumentButtons(booking: b),
+          const SizedBox(height: DsSpace.s3),
+          AppButton(key: const ValueKey('bookAgain'), label: tr(context, 'bookAgain'), icon: Icons.replay_rounded, onPressed: _bookAgain),
+          const SizedBox(height: DsSpace.s2),
+          AppButton(key: const ValueKey('reportIssue'), label: tr(context, 'reportIssue'), kind: AppButtonKind.tertiary, icon: Icons.report_problem_outlined, onPressed: () => reportIssue(context, b)),
           const SizedBox(height: DsSpace.s2),
           ReuseSurveyCard(booking: b, role: 'customer'),
           const SizedBox(height: DsSpace.s2),
@@ -229,15 +246,13 @@ class _TrackingV2BodyState extends State<TrackingV2Body> {
         const SizedBox(height: DsSpace.s4),
         Semantics(header: true, child: Text(tr(context, 'tkMore'), style: DsType.title.copyWith(color: c.textStrong))),
         const SizedBox(height: DsSpace.s2),
-        PaymentCard(booking: b),
-        const SizedBox(height: DsSpace.s2),
+        if (!delivered) ...[PaymentCard(booking: b), const SizedBox(height: DsSpace.s2)],
         DetentionCard(booking: b, isDriver: false),
         EwayStatusLine(booking: b),
         CargoDocsCard(booking: b),
         const SizedBox(height: DsSpace.s2),
         ClaimCard(booking: b),
-        const SizedBox(height: DsSpace.s3),
-        TripDocumentButtons(booking: b),
+        if (!delivered) ...[const SizedBox(height: DsSpace.s3), TripDocumentButtons(booking: b)],
       ],
     );
   }
