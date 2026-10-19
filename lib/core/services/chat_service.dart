@@ -11,6 +11,7 @@ import 'server_clock.dart';
 import 'comm_guard.dart';
 import 'notification_service.dart';
 import 'rate_limit_service.dart';
+import './safe_docs.dart';
 
 /// Empty, too long, or the other person blocked you.
 class ChatSendException implements Exception {
@@ -57,7 +58,7 @@ class ChatService {
       .snapshots()
       .map((s) {
         _learnServerTime(s);
-        return s.docs.map(ChatMessage.fromDoc).toList().reversed.toList();
+        return s.docs.parse(ChatMessage.fromDoc).reversed.toList();
       });
 
   static final Set<String> _pending = {};

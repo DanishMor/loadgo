@@ -27,6 +27,7 @@ import 'server_clock.dart';
 import 'business_ops_service.dart';
 import 'repeat_service.dart';
 import 'rate_limit_service.dart';
+import './safe_docs.dart';
 
 /// The chosen pickup time breaks the advance-booking limits.
 class ScheduleException implements Exception {
@@ -296,7 +297,7 @@ class LoadService {
               .limit(50)
               .snapshots()
               .listen((snap) {
-            latest[cell] = snap.docs.map(Load.fromDoc).toList();
+            latest[cell] = snap.docs.parse(Load.fromDoc);
             emit();
           }, onError: out.addError));
         }
@@ -328,7 +329,7 @@ class LoadService {
   }
 
   static List<Load> _sorted(QuerySnapshot<Map<String, dynamic>> snap) {
-    final list = snap.docs.map(Load.fromDoc).toList();
+    final list = snap.docs.parse(Load.fromDoc);
     list.sort((a, b) => newestFirst(a.createdAt, b.createdAt));
     return list;
   }

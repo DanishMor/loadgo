@@ -5,6 +5,7 @@ import '../models/booking.dart';
 import '../models/business.dart';
 import '../models/fleet.dart';
 import 'backend.dart';
+import './safe_docs.dart';
 
 class BusinessTeamException implements Exception {
   /// `phone`, `own_phone`, `already_member`, `not_customer`, `no_company`.
@@ -151,7 +152,7 @@ class BusinessService {
   static Stream<List<Booking>> watchCompanyBookings({String? ownerId}) {
     final uid = ownerId ?? Backend.uid;
     if (uid == null) return Stream.value(const []);
-    return _db.collection('bookings').where('businessId', isEqualTo: uid).snapshots().map((s) => s.docs.map(Booking.fromDoc).toList());
+    return _db.collection('bookings').where('businessId', isEqualTo: uid).snapshots().map((s) => s.docs.parse(Booking.fromDoc));
   }
 
   /// Saves (or replaces) the owner's record of [statement].

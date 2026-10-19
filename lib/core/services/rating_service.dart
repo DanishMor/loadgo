@@ -7,6 +7,7 @@ import '../models/rating.dart';
 import 'backend.dart';
 import 'audit_service.dart';
 import 'notification_service.dart';
+import './safe_docs.dart';
 
 class AlreadyRatedException implements Exception {
   @override
@@ -101,7 +102,7 @@ class RatingService {
 
   /// Reviews [userId] received, newest first.
   static Stream<List<Rating>> watchReceived(String userId) => _col.where('ratedId', isEqualTo: userId).snapshots().map((snap) {
-        final list = snap.docs.map(Rating.fromDoc).toList();
+        final list = snap.docs.parse(Rating.fromDoc);
         list.sort((a, b) => (b.createdAt?.millisecondsSinceEpoch ?? 1 << 50).compareTo(a.createdAt?.millisecondsSinceEpoch ?? 1 << 50));
         return list;
       });

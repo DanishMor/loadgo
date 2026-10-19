@@ -10,6 +10,7 @@ import 'backend.dart';
 import 'chat_service.dart';
 import 'rate_limit_service.dart';
 import 'user_service.dart';
+import './safe_docs.dart';
 
 /// Driver-to-driver network: who is nearby (D11), connections (D12), groups
 /// (D13), chats with load cards (CH2, CH3, CH7, D14) and location privacy
@@ -118,7 +119,7 @@ class NetworkService {
   static Stream<List<DriverLink>> watchLinks() {
     final uid = Backend.uid;
     if (uid == null) return Stream.value(const []);
-    return _links.where('members', arrayContains: uid).snapshots().map((s) => s.docs.map(DriverLink.fromDoc).toList());
+    return _links.where('members', arrayContains: uid).snapshots().map((s) => s.docs.parse(DriverLink.fromDoc));
   }
 
   static Future<void> requestConnection({required String otherUid, required String myName, required String otherName}) async {
@@ -146,7 +147,7 @@ class NetworkService {
   static Stream<List<DriverGroup>> watchGroups() {
     final uid = Backend.uid;
     if (uid == null) return Stream.value(const []);
-    return _groups.where('memberIds', arrayContains: uid).snapshots().map((s) => s.docs.map(DriverGroup.fromDoc).toList());
+    return _groups.where('memberIds', arrayContains: uid).snapshots().map((s) => s.docs.parse(DriverGroup.fromDoc));
   }
 
   static Future<String> createGroup({required String name, required String kind}) async {
@@ -187,7 +188,7 @@ class NetworkService {
       .orderBy('createdAt', descending: true)
       .limit(200)
       .snapshots()
-      .map((s) => s.docs.map(NetworkMessage.fromDoc).toList().reversed.toList());
+      .map((s) => s.docs.parse(NetworkMessage.fromDoc).reversed.toList());
 
   static Future<void> send(String chatKind, String id, {required String senderName, String text = '', SharedLoad? loadCard}) async {
     final uid = Backend.requireUid();

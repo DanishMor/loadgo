@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/support_ticket.dart';
 import 'backend.dart';
 import 'rate_limit_service.dart';
+import './safe_docs.dart';
 
 /// Help desk tickets. Users open, reply, escalate and close their own
 /// tickets; admins change status/priority and reply (Task 12 screens).
@@ -49,7 +50,7 @@ class SupportService {
     final uid = Backend.uid;
     if (uid == null) return Stream.value(const []);
     return _col.where('userId', isEqualTo: uid).snapshots().map((s) {
-      final list = s.docs.map(SupportTicket.fromDoc).toList();
+      final list = s.docs.parse(SupportTicket.fromDoc);
       list.sort((a, b) => (b.updatedAt ?? DateTime(3000)).compareTo(a.updatedAt ?? DateTime(3000)));
       return list;
     });
@@ -57,7 +58,7 @@ class SupportService {
 
   /// Tickets raised for a company (the owner's uid), newest activity first.
   static Stream<List<SupportTicket>> watchForBusiness(String ownerId) => _col.where('businessId', isEqualTo: ownerId).snapshots().map((s) {
-        final list = s.docs.map(SupportTicket.fromDoc).toList();
+        final list = s.docs.parse(SupportTicket.fromDoc);
         list.sort((a, b) => (b.updatedAt ?? DateTime(3000)).compareTo(a.updatedAt ?? DateTime(3000)));
         return list;
       });
@@ -70,7 +71,7 @@ class SupportService {
       .collection('replies')
       .orderBy('createdAt')
       .snapshots()
-      .map((s) => s.docs.map(TicketReply.fromDoc).toList());
+      .map((s) => s.docs.parse(TicketReply.fromDoc));
 
   static Future<void> reply(String id, String text, {bool asAdmin = false}) async {
     final t = text.trim();

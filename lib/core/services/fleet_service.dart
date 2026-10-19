@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/booking.dart';
 import '../models/fleet.dart';
 import 'backend.dart';
+import './safe_docs.dart';
 
 class FleetException implements Exception {
   /// `phone`, `own_phone`, `already_member`, `no_invite`, `not_driver`.
@@ -81,7 +82,7 @@ class FleetService {
     final uid = Backend.uid;
     if (uid == null) return Stream.value(const []);
     return _db.collection('bookings').where('fleetOwnerId', isEqualTo: uid).snapshots().map((s) {
-      final list = s.docs.map(Booking.fromDoc).toList();
+      final list = s.docs.parse(Booking.fromDoc);
       list.sort((a, b) => (b.createdAt?.millisecondsSinceEpoch ?? 1 << 50).compareTo(a.createdAt?.millisecondsSinceEpoch ?? 1 << 50));
       return list;
     });

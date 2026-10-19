@@ -7,6 +7,7 @@ import '../models/business_ops.dart';
 import '../models/load.dart';
 import 'backend.dart';
 import 'business_service.dart';
+import './safe_docs.dart';
 
 class BusinessOpsException implements Exception {
   final String reason;
@@ -52,7 +53,7 @@ class BusinessOpsService {
       .where('businessId', isEqualTo: ownerId)
       .where('status', isEqualTo: LoadStatus.awaitingApproval)
       .snapshots()
-      .map((s) => s.docs.map(Load.fromDoc).toList());
+      .map((s) => s.docs.parse(Load.fromDoc));
 
   static Future<void> decide(Load l, {required bool approve}) {
     final uid = Backend.requireUid();
@@ -144,7 +145,7 @@ class BusinessOpsService {
 
   /// Delivered bookings of the company, for the dashboard.
   static Stream<List<Booking>> watchCompanyBookings(String ownerId) =>
-      _col('bookings').where('businessId', isEqualTo: ownerId).snapshots().map((s) => s.docs.map(Booking.fromDoc).toList());
+      _col('bookings').where('businessId', isEqualTo: ownerId).snapshots().map((s) => s.docs.parse(Booking.fromDoc));
 
   /// Convenience for the hub: the company's context of the signed-in user.
   static Future<BizContext?> context() => BusinessService.myContext();

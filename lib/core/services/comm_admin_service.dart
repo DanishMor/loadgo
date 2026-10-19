@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/chat_message.dart';
 import 'audit_service.dart';
 import 'backend.dart';
+import './safe_docs.dart';
 
 /// A chat can only be opened for review next to a report or a dispute.
 class NoCaseForChatException implements Exception {
@@ -92,5 +93,5 @@ class CommAdminService {
       .orderBy('createdAt')
       .limit(200)
       .snapshots()
-      .map((s) => s.docs.map(ChatMessage.fromDoc).toList());
+      .map((s) => s.docs.parse(ChatMessage.fromDoc));
 }

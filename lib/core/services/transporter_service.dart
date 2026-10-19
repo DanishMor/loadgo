@@ -10,6 +10,7 @@ import 'analytics_events.dart';
 import 'audit_service.dart';
 import 'notification_service.dart';
 import 'backend.dart';
+import './safe_docs.dart';
 
 /// Thrown by [TransporterService.assign]. [reason] is one of the values of
 /// [assignmentProblem] (`status`, `not_member`, `vehicle`, `busy`, `papers`,
@@ -67,7 +68,7 @@ class TransporterService {
     final uid = Backend.uid;
     if (uid == null) return Stream.value(const []);
     return _db.collection('vehicles').where('attachedTo', isEqualTo: uid).snapshots().asyncMap((s) async {
-      final vehicles = s.docs.map(Vehicle.fromDoc).toList();
+      final vehicles = s.docs.parse(Vehicle.fromDoc);
       if (vehicles.isEmpty) return vehicles;
       final members = await _db.collection('fleet_members').where('ownerId', isEqualTo: uid).get();
       final active = {for (final m in members.docs) if (m.data()['active'] != false) '${m.data()['driverId'] ?? ''}'};
@@ -152,7 +153,7 @@ class TransporterService {
   static Stream<List<Booking>> watchAssignedToMe() {
     final uid = Backend.uid;
     if (uid == null) return Stream.value(const []);
-    return _db.collection('bookings').where('assignedDriverId', isEqualTo: uid).snapshots().map((s) => s.docs.map(Booking.fromDoc).toList());
+    return _db.collection('bookings').where('assignedDriverId', isEqualTo: uid).snapshots().map((s) => s.docs.parse(Booking.fromDoc));
   }
 
   // ---- books ----

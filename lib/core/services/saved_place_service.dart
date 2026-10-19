@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../models/saved_place.dart';
 import 'backend.dart';
+import './safe_docs.dart';
 
 /// Thrown when the user already has [SavedPlaceService.maxPlaces] places.
 class TooManyPlacesException implements Exception {}
@@ -19,7 +20,7 @@ class SavedPlaceService {
     final uid = Backend.uid;
     if (uid == null) return Stream.value(const []);
     return _col(uid).snapshots().map((s) {
-      final list = s.docs.map(SavedPlace.fromDoc).toList();
+      final list = s.docs.parse(SavedPlace.fromDoc);
       list.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
       return list;
     });

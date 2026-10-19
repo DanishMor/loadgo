@@ -20,6 +20,7 @@ import 'notification_service.dart';
 import 'risk_service.dart';
 import 'trip_otp_attempts.dart';
 import 'funnel.dart';
+import './safe_docs.dart';
 
 /// Thrown when a load was taken by another driver, closed, or never existed.
 class LoadUnavailableException implements Exception {
@@ -502,7 +503,7 @@ class BookingService {
     final uid = Backend.uid;
     if (uid == null) return Stream.value(const Paged.all([]));
     return newestPage(_col.where(field, isEqualTo: uid), limit).map((snap) {
-      final list = snap.docs.map(Booking.fromDoc).toList();
+      final list = snap.docs.parse(Booking.fromDoc);
       list.sort((a, b) => newestFirst(a.createdAt, b.createdAt));
       return Paged(list, hasMore: snap.docs.length >= limit);
     });
@@ -512,7 +513,7 @@ class BookingService {
     final uid = Backend.uid;
     if (uid == null) return Stream.value(const []);
     return _col.where(field, isEqualTo: uid).snapshots().map((snap) {
-      final list = snap.docs.map(Booking.fromDoc).toList();
+      final list = snap.docs.parse(Booking.fromDoc);
       list.sort((a, b) => newestFirst(a.createdAt, b.createdAt));
       return list;
     });

@@ -10,6 +10,7 @@ import 'admin/admin_entry.dart';
 import 'auth/role_selection_screen.dart';
 import 'auth/splash_screen.dart';
 import 'core/errors/friendly_error_widget.dart';
+import 'core/errors/startup_failed_app.dart';
 import 'core/l10n/l10n.dart';
 import 'core/navigation/app_routes.dart';
 import 'core/navigation/deep_links.dart';
@@ -58,25 +59,38 @@ Future<void> main() async {
     debugPrint('Uncaught error: ${Redactor.safe(error)}');
     return true;
   };
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  await CrashService.init();
+  // Part 5 (H16): if Firebase cannot start (no network on the very first launch, a broken install) the person sees one calm
+  // screen with a Try again button, not a frozen splash. A second try after a half start finds the app already there.
+  try {
+    if (Firebase.apps.isEmpty) {
+      await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform).timeout(const Duration(seconds: 30));
+    }
+  } catch (e) {
+    debugPrint('Firebase did not start: ${Redactor.safe(e)}');
+    runApp(StartupFailedApp(onRetry: main));
+    return;
+  }
+  // Everything below may fail without stopping the app (StartupGuard): a late push router or a failed settings read is
+  // better than no app. The failures are listed in StartupGuard.failed.
+  await StartupGuard.step<Object?>('crash', CrashService.init);
   // G15: App Check proof, only when the build asks for it (--dart-define=APP_CHECK=on); monitor mode first.
-  await AppCheckSetup.start();
+  await StartupGuard.step<Object?>('appCheck', AppCheckSetup.start);
   // A tapped push opens the right screen. It must start AFTER Firebase: before that the messaging
   // service does not exist and the router would silently stay off.
-  await PushRouter.start(appNavigatorKey);
-  LocalAuthAppLockAuthenticator.install();
-  Backend.enableOfflinePersistence();
+  await StartupGuard.step<Object?>('push', () => PushRouter.start(appNavigatorKey));
+  await StartupGuard.step<Object?>('localAuth', () async => LocalAuthAppLockAuthenticator.install());
+  await StartupGuard.step<Object?>('offline', () async => Backend.enableOfflinePersistence());
   AppControlService.refresh();
   // The local settings do not depend on each other: read them together so the
   // first screen is not held up by four reads in a row (MASTER-5 Task 14).
   final results = await Future.wait<Object?>([
-    LanguageStore.loadLocal(),
-    ConnectivityService.start(),
-    ThemeStore.load(),
-    SimpleMode.load(),
-    LowEndMode.load(),
-    Haptics.load(), AppLock.load(),
+    StartupGuard.step<Object?>('language', LanguageStore.loadLocal),
+    StartupGuard.step<Object?>('connectivity', ConnectivityService.start),
+    StartupGuard.step<Object?>('theme', ThemeStore.load),
+    StartupGuard.step<Object?>('simpleMode', SimpleMode.load),
+    StartupGuard.step<Object?>('lowEnd', LowEndMode.load),
+    StartupGuard.step<Object?>('haptics', Haptics.load),
+    StartupGuard.step<Object?>('appLock', AppLock.load),
   ]);
   applyLanguageName(results[0] as String?);
   // Photos that waited for the network go out when the phone is back online.

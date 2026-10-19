@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'audit_service.dart';
 import 'server_actions.dart';
 import 'backend.dart';
+import './safe_docs.dart';
 
 /// A driver awaiting (or past) verification, as shown to admins.
 class DriverVerification {
@@ -59,7 +60,7 @@ class AdminService {
         .collection('users')
         .where('verificationStatus', isEqualTo: status)
         .snapshots()
-        .map((s) => s.docs.map(DriverVerification.fromDoc).toList()..sort((a, b) => a.name.compareTo(b.name)));
+        .map((s) => s.docs.parse(DriverVerification.fromDoc)..sort((a, b) => a.name.compareTo(b.name)));
   }
 
   static Future<void> setStatus(String uid, String status, {String? reason, String note = ''}) async {

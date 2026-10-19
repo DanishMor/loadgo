@@ -12,6 +12,7 @@ import 'rate_limit_service.dart';
 import 'risk_service.dart';
 import 'funnel.dart';
 import 'booking_service.dart';
+import './safe_docs.dart';
 
 /// Price offers on open loads. Drivers offer, customers counter once and
 /// select one, and the selected driver confirms, which creates the booking
@@ -186,7 +187,7 @@ class OfferService {
     final uid = Backend.uid;
     if (uid == null) return Stream.value(const []);
     return _col.where('loadId', isEqualTo: loadId).where('customerId', isEqualTo: uid).snapshots().map((s) {
-      final list = s.docs.map(Offer.fromDoc).toList();
+      final list = s.docs.parse(Offer.fromDoc);
       list.sort((a, b) {
         final open = (b.isOpen ? 1 : 0) - (a.isOpen ? 1 : 0);
         return open != 0 ? open : a.pricePaise.compareTo(b.pricePaise);
@@ -200,7 +201,7 @@ class OfferService {
     final uid = Backend.uid;
     if (uid == null) return Stream.value(const []);
     return _col.where('customerId', isEqualTo: uid).snapshots().map((s) {
-      final list = s.docs.map(Offer.fromDoc).toList();
+      final list = s.docs.parse(Offer.fromDoc);
       list.sort((a, b) => newestFirst(a.createdAt, b.createdAt));
       return list;
     });
@@ -211,7 +212,7 @@ class OfferService {
     final uid = Backend.uid;
     if (uid == null) return Stream.value(const []);
     return _col.where('driverId', isEqualTo: uid).snapshots().map((s) {
-      final list = s.docs.map(Offer.fromDoc).toList();
+      final list = s.docs.parse(Offer.fromDoc);
       list.sort((a, b) => newestFirst(a.createdAt, b.createdAt));
       return list;
     });

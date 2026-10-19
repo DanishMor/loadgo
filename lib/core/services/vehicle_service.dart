@@ -7,6 +7,7 @@ import '../models/vehicle.dart';
 import 'backend.dart';
 import 'doc_expiry_service.dart';
 import 'funnel.dart';
+import './safe_docs.dart';
 
 /// Another account (or another of your vehicles) already registered this number.
 class DuplicateVehicleException implements Exception {
@@ -47,11 +48,11 @@ class VehicleService {
     out = StreamController<List<Vehicle>>(
       onListen: () {
         subs.add(_col.where('ownerId', isEqualTo: uid).snapshots().listen((s) {
-          owned = s.docs.map(Vehicle.fromDoc).toList();
+          owned = s.docs.parse(Vehicle.fromDoc);
           emit();
         }, onError: out.addError));
         subs.add(_col.where('assignedDriverId', isEqualTo: uid).snapshots().listen((s) {
-          assigned = s.docs.map(Vehicle.fromDoc).toList();
+          assigned = s.docs.parse(Vehicle.fromDoc);
           emit();
         }, onError: out.addError));
       },

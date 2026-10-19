@@ -12,6 +12,7 @@ import 'backend.dart';
 import 'notification_service.dart';
 import '../widgets/common.dart' show formatPaise;
 import 'pricing_service.dart';
+import './safe_docs.dart';
 
 /// Payment *records* between customer and driver: the customer marks a
 /// booking paid, the driver confirms receipt, and the driver's ledger gets
@@ -129,7 +130,7 @@ class PaymentService {
     final uid = Backend.uid;
     if (uid == null) return Stream.value(const []);
     return _ledger.where('driverId', isEqualTo: uid).snapshots().map((s) {
-      final list = s.docs.map(LedgerEntry.fromDoc).toList();
+      final list = s.docs.parse(LedgerEntry.fromDoc);
       list.sort((a, b) => (b.createdAt ?? DateTime(3000)).compareTo(a.createdAt ?? DateTime(3000)));
       return list;
     });

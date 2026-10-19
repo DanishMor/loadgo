@@ -10,6 +10,7 @@ import '../models/enterprise.dart';
 import '../models/load.dart';
 import 'backend.dart';
 import 'load_service.dart';
+import './safe_docs.dart';
 
 class InvalidTradeFieldException implements Exception {
   final String field;
@@ -72,7 +73,7 @@ class EnterpriseService {
     final uid = Backend.uid;
     if (uid == null) return Stream.value(const []);
     return Backend.db.collection('users').doc(uid).collection('branches').snapshots().map((s) {
-      final list = s.docs.map(Branch.fromDoc).toList()..sort((a, b) => a.name.compareTo(b.name));
+      final list = s.docs.parse(Branch.fromDoc)..sort((a, b) => a.name.compareTo(b.name));
       return list;
     });
   }
@@ -180,7 +181,7 @@ class EnterpriseService {
     final uid = Backend.uid;
     if (uid == null) return Stream.value(const []);
     return _shipments.where('ownerId', isEqualTo: uid).snapshots().map((s) {
-      final list = s.docs.map(Shipment.fromDoc).toList()
+      final list = s.docs.parse(Shipment.fromDoc)
         ..sort((a, b) => (b.createdAt ?? DateTime(3000)).compareTo(a.createdAt ?? DateTime(3000)));
       return list;
     });

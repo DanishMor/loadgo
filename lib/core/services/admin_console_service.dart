@@ -28,6 +28,7 @@ import 'audit_service.dart';
 import '../admin/staff_roles.dart';
 import 'backend.dart';
 import 'load_service.dart';
+import './safe_docs.dart';
 
 /// Counters shown on the admin dashboard.
 class AdminCounters {
@@ -186,7 +187,7 @@ class AdminConsoleService {
   static Stream<List<Booking>> watchBookings({String? status}) {
     Query<Map<String, dynamic>> q = _db.collection('bookings');
     if (status != null) q = q.where('status', isEqualTo: status);
-    return q.limit(listLimit).snapshots().map((s) => s.docs.map(Booking.fromDoc).toList());
+    return q.limit(listLimit).snapshots().map((s) => s.docs.parse(Booking.fromDoc));
   }
 
   /// Moves a booking that has not been picked up yet to the driver who owns
@@ -352,7 +353,7 @@ class AdminConsoleService {
   /// The newest bookings (by creation time) for the trend charts.
   static Future<List<Booking>> recentBookings({int limit = 1000}) async {
     final snap = await _db.collection('bookings').orderBy('createdAt', descending: true).limit(limit).get();
-    return snap.docs.map(Booking.fromDoc).toList();
+    return snap.docs.parse(Booking.fromDoc);
   }
 
   static Future<int> _count(Query<Map<String, dynamic>> q) async => (await q.count().get()).count ?? 0;
