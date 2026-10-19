@@ -2,6 +2,7 @@ import '../core/errors/error_text.dart';
 import 'package:flutter/material.dart';
 
 import '../core/features/features.dart';
+import '../core/features/kill_switches.dart';
 import '../core/l10n/l10n.dart';
 import '../core/services/features_service.dart';
 import '../core/widgets/common.dart';
@@ -53,6 +54,22 @@ class _AdminFeaturesScreenState extends State<AdminFeaturesScreen> {
     }
   }
 
+  /// Part 5 (H31): one tap, one confirmation, one write for a whole group.
+  Future<void> _kill(KillGroup group) async {
+    final name = tr(context, 'killGroup_${group.id}');
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (c) => AlertDialog(
+        content: Text(trf(c, 'killConfirm', {'group': name})),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(c, false), child: Text(tr(c, 'cancel'))),
+          FilledButton(key: const ValueKey('killConfirmYes'), onPressed: () => Navigator.pop(c, true), child: Text(tr(c, 'killOff'))),
+        ],
+      ),
+    );
+    if (ok == true && mounted) await _save(_f.withGroupOff(group));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -68,6 +85,20 @@ class _AdminFeaturesScreenState extends State<AdminFeaturesScreen> {
                 value: _f.pilotMode,
                 onChanged: _saving ? null : (v) => _save(_f.withPilot(v)),
               ),
+              const Divider(),
+              Text(tr(context, 'killTitle'), style: DsStyle.w700),
+              const SizedBox(height: 4),
+              Text(tr(context, 'killHelp'), style: DsStyle.t12w400.copyWith(color: AppColors.muted)),
+              const SizedBox(height: 8),
+              for (final g in KillSwitches.groups)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: OutlinedButton(
+                    key: ValueKey('kill_${g.id}'),
+                    onPressed: _saving ? null : () => _kill(g),
+                    child: Text(tr(context, 'killGroup_${g.id}'), textAlign: TextAlign.center),
+                  ),
+                ),
               const Divider(),
               for (final spec in Features.registry)
                 Padding(
