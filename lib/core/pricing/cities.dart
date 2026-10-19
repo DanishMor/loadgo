@@ -86,20 +86,38 @@ String _norm(String s) => s.toLowerCase().replaceAll(RegExp(r'[^a-z ]'), ' ').re
 /// Finds the city mentioned in a free-text place ("Andheri, Mumbai",
 /// "bangalore"). The longest matching name or alias wins; null if none.
 City? findCity(String text) {
+  // Part 5 (H26/H29): the same place text is looked up again and again (every load, every vehicle, every rebuild). The
+  // names are normalised once and the answers are kept (ranking 1 500 loads took 3 s before; see test/perf_budget_test.dart).
+  if (_cityCache.containsKey(text)) return _cityCache[text];
   final t = ' ${_norm(text)} ';
   City? best;
   var bestLen = 0;
-  for (final c in indianCities) {
-    for (final n in [c.name, ...c.aliases]) {
-      final key = _norm(n);
-      if (key.length > bestLen && t.contains(' $key ')) {
-        best = c;
-        bestLen = key.length;
-      }
+  for (final k in _cityKeys) {
+    if (k.length > bestLen && t.contains(k.padded)) {
+      best = k.city;
+      bestLen = k.length;
     }
   }
-  return best;
+  if (_cityCache.length >= 2000) _cityCache.clear();
+  return _cityCache[text] = best;
 }
+
+class _CityKey {
+  final City city;
+  final int length;
+  final String padded;
+
+  _CityKey(this.city, String key)
+      : length = key.length,
+        padded = ' $key ';
+}
+
+final List<_CityKey> _cityKeys = [
+  for (final c in indianCities)
+    for (final n in [c.name, ...c.aliases]) _CityKey(c, _norm(n)),
+];
+
+final Map<String, City?> _cityCache = {};
 
 /// Great-circle distance in km.
 double haversineKm(double lat1, double lng1, double lat2, double lng2) {

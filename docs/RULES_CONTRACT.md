@@ -10,7 +10,7 @@
 
 Regenerate after changing a service: `flutter test test/rules_contract_capture_test.dart`, then `sh run-tests.sh` (or only `node --test contract.test.mjs` inside an emulator).
 
-## Covered (56 scenarios)
+## Covered (55 scenarios)
 
 | Collection | Variants |
 |---|---|

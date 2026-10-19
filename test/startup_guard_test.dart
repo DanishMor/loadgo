@@ -56,6 +56,10 @@ void main() {
       }
     });
 
+    test('the picture cache is capped for low-memory phones', () {
+      expect(RegExp(r'imageCache\s*\.\.maximumSizeBytes = 48 << 20').hasMatch(main), isTrue);
+    });
+
     test('uncaught async errors and framework errors are both caught and cleaned', () {
       expect(main.contains('PlatformDispatcher.instance.onError'), isTrue);
       expect(File('lib/core/services/crash_service.dart').readAsStringSync().contains('FlutterError.onError'), isTrue);

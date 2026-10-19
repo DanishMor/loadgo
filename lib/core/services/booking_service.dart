@@ -511,10 +511,14 @@ class BookingService {
     });
   }
 
+  /// How many bookings the "all my bookings" streams hold at most (the paged screens use [watchForDriverPage] and friends).
+  static const watchAllCap = 500;
+
   static Stream<List<Booking>> _watchWhere(String field) {
     final uid = Backend.uid;
     if (uid == null) return Stream.value(const []);
-    return _col.where(field, isEqualTo: uid).snapshots().map((snap) {
+    // Part 5 (H25): the newest [watchAllCap] only. A busy account used to be read in full at the start and again for every change.
+    return newestPage(_col.where(field, isEqualTo: uid), watchAllCap).map((snap) {
       final list = snap.docs.parse(Booking.fromDoc);
       list.sort((a, b) => newestFirst(a.createdAt, b.createdAt));
       return list;

@@ -56,3 +56,62 @@ New plugins: `local_auth`, `razorpay_flutter`, `google_maps_flutter`, `firebase_
 ### Low-end phones
 
 `test/part3_layout_test.dart` draws every new screen with Low-end mode on. The map is the one heavy view: on a Low-end phone prefer the "Last seen N min ago" line (switch `maps` off, or do not open the map). Nothing new loops without a stop.
+
+## Part 5 (H24 to H30): start-up, size, speed budgets, how to profile
+
+### Start-up (H24)
+What runs before the first frame, in order, and what may fail without stopping the app:
+
+| Step | Before first frame? | If it fails |
+|---|---|---|
+| Binding, picture cache cap (48 MB), error hooks | yes (instant) | n/a |
+| `Firebase.initializeApp` (30 s limit) | yes, needed by everything | calm "app could not start" screen with Try again (`StartupFailedApp`) |
+| Crash reporting, App Check, offline cache, app lock | yes (short, each in `StartupGuard.step`) | logged by step name, app goes on |
+| Language, theme, simple mode, low-end mode, haptics, connectivity (read together) | yes (one parallel wait, each guarded) | defaults |
+| `AppControlService.refresh`, `refreshAppConfig`, analytics consent, push registration | no, started after sign-in state is known, never awaited | defaults (config has a 15 s limit per document, Remote Config style defaults in code) |
+| Push router (asks the platform for the message that opened the app) | **no**, after the first frame since Part 5 | push taps still work (the router keeps an early tap) |
+
+Budget (to be checked on a real phone, see below): first frame under 2.5 s on a 2 GB phone, cold start to the home list under 5 s on 4G. Nothing in `main()` may be added before `runApp` without a line in this table.
+
+### Widgets (H26)
+- Existing guards: `test/performance_guard_test.dart` (no `shrinkWrap` lists of unbounded data, `Image.network` always with a width or `cacheWidth`), `test/setstate_future_guard_test.dart`, `test/lifecycle_guard_test.dart` (no `setState` after an `await` without `mounted`).
+- Text at 2.0x is covered by the layout matrices (`*_layout_test.dart`, 360x640).
+- The long lists page or are capped (`watchForDriverPage`, `newestPage`, `BookingService.watchAllCap`); `performance_guard_test.dart` refuses `shrinkWrap` on unbounded lists.
+- A hot path found and fixed in Part 5: `findCity` (the city table lookup used by the driver feed ranking) normalised every name on every call. Ranking 1 500 loads took **3.1 s**, now **0.09 s** (35 times faster). The names are prepared once and answers are cached.
+
+### Heavy work off the screen thread (H27)
+- CSV text (statements, cohorts, trends) is built from lists already in memory on a button tap (not measured separately; add it to `perf_budget_test.dart` if a statement ever grows large).
+- PDF files (LR, invoice, statements) need the fonts from the asset bundle, which an isolate cannot read; they are built only on a button tap, one document at a time. Not moved; measure on a real phone (steps below). If a PDF takes over 300 ms there, build the font bytes first on the main isolate and run the drawing in `compute`.
+- Parsing: reading 1 500 documents takes 0.06 s.
+
+### App size (H28)
+Measured on 2026-10-19 with `flutter build apk --release --analyze-size --target-platform android-arm64`: **66.6 MB** (the earlier universal APK was 119.8 MB). Largest parts:
+
+| Part | Size |
+|---|---|
+| Your Dart code (`libapp.so`, arm64) | 15.4 MB |
+| WebRTC (voice call), arm64 | 11.7 MB |
+| Flutter engine, arm64 | 11.2 MB |
+| WebRTC for **x86_64** and **armeabi-v7a** (plugin ships all ABIs) | 15.4 + 6.5 MB |
+| `classes.dex` (Java/Kotlin) | 3.2 MB |
+| Assets (fonts and images) | 1.5 MB (fonts only, under the 3 MB budget) |
+
+What to do (owner, no code change): ship the **app bundle** to Google Play (`flutter build appbundle --release`): Play sends each phone only its own ABI, which removes the 22 MB of unused WebRTC code for a typical arm64 phone. For a direct APK file use `flutter build apk --release --split-per-abi` and give each phone the matching file. Fonts are already subset by Flutter's icon tree-shaking (Material icons 1.6 MB to 50 KB). Only the fonts are bundled (`pubspec.yaml` lists `assets/fonts/` only; the brand pictures in `assets/branding/` are inputs for the launcher-icon tool, not shipped), and every font is declared and used.
+
+### Speed budgets as tests (H29)
+`test/perf_budget_test.dart` runs on every test run and fails on a real slowdown (limits are about 10 times what a laptop needs):
+
+| Path | Work | Measured | Budget |
+|---|---|---|---|
+| Fare calculator | 20 000 quotes | 0.06 s | 1.5 s |
+| Log cleaning (`Redactor`) | 3 000 lines of 200 characters | 1.2 s | 4 s |
+| Reading documents (`Load.fromDoc`) | 1 500 | 0.06 s | 1 s |
+| Driver feed ranking (`LoadRanker.rank`) | 1 500 loads, 3 vehicles | 0.09 s | 2 s |
+
+### Profile on a real phone (owner steps, H30)
+1. Build a profile build: `flutter run --profile` on a USB-connected phone (never a debug build for numbers).
+2. Open DevTools (the link printed in the terminal) > **Performance**. Record while you scroll the driver feed and the customer "My loads" list. Frames above 16 ms (red) are slow. Write the worst frame time and the screen in `docs/PHONE_TEST_SHEET.md`.
+3. DevTools > **Memory**: open 50 photos in a list, then press "Snapshot". Memory should stay under 250 MB on a 2 GB phone and fall after you leave the screen.
+4. Cold start: kill the app, start it, note the time to the home list (stopwatch). Compare with the budget above.
+5. Network: switch on flight mode, open the app: the offline banner shows and the last lists appear (offline cache is capped, `Backend.offlineCacheBytes`).
+6. Low-end mode: Settings > Low-end mode on, repeat step 2; animations are off and frames should be smoother.

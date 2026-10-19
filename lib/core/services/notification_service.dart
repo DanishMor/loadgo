@@ -1,3 +1,4 @@
+import 'safe_docs.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../models/app_notification.dart';
@@ -78,12 +79,15 @@ class NotificationService {
   ///
   /// With [applyPrefs] false the user's category switches are not applied
   /// (the notification center filters live, so a switch takes effect at once).
+  static const watchCap = 200;
+
   static Stream<List<AppNotification>> watchMine({bool applyPrefs = true}) {
     final uid = Backend.uid;
     if (uid == null) return Stream.value(const []);
-    return _col.where('userId', isEqualTo: uid).snapshots().map((snap) {
+    // Part 5 (H25): the newest [watchCap] only; the index is in firestore.indexes.json.
+    return newestPage(_col.where('userId', isEqualTo: uid), watchCap).map((snap) {
       final prefs = SettingsService.prefs.value;
-      final list = snap.docs.map(AppNotification.fromDoc).where((n) => !applyPrefs || prefs.allows(n.type)).toList();
+      final list = snap.docs.parse(AppNotification.fromDoc).where((n) => !applyPrefs || prefs.allows(n.type)).toList();
       list.sort((a, b) => newestFirst(a.createdAt, b.createdAt));
       return list;
     });

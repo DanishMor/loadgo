@@ -50,6 +50,11 @@ final GlobalKey<NavigatorState> appNavigatorKey = GlobalKey<NavigatorState>();
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // Part 5 (H20): pictures in memory are capped (the default is 100 MB, too much for a 2 GB phone); the framework also
+  // empties this cache by itself when the system says memory is low.
+  PaintingBinding.instance.imageCache
+    ..maximumSizeBytes = 48 << 20
+    ..maximumSize = 150;
   AppRoutes.roleSelection = (_) => const RoleSelectionScreen();
   AppRoutes.adminEntry = (_) => const AdminEntryTile();
   registerRouteHooks();
@@ -79,7 +84,6 @@ Future<void> main() async {
   await StartupGuard.step<Object?>('appCheck', AppCheckSetup.start);
   // A tapped push opens the right screen. It must start AFTER Firebase: before that the messaging
   // service does not exist and the router would silently stay off.
-  await StartupGuard.step<Object?>('push', () => PushRouter.start(appNavigatorKey));
   await StartupGuard.step<Object?>('localAuth', () async => LocalAuthAppLockAuthenticator.install());
   await StartupGuard.step<Object?>('offline', () async => Backend.enableOfflinePersistence());
   unawaited(AppControlService.refresh());
@@ -138,6 +142,9 @@ Future<void> main() async {
   );
   DeepLinks.start();
   runApp(const LoadGoApp());
+  // Part 5 (H24): the push router waits for the first frame instead of holding it: it asks the platform for the message that
+  // opened the app, which can take a moment. It still starts after Firebase (above) and keeps a tap that arrives early.
+  unawaited(StartupGuard.step<Object?>('push', () => PushRouter.start(appNavigatorKey)));
 }
 
 // ============================================================
