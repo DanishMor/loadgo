@@ -3,7 +3,7 @@
 **Why:** a field whitelist or a new check in `firestore.rules` is only safe if the real app still passes it. This test takes the writes from the app's own services, not from hand-made documents, so a rule that is stricter than the app fails here, before a driver finds it on a phone. If a rule rejects a field the app really sends, **the rule is fixed, not the app** (the old app is already installed).
 
 ## How it works
-1. `test/rules_contract_capture_test.dart` runs the real services (`LoadService.post`, `OfferService.*`, `BookingService.*`, `ChatService.send`, `SupportService.*`, `RatingService.rate`, `PayoutService.request`, `TruckBoardService.post`, `LrService.issue`, `VehicleService.add`, `TripOtpAttempts.recordGuess`) against fake Firestore. For each scenario it records the database before, runs the service, records it after, and keeps the difference (every document created, changed or deleted). Timestamps close to "now" are stored as server timestamps.
+1. `test/rules_contract_capture_test.dart` runs the real services (`LoadService.post`, `OfferService.*`, `BookingService.*`, `ChatService.send`, `SupportService.*`, `RatingService.rate`, `PayoutService.request`, `PaymentService.*`, `DriverExtrasService.addTip`, `ClaimService.open`, `SafetyService.*`, `TripShareService`, `TruckBoardService.post`, `LrService.issue`, `VehicleService.add`, `TripOtpAttempts.recordGuess`) against fake Firestore. For each scenario it records the database before, runs the service, records it after, and keeps the difference (every document created, changed or deleted). Timestamps close to "now" are stored as server timestamps.
 2. The result is `firestore_rules_test/contract/captured.json` (committed).
 3. `firestore_rules_test/contract.test.mjs` seeds the "before" state with the rules off, then replays the recorded writes as **one batch per commit, signed in as the same person**, against `firestore.rules` on the emulator. Every scenario must be allowed.
 4. It runs inside `npm test` (`run-tests.sh`, step "rules vs real app writes").
@@ -26,33 +26,30 @@ Regenerate after changing a service: `flutter test test/rules_contract_capture_t
 | `payouts`, `payout_counters`, `audit_events` | payout request with the day counter and the audit line |
 | `truck_posts` | post an empty truck |
 | `lrs`, `lr_series`, `lrs/*/private` | issue an LR (bilty) as the customer |
-
-## Added in the second round (batch 3)
-| Collection | Variants |
-|---|---|
-| ,  | the customer marks the trip paid; the driver confirms the money (the booking and the two ledger lines in one batch) |
-|  | the customer adds a tip after delivery |
-|  (+ events) | opened by the customer, opened by the driver |
-| ,  | SOS by the driver; breakdown reported by the driver |
-|  | the customer shares the trip link |
-| , , , , ,  | the driver cancels before pickup (the load reopens and loses driver, booking and match time; cancel count +1) |
-| , ,  | the customer cancels an open load (with a real fare estimate) |
+| `bookings`, `ledger` | the customer marks the trip paid; the driver confirms the money (the booking and the two ledger lines in one batch) |
+| `tips` | the customer adds a tip after delivery |
+| `claims` (+ events) | opened by the customer, opened by the driver |
+| `sos_alerts`, `bookings` | SOS by the driver; breakdown reported by the driver |
+| `trip_shares` | the customer shares the trip link |
+| `bookings`, `loads`, `vehicles`, `users`, `audit_events`, `notifications` | the driver cancels before pickup (the load reopens and loses driver, booking and match time; cancel count +1) |
+| `loads`, `users`, `audit_events` | the customer cancels an open load (with a real fare estimate) |
 
 ## Not covered yet (planned, in this order)
-- : new version, cancel, share links.
--  (request, answer, withdraw), , , , scheduled-booking cancel by the customer, recurring loads.
--  and  decisions by staff (written by admin screens and the functions, not by the customer/driver services).
-- User profile writes ( on sign-up, KYC, preferences): they are spread over many screens, not one service.
-- Business and fleet collections (, ).
+- `lrs`: new version, cancel, share links.
+- `truck_requests` (request, answer, withdraw), `calls`, `reports`, `deletion_requests`, scheduled-booking cancel by the customer, recurring loads.
+- `wallets` and `payouts` decisions by staff (written by admin screens and the functions, not by the customer/driver services).
+- User profile writes (`users/{uid}` on sign-up, KYC, preferences): they are spread over many screens, not one service.
+- Business and fleet collections (`fleet_members`, `business_*`).
 
 ## Limits of the method
 - It replays the **final difference** of a service call, not its internal reads. A service that reads a document the rules also read is covered only if that document is in the recorded "before" state.
-- Fake Firestore does not overlap transactions and drops the other fields on  with an increment; the harness works around the second (see the comment in the capture test).
+- Fake Firestore does not overlap transactions and drops the other fields of a user document on `set(..., merge: true)` with an increment; the harness works around the second (see the comment in the capture test).
 - Dates (a bid window, a pickup date) are moved to today when the fixture is replayed, so it never goes stale.
 
 ## What this test found
 - **A real bug (S2, BUG_REPORT H-8):** a load posted with a real fare estimate and a promo code (and credits) was refused by the rules, because the `loads` create rule hit the 1000-expression limit. The older rules tests used a tiny estimate, so they never saw it. Fixed by cheaper but equal checks (absent stops are skipped, one list test for helpers, the credits checks that belong to the credit line moved into its own rule).
-- A first run also failed because the *test* reserved the promo against the wrong total; the rules were right to refuse a discount that does not match the estimate.
+- Two false alarms taught the harness: the test once reserved the promo against the wrong total (the rules were right to refuse), and fake Firestore losing user fields made a cancellation look refused. Neither was a rules bug.
+- The money, claim, SOS, share and cancellation flows needed no rule change.
 - The `loads` create rule is still close to the limit (a key whitelist did not fit: H-2). Any new check there must pass this test and rules slice 3 (promo).
 
 ## Rule for the future
