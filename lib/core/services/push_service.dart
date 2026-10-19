@@ -18,7 +18,7 @@ import 'features_service.dart';
 class PushService {
   PushService._();
 
-  static StreamSubscription<String>? _refreshSub;
+  static StreamSubscription<String>? _refreshSub; // ignore: cancel_subscriptions (one for the life of the app, started once)
 
   /// Ask for permission and save the token. Safe to call repeatedly; never
   /// throws (push is an enhancement, the in-app inbox still works).

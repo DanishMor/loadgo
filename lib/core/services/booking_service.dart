@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -236,7 +238,7 @@ class BookingService {
         guess = await TripOtpAttempts.recordGuess(bookingId, kind, otp);
       }
       final next = await _advance(ref, uid, otp: otp, pickup: pickup, delivery: delivery);
-      TripShareService.syncStatus(bookingId, next);
+      unawaited(TripShareService.syncStatus(bookingId, next));
       if (next == BookingStatus.delivered) Funnel.mark(FunnelStep.firstDelivery).ignore();
       return next;
     } on FirebaseException catch (e) {
@@ -412,7 +414,7 @@ class BookingService {
         relatedId: booking.id,
       );
     });
-    TripShareService.syncStatus(bookingId, BookingStatus.cancelled);
+    unawaited(TripShareService.syncStatus(bookingId, BookingStatus.cancelled));
   }
 
   /// Customer cancels an advance booking the driver has not started. The

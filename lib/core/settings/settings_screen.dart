@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import '../errors/error_text.dart';
 import '../features/features.dart';
 import '../security/app_lock.dart';
@@ -77,7 +79,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       if (mounted) showSnack(context, tr(context, 'settingsSaved'));
     } catch (error) {
       if (mounted) showSnack(context, errorText(context, error));
-      _load();
+      unawaited(_load());
     }
   }
 

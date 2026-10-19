@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -57,7 +59,7 @@ class _TripSafetyChecksCardState extends State<TripSafetyChecksCard> {
 
   Future<void> _editContacts() async {
     await Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const EmergencyContactsScreen()));
-    if (mounted) _load();
+    if (mounted) unawaited(_load());
   }
 
   Widget _row(String id, IconData icon, Color color, String text, {Widget? action}) => Padding(

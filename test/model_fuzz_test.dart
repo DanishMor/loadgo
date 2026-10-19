@@ -98,6 +98,7 @@ class _Nested {
   const _Nested(this.inner);
 }
 
+// ignore: subtype_of_sealed_class (a test fake: the models only read id, exists and data())
 /// A document snapshot that answers with a chaos map.
 class ChaosSnap implements DocumentSnapshot<Map<String, dynamic>> {
   final Object? value;

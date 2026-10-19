@@ -156,7 +156,9 @@ void main() {
       final now = DateTime(2026, 10, 8, 10);
       expect(LrService.defaultExpiry(b, now), now.add(const Duration(days: 5)));
       final done = await booking('B2', status: 'delivered');
-      final delivered = Booking.fromDoc(await (db.collection('bookings').doc('B2')..update({'timeline.delivered': Timestamp.fromDate(DateTime(2026, 10, 9))})).get());
+      final b2 = db.collection('bookings').doc('B2');
+      await b2.update({'timeline.delivered': Timestamp.fromDate(DateTime(2026, 10, 9))});
+      final delivered = Booking.fromDoc(await b2.get());
       expect(LrService.defaultExpiry(delivered, now), DateTime(2026, 10, 11));
       expect(done.id, 'B2');
     });

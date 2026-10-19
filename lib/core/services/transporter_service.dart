@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../constants/logistics.dart';
@@ -120,7 +122,7 @@ class TransporterService {
           userId: driver.driverId, type: NotificationType.tripAssigned, message: '${booking.pickup} → ${booking.drop}', relatedId: booking.id);
     }
     await batch.commit();
-    AnalyticsEvents.log(AnalyticsEvents.tripAssigned, params: {'reassign': booking.assignedDriverId != null ? 1 : 0});
+    unawaited(AnalyticsEvents.log(AnalyticsEvents.tripAssigned, params: {'reassign': booking.assignedDriverId != null ? 1 : 0}));
   }
 
   /// A driver a transporter assigned cannot change the vehicle (it is not

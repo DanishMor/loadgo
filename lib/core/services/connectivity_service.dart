@@ -10,7 +10,7 @@ class ConnectivityService {
   ConnectivityService._();
 
   static final ValueNotifier<bool> online = ValueNotifier(true);
-  static StreamSubscription<List<ConnectivityResult>>? _sub;
+  static StreamSubscription<List<ConnectivityResult>>? _sub; // ignore: cancel_subscriptions (one for the life of the app, started once)
 
   static bool _hasNetwork(List<ConnectivityResult> r) => r.any((e) => e != ConnectivityResult.none);
 

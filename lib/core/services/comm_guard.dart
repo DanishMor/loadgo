@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../comm/chat_strikes.dart';
@@ -107,7 +109,7 @@ class CommGuard {
         'updatedAt': FieldValue.serverTimestamp(),
       });
       await batch.commit();
-      AnalyticsEvents.log(AnalyticsEvents.contactBlocked, params: {'kind': kind.name, 'strikes': strikes});
+      unawaited(AnalyticsEvents.log(AnalyticsEvents.contactBlocked, params: {'kind': kind.name, 'strikes': strikes}));
       return ViolationOutcome(kind: kind, strikes: strikes, blockedUntil: until, review: review);
     } catch (_) {
       return ViolationOutcome(kind: kind, strikes: before.strikes, recorded: false);

@@ -28,8 +28,8 @@ class LiveLocationSharer {
 
   static final ValueNotifier<SharingState> state = ValueNotifier(SharingState.off);
   static String? _bookingId;
-  static StreamSubscription<Coordinates>? _pos;
-  static StreamSubscription<Booking?>? _watch;
+  static StreamSubscription<Coordinates>? _pos; // ignore: cancel_subscriptions (cancelled in stop())
+  static StreamSubscription<Booking?>? _watch; // ignore: cancel_subscriptions (cancelled in stop())
   static LiveLocationPolicy _policy = LiveLocationPolicy();
 
   @visibleForTesting

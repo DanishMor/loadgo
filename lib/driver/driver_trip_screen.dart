@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import '../core/errors/error_text.dart';
 import '../core/pilot/reuse_survey.dart';
 import '../core/services/backend.dart';
@@ -233,7 +235,7 @@ class _NextStatusButtonState extends State<_NextStatusButton> {
       await BookingService.advance(widget.booking.id, otp: otp, pickup: pickup, delivery: delivery);
       // GPS evidence with the event (best effort; needs the location permission).
       if (next == BookingStatus.pickedUp || next == BookingStatus.delivered) {
-        TripEvidenceService.saveGps(widget.booking.id, pickup: next == BookingStatus.pickedUp, place: next == BookingStatus.pickedUp ? widget.booking.pickup : widget.booking.drop).then((_) {}, onError: (_) {});
+        unawaited(TripEvidenceService.saveGps(widget.booking.id, pickup: next == BookingStatus.pickedUp, place: next == BookingStatus.pickedUp ? widget.booking.pickup : widget.booking.drop).then((_) {}, onError: (_) {}));
       }
       if (mounted) showSnack(context, tr(context, 'statusUpdated'));
     } on OtpLockedException catch (e) {

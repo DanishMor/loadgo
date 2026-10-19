@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import '../errors/error_text.dart';
 import 'package:flutter/material.dart';
 import '../widgets/live_stream.dart';
@@ -108,7 +110,7 @@ class _ChatScreenState extends State<ChatScreen> {
     } finally {
       if (mounted) setState(() => _sending = false);
     }
-    ChatService.markRead(widget.booking.id).catchError((_) {});
+    unawaited(ChatService.markRead(widget.booking.id).catchError((_) {}));
   }
 
   Future<void> _showContactWarning(ViolationOutcome o) {

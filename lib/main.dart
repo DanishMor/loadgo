@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'core/app_info.dart';
 import 'dart:ui' show PlatformDispatcher;
 
@@ -80,7 +82,7 @@ Future<void> main() async {
   await StartupGuard.step<Object?>('push', () => PushRouter.start(appNavigatorKey));
   await StartupGuard.step<Object?>('localAuth', () async => LocalAuthAppLockAuthenticator.install());
   await StartupGuard.step<Object?>('offline', () async => Backend.enableOfflinePersistence());
-  AppControlService.refresh();
+  unawaited(AppControlService.refresh());
   // The local settings do not depend on each other: read them together so the
   // first screen is not held up by four reads in a row (MASTER-5 Task 14).
   final results = await Future.wait<Object?>([

@@ -34,7 +34,7 @@ void main() {
     test('a hostile link of any shape never throws', () {
       final hostile = <String?>[
         null, '', ' ', '\u0000', 'https://', 'https://h/load/${'x' * 100000}', 'https://h/load/${'%' * 500}', 'https://h/load/%zz', 'https://[::1/load/x',
-        'javascript:alert(1)', 'intent://x#Intent;end', 'file:///etc/passwd', 'https://h:99999999/load/x', 'https://h/load/a?b=c#d', '//h/load/x', 'https://h/load/‮abc',
+        'javascript:alert(1)', 'intent://x#Intent;end', 'file:///etc/passwd', 'https://h:99999999/load/x', 'https://h/load/a?b=c#d', '//h/load/x', 'https://h/load/\u202Eabc',
       ];
       for (final l in hostile) {
         expect(() => ShareLinks.parseLoadId(l), returnsNormally, reason: '$l');

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
@@ -161,7 +163,7 @@ class _WaitlistOpenCardState extends State<WaitlistOpenCard> {
             icon: const Icon(Icons.close_rounded),
             onPressed: () async {
               await WaitlistService.leave(w.id);
-              _load();
+              unawaited(_load());
             },
           ),
         ]),

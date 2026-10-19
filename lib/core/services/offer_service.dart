@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../dispatch/dispatch_models.dart';
@@ -69,7 +71,7 @@ class OfferService {
         'updatedAt': FieldValue.serverTimestamp(),
       });
     });
-    if (asCompany) AnalyticsEvents.log(AnalyticsEvents.companyBid);
+    if (asCompany) unawaited(AnalyticsEvents.log(AnalyticsEvents.companyBid));
     Funnel.mark(FunnelStep.firstBid, role: asCompany ? 'fleet' : 'driver').ignore();
     return ref.id;
   }

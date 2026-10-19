@@ -71,7 +71,7 @@ class CallController extends ChangeNotifier {
         offerSdp: offer,
       );
       callId = id;
-      AnalyticsEvents.log(AnalyticsEvents.callStarted);
+      unawaited(AnalyticsEvents.log(AnalyticsEvents.callStarted));
       _wire(id, caller: true);
       _set(CallPhase.ringing);
       _ring = Timer(ringTimeout, () async {

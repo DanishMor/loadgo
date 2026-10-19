@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:firebase_auth_mocks/firebase_auth_mocks.dart';
@@ -243,7 +244,7 @@ void main() {
       expect(find.text('Load shared'), findsOneWidget);
       await tester.pump(const Duration(seconds: 6));
       await tester.pump(const Duration(seconds: 1));
-      showShareToNetwork(ctx, load(id: 'L2', visibility: LoadVisibility.invite));
+      unawaited(showShareToNetwork(ctx, load(id: 'L2', visibility: LoadVisibility.invite)));
       await tester.pumpAndSettle();
       expect(find.text('Only open public loads can be shared.'), findsOneWidget);
       expect((await NetworkService.watchMessages('link', 'd1_d2').first).length, 1);

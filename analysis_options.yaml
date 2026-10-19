@@ -32,6 +32,12 @@ linter:
   # `// ignore_for_file: name_of_lint` syntax on the line or in the file
   # producing the lint.
   rules:
+    # Part 5 (H23): leaks and lost errors are lints, not review comments.
+    cancel_subscriptions: true
+    # close_sinks is left off on purpose: it flags the sink argument of StreamTransformer handlers, which is not ours to close.
+    unawaited_futures: true
+    avoid_print: true
+    use_build_context_synchronously: true
     # avoid_print: false  # Uncomment to disable the `avoid_print` rule
     # prefer_single_quotes: true  # Uncomment to enable the `prefer_single_quotes` rule
 
