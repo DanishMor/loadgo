@@ -10,7 +10,7 @@
 
 Regenerate after changing a service: `flutter test test/rules_contract_capture_test.dart`, then `sh run-tests.sh` (or only `node --test contract.test.mjs` inside an emulator).
 
-## Covered (55 scenarios)
+## Covered (65 scenarios)
 
 | Collection | Variants |
 |---|---|
@@ -27,13 +27,28 @@ Regenerate after changing a service: `flutter test test/rules_contract_capture_t
 | `truck_posts` | post an empty truck |
 | `lrs`, `lr_series`, `lrs/*/private` | issue an LR (bilty) as the customer |
 
+## Added in the second round (batch 3)
+| Collection | Variants |
+|---|---|
+| ,  | the customer marks the trip paid; the driver confirms the money (the booking and the two ledger lines in one batch) |
+|  | the customer adds a tip after delivery |
+|  (+ events) | opened by the customer, opened by the driver |
+| ,  | SOS by the driver; breakdown reported by the driver |
+|  | the customer shares the trip link |
+| , , , , ,  | the driver cancels before pickup (the load reopens and loses driver, booking and match time; cancel count +1) |
+| , ,  | the customer cancels an open load (with a real fare estimate) |
+
 ## Not covered yet (planned, in this order)
-- `ledger` lines of a payment confirmation (customer marks paid, driver confirms: two ledger lines in one batch), `tips`, `claims`.
-- `lrs`: new version, cancel, share links; `trip_shares`.
-- `truck_requests` (request, answer, withdraw), `notifications`, `calls`, `reports`, `sos_alerts`, `deletion_requests`.
-- `wallets` and `payouts` decisions by staff (written by admin screens and the functions, not by the customer/driver services).
-- User profile writes (`users/{uid}` on sign-up, KYC, preferences): they are spread over many screens, not one service.
-- Business and fleet collections (`fleet_members`, `business_*`).
+- : new version, cancel, share links.
+-  (request, answer, withdraw), , , , scheduled-booking cancel by the customer, recurring loads.
+-  and  decisions by staff (written by admin screens and the functions, not by the customer/driver services).
+- User profile writes ( on sign-up, KYC, preferences): they are spread over many screens, not one service.
+- Business and fleet collections (, ).
+
+## Limits of the method
+- It replays the **final difference** of a service call, not its internal reads. A service that reads a document the rules also read is covered only if that document is in the recorded "before" state.
+- Fake Firestore does not overlap transactions and drops the other fields on  with an increment; the harness works around the second (see the comment in the capture test).
+- Dates (a bid window, a pickup date) are moved to today when the fixture is replayed, so it never goes stale.
 
 ## What this test found
 - **A real bug (S2, BUG_REPORT H-8):** a load posted with a real fare estimate and a promo code (and credits) was refused by the rules, because the `loads` create rule hit the 1000-expression limit. The older rules tests used a tiny estimate, so they never saw it. Fixed by cheaper but equal checks (absent stops are skipped, one list test for helpers, the credits checks that belong to the credit line moved into its own rule).

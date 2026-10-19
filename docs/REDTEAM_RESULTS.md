@@ -28,5 +28,5 @@ The first runs showed 10 attacks that passed:
 The planting attacks on loads were removed from the suite because they pass today; they are listed here and in BUG_REPORT H-2 so they can be turned back into attacks when the rule has room.
 
 ## Other results of Part 5 so far
-- Rules contract test: 55 real app writes replayed against the rules, all allowed (docs/RULES_CONTRACT.md). It found H-8 (S2).
+- Rules contract test: 65 real app flows replayed against the rules, all allowed (docs/RULES_CONTRACT.md). It found H-8 (S2).
 - Full rules run after all changes: 13 + 167 + 56 + 263 + 31 + 116 + 114 + 126 + 158 tests, 0 failures. Functions: lint clean, unit 38, emulator 161.

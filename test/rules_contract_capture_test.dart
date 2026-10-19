@@ -28,6 +28,12 @@ import 'package:transport_app/core/services/pricing_service.dart';
 import 'package:transport_app/core/services/rewards_service.dart';
 import 'package:transport_app/core/services/vehicle_service.dart';
 import 'package:transport_app/core/services/chat_service.dart';
+import 'package:transport_app/core/services/payment_service.dart';
+import 'package:transport_app/core/services/claim_service.dart';
+import 'package:transport_app/core/services/driver_extras_service.dart' hide ClaimException;
+import 'package:transport_app/core/services/safety_service.dart';
+import 'package:transport_app/core/safety/trip_share_service.dart';
+import 'package:transport_app/core/models/claim.dart';
 import 'package:transport_app/core/services/support_service.dart';
 import 'package:transport_app/core/services/rating_service.dart';
 import 'package:transport_app/core/services/payout_service.dart';
@@ -107,8 +113,23 @@ Future<void> scenario(String name, String actor, List<String> covers, Future<voi
       if (old == null) {
         ops.add({'op': 'create', 'path': e.key, 'data': e.value});
       } else if (j(old) != j(e.value)) {
-        final changed = {for (final k in e.value.keys) if (j(old[k]) != j(e.value[k])) k: e.value[k]};
-        final removed = [for (final k in old.keys) if (!e.value.containsKey(k)) k];
+        // A map field that changed in one key (the booking timeline) is replayed as that key only, with a dotted path, the way the app writes it.
+        final changed = <String, Object?>{};
+        for (final k in e.value.keys) {
+          if (j(old[k]) == j(e.value[k])) continue;
+          final was = old[k], after = e.value[k];
+          if (was is Map && after is Map && k == 'timeline') {
+            for (final sub in after.keys) {
+              if (j(was[sub]) != j(after[sub])) changed['$k.$sub'] = after[sub];
+            }
+          } else {
+            changed[k] = after;
+          }
+        }
+        // Fake Firestore drops the other fields of a user document on set(..., merge: true) with an increment (real Firestore
+        // keeps them), so for users/ a missing field is never replayed as a delete. Elsewhere a removed field is a real delete
+        // (the load loses driverId, bookingId and matchedAt when a driver cancels).
+        final removed = e.key.startsWith('users/') ? <String>[] : [for (final k in old.keys) if (!e.value.containsKey(k)) k];
         ops.add({'op': 'update', 'path': e.key, 'changed': changed, 'removed': removed});
       }
     }
@@ -346,6 +367,7 @@ void main() {
   });
 
   moreCollections();
+  batch3();
 
   group('bookings', () {
     test('driver accepts an instant load', () => offerCase('booking accept instant', 'drv1', ['bookings', 'loads', 'vehicles'], (l, v1, v2) async {
@@ -510,6 +532,102 @@ void moreCollections() {
         uid = 'cust1';
         await LrService.issue(await bookingOf(id), const LrDraft(consignorName: 'Asha Traders', consigneeName: 'Ravi Stores', goods: 'FMCG cartons', packages: 20, weightTons: 2, freightPaise: 1500000));
       }, setup: () async => id = (await tripOn()).id);
+    });
+  });
+}
+
+
+// ---------------------------------------------------------------------- batch 3: money, safety, cancellations
+void batch3() {
+  Future<String> acceptedTrip() async {
+    final w = await world();
+    uid = 'drv1';
+    final id = await BookingService.accept(loadId: w.load.id, vehicle: w.v1);
+    await db.collection('bookings').doc(id).collection('secrets').doc('otp').set({'pickupOtp': '123456', 'deliveryOtp': '654321', 'createdAt': Timestamp.now()});
+    return id;
+  }
+
+  Future<String> deliveredTrip() async {
+    final id = await acceptedTrip();
+    await advanceToWithOtps(id, 'zzz_end');
+    return id;
+  }
+
+  Future<Booking> bk(String id) async => Booking.fromDoc(await db.collection('bookings').doc(id).get());
+
+  group('payments, tips, claims, safety, cancellations', () {
+    test('customer marks the trip paid', () async {
+      late String id;
+      await scenario('payment customer marks paid', 'cust1', ['bookings'], () async {
+        uid = 'cust1';
+        await PaymentService.markPaid(await bk(id), 1500000);
+      }, setup: () async => id = await deliveredTrip());
+    });
+
+    test('driver confirms the money (booking + two ledger lines in one batch)', () async {
+      late String id;
+      await scenario('payment driver confirms with ledger lines', 'drv1', ['bookings', 'ledger'], () async {
+        uid = 'drv1';
+        await PaymentService.confirmReceived(await bk(id));
+      }, setup: () async {
+        id = await deliveredTrip();
+        uid = 'cust1';
+        await PaymentService.markPaid(await bk(id), 1500000);
+      });
+    });
+
+    test('customer adds a tip after delivery', () async {
+      late String id;
+      await scenario('tip after delivery', 'cust1', ['tips'], () async {
+        uid = 'cust1';
+        await DriverExtrasService.addTip(await bk(id), 5000);
+      }, setup: () async => id = await deliveredTrip());
+    });
+
+    test('claim opened by the customer and by the driver', () async {
+      late String id;
+      for (final who in ['cust1', 'drv1']) {
+        await scenario('claim opened by $who', who, ['claims'], () async {
+          uid = who;
+          await ClaimService.open(booking: await bk(id), type: ClaimType.damage, description: 'Two cartons were wet when they arrived', amountPaise: 250000);
+        }, setup: () async => id = await deliveredTrip());
+      }
+    });
+
+    test('driver sends an SOS and reports a breakdown on the trip', () async {
+      late String id;
+      await scenario('sos by the driver', 'drv1', ['sos_alerts'], () async {
+        uid = 'drv1';
+        await SafetyService.sendSos(booking: await bk(id), location: const GeoPoint(28.6, 77.2));
+      }, setup: () async => id = await acceptedTrip());
+      await scenario('breakdown reported by the driver', 'drv1', ['bookings'], () async {
+        uid = 'drv1';
+        await SafetyService.reportBreakdown(await bk(id), note: 'Tyre burst', needReplacement: true);
+      }, setup: () async => id = await acceptedTrip());
+    });
+
+    test('customer shares the trip link', () async {
+      late String id;
+      await scenario('trip share link', 'cust1', ['trip_shares'], () async {
+        uid = 'cust1';
+        await TripShareService.createOrReuse(await bk(id));
+      }, setup: () async => id = await acceptedTrip());
+    });
+
+    test('driver cancels before pickup', () async {
+      late String id;
+      await scenario('driver cancels before pickup', 'drv1', ['bookings', 'loads', 'users', 'audit_events'], () async {
+        uid = 'drv1';
+        await BookingService.cancelByDriver(id, reason: 'vehicle_problem');
+      }, setup: () async => id = await acceptedTrip());
+    });
+
+    test('customer cancels an open load', () async {
+      late Load load;
+      await scenario('customer cancels an open load', 'cust1', ['loads', 'users', 'audit_events'], () async {
+        uid = 'cust1';
+        await LoadService.cancel(load.id, reason: 'plan_changed');
+      }, setup: () async => load = (await world()).load);
     });
   });
 }
