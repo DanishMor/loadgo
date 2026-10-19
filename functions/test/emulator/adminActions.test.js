@@ -23,10 +23,13 @@ async function denied(promise, code) {
   await assert.rejects(promise, (e) => e instanceof ActionError && e.code === code, `expected ${code}`);
 }
 
-test('a missing role means super; an unknown role also means super (as the rules do)', async () => {
+// H-S3: this test used to say an unknown role is super. The rules say the opposite (`get('role','super') in roles` is false for 'wizard'),
+// so the server was more generous than the rules. A misspelt role now gets nothing.
+test('a missing role means super; an unknown or misspelt role gets nothing (as the rules do)', async () => {
   const db = getDb();
   assert.equal(await requireStaff(db, 'boss', ['super']), 'super');
-  assert.equal(await requireStaff(db, 'odd', ['super']), 'super');
+  await denied(requireStaff(db, 'odd', ['super']), 'permission-denied');
+  await denied(requireStaff(db, 'odd', ['super', 'support', 'verifier', 'ops', 'finance']), 'permission-denied');
 });
 
 test('who may set a risk tier: super and ops; support, verifier, finance, strangers and signed-out callers may not', async () => {

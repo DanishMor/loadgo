@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../constants/cancel_reasons.dart';
@@ -244,6 +245,11 @@ class BookingService {
       rethrow;
     }
   }
+
+  /// The second half of [advance] (the guess is already stored). Tests record the two commits one by one to replay them against the rules.
+  @visibleForTesting
+  static Future<String> advanceAfterGuess(String bookingId, {String? otp, PickupProof? pickup, DeliveryProof? delivery}) =>
+      _advance(_col.doc(bookingId), Backend.requireUid(), otp: otp, pickup: pickup, delivery: delivery);
 
   static Future<String> _advance(DocumentReference<Map<String, dynamic>> ref, String uid,
       {String? otp, PickupProof? pickup, DeliveryProof? delivery}) {

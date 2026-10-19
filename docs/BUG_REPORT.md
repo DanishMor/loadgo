@@ -204,3 +204,25 @@ Method: read every Part 4 file against the rules (permission-denied), the indexe
 - **Leaks**: every timer (card countdown, gone timer, feed wave tick) and subscription is cancelled in `dispose`.
 - **Abuse**: a bid is one document per driver per load, one edit, withdraw only while open; the typed price is digits only and the rules cap it; a skip reason is never stored.
 - **Dark mode, right to left, big text**: 48 layout cases (U39) and the pictures (U42).
+
+## Part 5: security, stability, performance hardening
+
+Severity: S1 critical, S2 high, S3 medium, S4 low. Test names are in `firestore_rules_test/redteam*.test.mjs` (RT) unless said otherwise.
+
+| id | file | what was wrong | sev | fix | test |
+|---|---|---|---|---|---|
+| H-1 | `functions/src/adminActions.js` `requireStaff` | A staff document with a role the code does not know (a typo such as `wizard`) was treated as **super** by the server, while the rules refuse it (`get('role','super') in roles` is false). The server was more generous than the rules. | S3 | an unknown role gets `permission-denied`; a missing role is still super | `adminActions.test.js` "an unknown or misspelt role gets nothing" (the old test that asserted the opposite was changed for this) |
+| H-2 | `firestore.rules` `loads` create | No key whitelist and no check on server-side fields: a client can plant extra fields (`dispatchWave`, `closedAt`...) on a new load. Nothing in the app or the functions trusts them as input today (the jobs overwrite or ignore them), so no exploit was found. | S3 (open, planned) | **Not fixed.** A 44-key whitelist and even 3 more forbidden keys broke the promo rules tests: this rule is at the 1000-expression limit. Plan: move the promo/credits checks into the batch's own documents or split the create into two rules; until then a Cloud Function strips unknown load fields (TODO(functions)) | listed in KNOWN_RISKS; the redteam suite keeps the 4 planting attacks as a documented failing list in `docs/REDTEAM_RESULTS.md` |
+| H-3 | `firestore.rules` `loads` create | `createdAt` could carry the phone's clock, so a load could be pinned at the top of a newest-first feed or hidden in the past. | S4 | `get('createdAt', request.time) == request.time` | RT "load with createdAt in the past" and the control with a server timestamp |
+| H-4 | `storage.rules` `vehicles/**` | The RC path accepted any `image/*` (including `image/svg+xml`, which can carry script) and an empty file. Every other path already used the five-type list. | S4 | same list as the other paths, size above 0 | `redteam_storage` "RC as SVG", "RC empty file" |
+| H-5 | `hosting/*.html` | The token pages (trip, LR) needed `script-src 'unsafe-inline'`; the shared-load page had no policy, no `no-store`, no `noindex`. | S4 | scripts and styles moved to `/assets`, CSP `script-src 'self'` everywhere, `no-store` + `X-Robots-Tag` on `/trip`, `/lr`, `/load` | `test/hosting_headers_test.dart` |
+| H-6 | `lib/core/services/trip_action_queue.dart` | A queued trip step keeps the 6-digit pickup/delivery code in plain `SharedPreferences` until it is sent. Needs a rooted phone to read; the code is single-use. | S4 | not fixed (no secure-storage package; allowBackup is off); written in `docs/KNOWN_RISKS.md` | n/a |
+| H-7 | `lib/core/admin/staff_roles.dart` `normalise` | The admin app shows an unknown role as super (menus only). The rules and now the server refuse it. | S4 | UI only, no data exposed; noted in KNOWN_RISKS | n/a |
+
+| H-8 | firestore.rules loads create | **A real promo load was refused by the rules**: the load create rule reached the 1000-expression limit when the load carried a real fare estimate and a promo (the older rules tests used a tiny estimate, so they passed). With the promo switch on, a customer could not post a load with a code. Found by the rules contract test (docs/RULES_CONTRACT.md). | S2 | savings that keep the same checks: absent extra stops are skipped, one list test for helpers, a duplicate creditsUsedPaise check removed, and the credits switch and estimate bound checked in the credit line's own rule (the load needs that line in the same batch) | contract.test.mjs 'load promo only' and 'load promo and credits'; rules slice 3 |
+
+### Red-team attacks that were NOT bugs (the suite first failed, the rules were right)
+- Offer edit outside 30%..300%: allowed only when the load has no estimate (by design). With an estimate it is refused (RT).
+- A float `budget` on a load: the budget is in rupees as a number, by design.
+- Finance rejecting a payout without a reason while maker-checker is OFF: the old single step, by design.
+- Any staff role can list `users` (admin console). An insider risk, written in `docs/KNOWN_RISKS.md`.

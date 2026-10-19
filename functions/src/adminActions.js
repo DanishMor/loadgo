@@ -29,7 +29,10 @@ async function requireStaff(db, uid, allowed) {
   if (!safeId(uid)) throw new ActionError('unauthenticated', 'sign in first');
   const snap = await db.collection('admins').doc(uid).get();
   if (!snap.exists) throw new ActionError('permission-denied', 'not an admin');
-  const role = STAFF_ROLES.includes(snap.data().role) ? snap.data().role : 'super';
+  // A missing role is super (like the rules: get('role', 'super')). A role we do not know is NOT super: the rules refuse it too (H-S3).
+  const stored = snap.data().role;
+  const role = stored === undefined || stored === null ? 'super' : stored;
+  if (!STAFF_ROLES.includes(role)) throw new ActionError('permission-denied', 'unknown staff role');
   if (!allowed.includes(role)) throw new ActionError('permission-denied', `role ${role} may not do this`);
   return role;
 }

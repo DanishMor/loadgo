@@ -1183,8 +1183,9 @@ service cloud.firestore {
           && (d.get('budget', null) == null || (d.budget is number && d.budget > 0 && d.budget <= 1000000000))
           && d.pickupDate is timestamp
           && (!('estimate' in d) || validEstimate(d.estimate))
-          && validStops(d.get('extraPickups', []))
-          && validStops(d.get('extraDrops', []))
+          // Part 5: short-circuit when absent (most loads). This rule is at the 1000-expression limit; a real promo load (docs/RULES_CONTRACT.md) did not fit.
+          && (!('extraPickups' in d) || validStops(d.extraPickups))
+          && (!('extraDrops' in d) || validStops(d.extraDrops))
           && d.get('pickupSlot', 'any') in ['any', 'morning', 'midday', 'afternoon', 'evening']
           && d.get('paymentMode', 'cash') in ['cash', 'upi_direct']
           && validTradeFields(d)
@@ -1201,7 +1202,6 @@ service cloud.firestore {
           && (!('declaredValuePaise' in d) || (d.declaredValuePaise is int && d.declaredValuePaise >= 0 && d.declaredValuePaise <= 10000000000))
           && validDispatchFields(d)
           && validPromoShape(d)
-          && d.get('creditsUsedPaise', 0) is int
           && (!('pickupGeohash' in d) || (d.pickupGeohash is string && d.pickupGeohash.matches('^[0-9b-hjkmnp-z]{4,12}$')))
           && (!('postedByRole' in d) || (d.postedByRole == 'fleet' && isTransporter(d.shipperId)))
           && !prohibitedText(d.get('notes', ''))
@@ -1223,7 +1223,7 @@ service cloud.firestore {
     function validBookingType(d) {
       let t = d.get('bookingType', 'freight');
       return t in ['freight', 'rental', 'movers']
-          && d.get('helpers', 0) is int && d.get('helpers', 0) >= 0 && d.get('helpers', 0) <= 4
+          && d.get('helpers', 0) in [0, 1, 2, 3, 4]
           && (t == 'rental' ? d.get('rentalHours', 0) in [4, 8, 12] : !('rentalHours' in d))
           && (t == 'movers' ? validMovers(d.get('movers', null)) : !('movers' in d));
     }
@@ -1412,6 +1412,9 @@ service cloud.firestore {
           && canTransact(request.auth.uid)
           && rateBumped('load', loadId)
           && !request.resource.data.keys().hasAny(['driverId', 'bookingId', 'cancelReason'])
+          // Part 5 (H4): createdAt is never the phone clock. This rule is at the 1000-expression limit: even three more forbidden keys broke the
+          // promo tests, and a full key whitelist did too (extra keys on a load: docs/KNOWN_RISKS.md).
+          && request.resource.data.get('createdAt', request.time) == request.time
           && validLoad(request.resource.data)
           && (!('scheduledAt' in request.resource.data)
               || (request.resource.data.scheduledAt >= request.time + duration.value(30, 'm')
@@ -3652,9 +3655,8 @@ service cloud.firestore {
     function validCreditsOnCreate(loadId, d) {
       let used = d.get('creditsUsedPaise', 0);
       return used is int && used >= 0
-          && (used == 0 || (offersOn('creditsEnabled') && d.get('estimate', null) != null && used <= d.estimate.total
-              && getAfter(creditPath(d.shipperId, 'spend_' + loadId)).data.amountPaise == -used
-              && getAfter(creditPath(d.shipperId, 'spend_' + loadId)).data.loadId == loadId));
+          // The spend line's own rule (users/*/credits) checks the switch, the load id and that the amount is within the estimate.
+          && (used == 0 || getAfter(creditPath(d.shipperId, 'spend_' + loadId)).data.amountPaise == -used);
     }
 
     function offersCreateOk(loadId, d) {
@@ -3686,7 +3688,8 @@ service cloud.firestore {
                   && request.resource.data.amountPaise < 0
                   && lineId == 'spend_' + request.resource.data.loadId
                   && getAfter(docPath('loads', request.resource.data.loadId)).data.shipperId == userId
-                  && getAfter(docPath('loads', request.resource.data.loadId)).data.get('creditsUsedPaise', 0) == -request.resource.data.amountPaise)
+                  && getAfter(docPath('loads', request.resource.data.loadId)).data.get('creditsUsedPaise', 0) == -request.resource.data.amountPaise
+                  && -request.resource.data.amountPaise <= getAfter(docPath('loads', request.resource.data.loadId)).data.estimate.total)
               || (request.resource.data.kind == 'referral'
                   && offersOn('referralEnabled')
                   && request.resource.data.amountPaise == referralBonus()

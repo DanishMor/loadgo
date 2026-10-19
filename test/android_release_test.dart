@@ -41,4 +41,29 @@ void main() {
     expect(manifest.contains('android:allowBackup="false"'), isTrue);
     expect(manifest.contains('android:usesCleartextTraffic="false"'), isTrue);
   });
+
+  // H9: the network security config says the same in a second place, trusts system CAs only in release, and nothing is debuggable or free to export by accident.
+  test('network security config: no cleartext, system CAs only (user CAs only in debug)', () {
+    expect(manifest.contains('android:networkSecurityConfig="@xml/network_security_config"'), isTrue);
+    final nsc = File('android/app/src/main/res/xml/network_security_config.xml').readAsStringSync();
+    expect(nsc.contains('<base-config cleartextTrafficPermitted="false">'), isTrue);
+    final base = nsc.substring(nsc.indexOf('<base-config'), nsc.indexOf('</base-config>'));
+    expect(base.contains('src="user"'), isFalse);
+    expect(nsc.contains('cleartextTrafficPermitted="true"'), isFalse);
+    expect(nsc.contains('<pin-set'), isFalse, reason: 'pinning is a decision in docs/SECURITY_DECISIONS.md');
+  });
+
+  test('only the launcher activity is exported and the app is not debuggable', () {
+    expect(manifest.contains('android:debuggable'), isFalse);
+    final exported = RegExp(r'android:exported="true"').allMatches(manifest).length;
+    expect(exported, 1, reason: 'a new exported component needs a line in docs/THREAT_MODEL.md');
+    expect(manifest.contains('android:name=".MainActivity"'), isTrue);
+  });
+
+  test('the share-link filter is HTTPS, our host, the /load/ prefix only', () {
+    final filters = RegExp(r'<data android:scheme="([^"]+)" android:host="([^"]+)" android:pathPrefix="([^"]+)"').allMatches(manifest).toList();
+    expect(filters, hasLength(1));
+    expect(filters.single.group(1), 'https');
+    expect(filters.single.group(3), '/load/');
+  });
 }

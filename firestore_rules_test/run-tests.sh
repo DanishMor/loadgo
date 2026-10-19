@@ -7,6 +7,11 @@ PARTS=${RULES_PARTS:-4}
 $EXEC "node --test storage.test.mjs"
 echo "== generated matrix =="
 $EXEC "node --test matrix.test.mjs"
+echo "== rules vs real app writes =="
+$EXEC "node --test contract.test.mjs"
+echo "== red team =="
+$EXEC "node --test redteam.test.mjs"
+$EXEC "node --test redteam_storage.test.mjs"
 i=1
 while [ $i -le $PARTS ]; do
   echo "== rules slice $i of $PARTS =="

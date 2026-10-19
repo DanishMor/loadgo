@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- H9: HTTPS only, system certificate authorities only. A user-installed certificate (a man-in-the-middle proxy) is
+     trusted in debug builds only. Certificate pinning is deliberately not used: docs/SECURITY_DECISIONS.md. -->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <certificates src="system"/>
+        </trust-anchors>
+    </base-config>
+    <debug-overrides>
+        <trust-anchors>
+            <certificates src="user"/>
+        </trust-anchors>
+    </debug-overrides>
+</network-security-config>
