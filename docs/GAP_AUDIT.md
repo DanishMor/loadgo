@@ -257,3 +257,14 @@ Read again after the premium flow, the bid engine and the bug hunt. Each gap is 
 
 Free gaps: 0
 Open bugs: 0 (free)
+
+## Part 5 (security, stability, performance hardening), 2026-10-19
+Re-run after H1 to H34.
+
+- **Closed in this part** (see docs/BUG_REPORT.md H-1 to H-15): staff role typo gave super on the server (H-1); load `createdAt` could carry the phone clock (H-3); SVG and empty RC files (H-4); public pages needed inline script (H-5); a real promo load was refused by the rules, found by the new contract test (H-8, S2); keys and `Bearer` values reached logs (H-9); logging a very long text froze the app (H-10); a crafted link id could throw (H-11); explicit function limits (H-12); a stream regression from the newest-only lists (H-13).
+- **Open, with a plan** (docs/KNOWN_RISKS.md): extra fields can be planted on a new load, S3 (H-2, needs the load rule split or a function); the queued trip code in plain preferences, S4 (H-6); the admin menu shows an unknown role as super, S4 (H-7); 77 of about 95 models still throw on wrong-typed fields (lists are protected by `SafeDocs`, a ratchet test stops it growing).
+- **Needs the owner or money, not code** (docs/BLOCKED.md, KNOWN_RISKS 2 to 4, 11): deploy of rules, indexes, functions and hosting; App Check enforcement; a real phone test; an external penetration test; Blaze for backups.
+- Open S1: 0. Open S2: 0. Open S3: 1 (H-2, planned). Open S4: 2.
+
+Free gaps: 0 (the open S3 needs either a larger rules refactor or the deployed functions, both written in the plan)
+Open bugs: 0 (S1 and S2); 3 (S3 and S4) with a plan

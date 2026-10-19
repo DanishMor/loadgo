@@ -144,3 +144,22 @@ Run order and memory rule: tests run in batches of about 30 files with `--concur
 | Old screens | every v2 test also has a uiV2 OFF case that shows the old screen | same files |
 | Guards | no new hard-coded colours, no new eager lists, no state set after await | test/theme_guard_test.dart, test/performance_guard_test.dart, test/setstate_future_guard_test.dart |
 | Rules | bid-mode load only through a selected bid, bid window, two-driver race | firestore_rules_test (U10, U15, U17, U41 blocks) |
+
+## Part 5 additions
+
+| Area | What it proves | Where |
+|---|---|---|
+| Red team | 279 attacks on the Firestore and Storage rules all refused, with controls | `firestore_rules_test/redteam.test.mjs`, `firestore_rules_test/redteam_storage.test.mjs` |
+| Rules contract | the writes of the real services (65 flows) are allowed by the rules | `test/rules_contract_capture_test.dart`, `firestore_rules_test/contract.test.mjs` |
+| Functions | hostile input never crashes an action; double and parallel calls give one result; limits and secrets are pinned | `functions/test/emulator/fuzz.test.js`, `functions/test/unit/hardening.test.js` |
+| Hosting | headers, no inline script or style, rewrites unchanged, security.txt | `test/hosting_headers_test.dart` |
+| Android | network config, one exported activity, link filter | `test/android_release_test.dart` |
+| Start-up | fallback screen, guarded steps, picture cache cap | `test/startup_guard_test.dart`, `test/main_order_test.dart` |
+| Defensive reading | one damaged document is skipped; the list of models that throw may only shrink | `test/model_fuzz_test.dart` |
+| Network chaos | flapping connection, timeout, permission-denied in the middle, clock skew, double taps | `test/chaos_test.dart` |
+| Untrusted input | hostile links, no WebView, safe launch schemes | `test/untrusted_input_test.dart` |
+| Logs | keys, phones, codes and very long text are cleaned fast | `test/redactor_part5_test.dart` |
+| Emergency switches | groups only write OFF; the incident plan names every switch | `test/kill_switches_test.dart` |
+| Speed and cost | budgets for fare, ranking, parsing, log cleaning; unbounded listeners may only decrease; no setState after await | `test/perf_budget_test.dart`, `test/query_cost_guard_test.dart`, `test/lifecycle_guard_test.dart` |
+
+Run order for the emulator suites (one at a time, Java from Android Studio): `sh run-tests.sh` in `firestore_rules_test` (storage, matrix, contract, red team, rules slices); `npm run test:emulator` in `functions`.

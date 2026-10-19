@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 
+import 'breadcrumbs.dart';
+
 /// Part 5 (H17): one damaged document must not blank a whole list.
 ///
 /// Most models read a field with `as String?`, which throws when an old or hand-edited document holds another type.
@@ -19,7 +21,7 @@ extension SafeDocs on Iterable<QueryDocumentSnapshot<Map<String, dynamic>>> {
     }
     if (skipped > 0) {
       SafeDocsStats.skipped += skipped;
-      debugPrint('Skipped $skipped damaged document(s) while reading a list');
+      debugPrint(Redactor.safe('Skipped $skipped damaged document(s) while reading a list'));
     }
     return out;
   }

@@ -64,3 +64,24 @@ Switch `uiV2` is ON by default. `dispatchV2` stays OFF until the rules are publi
 - [ ] 11. Earnings: Today, Where your money is. Set-up card: Done / Do this next / Later, rejection reason and send again.
 - [ ] 12. Transporter: bid for the company through the sheet; bulk bid. Admin: five groups, role shown, Dispatch monitor.
 - [ ] 13. Hindi, Urdu, largest font, dark: no cut-off text on rows 1 to 12.
+
+## H. Part 5 (security and stability): owner steps and phone rows
+
+Server (owner, after Blaze and the keys are ready; nothing was deployed by Claude):
+1. Publish `firestore.rules` and `storage.rules` (they changed: load `createdAt` is a server time, the RC image path accepts only the five image types, cheaper load checks for promo and credits).
+2. Deploy `firestore.indexes.json` (new index: notifications by user and time).
+3. Deploy the functions (admin role fix, explicit timeout and memory). Then open Admin > Features and test the emergency card on a test project first.
+4. Restrict the Google API keys (`docs/SECRETS_SCAN_PART5.md`), create the security mailbox and put it in `hosting/.well-known/security.txt` and `docs/VULNERABILITY_DISCLOSURE.md`.
+5. Deploy hosting (new `hosting/assets/`, new headers). Check a trip link and an LR link in a browser: the page must still load (the policy now allows only our own script).
+6. Set the budget alerts of `docs/ALERT_THRESHOLDS.md`.
+
+Phone rows (add to the phone sheet):
+| # | Check | Expected |
+|---|---|---|
+| H1 | Fresh install with the internet off, open the app | one calm screen with Try again; with the internet on, Try again opens the app |
+| H2 | Open a shared load link from WhatsApp | the load opens (or "not available"); a link with odd characters does nothing |
+| H3 | Cancel an open load with a price estimate; cancel an accepted trip as the driver | both work |
+| H4 | Post a load with a promo code and credits (switches on) | it posts |
+| H5 | Driver feed with 200+ loads | scrolls smoothly, no pause when the list updates |
+| H6 | Admin > Features: emergency card, switch off "Push messages", confirm, then set it back to On below | saved both times, the app obeys within a minute |
+| H7 | Profile / long lists on a 2 GB phone after 20 photos | no crash, memory falls after leaving the screen |

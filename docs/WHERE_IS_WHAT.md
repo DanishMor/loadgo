@@ -284,3 +284,23 @@ Every row sits behind a switch that is OFF (see the flag table above). Setup doc
 | Company bid through the bid sheet | transporter | Loads tab | lib/fleet/transporter_loads_screen.dart |
 | Admin home in five groups | admin | Admin panel | lib/admin/admin_dashboard_screen.dart |
 | Text of U30 to U36 (12 languages) | all | n/a | lib/core/l10n/ux2_feed_strings.dart |
+
+## Part 5 (security, stability, performance)
+
+| What | Where |
+|---|---|
+| Threat model, decisions, incident plan, alert thresholds | `docs/THREAT_MODEL.md`, `docs/SECURITY_DECISIONS.md`, `docs/INCIDENT_RESPONSE.md`, `docs/ALERT_THRESHOLDS.md` |
+| Red-team attacks on the rules | `firestore_rules_test/redteam.test.mjs`, `firestore_rules_test/redteam_storage.test.mjs`, results in `docs/REDTEAM_RESULTS.md` |
+| Rules against what the app really sends | `test/rules_contract_capture_test.dart` (records), `firestore_rules_test/contract.test.mjs` (replays), `firestore_rules_test/contract/captured.json`, `docs/RULES_CONTRACT.md` |
+| Functions checklist, hostile-input tests | `docs/FUNCTIONS_SECURITY.md`, `functions/test/emulator/fuzz.test.js`, `functions/test/unit/hardening.test.js` |
+| Emergency switches (one tap per group) | Admin > Features, top card; `lib/core/features/kill_switches.dart`, `lib/admin/admin_features_screen.dart` |
+| Start-up fallback and guarded start-up steps | `lib/core/errors/startup_failed_app.dart`, `lib/main.dart` |
+| One damaged document does not blank a list | `lib/core/services/safe_docs.dart`, `test/model_fuzz_test.dart`, `test/model_fuzz_known.txt` |
+| Retry with backoff and jitter | `lib/core/network/with_retry.dart`, `test/chaos_test.dart` |
+| Log cleaning (keys, phones, codes) | `lib/core/services/breadcrumbs.dart`, `test/redactor_part5_test.dart` |
+| Link and input safety | `lib/core/share/share_links.dart`, `test/untrusted_input_test.dart` |
+| Public pages: scripts, styles, headers, security.txt | `hosting/assets/`, `hosting/.well-known/security.txt`, `firebase.json`, templates in `tool/templates/hosting/`, `docs/VULNERABILITY_DISCLOSURE.md` |
+| Android network and manifest rules | `android/app/src/main/res/xml/network_security_config.xml`, `android/app/src/main/AndroidManifest.xml`, `test/android_release_test.dart` |
+| Speed budgets and cost guards | `test/perf_budget_test.dart`, `test/query_cost_guard_test.dart`, `test/lifecycle_guard_test.dart`, `docs/PERFORMANCE.md`, `docs/COST_WATCH.md` |
+| Data map, secrets scan, dependencies | `docs/DATA_MAP.md`, `docs/SECRETS_SCAN_PART5.md`, `docs/DEPENDENCY_AUDIT_PART5.md` |
+| Baseline, risks, scorecard, tester checklist | `docs/BASELINE.md`, `docs/KNOWN_RISKS.md`, `docs/SECURITY_SCORECARD.md`, `docs/PENTEST_CHECKLIST.md` |

@@ -17,6 +17,7 @@ void main() {
     expect(has('loads', ['status', 'createdAt']), isTrue);
     expect(has('bookings', ['driverId', 'createdAt']), isTrue);
     expect(has('bookings', ['customerId', 'createdAt']), isTrue);
+    expect(has('notifications', ['userId', 'createdAt']), isTrue);
   });
 
   test('nearby queries have theirs', () {
@@ -31,7 +32,7 @@ void main() {
         used.add(m.group(1)!);
       }
     }
-    expect(used.difference({'shipperId', 'status'}), isEmpty, reason: 'new newestPage field needs an index');
+    expect(used.difference({'shipperId', 'status', 'userId'}), isEmpty, reason: 'new newestPage field needs an index');
   });
 
   test('no index is declared twice', () {

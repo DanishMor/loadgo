@@ -144,7 +144,8 @@ void main() {
 
   group('project files', () {
     test('the public page reads trip_shares through the REST API and is served for /trip/**', () {
-      final page = File('hosting/trip.html').readAsStringSync();
+      // Since Part 5 the script is a file of its own (hosting/assets/trip.js): the page and its script are read together.
+      final page = File('hosting/trip.html').readAsStringSync() + File('hosting/assets/trip.js').readAsStringSync();
       expect(page, contains('firestore.googleapis.com/v1/projects/loadgo-defc2'));
       expect(page, contains('trip_shares/'));
       expect(page, contains('noindex'));

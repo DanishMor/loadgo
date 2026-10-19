@@ -85,12 +85,12 @@ class NotificationService {
     final uid = Backend.uid;
     if (uid == null) return Stream.value(const []);
     // Part 5 (H25): the newest [watchCap] only; the index is in firestore.indexes.json.
-    return newestPage(_col.where('userId', isEqualTo: uid), watchCap).map((snap) {
+    return freshBroadcast(() => newestPage(_col.where('userId', isEqualTo: uid), watchCap).map((snap) {
       final prefs = SettingsService.prefs.value;
       final list = snap.docs.parse(AppNotification.fromDoc).where((n) => !applyPrefs || prefs.allows(n.type)).toList();
       list.sort((a, b) => newestFirst(a.createdAt, b.createdAt));
       return list;
-    });
+    }));
   }
 
   static Stream<int> watchUnreadCount() =>

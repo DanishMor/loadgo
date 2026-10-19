@@ -236,3 +236,15 @@ Severity: S1 critical, S2 high, S3 medium, S4 low. Test names are in `firestore_
 | H-12 | `functions/index.js` | Timeout and memory were left to defaults. | S4 | explicit 60 s / 256 MiB (with the existing 10 instances) | `functions/test/unit/hardening.test.js` |
 
 Checked by new tests and found fine: the admin actions, payout decisions, KYC, SMS, maps, payments and the payment webhook against hostile input (`functions/test/emulator/fuzz.test.js`: wrong types, 200 KB strings, `__proto__`, paths in ids, someone else's uid, replays, two finance people paying at once, ten parallel risk changes). Secret scan of the whole git history: no real secret (docs/SECRETS_SCAN_PART5.md).
+
+### Part 5, found by the full regression (introduced and fixed in the same round, never released)
+| id | file | what was wrong | sev | fix | test |
+|---|---|---|---|---|---|
+| H-13 | `BookingService._watchWhere`, `NotificationService.watchMine` | After they were limited to the newest rows (`newestPage`, an `async*` stream), a screen that listens twice (a StreamBuilder after a rebuild) got "Stream has already been listened to": the driver home crashed in two cards. | S3 | `freshBroadcast` starts a fresh query for each first listener and stops it with the last | `test/fresh_broadcast_test.dart`, `test/driver_home_v2_test.dart` |
+| H-14 | `lib/core/services/safe_docs.dart` | printed a message without `Redactor` (the project's print guard caught it) | S4 | message goes through `Redactor.safe` | `test/redaction_f5_test.dart` |
+| H-15 | `hosting/trip.html` readers | tests read the page text for the REST URL; the script moved to `hosting/assets/trip.js` | test only | the test reads both files | `test/task64_test.dart` |
+
+### Tooling note (regression runner)
+| id | file | what happened | fix |
+|---|---|---|---|
+| H-16 | `tool/regression_batches.ps1` | A batch "stuck" for 63 minutes. Nothing was hanging: the laptop went into Modern Standby twice (Windows event log: 9:21 to 9:53 PM and 9:53 to 10:22 PM) and the two gaps in the batch log match exactly. The test that was running (`onboarding_v2_test.dart`) passes in 10 seconds alone. | The script now asks Windows to stay awake while it runs (this process only), stops a batch whose log did not grow for 12 minutes (a real hang) and goes on, and runs a batch as two halves when free memory is under 2 GB. |

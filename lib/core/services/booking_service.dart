@@ -518,10 +518,10 @@ class BookingService {
     final uid = Backend.uid;
     if (uid == null) return Stream.value(const []);
     // Part 5 (H25): the newest [watchAllCap] only. A busy account used to be read in full at the start and again for every change.
-    return newestPage(_col.where(field, isEqualTo: uid), watchAllCap).map((snap) {
+    return freshBroadcast(() => newestPage(_col.where(field, isEqualTo: uid), watchAllCap).map((snap) {
       final list = snap.docs.parse(Booking.fromDoc);
       list.sort((a, b) => newestFirst(a.createdAt, b.createdAt));
       return list;
-    });
+    }));
   }
 }

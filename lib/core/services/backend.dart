@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'breadcrumbs.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -75,6 +76,22 @@ int newestFirst(Timestamp? a, Timestamp? b) {
   if (a == null) return -1;
   if (b == null) return 1;
   return b.compareTo(a);
+}
+
+/// A broadcast stream that starts a fresh [make] pipeline on its first listener and stops it when the last one leaves, so it can
+/// be listened to again and again (a StreamBuilder that rebuilds does that). newestPage is an async* stream, which can be
+/// listened to only once; the older snapshots() streams could be listened to many times and the screens rely on it.
+Stream<T> freshBroadcast<T>(Stream<T> Function() make) {
+  late StreamController<T> controller;
+  StreamSubscription<T>? sub;
+  controller = StreamController<T>.broadcast(
+    onListen: () => sub = make().listen(controller.add, onError: controller.addError, onDone: controller.close),
+    onCancel: () {
+      sub?.cancel();
+      sub = null;
+    },
+  );
+  return controller.stream;
 }
 
 /// Newest-first live page of [base] holding at most [limit] documents.
