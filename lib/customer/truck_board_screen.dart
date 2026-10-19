@@ -92,7 +92,7 @@ class _TruckBoardScreenState extends State<TruckBoardScreen> {
       firstDate: DateTime(now.year - 1),
       lastDate: now.add(const Duration(days: 365)),
     );
-    if (d != null) setState(() => after ? _after = d : _before = d);
+    if (d != null && mounted) setState(() => after ? _after = d : _before = d);
   }
 
   Future<void> _request(TruckPost post) async {

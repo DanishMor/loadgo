@@ -40,7 +40,7 @@ class _BulkPostScreenState extends State<BulkPostScreen> {
       firstDate: DateTime.now(),
       lastDate: DateTime.now().add(const Duration(days: 365)),
     );
-    if (d != null) setState(() => _date = d);
+    if (d != null && mounted) setState(() => _date = d);
   }
 
   Future<void> _post(BulkParseResult r) async {

@@ -43,6 +43,7 @@ class _AdminDemoScreenState extends State<AdminDemoScreen> {
 
   Future<void> _run(String confirmKey, Future<int> Function() job, String doneKey) async {
     if (_busy || !await _confirm(confirmKey)) return;
+    if (!mounted) return;
     setState(() => _busy = true);
     try {
       final n = await job();

@@ -97,7 +97,7 @@ void main() {
         calls++;
         if (calls < 3) throw fe('unavailable');
         return 'ok';
-      }, sleep: fakeSleep);
+      }, sleep: fakeSleep, jitter: 0);
       expect((v, calls), ('ok', 3));
       expect(sleeps, [const Duration(milliseconds: 400), const Duration(milliseconds: 800)]);
     });

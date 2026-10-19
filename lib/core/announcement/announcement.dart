@@ -49,7 +49,7 @@ class Announcement {
     );
   }
 
-  String textFor(AppLanguage language) => texts['text_${language.name}'] ?? texts['text'] ?? texts.values.first;
+  String textFor(AppLanguage language) => texts['text_${language.name}'] ?? texts['text'] ?? texts.values.firstOrNull ?? '';
 
   bool get dismissible => level != 'urgent';
 

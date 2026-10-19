@@ -62,7 +62,7 @@ class _LoadFilterSheetState extends State<LoadFilterSheet> {
       firstDate: DateTime(now.year - 1),
       lastDate: DateTime(now.year + 2),
     );
-    if (d != null) setState(() => from ? _from = d : _to = d);
+    if (d != null && mounted) setState(() => from ? _from = d : _to = d);
   }
 
   Widget _numField(String key, TextEditingController c, String label, {IconData? icon}) => Expanded(

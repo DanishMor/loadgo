@@ -96,7 +96,7 @@ class _NewShipmentScreenState extends State<NewShipmentScreen> {
 
   Future<void> _pickHub() async {
     final h = await pickTradeHub(context);
-    if (h != null) setState(() => _hub.text = h.place);
+    if (h != null && mounted) setState(() => _hub.text = h.place);
   }
 
   Future<void> _pickDate(bool first) async {
@@ -106,7 +106,7 @@ class _NewShipmentScreenState extends State<NewShipmentScreen> {
       firstDate: DateTime.now(),
       lastDate: DateTime.now().add(const Duration(days: 365)),
     );
-    if (d != null) setState(() => first ? _date1 = d : _date2 = d);
+    if (d != null && mounted) setState(() => first ? _date1 = d : _date2 = d);
   }
 
   String? _required(String? v) => (v == null || v.trim().length < 2) ? tr(context, 'fieldRequired') : null;
