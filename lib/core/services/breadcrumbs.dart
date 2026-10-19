@@ -11,6 +11,12 @@ class Redactor {
   static String safe(Object? error, {int maxLength = 500}) => clean('$error', maxLength: maxLength);
 
   static final _rules = <(RegExp, String)>[
+    // Part 5 (H15): keys and header values first, so nothing below can leave half of one behind.
+    (RegExp(r'rzp_(?:live|test)_\w+'), '#key'), // payment gateway keys
+    (RegExp(r'AIza[\w-]{30,}'), '#key'), // Google API keys
+    (RegExp(r'\bgh[pousr]_\w{20,}'), '#token'), // GitHub tokens
+    (RegExp(r'\bBearer\s+\S+', caseSensitive: false), 'Bearer #'), // Authorization header values
+    (RegExp(r'-----BEGIN[^-]*PRIVATE KEY-----'), '#key'), // private key blocks
     (RegExp(r'upi://\S+', caseSensitive: false), ' '), // UPI payment links
     (RegExp(r'\S+@\S+'), ' '), // e-mail and UPI ids
     (RegExp(r'https?://\S+|www\.\S+', caseSensitive: false), ' '), // links
@@ -28,8 +34,12 @@ class Redactor {
     (RegExp(r'\b(?=[\w-]*\d)[\w-]{32,}'), '#token'), // other long ids with digits (verification ids, keys)
   ];
 
+  static const _scanLimit = 4000;
+
   static String clean(String text, {int maxLength = 300}) {
-    var t = text;
+    // Part 5 (H15): cut first. The patterns below can take quadratic time on a very long unbroken text (200 000 letters took minutes),
+    // and an error message must never be able to freeze the app while it is being logged. The tail is not needed: the result is short anyway.
+    var t = text.length > _scanLimit ? text.substring(0, _scanLimit) : text;
     for (final (re, to) in _rules) {
       t = t.replaceAllMapped(re, (m) => to.contains(r'$1') ? to.replaceAll(r'$1', m.group(1) ?? '') : to);
     }

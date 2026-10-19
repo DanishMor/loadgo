@@ -19,7 +19,8 @@ const { getMessaging } = require('firebase-admin/messaging');
 const push = require('./src/push');
 
 initializeApp();
-setGlobalOptions({ region: REGION, maxInstances: 10 });
+// Part 5 (H5): limits are explicit, not left to defaults: a stuck call ends after 60 s and cannot take more than 256 MiB.
+setGlobalOptions({ region: REGION, maxInstances: 10, timeoutSeconds: 60, memory: '256MiB' });
 
 // ---- F16: server-side limits (switch: serverLimits) ----
 function limitTrigger(kind, path) {

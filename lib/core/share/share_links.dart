@@ -7,6 +7,8 @@ class ShareLinks {
 
   static String loadLink(String id) => 'https://$host/load/${Uri.encodeComponent(id)}';
 
+  static final _controlOrReserved = RegExp(r'[\u0000-\u001f\u007f]|^__.*__$');
+
   /// Id of a load link on [host] (or the same path on another host), or null.
   static String? parseLoadId(String? link) {
     if (link == null) return null;
@@ -14,7 +16,11 @@ class ShareLinks {
     if (uri == null || !(uri.scheme == 'https' || uri.scheme == 'http')) return null;
     final seg = uri.pathSegments;
     if (seg.length != 2 || seg[0] != 'load' || seg[1].isEmpty || seg[1].length > 64) return null;
-    return seg[1];
+    // The link is untrusted (any app can send one). A segment is decoded, so %2F arrives as '/', which would turn the id into a deeper
+    // Firestore path and throw. Also refused: control characters, backslash, '.' and '..', and the ids Firestore reserves (__x__).
+    final id = seg[1];
+    if (id.contains('/') || id.contains(r'\') || id == '.' || id == '..' || _controlOrReserved.hasMatch(id)) return null;
+    return id;
   }
 
   /// `wa.me` chooses WhatsApp or WhatsApp Business on the device.

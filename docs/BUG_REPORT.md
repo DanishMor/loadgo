@@ -226,3 +226,13 @@ Severity: S1 critical, S2 high, S3 medium, S4 low. Test names are in `firestore_
 - A float `budget` on a load: the budget is in rupees as a number, by design.
 - Finance rejecting a payout without a reason while maker-checker is OFF: the old single step, by design.
 - Any staff role can list `users` (admin console). An insider risk, written in `docs/KNOWN_RISKS.md`.
+
+### Part 5, later rows
+| id | file | what was wrong | sev | fix | test |
+|---|---|---|---|---|---|
+| H-9 | `lib/core/services/breadcrumbs.dart` `Redactor` | Payment keys (`rzp_live_...`), `Bearer ...` header values, GitHub tokens and PEM headers were not removed from crash reports and error logs. | S3 | four new patterns, applied first | `test/redactor_part5_test.dart` "secrets and keys never reach a log" |
+| H-10 | same | A very long unbroken text (200 000 letters) made the cleaning patterns take minutes (quadratic). An error message could freeze the app while it was being logged. | S3 | the text is cut to 4000 characters before the patterns run | same file, "hostile text" (must finish under 3 s) |
+| H-11 | `lib/core/share/share_links.dart` `parseLoadId` | A shared or pushed link `/load/a%2Fb` decodes to the id `a/b`, which becomes a deeper Firestore path and throws inside the stream. Also accepted: `..`, backslash, control characters, `__name__`. | S3 | those ids are refused (a space and normal ids still work) | `test/untrusted_input_test.dart` |
+| H-12 | `functions/index.js` | Timeout and memory were left to defaults. | S4 | explicit 60 s / 256 MiB (with the existing 10 instances) | `functions/test/unit/hardening.test.js` |
+
+Checked by new tests and found fine: the admin actions, payout decisions, KYC, SMS, maps, payments and the payment webhook against hostile input (`functions/test/emulator/fuzz.test.js`: wrong types, 200 KB strings, `__proto__`, paths in ids, someone else's uid, replays, two finance people paying at once, ten parallel risk changes). Secret scan of the whole git history: no real secret (docs/SECRETS_SCAN_PART5.md).
