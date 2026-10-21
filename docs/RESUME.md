@@ -3,7 +3,7 @@
 Plan: docs/MASTER_PLAN_PART5.md. Read it, then continue from NEXT. Part 4 is complete (git log, tags ux-v2-phase4..6).
 
 LAST_DONE: Load 20 FINAL2 (docs/MASTER_PLAN_FINAL2.md) Z2 done (LR register no longer hidden by a failing share-link query).
-NEXT: Z1 (Diagnose screen), Z3, Z4... in order from docs/MASTER_PLAN_FINAL2.md. Z7 hints: Coming Soon toasts in lib/auth/driver_pending_screen.dart:36 and lib/driver/driver_home_screen.dart:186.
+NEXT: Z7 rest (dead-button audit, SCREEN_INVENTORY, guard test) then Z1, Z3, Z4... Z7 verification-screen part done.
 
 Unfinished / to remember:
 - Never edit hosting/*.html by hand: edit tool/templates/hosting/ and run `dart run tool/apply_app_info.dart`. Scripts and styles live in hosting/assets/.

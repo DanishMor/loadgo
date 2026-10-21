@@ -53,6 +53,12 @@ void main() {
     expect(find.text('Missing'), findsWidgets);
   });
 
+  testWidgets('when only the team check is left the chip says Waiting for our team, not Do this next (Z7)', (t) async {
+    await show(t, user());
+    final review = (t.widget(find.descendant(of: find.byKey(const ValueKey('obState_review')), matching: find.byType(Text))) as Text).data!;
+    expect(review, 'Waiting for our team');
+  });
+
   testWidgets('a rejection shows why, the note, and a big send-again button', (t) async {
     await show(t, user(status: 'rejected', meta: {'reason': 'licence_expired', 'note': 'Valid till 2023'}));
     expect(find.byKey(const ValueKey('obRejected')), findsOneWidget);

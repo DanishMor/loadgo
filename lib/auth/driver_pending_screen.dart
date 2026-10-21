@@ -33,7 +33,7 @@ class _DriverPendingScreenState extends State<DriverPendingScreen> {
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(tr(context, 'comingSoon')), behavior: SnackBarBehavior.floating),
+        SnackBar(content: Text(tr(context, 'pendingStillWaiting')), behavior: SnackBarBehavior.floating),
       );
     }
   }

@@ -59,7 +59,7 @@ class _DriverOnboardingCardState extends State<DriverOnboardingCard> {
               Flexible(
                 child: StatusBadge(
                   key: ValueKey('obState_${s.key}'),
-                  label: tr(context, s.done ? 'obStateDone' : (s.key == next ? 'obStateNext' : 'obStateLater')),
+                  label: tr(context, s.done ? 'obStateDone' : (s.key == 'review' && s.key == next ? 'obStateWaitTeam' : (s.key == next ? 'obStateNext' : 'obStateLater'))),
                   tone: s.done ? StatusTone.success : (s.key == next ? StatusTone.attention : StatusTone.neutral),
                   showIcon: false,
                 ),
