@@ -27,8 +27,35 @@ jobs:
       - run: flutter pub get
       - name: Analyze (must report 0 issues)
         run: flutter analyze
-      - name: Unit and widget tests
-        run: flutter test
+      - name: Index check (every query that needs a composite index has one)
+        run: node tool/check_indexes.js
+      - name: Unit and widget tests, in batches of 30 files, one at a time
+        run: |
+          set -e
+          find test -name '*_test.dart' | sort > tests.txt
+          split -l 30 -d tests.txt batch_
+          for b in batch_*; do
+            echo "== $b"
+            flutter test --concurrency=1 $(cat "$b")
+          done
+
+  functions:
+    name: Functions lint and unit tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: functions/package-lock.json
+      - name: Install
+        working-directory: functions
+        run: npm ci
+      - name: Lint and unit tests
+        working-directory: functions
+        run: npm test
 
   rules:
     name: Firestore rules tests

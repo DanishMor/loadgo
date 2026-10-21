@@ -3,6 +3,9 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 /// Z16: tool/change_package_id.ps1 on a COPY of the repo (never on the real one).
+/// These need Windows PowerShell 5.1 (the owner's laptop); on Linux CI they are skipped.
+final _skipNoPowerShell = Platform.isWindows ? null : 'needs Windows PowerShell';
+
 void main() {
   const oldId = 'com.example.transport_app';
   const newId = 'in.load20.app';
@@ -24,10 +27,14 @@ void main() {
       Process.runSync('powershell', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', 'tool/change_package_id.ps1', '-NewId', newId, '-Root', copy.path, ...extra]);
   String read(String rel) => File('${copy.path}/$rel').readAsStringSync();
 
-  setUpAll(() => copy = makeCopy());
-  tearDownAll(() => copy.deleteSync(recursive: true));
+  setUpAll(() {
+    if (Platform.isWindows) copy = makeCopy();
+  });
+  tearDownAll(() {
+    if (Platform.isWindows) copy.deleteSync(recursive: true);
+  });
 
-  test('dry run lists the files and writes nothing; bad ids are refused', () {
+  test('dry run lists the files and writes nothing; bad ids are refused', skip: _skipNoPowerShell, () {
     final r = run([]);
     expect(r.exitCode, 0, reason: '${r.stdout}${r.stderr}');
     expect('${r.stdout}', contains('DRY RUN'));
@@ -37,7 +44,7 @@ void main() {
     expect(bad.exitCode, isNot(0));
   });
 
-  test('-Apply changes the id, keeps the Kotlin namespace, prints the Firebase steps and the uninstall warning', () {
+  test('-Apply changes the id, keeps the Kotlin namespace, prints the Firebase steps and the uninstall warning', skip: _skipNoPowerShell, () {
     final r = run(['-Apply']);
     expect(r.exitCode, 0, reason: '${r.stdout}${r.stderr}');
     expect(read('android/gradle.properties'), contains('loadgo.applicationId=$newId'));
@@ -52,7 +59,7 @@ void main() {
     expect(out, contains('uninstall'));
   });
 
-  test('-MoveNamespace also moves the Kotlin package folder and the package line', () {
+  test('-MoveNamespace also moves the Kotlin package folder and the package line', skip: _skipNoPowerShell, () {
     copy.deleteSync(recursive: true);
     copy = makeCopy();
     final r = run(['-Apply', '-MoveNamespace']);
