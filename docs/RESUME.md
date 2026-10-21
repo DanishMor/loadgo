@@ -2,8 +2,8 @@
 
 Plan: docs/MASTER_PLAN_PART5.md. Read it, then continue from NEXT. Part 4 is complete (git log, tags ux-v2-phase4..6).
 
-LAST_DONE: FINAL2 Z2, Z7a, Z4, Z1, Z3, Z6, Z7 done (SCREEN_INVENTORY, dead-button guard).
-NEXT: Z5 rules drift, Z8 first-run empty states, Z9 Test lab (check rules first), Z10.. from docs/MASTER_PLAN_FINAL2.md.
+LAST_DONE: FINAL2 Z2, Z7a, Z4, Z1, Z3, Z6, Z7, Z5 done.
+NEXT: Z8 first-run empty states, Z9 Test lab (check rules first), Z10.. from docs/MASTER_PLAN_FINAL2.md.
 
 Unfinished / to remember:
 - Never edit hosting/*.html by hand: edit tool/templates/hosting/ and run `dart run tool/apply_app_info.dart`. Scripts and styles live in hosting/assets/.
