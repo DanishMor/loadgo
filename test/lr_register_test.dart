@@ -117,4 +117,15 @@ void main() {
     await settle(tester);
     expect(find.text('You have not made an LR yet.'), findsOneWidget);
   });
+
+  testWidgets('a failing or never-answering share query does not hide the LRs (Z2)', (tester) async {
+    for (final shares in [Stream<List<LrShare>>.error(FirebaseException(plugin: 'cloud_firestore', code: 'permission-denied')), const Stream<List<LrShare>>.empty()]) {
+      await tester.pumpWidget(LanguageScope(
+        notifier: languageNotifier,
+        child: MaterialApp(home: LrRegisterScreen(key: UniqueKey(), lrs: Stream.value([lr(1, 1)]), shares: shares, now: () => now)),
+      ));
+      await settle(tester);
+      expect(find.byKey(const ValueKey('lrRow_TR-2026-000001')), findsOneWidget);
+    }
+  });
 }

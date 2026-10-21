@@ -42,3 +42,4 @@ One line per assumption taken without asking.
 - U12/U14: bid-mode accept is two steps as before (customer selects, driver confirms) so the driver stays in control of their truck; the auto-accept rule does the selecting, the driver app shows "customer chose you, confirm".
 - U10/U11: the wave layer in the app is a visibility filter only (docs/FLOW_SPEC.md); the server wave and push come after the functions deploy.
 - U28: skip reasons are shown but not stored (no server field for them); back on the card counts as Skip.
+- Z2: LR register queries (lrs by issuerId, lr_shares by ownerId) match rules and need no composite index; kept the customer/fleet-owner list clauses in rules but the app lists only by issuer. Share-link query is now non-blocking. Likely live cause: rules/indexes not published.

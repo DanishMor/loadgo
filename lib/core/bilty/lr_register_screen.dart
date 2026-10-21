@@ -106,16 +106,20 @@ class _LrRegisterScreenState extends State<LrRegisterScreen> {
       body: SafeArea(
         child: LiveStream<List<LrPublic>>(
           stream: () => _lrs,
-          builder: (context, all) => LiveStream<List<LrShare>>(
-            stream: () => _shares,
-            compact: true,
-            builder: (context, shares) {
+          builder: (context, all) => StreamBuilder<List<LrShare>>(
+            // The links are a bonus: if their query is slow or denied the LRs still show.
+            stream: _shares,
+            initialData: const <LrShare>[],
+            builder: (context, shareSnap) {
+              final shares = shareSnap.data ?? const <LrShare>[];
+              final linksFailed = shareSnap.hasError;
               if (all.isEmpty) return EmptyState(icon: Icons.description_outlined, title: tr(context, 'lrrNone'));
               final now = widget.now();
               final rows = LrRegister.rows(all, shares);
               final counts = LrRegister.counts(rows);
               final shown = LrRegister.filter(rows, query: _query.text, status: _status);
               return ListView(padding: const EdgeInsets.fromLTRB(16, 8, 16, 30), children: [
+                if (linksFailed) Padding(padding: const EdgeInsets.only(bottom: 8), child: Text(tr(context, 'lrrLinksFailed'), key: const ValueKey('lrrLinksFailed'), style: DsStyle.t12w400.copyWith(color: AppColors.muted))),
                 TextField(
                   key: const ValueKey('lrrSearch'),
                   controller: _query,

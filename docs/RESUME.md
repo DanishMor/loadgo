@@ -2,8 +2,8 @@
 
 Plan: docs/MASTER_PLAN_PART5.md. Read it, then continue from NEXT. Part 4 is complete (git log, tags ux-v2-phase4..6).
 
-LAST_DONE: Part 5 finished (H0 to H34). See the end of docs/BUG_REPORT.md, docs/SECURITY_SCORECARD.md, docs/KNOWN_RISKS.md, docs/REDTEAM_RESULTS.md, docs/RULES_CONTRACT.md. Final checks: flutter analyze 0 issues; Flutter regression all 11 batches green (after fixing H-13 to H-15); rules suite all green (13 + 167 + 66 + 263 + 31 + 116 + 114 + 126 + 158); functions lint, unit 43, emulator 167; web release build and obfuscated APK release build done (APK 114.5 MB universal, 66.6 MB arm64).
-NEXT: nothing is left for code in docs/MASTER_PLAN_PART5.md. Owner steps: docs/RELEASE_CANDIDATE.md section H (publish rules and indexes, deploy functions and hosting, restrict API keys, phone rows H1 to H7), docs/BLOCKED.md, docs/PENTEST_CHECKLIST.md for an outside tester. Open with a plan: KNOWN_RISKS 1 (extra fields on a new load, S3), 6 and 10 (S4).
+LAST_DONE: Load 20 FINAL2 (docs/MASTER_PLAN_FINAL2.md) Z2 done (LR register no longer hidden by a failing share-link query).
+NEXT: Z1 (Diagnose screen), Z3, Z4... in order from docs/MASTER_PLAN_FINAL2.md. Z7 hints: Coming Soon toasts in lib/auth/driver_pending_screen.dart:36 and lib/driver/driver_home_screen.dart:186.
 
 Unfinished / to remember:
 - Never edit hosting/*.html by hand: edit tool/templates/hosting/ and run `dart run tool/apply_app_info.dart`. Scripts and styles live in hosting/assets/.
