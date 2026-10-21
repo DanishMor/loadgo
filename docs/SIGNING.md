@@ -59,3 +59,6 @@ Is SHA ko Firebase app mein jodna hai. **Play App Signing ke baad** Play Console
 
 ## 8. Test
 `test/signing_ignore_test.dart` sabit karta hai ki `*.jks`, `*.keystore` aur `key.properties` (kisi bhi folder mein) git ignore karta hai.
+
+## 9. Script se (aasaan raasta, Z15)
+`.\tool\make_keystore.ps1` (aap chalayein, Claude nahi). Yeh Android Studio ke jbr ka keytool use karta hai, keystore `%USERPROFILE%\load20-keys\load20-upload.jks` mein banata hai (repo ke bahar), password hidden prompt se poochhta hai (kabhi screen par ya command line mein nahi aata), aur git-ignored `android\key.properties` likhta hai. Purana keystore ya key.properties overwrite nahi karta. Aakhir mein backup ka reminder chhapta hai: **backup ke bina app update nahi ho sakti**. Test: `flutter test --concurrency=1 test/signing_files_test.dart`.
