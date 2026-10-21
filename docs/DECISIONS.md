@@ -44,3 +44,4 @@ One line per assumption taken without asking.
 - U28: skip reasons are shown but not stored (no server field for them); back on the card counts as Skip.
 - Z2: LR register queries (lrs by issuerId, lr_shares by ownerId) match rules and need no composite index; kept the customer/fleet-owner list clauses in rules but the app lists only by issuer. Share-link query is now non-blocking. Likely live cause: rules/indexes not published.
 - Z1: Diagnose probes use the same service streams as the screens (first event, 6 s timeout); limit 1 is not forced because the services own their limits. Server time difference is not measured (no free read gives it, the screen never writes). Device model shows the platform name only (no new plugin).
+- Z9: skipped, rules would have to let an admin write documents under another user's id; written in docs/BLOCKED.md.

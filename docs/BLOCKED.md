@@ -45,3 +45,10 @@ Nothing moved into the free stack: every item above still needs a paid service, 
 | Server wave and server auto-accept | Functions are written and tested on the emulator but not deployed | Same deploy |
 | Skip reason storage | A new field needs a rules and functions change that only the owner publishes | Owner decision |
 | Real phone run of rows 1 to 13 in docs/RELEASE_CANDIDATE.md section G | No phone run is allowed here | Owner |
+
+## Load 20 FINAL2 (2026-10-21)
+
+| Item | Why blocked | What is needed |
+|---|---|---|
+| Z9 Admin "Test lab" (fake drivers bid, fake driver accepts, one-tap driver approval) | The rules only let a driver create their own bid (`offers` create needs `validOfferCreate`, which ties `driverId` to `request.auth.uid`) and only the real driver accept an instant load. Letting an admin write bids or bookings for another user id would open a path to fake bids, fake bookings and fake money lines on a real project, which weakens the rules. The plan says to skip in that case. | Owner decision. Safer options that need no rule change: test with the three test numbers (+91 9999900001/2/3) on two phones, or run the Bid Room through the emulator tests that already exist (`test/` and `firestore_rules_test`). A server-side Test lab (a Cloud Function that writes demo documents with the admin SDK, flag OFF) is possible after Blaze; it is a paid-plan item (see docs/NOT_FREE.md). |
+| Z1 server time difference | No free read returns the server clock without a write, and the Diagnose screen never writes. | None; the report says "not measured". |
