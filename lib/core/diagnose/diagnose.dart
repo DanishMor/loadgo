@@ -166,7 +166,7 @@ class Diagnose {
     String projectId = '',
   }) {
     final b = StringBuffer()
-      ..writeln('Load 20 diagnose report')
+      ..writeln('${AppInfo.name} diagnose report')
       ..writeln('project: ${projectId.isEmpty ? DefaultFirebaseOptions.currentPlatform.projectId : projectId}')
       ..writeln('app version: $appVersion')
       ..writeln('platform: ${Redactor.clean(platform)}')

@@ -304,3 +304,10 @@ Every row sits behind a switch that is OFF (see the flag table above). Setup doc
 | Speed budgets and cost guards | `test/perf_budget_test.dart`, `test/query_cost_guard_test.dart`, `test/lifecycle_guard_test.dart`, `docs/PERFORMANCE.md`, `docs/COST_WATCH.md` |
 | Data map, secrets scan, dependencies | `docs/DATA_MAP.md`, `docs/SECRETS_SCAN_PART5.md`, `docs/DEPENDENCY_AUDIT_PART5.md` |
 | Baseline, risks, scorecard, tester checklist | `docs/BASELINE.md`, `docs/KNOWN_RISKS.md`, `docs/SECURITY_SCORECARD.md`, `docs/PENTEST_CHECKLIST.md` |
+
+## Load 20 FINAL2 additions
+| What | Where |
+|---|---|
+| Diagnose problem (all roles) | Help > Diagnose problem; also the Diagnose button on every error screen (codes E-PERM, E-INDEX, E-NET, E-TIMEOUT) |
+| Owner tools | `tool/phone.ps1`, `tool/run_regression.ps1`, `tool/status.ps1`, `tool/make_keystore.ps1`, `tool/change_package_id.ps1`, `node tool/check_indexes.js`, `node tool/rules_app_drift.js`, `node tool/screen_inventory.js`, `node tool/translation_merge.js`, `node tool/translation_apply.js` |
+| Owner docs | docs/START_HERE.md, OWNER_TODO.md, RULES_PUBLISH.md, PHONE_SMOKE_SHEET.md, PHONE_TOOLS.md, TESTING.md, PILOT_DISTRIBUTION.md, SIZE.md, CI.md, NOT_FREE.md |

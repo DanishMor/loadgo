@@ -85,3 +85,9 @@ Phone rows (add to the phone sheet):
 | H5 | Driver feed with 200+ loads | scrolls smoothly, no pause when the list updates |
 | H6 | Admin > Features: emergency card, switch off "Push messages", confirm, then set it back to On below | saved both times, the app obeys within a minute |
 | H7 | Profile / long lists on a 2 GB phone after 20 photos | no crash, memory falls after leaving the screen |
+
+## Load 20 FINAL2 (Z22, 2026-10-21)
+- `flutter analyze`: 0 issues. Flutter regression (`tool/run_regression.ps1`): 11 batches; one failure (`naming_test`: the Diagnose report spelled the app name) was fixed and re-run green, then everything else was green.
+- Rules suite (`sh run-tests.sh`, includes the contract and red-team files): exit 0, last suite 158/158. Functions: lint clean, unit 43/43.
+- `flutter build web --release` (normal and admin): **NOT RUN**. Free memory was 4.4 GB (rule: 5 GB or more). Owner or next session: run them when memory is free.
+- Owner steps added: docs/OWNER_TODO.md, docs/RULES_PUBLISH.md, docs/PHONE_SMOKE_SHEET.md.

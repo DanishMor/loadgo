@@ -163,3 +163,6 @@ Run order and memory rule: tests run in batches of about 30 files with `--concur
 | Speed and cost | budgets for fare, ranking, parsing, log cleaning; unbounded listeners may only decrease; no setState after await | `test/perf_budget_test.dart`, `test/query_cost_guard_test.dart`, `test/lifecycle_guard_test.dart` |
 
 Run order for the emulator suites (one at a time, Java from Android Studio): `sh run-tests.sh` in `firestore_rules_test` (storage, matrix, contract, red team, rules slices); `npm run test:emulator` in `functions`.
+
+## Load 20 FINAL2
+Phone test: docs/PHONE_SMOKE_SHEET.md (31 steps, two phones). After publishing rules: docs/RULES_PUBLISH.md section C. Laptop: docs/TESTING.md.
