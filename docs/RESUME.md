@@ -2,8 +2,8 @@
 
 Plan: docs/MASTER_PLAN_PART5.md. Read it, then continue from NEXT. Part 4 is complete (git log, tags ux-v2-phase4..6).
 
-LAST_DONE: FINAL2 Z1-Z7, Z10, Z11 done; Z9 skipped (BLOCKED.md).
-NEXT: Z8 first-run empty states, Z12 PHONE_SMOKE_SHEET, Z13 START_HERE+OWNER_TODO, Z14.. from docs/MASTER_PLAN_FINAL2.md.
+LAST_DONE: FINAL2 Z1-Z7, Z10-Z13 done; Z9 skipped (BLOCKED.md).
+NEXT: Z14 translation tools, Z15 make_keystore, Z16 change_package_id, Z17 PILOT_DISTRIBUTION, Z18.. then Z8, Z21, Z22 from docs/MASTER_PLAN_FINAL2.md.
 
 Unfinished / to remember:
 - Never edit hosting/*.html by hand: edit tool/templates/hosting/ and run `dart run tool/apply_app_info.dart`. Scripts and styles live in hosting/assets/.
