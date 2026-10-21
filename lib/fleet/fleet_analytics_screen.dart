@@ -58,7 +58,7 @@ class _FleetAnalyticsScreenState extends State<FleetAnalyticsScreen> {
             stream: () => _expenses,
             compact: true,
             builder: (context, expenses) {
-              if (vehicles.isEmpty) return EmptyState(icon: Icons.insights_outlined, title: tr(context, 'fleetNoVehicles'));
+              if (vehicles.isEmpty) return EmptyState(icon: Icons.insights_outlined, title: tr(context, 'fleetNoVehicles'), subtitle: tr(context, 'fleetNoVehiclesSub'));
               final a = FleetAnalytics.from(vehicles: vehicles, bookings: bookings, expenses: expenses, members: members, now: widget.now());
               return ListView(padding: const EdgeInsets.fromLTRB(16, 4, 16, 24), children: [
                 Row(children: [

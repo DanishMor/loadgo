@@ -398,7 +398,7 @@ class _AvailableLoadsViewState extends State<AvailableLoadsView> {
                 final all = _wave(_withNearby(page));
                 final list = _v2 ? sortFeed(_ordered(_filter.apply(all)), _sort) : _ordered(_filter.apply(all));
                 if (all.isEmpty) {
-                  return EmptyState(icon: Icons.inventory_2_rounded, title: tr(context, 'noAvailableLoads'));
+                  return EmptyState(icon: Icons.inventory_2_rounded, title: tr(context, 'noAvailableLoads'), subtitle: tr(context, 'frAvailSub'));
                 }
                 if (list.isEmpty) {
                   return EmptyState(

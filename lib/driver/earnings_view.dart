@@ -125,7 +125,7 @@ class EarningsView extends StatelessWidget {
                   style: DsStyle.t18w700.copyWith(color: AppColors.title)),
               const SizedBox(height: 10),
               if (e.delivered.isEmpty)
-                EmptyState(icon: Icons.account_balance_wallet_outlined, title: tr(context, 'noEarningsYet'))
+                EmptyState(icon: Icons.account_balance_wallet_outlined, title: tr(context, 'noEarningsYet'), subtitle: tr(context, 'frEarningsSub'))
               else
                 for (final b in e.delivered) ...[
                   AppCard(

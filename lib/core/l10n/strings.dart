@@ -85,6 +85,7 @@ import 'transporter_board_strings.dart';
 import 'bulk_bid_strings.dart';
 import 'lr_register_strings.dart';
 import 'diagnose_strings.dart';
+import 'first_run_strings.dart';
 import 'inspection_polish_strings.dart';
 import 'chat_quick_strings.dart';
 import 'strike_appeal_strings.dart';
@@ -217,6 +218,7 @@ const List<Map<String, List<String>>> stringTables = [
   bulkBidStrings,
   lrRegisterStrings,
   diagnoseStrings,
+  firstRunStrings,
   inspectionPolishStrings,
   chatQuickStrings,
   strikeAppealStrings,

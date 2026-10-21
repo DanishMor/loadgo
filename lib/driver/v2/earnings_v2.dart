@@ -156,7 +156,7 @@ class EarningsV2 extends StatelessWidget {
         Text(tr(context, 'recentTrips'), style: DsType.title.copyWith(color: c.textStrong)),
         const SizedBox(height: DsSpace.s2),
         if (e.delivered.isEmpty)
-          EmptyState(icon: Icons.account_balance_wallet_outlined, title: tr(context, 'noEarningsYet'))
+          EmptyState(icon: Icons.account_balance_wallet_outlined, title: tr(context, 'noEarningsYet'), subtitle: tr(context, 'frEarningsSub'))
         else
           for (final b in e.delivered) ...[
             AppCard(

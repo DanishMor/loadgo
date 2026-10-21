@@ -34,7 +34,7 @@ class MyOffersScreen extends StatelessWidget {
           stream: OfferService.watchMine,
           builder: (context, offers) {
             if (offers.isEmpty) {
-              return EmptyState(icon: Icons.local_offer_outlined, title: tr(context, 'noMyOffers'));
+              return EmptyState(icon: Icons.local_offer_outlined, title: tr(context, 'noMyOffers'), subtitle: tr(context, 'frOffersSub'));
             }
             return ListView.separated(
               padding: const EdgeInsets.fromLTRB(20, 10, 20, 30),

@@ -228,7 +228,7 @@ class _TransporterLoadsScreenState extends State<TransporterLoadsScreen> {
       body: LiveStream<List<Load>>(
         stream: () => _loads,
         builder: (context, all) {
-          if (all.isEmpty) return EmptyState(icon: Icons.inventory_2_outlined, title: tr(context, 'trpNoLoads'));
+          if (all.isEmpty) return EmptyState(icon: Icons.inventory_2_outlined, title: tr(context, 'trpNoLoads'), subtitle: tr(context, 'frAvailSub'));
           final hasRoutes = _profile.routes.isNotEmpty;
           final ranked = LoadFit.rank(_filter.apply(all), _profile);
           final shown = _onlyMine && hasRoutes ? [for (final f in ranked) if (f.route) f] : ranked;

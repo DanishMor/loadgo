@@ -70,7 +70,7 @@ class _MyBidsV2State extends State<MyBidsV2> {
     return LiveStream<List<Offer>>(
       stream: OfferService.watchMine,
       builder: (context, offers) {
-        if (offers.isEmpty) return EmptyState(icon: Icons.local_offer_outlined, title: tr(context, 'noMyOffers'));
+        if (offers.isEmpty) return EmptyState(icon: Icons.local_offer_outlined, title: tr(context, 'noMyOffers'), subtitle: tr(context, 'frOffersSub'));
         final counts = bidCounts(offers);
         final shown = _group == null ? offers : [for (final o in offers) if (bidGroupOf(o.status) == _group) o];
         return Column(children: [

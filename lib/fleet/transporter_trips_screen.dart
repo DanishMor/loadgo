@@ -245,7 +245,7 @@ class _TransporterTripsScreenState extends State<TransporterTripsScreen> {
         builder: (context, offers) {
           WidgetsBinding.instance.addPostFrameCallback((_) => _release(bookings));
           final bids = _bids(context, offers);
-          if (bookings.isEmpty && bids is SizedBox) return EmptyState(icon: Icons.route_outlined, title: tr(context, 'trpNoTrips'));
+          if (bookings.isEmpty && bids is SizedBox) return EmptyState(icon: Icons.route_outlined, title: tr(context, 'trpNoTrips'), subtitle: tr(context, 'frOffersSub'));
           return ListView(padding: const EdgeInsets.fromLTRB(16, 4, 16, 24), children: [
             bids,
             _late(context, bookings),

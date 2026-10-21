@@ -45,7 +45,7 @@ class UpcomingTripsScreen extends StatelessWidget {
           stream: () => bookings ?? BookingService.watchForDriver(),
           builder: (context, all) {
             final list = upcomingTrips(all, now(), PricingService.config.schedule);
-            if (list.isEmpty) return EmptyState(icon: Icons.event_available_rounded, title: tr(context, 'noUpcomingTrips'));
+            if (list.isEmpty) return EmptyState(icon: Icons.event_available_rounded, title: tr(context, 'noUpcomingTrips'), subtitle: tr(context, 'frUpcomingSub'));
             return ListView.separated(
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 30),
               itemCount: list.length,
