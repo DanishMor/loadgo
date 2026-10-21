@@ -1,0 +1,335 @@
+﻿key,english,text,fix,status
+bizTitle,My business card,Mera business card,"",pending
+bizShare,Share on WhatsApp,WhatsApp par bhejein,"",pending
+bizShowPhone,Show my phone number on the card,Card par mera phone number dikhayein,"",pending
+bizShowPhoneHint,Off by default. Anyone who gets the card can call you.,Shuru mein band. Card paane wala koi bhi aapko phone kar sakta hai.,"",pending
+bizVerified,Verified on Load 20,Load 20 par verified,"",pending
+bizFleet,{n} trucks,{n} truck,"",pending
+bizOnApp,Find me on the app,Mujhe app par dhundhein,"",pending
+bizNoProfile,"Fill in your profile first, then your card is ready.","Pehle apni profile bharein, phir card taiyaar hai.","",pending
+bizShareFailed,Could not share the card. Try again.,Card nahi bhej sake. Phir koshish karein.,"",pending
+checkinAsk,Your truck has been standing for a long time. Are you OK?,Aapka truck bahut der se ruka hai. Kya aap theek hain?,"",pending
+checkinNeedHelp,I need help,Mujhe madad chahiye,"",pending
+checkinThanks,Thank you. Drive safe.,Shukriya. Surakshit chalaiye.,"",pending
+checkinHelpSent,Help is being asked for. Support has your position. Stay where it is safe.,Madad maangi ja rahi hai. Support ke paas aapki jagah hai. Surakshit jagah rukein.,"",pending
+checkinNoAnswerSent,"No answer, so support has been told. They will try to reach you.","Jawab nahi mila, isliye support ko bata diya gaya hai. Woh aapse sampark karenge.","",pending
+checkinNotSent,Could not send the alert. Please call for help.,Alert nahi bhej sake. Kripya phone karke madad lein.,"",pending
+feat_bizCard,Business card to share,Share karne wala business card,"",pending
+featHelp_bizCard,"Transporters and drivers can make a card (name, city, trucks, routes, verified mark) from their profile and send it as a picture on WhatsApp. The phone number is only on the card if the person turns it on each time.","Transporter aur driver apni profile se card (naam, shehar, truck, route, verified nishaan) banakar WhatsApp par tasveer ki tarah bhej sakte hain. Phone number tabhi dikhta hai jab vyakti har baar chalu kare.","",pending
+feat_khata,Party khata,Party khata,"",pending
+featHelp_khata,"A private notebook in Profile: add the people you do business with, write what they owe you or what you owe them, see the balance and send a statement on WhatsApp. Records only, no money moves.","Profile mein ek nijee copy: jinse len-den hai unhe jodein, likhein kiska kitna baaki hai, baaki rakam dekhein aur WhatsApp par hisaab bhejein. Sirf record, paisa nahi chalta.","",pending
+feat_safetyCheckin,Safety check-in on a long stop,Lambe stop par suraksha jaanch,"",pending
+featHelp_safetyCheckin,"When the truck stands for 30 minutes on the road, the driver is asked ""Are you OK?"". One tap for fine, one tap for help (an SOS to support and, with SMS on, to saved contacts). No answer in 10 minutes tells support too.","Jab truck sadak par 30 minute ruka rahe, driver se poocha jata hai ""Kya aap theek hain?"". Ek tap mein theek, ek tap mein madad (support ko SOS aur SMS chalu ho to saved contacts ko). 10 minute mein jawab na aaye to bhi support ko bataya jata hai.","",pending
+feat_payHold,Hold online payment until delivery,Online payment delivery tak roken,"",pending
+featHelp_payHold,"With online payment on, the driver's earning and commission are written when the trip is delivered, not when the customer pays. A refund before delivery lowers what is released. Needs the functions deployed. Off: the driver is credited at once.","Online payment chalu hone par driver ki kamai aur commission trip pahunchne par likhe jaate hain, customer ke paise dete hi nahi. Delivery se pehle refund ho to release rakam kam hoti hai. Functions deploy chahiye. Band: driver ko turant milta hai.","",pending
+feat_rateRange,Usual price on a route,Route par aam bhaada,"",pending
+featHelp_rateRange,"Shows the usual price range of finished trips on the same route and truck type (at least 5 trips), when a load is posted. The server collects only amounts, never names or booking ids. Needs the functions deployed.","Load daalte samay usi route aur truck type ki poori hui trips ka aam bhaada range dikhata hai (kam se kam 5 trips). Server sirf rakam jama karta hai, naam ya booking id nahi. Functions deploy chahiye.","",pending
+feat_tripTrustCard,Driver trust on offers and trips,Offers aur trip par driver ki saakh,"",pending
+featHelp_tripTrustCard,"The customer sees the driver's trips done, star rating, verified mark and member-since month on offers and on the trip. Numbers are written by the server only; needs the server trip counts switch and the functions deployed. No name, phone or papers.","Customer ko offers aur trip par driver ki poori hui trips, star rating, verified nishaan aur member-since mahina dikhta hai. Aankde sirf server likhta hai; server trip counts switch aur functions deploy chahiye. Naam, phone ya kaagzaat nahi.","",pending
+feat_appCheckEnforce,Refuse calls from unknown apps,Anjaan app ki call mana karein,"",pending
+featHelp_appCheckEnforce,"The server refuses payment, maps, SMS and ID-check calls that do not carry the real app's proof (App Check). Turn on only after the app is registered and the logs show almost no missing proofs. Off: the calls are only counted.","Server un payment, map, SMS aur ID jaanch calls ko mana karta hai jinmein asli app ka praman (App Check) nahi hai. App register hone aur logs mein lagbhag koi kami na dikhne ke baad hi chalu karein. Band: calls sirf ginti jaati hain.","",pending
+feat_kycVerify,"ID checks (licence, RC, PAN, GST)","ID jaanch (licence, RC, PAN, GST)","",pending
+featHelp_kycVerify,"After a driver saves papers, the server checks the numbers with the ID partner (or the sandbox) and shows the admin the answer. Without a partner the admin looks at the papers as before. Aadhaar: only the last four digits, never looked up.","Driver ke kaagzaat save karne par server numbers ko ID partner (ya sandbox) se jaanchta hai aur admin ko jawab dikhata hai. Partner na ho to admin pehle ki tarah kaagzaat dekhta hai. Aadhaar: sirf aakhri chaar ank, kabhi khoje nahi jaate.","",pending
+feat_smsGateway,SMS messages,SMS messages,"",pending
+featHelp_smsGateway,"Short SMS for trip steps to a customer who cannot get push, and the SOS message to the person's own emergency contacts. Needs the functions deployed, an SMS partner key and approved templates. The login code is not affected.","Jin customers ko push nahi milta unhe trip steps ka chhota SMS, aur SOS par apne emergency contacts ko message. Functions deploy, SMS partner key aur approved templates chahiye. Login code par asar nahi.","",pending
+feat_liveLocation,Live trip location,Trip ki live location,"",pending
+featHelp_liveLocation,"The driver shares the truck position during the trip (with their consent), with a visible notification, few database writes and a stop when the trip ends. Off: the older sharing while the trip screen is open.","Driver ki sahmati se trip ke dauran truck ki jagah share hoti hai: dikhne wala notification, kam database writes, trip khatam hone par band. Band: purana tarika (trip screen khuli rehne tak).","",pending
+feat_maps,Maps and road distance,Map aur sadak ki doori,"",pending
+featHelp_maps,"Real road distance and time for fares and trips, and the trip map. Needs the functions deployed and a Maps key set as a secret. Off: the built-in city table.","Kiraye aur trip ke liye asli sadak ki doori aur time, aur trip ka map. Functions deploy aur Maps key secret chahiye. Band: shehron ki andar wali table.","",pending
+khataTitle,Khata (who owes whom),Khata (kisko kitna baaki),"",pending
+khataAddParty,Add a party,Party jodein,"",pending
+khataPartyName,Name of the party,Party ka naam,"",pending
+khataNote,Note (optional),Note (zaroori nahi),"",pending
+khataEmpty,No party yet,Abhi koi party nahi,"",pending
+khataEmptyHint,Add the people you do business with and write what they owe you or what you owe them.,Jinse aapka len-den hai unhe jodein aur likhein ki unhe aapko kitna dena hai ya aapko unhe.,"",pending
+khataTheyOwe,They owe me,Unhe mujhe dena hai,"",pending
+khataIOwe,I owe them,Mujhe unhe dena hai,"",pending
+khataSettled,All settled,Hisaab barabar,"",pending
+khataRecordsOnly,This is only your own notebook. It is not a payment and not a legal account.,Yeh sirf aapki apni copy hai. Yeh payment nahi hai aur kanooni khata bhi nahi.,"",pending
+khataTooMany,You have the most parties allowed (100). Delete one first.,Aapke paas sabse zyada parties (100) hain. Pehle ek hataein.,"",pending
+khataAddOwed,They owe me more,Unhe aur dena hai,"",pending
+khataAddReceived,They paid,Unhone diya,"",pending
+khataAmount,Amount in rupees,Rakam (rupaye),"",pending
+khataNoLines,No lines yet. Tap one of the buttons above.,Abhi koi line nahi. Upar ka koi button dabayein.,"",pending
+khataDeleteLine,Delete this line,Yeh line hataein,"",pending
+khataDeleteLineHint,The balance is corrected. Enter the right amount again.,Baaki rakam sudhar jaayegi. Sahi rakam phir se daalein.,"",pending
+khataShare,Share statement,Hisaab bhejein,"",pending
+khataCopied,The statement was copied. Paste it in a message.,Hisaab copy ho gaya. Message mein paste karein.,"",pending
+khataOwedWord,Owed,Baaki,"",pending
+khataReceivedWord,Received,Mila,"",pending
+khataBalanceWord,Balance,Baaki rakam,"",pending
+kycChipVerified,{kind}: ID check passed,{kind}: ID jaanch pass,"",pending
+kycChipMismatch,{kind}: name on the record differs. Please look.,{kind}: record mein naam alag hai. Dekhein.,"",pending
+kycChipNotFound,{kind}: not found in the records. Please look.,{kind}: record mein nahi mila. Dekhein.,"",pending
+kycChipManual,No automatic ID check yet. Please look at the papers yourself.,Abhi koi automatic ID jaanch nahi hui. Kaagzaat khud dekhein.,"",pending
+kycKind_licence,Licence,Licence,"",pending
+kycKind_rc,RC,RC,"",pending
+kycKind_pan,PAN,PAN,"",pending
+kycKind_gstin,GSTIN,GSTIN,"",pending
+kycKind_aadhaar,Aadhaar (last 4),Aadhaar (aakhri 4),"",pending
+liveNoticeTitle,Load 20 is sharing your trip location,Load 20 aapki trip ki location share kar raha hai,"",pending
+liveNoticeText,Only the customer of this trip sees it. It stops when the trip ends.,Sirf is trip ka customer ise dekhta hai. Trip khatam hone par band ho jaati hai.,"",pending
+liveNoConsent,Turn on location sharing in Settings so the customer can follow this trip.,Customer trip dekh sake isliye Settings mein location sharing chalu karein.,"",pending
+liveNoPermission,Allow location for Load 20 in your phone settings to share this trip.,Yeh trip share karne ke liye phone settings mein Load 20 ko location ki permission dein.,"",pending
+lastSeenNow,Last seen just now,Abhi abhi dekha gaya,"",pending
+lastSeenMinutes,Last seen {n} min ago,{n} minute pehle dekha gaya,"",pending
+lastSeenHours,Last seen {n} h ago,{n} ghante pehle dekha gaya,"",pending
+tripMapTitle,Trip map,Trip ka map,"",pending
+tripMapOpen,Show on map,Map par dekhein,"",pending
+tripMapNone,The map is not available for this trip.,Is trip ke liye map available nahi hai.,"",pending
+tripMapPickup,Pickup,Pickup,"",pending
+tripMapDrop,Drop,Drop,"",pending
+tripMapDriver,Driver,Driver,"",pending
+payOnline,Pay online,Online payment karein,"",pending
+payOnlineDone,Payment received. The driver is paid when the trip is done.,Payment mil gayi. Trip poori hone par driver ko paisa milega.,"",pending
+payOnlineCancelled,Payment was not completed. Nothing was charged by us.,Payment poori nahi hui. Humne kuch nahi kata.,"",pending
+payOnlineFailed,"Could not check the payment. If money was cut, it is safe: wait a few minutes or contact support.",Payment check nahi ho saki. Paise kate hon to surakshit hain: kuch minute ruko ya support se baat karo.,"",pending
+payOnlineUnavailable,"Online payment is not available right now. Use ""I have paid"" instead.","Online payment abhi available nahi hai. ""Maine paid kar diya"" use karein.","",pending
+payHeldLine,Paid online: {amount}. Held safely and given to the driver when the trip is delivered.,"Online payment: {amount}. Surakshit rakha hai, trip pahunchne par driver ko milega.","",pending
+ptTrips,{n} trips done,{n} trip poori,"",pending
+ptTripsOne,1 trip done,1 trip poori,"",pending
+ptRating,{r} stars ({n}),{r} star ({n}),"",pending
+ptSince,Since {month},{month} se,"",pending
+ptVerified,Verified,Verified,"",pending
+ptNew,New on Load 20,Load 20 par naye,"",pending
+rrUsual,Usual price on this route: {low} to {high} ({n} trips),Is route par aam bhaada: {low} se {high} ({n} trip),"",pending
+feat_dispatchV2,Nearby-first dispatch and bidding,Paas ke driver pehle aur boli,"",pending
+featHelp_dispatchV2,"Loads go to the nearest drivers first, then wider rings. Customers can pick Instant, Bid or Schedule. Turn on only after the new Firestore rules are published. Off: the old open load and offers work as before.","Load pehle sabse paas ke driver ko jaata hai, phir bade ghere mein. Customer Turant, Boli ya Schedule chun sakta hai. Naye Firestore rules publish hone ke baad hi chalu karein. Band hone par purana open load aur offers pehle jaise chalte hain.","",pending
+feat_uiV2,New look and booking steps,Naya design aur booking ke steps,"",pending
+featHelp_uiV2,"The new home, 5-step booking, bid room, incoming-load card and trip screens. Turn it off to go back to the old screens. Works with or without the new dispatch switch.","Naya home, 5 step ki booking, boli room, aane wale load ka card aur trip screens. Band karne par purani screens wapas aati hain. Naye dispatch switch ke saath ya bina, dono mein chalta hai.","",pending
+adminDispatchMonitor,Dispatch monitor,Dispatch monitor,"",pending
+dmLive,Live loads,Chalu load,"",pending
+dmFilled,Taken by a driver,Driver ne liye,"",pending
+dmExpiredNoBid,Expired with no bid,Bina boli khatam,"",pending
+dmExpiredBids,Expired with bids,Boli ke saath khatam,"",pending
+dmFirstBid,Time to first bid,Pehli boli mein samay,"",pending
+dmFillTime,Time to fill,Load bharne mein samay,"",pending
+dmAcceptance,"Taken, out of all finished",Poore huye mein se liye gaye,"",pending
+dmPriceVsEstimate,Price against estimate,Anumaan ke muqable bhaada,"",pending
+dmNoShows,No-show cancels,Nahi pahunchne par radd,"",pending
+dmShown,Drivers shown,Dikhaye gaye driver,"",pending
+dmShownNote,Known after the server wave is on.,Server wave chalu hone ke baad pata chalega.,"",pending
+dmRing,Ring {n},Ghera {n},"",pending
+dmBids,{n} bids,{n} boliyan,"",pending
+dmStalled,Nobody yet,Abhi koi nahi,"",pending
+dmMinutes,{n} min,{n} min,"",pending
+dmSeconds,{n} s,{n} sec,"",pending
+dmNone,No data yet,Abhi data nahi,"",pending
+dmRecent,Recent loads,Haal ke load,"",pending
+dmModeInstant,Instant,Turant,"",pending
+dmModeBid,Bid,Boli,"",pending
+dmModeScheduled,Schedule,Schedule,"",pending
+brTitle,Bid room,Boli room,"",pending
+brBids,Bids,Boliyan,"",pending
+brWaiting,Drivers are looking at your load.,Driver aapka load dekh rahe hain.,"",pending
+brWindowLeft,Bidding closes in,Boli band hone mein,"",pending
+brWindowClosed,Bidding is closed.,Boli band ho gayi.,"",pending
+brNoBids,No bids yet.,Abhi koi boli nahi.,"",pending
+brNoBidsHelp,What next?,Ab kya karein?,"",pending
+brRaisePrice,Raise the price,Bhaada badhayein,"",pending
+brMoreTime,Give more time,Aur samay dein,"",pending
+brGoInstant,Go instant,Turant par jayein,"",pending
+brSchedule,Book for later,Baad ke liye book karein,"",pending
+brAccept,Accept this bid,Yeh boli manzoor karein,"",pending
+brAcceptAsk,Accept the bid of {amount}? The other bids will close.,{amount} ki boli manzoor karein? Baaki boliyan band ho jayengi.,"",pending
+brYes,"Yes, accept","Haan, manzoor","",pending
+brCounterTitle,Your counter price,Aapka jawabi bhaada,"",pending
+brCounterHint,You can counter once. The driver can say yes.,Aap ek baar jawab de sakte hain. Driver haan keh sakta hai.,"",pending
+brSend,Send,Bhejein,"",pending
+brCounterSent,Counter sent: {amount},Jawabi bhaada bheja: {amount},"",pending
+brSelectedWait,Waiting for the driver to confirm.,Driver ki pushti ka intezaar.,"",pending
+brCountered,You countered. Waiting for the driver.,Aapne jawab diya. Driver ka intezaar.,"",pending
+brFound,A driver is confirmed.,Driver pakka ho gaya.,"",pending
+brTrack,Open the trip,Trip kholein,"",pending
+brClosed,This load is closed.,Yeh load band ho gaya hai.,"",pending
+brAutoTitle,Auto-accept,Apne-aap manzoor,"",pending
+brAutoHint,The first bid that fits is accepted. It works while this app is open.,Jo pehli boli fit baithe woh manzoor ho jaati hai. Yeh app khula rehne par chalta hai.,"",pending
+brAutoMax,Highest price (rupees),Sabse zyada bhaada (rupaye),"",pending
+brAutoRating,Lowest rating,Sabse kam rating,"",pending
+brAny,Any,Koi bhi,"",pending
+brVerifiedOnly,Verified drivers only,Sirf verified driver,"",pending
+brSave,Save,Save karein,"",pending
+brAutoOff,Turn off,Band karein,"",pending
+brAutoOn,Auto-accept is on: up to {amount},Apne-aap manzoor chalu: {amount} tak,"",pending
+brAutoAccepted,A bid was accepted for you.,Aapke liye ek boli manzoor ho gayi.,"",pending
+brChatAfter,Chat opens after the driver confirms. Phone numbers stay hidden.,Driver ke pakka karne par chat khulegi. Phone number chhupe rehte hain.,"",pending
+bnote_on_the_way,I am on the way,Main raaste mein hoon,"",pending
+bnote_empty_return,Empty on return,Wapsi mein khaali,"",pending
+bnote_loading_help,Loading help available,Loading mein madad milegi,"",pending
+bnote_flexible_time,Flexible on time,Samay mein lachila,"",pending
+bnote_clean_truck,Clean truck,Saaf truck,"",pending
+wzTitle,Book a truck,Truck book karo,"",pending
+wzStepOf,Step {n} of {m},Step {n} / {m},"",pending
+wzQ1,Where should the truck go?,Truck kahan se kahan jayega?,"",pending
+wzQ2,What are you sending?,Kya bhej rahe hain?,"",pending
+wzQ3,Which truck?,Kaun sa truck?,"",pending
+wzQ4,What price and how?,Kitna bhaada aur kaise?,"",pending
+wzQ5,Check and book,Jaanchein aur book karein,"",pending
+wzPickup,Pickup city,Uthane ka shehar,"",pending
+wzDrop,Drop city,Pahunchane ka shehar,"",pending
+wzRecent,Recent routes,Haal ke route,"",pending
+wzWeight,Weight: {w} tons,Wazan: {w} ton,"",pending
+wzSuggested,Fits your load,Aapke maal ke liye sahi,"",pending
+wzTooSmall,Too small for this weight,Is wazan ke liye chhota hai,"",pending
+wzCapacity,Up to {t} tons,{t} ton tak,"",pending
+wzNext,Next,Aage,"",pending
+wzBack,Back,Peeche,"",pending
+wzModeTitle,How should drivers reply?,Driver kaise jawab dein?,"",pending
+wzModeInstant,Instant,Turant,"",pending
+wzModeInstantHint,Nearest drivers first. First yes wins.,Pehle paas ke driver. Pehli haan jeetti hai.,"",pending
+wzModeBid,Bid,Boli,"",pending
+wzModeBidHint,Drivers send prices. You choose.,Driver bhaada bhejte hain. Aap chunte hain.,"",pending
+wzModeSchedule,Schedule,Schedule,"",pending
+wzModeScheduleHint,Book for a later day or time.,Baad ke din ya samay ke liye.,"",pending
+wzWhen,Pickup day and time,Uthane ka din aur samay,"",pending
+wzPickDate,Pick a day and time,Din aur samay chunein,"",pending
+wzTotal,Estimated total,Anumaanit kul,"",pending
+wzYourPrice,Your price,Aapka bhaada,"",pending
+wzBookSlide,Slide to book,Book karne ke liye sarkayein,"",pending
+wzTerms,By booking you accept the terms of {app}.,Book karne par aap {app} ki sharten maante hain.,"",pending
+wzDraftBack,Your earlier answers are back.,Aapke purane jawab wapas aa gaye.,"",pending
+wzNeedRoute,Choose both cities.,Dono shehar chunein.,"",pending
+wzNeedGoods,Choose what you send and the weight.,Maal aur wazan chunein.,"",pending
+wzNeedTruck,Choose a truck.,Truck chunein.,"",pending
+wzNeedDate,Pick a pickup day.,Uthane ka din chunein.,"",pending
+wzNoQuote,We cannot work out a price for this route. Type your own price.,Is route ka bhaada nahi nikal saka. Apna bhaada likhein.,"",pending
+wzPostedBid,Bidding is open. Drivers are sending prices.,Boli shuru hai. Driver bhaada bhej rahe hain.,"",pending
+wzNeedPrice,Type your price.,Apna bhaada likhein.,"",pending
+wzDateTooSoon,Choose a later time.,Thoda baad ka samay chunein.,"",pending
+wzDateTooFar,Choose an earlier day.,Thoda pehle ka din chunein.,"",pending
+hvBookBig,Book a truck,Truck book karo,"",pending
+hvHeroSub,"Five easy questions. Pick instant, bid or schedule.","Paanch aasaan sawaal. Turant, boli ya schedule chunein.","",pending
+hvTrip,Your trip,Aapki trip,"",pending
+hvWaitingLoads,{n} load waiting for drivers,{n} load driver ka intezaar kar raha hai,"",pending
+hvOpen,Open,Kholein,"",pending
+hvTrust1,Verified drivers,Verified driver,"",pending
+hvTrust2,OTP at pickup and delivery,Uthane aur pahunchane par OTP,"",pending
+hvTrust3,Phone numbers stay hidden,Phone number chhupe rehte hain,"",pending
+hvMore,More,Aur,"",pending
+hvTabHome,Home,Home,"",pending
+hvTabTrips,Trips,Trips,"",pending
+hvTabHelp,Help,Madad,"",pending
+hvTabProfile,Profile,Profile,"",pending
+hvAgain,Book again,Phir se book karein,"",pending
+trActive,Active,Chalu,"",pending
+trUpcoming,Upcoming,Aane wali,"",pending
+trPast,Past,Purani,"",pending
+trEmptyActive,No trip right now. Book a truck to start.,Abhi koi trip nahi. Shuru karne ke liye truck book karein.,"",pending
+trEmptyUpcoming,No trip is booked for later.,Baad ke liye koi trip book nahi.,"",pending
+trEmptyPast,Finished trips will show here.,Poori hui trip yahan dikhengi.,"",pending
+trWaitingDrivers,Waiting for drivers,Driver ka intezaar,"",pending
+trLoadClosed,"Closed, no driver","Band, koi driver nahi","",pending
+uxInstTitle,Looking for a truck near you,Aapke paas truck dhoondh rahe hain,"",pending
+uxInstReach,Searching within {km} km,{km} km ke andar khoj,"",pending
+uxInstRound,Round {n} of {m},Charan {n} / {m},"",pending
+uxInstStalled,No driver has said yes yet,Abhi kisi driver ne haan nahi kahi,"",pending
+uxInstStalledHint,Raise the price a little or search wider.,Bhaada thoda badhayein ya daayra badhayein.,"",pending
+uxRaise5,Raise price 5%,Bhaada 5% badhayein,"",pending
+uxRaise10,Raise price 10%,Bhaada 10% badhayein,"",pending
+uxWiden,Search wider,Daayra badhayein,"",pending
+uxWidenMax,Widest search reached,Sabse bada daayra ho gaya,"",pending
+uxPriceNow,Your price: {amount},Aapka bhaada: {amount},"",pending
+uxPriceRaised,Price is now {amount},Bhaada ab {amount} hai,"",pending
+uxPriceLimit,This is the highest price allowed.,Isse zyada bhaada nahi ho sakta.,"",pending
+uxTakenByOther,Someone else took this load,Yeh load kisi aur ne le liya,"",pending
+dhOnlineOn,You are online,Aap online hain,"",pending
+dhOnlineOff,You are offline,Aap offline hain,"",pending
+dhRadarOn,Looking for loads near you,Aapke paas ke load dhoondh rahe hain,"",pending
+dhRadarWait,{n} load waiting for you,{n} load aapka intezaar kar raha hai,"",pending
+dhRadarOff,Go online to get loads,Load paane ke liye online ho jao,"",pending
+dhRadarNoTruck,Add a truck to get loads,Load paane ke liye truck jodo,"",pending
+dhTruckToday,Truck for today,Aaj ki gaadi,"",pending
+dhMore,More,Aur,"",pending
+dhUpcoming,Coming up,Aane wali trips,"",pending
+ilTitle,New load near you,Aapke paas naya load,"",pending
+ilPickupKm,Pickup {n} km from you,Pickup aapse {n} km door,"",pending
+ilTripKm,Trip {n} km,Trip {n} km,"",pending
+ilAcceptAt,Accept at {price},{price} mein accept karo,"",pending
+ilSendPrice,Send my price,Apna price bhejo,"",pending
+ilSkip,Skip,Skip karo,"",pending
+ilSkipWhy,Why skip? (you can leave this),Kyun skip kiya? (chhod bhi sakte ho),"",pending
+ilWhyFar,Too far,Bahut door,"",pending
+ilWhyLow,Price too low,Bhaada kam hai,"",pending
+ilWhyTruck,Truck not free,Gaadi khaali nahi,"",pending
+ilWhyOther,Other,Kuch aur,"",pending
+ilQueue,{n} more waiting,{n} aur intezaar mein,"",pending
+ilTimeUp,Time is up for this load,Is load ka time khatam,"",pending
+ilNoTruck,No free truck fits this load,Is load ke liye koi khaali gaadi nahi,"",pending
+bsTitle,Your price,Aapka bhaada,"",pending
+bsEtaQ,How soon can you reach pickup?,Pickup tak kab tak pahunchoge?,"",pending
+bsNoteQ,Add a note (optional),Note jodo (zaroori nahi),"",pending
+bsSend,Send price,Price bhejo,"",pending
+bsEdit,Change my price,Mera price badlo,"",pending
+bsEditOnce,You can change your price only once.,Aap price sirf ek baar badal sakte ho.,"",pending
+bsWithdraw,Withdraw bid,Boli wapas lo,"",pending
+bsSent,Price sent,Price bhej diya,"",pending
+bsOutOfRange,Price must be between {lo} and {hi}.,Bhaada {lo} se {hi} ke beech hona chahiye.,"",pending
+bsUsual,Usual: {lo} to {hi},Aam taur par: {lo} se {hi},"",pending
+bsAlready,You already sent a price for this load.,Aap is load ka price pehle bhej chuke ho.,"",pending
+uxKm,{n} km,{n} km,"",pending
+uxRouteLabel,"From {from} to {to}, {km}","{from} se {to}, {km}","",pending
+uxFareUsual,Usual price: {low} to {high},Aam bhaada: {low} se {high},"",pending
+uxFareNoRange,No usual price for this route yet,Is route ka aam bhaada abhi nahi hai,"",pending
+uxFareLow,Low price. Fewer drivers may say yes.,Kam bhaada. Kam driver haan kahenge.,"",pending
+uxFareFair,Fair price. Good chance of a quick yes.,Sahi bhaada. Jaldi haan milegi.,"",pending
+uxFareHigh,High price. You may pay more than needed.,Zyada bhaada. Zaroorat se zyada lag sakta hai.,"",pending
+uxFareYour,Your price,Aapka bhaada,"",pending
+uxFareEstimate,Estimate,Anumaan,"",pending
+uxSlideConfirm,Slide to confirm,Pakka karne ke liye sarkayein,"",pending
+uxSlideDone,Done,Ho gaya,"",pending
+uxSlideHint,"Slide the handle to the end, or double tap to confirm","Handle ko aakhir tak sarkayein, ya do baar dabayein","",pending
+uxSecondsLeft,{n} seconds left,{n} second bache,"",pending
+uxTagBestPrice,Best price,Sabse kam bhaada,"",pending
+uxTagNearest,Nearest,Sabse paas,"",pending
+uxTagTopRated,Top rated,Sabse achhi rating,"",pending
+uxTagFastest,Fastest,Sabse jaldi,"",pending
+uxVerified,Verified,Verified,"",pending
+uxTripsN,{n} trips,{n} trips,"",pending
+uxNewDriver,New driver,Naya driver,"",pending
+uxEtaMin,{n} min away,{n} minute door,"",pending
+uxAccept,Accept,Manzoor karein,"",pending
+uxCounter,Counter,Apna bhaada batayein,"",pending
+uxEmptyTitle,Nothing here yet,Yahan abhi kuch nahi,"",pending
+uxErrorTitle,Something went wrong,Kuch gadbad ho gayi,"",pending
+uxOfflineTitle,No internet,Internet nahi hai,"",pending
+uxTryAgain,Try again,Phir koshish karein,"",pending
+uxClose,Close,Band karein,"",pending
+uxDismiss,Dismiss,Hatayein,"",pending
+uxStepDone,done,ho gaya,"",pending
+uxStepNow,now,abhi,"",pending
+uxStepNext,next,aage,"",pending
+tkMore,More about this trip,Is trip ki aur jaankari,"",pending
+tkBilty,Bilty (LR),Bilty (LR),"",pending
+tkBiltyMake,Make bilty,Bilty banao,"",pending
+tkBiltyOpen,See bilty,Bilty dekho,"",pending
+tkBiltyHint,"Three copies: Full, Driver, Consignee. You see what stays hidden before you send.","Teen copy: Poori, Driver, Consignee. Bhejne se pehle dikhega kya chhupa rahega.","",pending
+pfLogoutAsk,Log out of this phone?,Is phone se logout karein?,"",pending
+fdSortNearest,Nearest,Sabse paas,"",pending
+fdSortPay,Best pay,Sabse zyada bhaada,"",pending
+fdSortNew,Newest,Sabse naya,"",pending
+mbWaiting,Waiting,Intezaar mein,"",pending
+mbCountered,Counter price,Customer ka naya bhaav,"",pending
+mbSelected,Selected,Chune gaye,"",pending
+mbLost,Lost,Nahin mile,"",pending
+mbChange,Change or withdraw,Badlo ya wapas lo,"",pending
+mbNoneHere,Nothing here yet,Yahaan abhi kuchh nahin,"",pending
+tfStep,Step {n} of {total},Step {n} / {total},"",pending
+tfHintPickup,Take a photo of the loaded goods and ask the customer for the pickup code.,Load hue maal ki photo lo aur customer se pickup code maango.,"",pending
+tfHintDelivered,Ask the customer for the delivery code. Delivery cannot be undone.,Customer se delivery code maango. Delivery wapas nahin ho sakti.,"",pending
+epMoneyTitle,Where your money is,Aapka paisa kahaan hai,"",pending
+epWaitCustomer,Waiting for the customer to pay,Customer ke payment ka intezaar,"",pending
+epConfirmReceived,Confirm you got the money,"Paise mile, confirm karo","",pending
+epInWallet,Done: in your wallet,Ho gaya: wallet mein,"",pending
+obStateDone,Done,Ho gaya,"",pending
+obStateNext,Do this next,Ab yeh karo,"",pending
+obStateLater,Later,Baad mein,"",pending
+obDocAdded,Added,Jod diya,"",pending
+obDocMissing,Missing,Baaki hai,"",pending
+obWhyRejected,Why it was not approved,Manzoor kyun nahin hua,"",pending
+adGroupPeople,People and verification,Log aur verification,"",pending
+adGroupOps,"Loads, trips and dispatch","Load, trips aur dispatch","",pending
+adGroupSafety,Safety and trust,Safety aur bharosa,"",pending
+adGroupMoney,Money,Paisa,"",pending
+adGroupTools,"Pilot, support and settings","Pilot, support aur settings","",pending
+fdBid,Bid,Boli,"",pending
+bsCustom,Or type your price (in rupees),Ya apna bhaada likho (rupaye mein),"",pending

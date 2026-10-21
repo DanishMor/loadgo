@@ -1,0 +1,335 @@
+﻿key,english,text,fix,status
+bizTitle,My business card,منز بزنس کارڈ,"",pending
+bizShare,Share on WhatsApp,واٹس ایپس پیٹھ شیئر کرو,"",pending
+bizShowPhone,Show my phone number on the card,کارڈس پیٹھ منز فون نمبر ہیو,"",pending
+bizShowPhoneHint,Off by default. Anyone who gets the card can call you.,شروعاتس منز بند۔ کارڈ ہیون والہ کانہہ تہِ ہیکہ توہہ فون کرتھ۔,"",pending
+bizVerified,Verified on Load 20,Load 20 پیٹھ تصدیق شدہ,"",pending
+bizFleet,{n} trucks,{n} ٹرک,"",pending
+bizOnApp,Find me on the app,ایپس پیٹھ مہ ژارِو,"",pending
+bizNoProfile,"Fill in your profile first, then your card is ready.",ہیتھ پروفائل بھرو، پتہ کارڈ تیار۔,"",pending
+bizShareFailed,Could not share the card. Try again.,کارڈ ناں شیئر کٔرتھ ہیکو۔ پھر کوشش کرو۔,"",pending
+checkinAsk,Your truck has been standing for a long time. Are you OK?,توہنزِ ٹرک چھُ بوڈ وقت روزمت۔ کیا توہہ چھوو ٹھیک؟,"",pending
+checkinNeedHelp,I need help,مہ چھ مدد ضروری,"",pending
+checkinThanks,Thank you. Drive safe.,شکریہ۔ محفوظ چلاو۔,"",pending
+checkinHelpSent,Help is being asked for. Support has your position. Stay where it is safe.,مدد چھ منگنہ یوان۔ سپورٹس کن چھ توہنز جاے۔ محفوظ جاے روزو۔,"",pending
+checkinNoAnswerSent,"No answer, so support has been told. They will try to reach you.",جواب ناں میلیو، لہذا سپورٹس ہیوو بتاونہ آمت۔ ییم کرن توہہ سان رابطہ۔,"",pending
+checkinNotSent,Could not send the alert. Please call for help.,الرٹ ناں روانہ کٔرتھ ہیکو۔ مہربانی کرتھ فون کرو تہٕ مدد حاصل کرو۔,"",pending
+feat_bizCard,Business card to share,شیئر کرنہ خاطرٕ بزنس کارڈ,"",pending
+featHelp_bizCard,"Transporters and drivers can make a card (name, city, trucks, routes, verified mark) from their profile and send it as a picture on WhatsApp. The phone number is only on the card if the person turns it on each time.",ٹرانسپورٹر تہٕ ڈرائیور ہیکن پروفائلہٕ پیٹھ کارڈ بناونہ تہٕ واٹس ایپس پیٹھ تصویر روانہ کٔرتھ۔ فون نمبر چھُ صرف تہِ ییلہ شخص ہر کٔرتہ آن کرِ۔,"",pending
+feat_khata,Party khata,پارٹی کھاتہ,"",pending
+featHelp_khata,"A private notebook in Profile: add the people you do business with, write what they owe you or what you owe them, see the balance and send a statement on WhatsApp. Records only, no money moves.",پروفائلس منز نجی کاپی: لین دین والین شامل کرو، لیکھو کُس کتھ باقی، باقی وچھو تہٕ واٹس ایپس پیٹھ حساب روانہ کرو۔ صرف ریکارڈ۔,"",pending
+feat_safetyCheckin,Safety check-in on a long stop,بوڈ سٹاپس پیٹھ حفاظتی جانچ,"",pending
+featHelp_safetyCheckin,"When the truck stands for 30 minutes on the road, the driver is asked ""Are you OK?"". One tap for fine, one tap for help (an SOS to support and, with SMS on, to saved contacts). No answer in 10 minutes tells support too.","ٹرک روڈس پیٹھ 30 منٹ روزس تہٕ ڈرائیورس پُچھنہ یوان ""کیا توہہ چھوو ٹھیک؟""۔ اکھ ٹیپ ٹھیک، اکھ ٹیپ مدد (سپورٹس SOS)۔ 10 منٹن منز جواب ناں آو تہٕ سپورٹس بتاونہ یوان۔","",pending
+feat_payHold,Hold online payment until delivery,آن لائن ادائیگی ڈیلیوری تام روکو,"",pending
+featHelp_payHold,"With online payment on, the driver's earning and commission are written when the trip is delivered, not when the customer pays. A refund before delivery lowers what is released. Needs the functions deployed. Off: the driver is credited at once.",آن لائن ادائیگی آن سپدس ڈرائیورچ کمائی تہٕ کمیشن لیکھنہ ٹرپ پہنچنس پیٹھ۔ ڈیلیوری برونہہ ریفنڈ سپدس گژھِ رقم کم۔ فنکشن ڈپلائے ضروری۔ بند: فوراً جمع۔,"",pending
+feat_rateRange,Usual price on a route,روٹس پیٹھ عام کرایہ,"",pending
+featHelp_rateRange,"Shows the usual price range of finished trips on the same route and truck type (at least 5 trips), when a load is posted. The server collects only amounts, never names or booking ids. Needs the functions deployed.",لوڈ پاونس وقتہٕ سے روٹ تہٕ ٹرک قسمچ مکمل ٹرپن ہند عام کرایہ حد ہیوان (کم از کم 5 ٹرپ)۔ سرور صرف رقم جمع کران چھُ۔ فنکشن ڈپلائے ضروری۔,"",pending
+feat_tripTrustCard,Driver trust on offers and trips,آفر تہٕ ٹرپس پیٹھ ڈرائیورچ ساکھ,"",pending
+featHelp_tripTrustCard,"The customer sees the driver's trips done, star rating, verified mark and member-since month on offers and on the trip. Numbers are written by the server only; needs the server trip counts switch and the functions deployed. No name, phone or papers.",گاہکس آفر تہٕ ٹرپس پیٹھ ڈرائیورچ مکمل ٹرپ، سٹار ریٹنگ، تصدیق نشان تہٕ ممبرشپ مہینہ ہیوان۔ اعداد چھُ صرف سرور لیکھان۔ ناو، فون، دستاویز ناں۔,"",pending
+feat_appCheckEnforce,Refuse calls from unknown apps,اجنبی ایپ ہند کال رد کرو,"",pending
+featHelp_appCheckEnforce,"The server refuses payment, maps, SMS and ID-check calls that do not carry the real app's proof (App Check). Turn on only after the app is registered and the logs show almost no missing proofs. Off: the calls are only counted.",سرور اصلی ایپچ ثبوت (App Check) بغیر ادائیگی، نقشہ، ایس ایم ایس تہٕ ID کالز رد کران چھُ۔ ایپ رجسٹر گژھنس تہٕ لاگس منز کمی ناں وچھنس پیٹھ ہی آن کرو۔ بند: کالز صرف گنتی گژھن۔,"",pending
+feat_kycVerify,"ID checks (licence, RC, PAN, GST)",شناخت جانچ (لائسنس، RC، PAN، GST),"",pending
+featHelp_kycVerify,"After a driver saves papers, the server checks the numbers with the ID partner (or the sandbox) and shows the admin the answer. Without a partner the admin looks at the papers as before. Aadhaar: only the last four digits, never looked up.",ڈرائیور دستاویز محفوظ کرنس پیٹھ سرور نمبر ID پارٹنر (یا سینڈ باکس) سیتۍ چیک کران تہٕ ایڈمنس ہیوان۔ پارٹنر ناں سپدس تہ ایڈمن وچھان پرانہ طریقہ۔ آدھار: صرف آخری چار ہندسے۔,"",pending
+feat_smsGateway,SMS messages,ایس ایم ایس پیغام,"",pending
+featHelp_smsGateway,"Short SMS for trip steps to a customer who cannot get push, and the SOS message to the person's own emergency contacts. Needs the functions deployed, an SMS partner key and approved templates. The login code is not affected.",پُش ناں ملن والین گاہکن ٹرپ قدمن ہند چھوٹ ایس ایم ایس، تہٕ SOS پیغام ایمرجنسی رابطن۔ فنکشن ڈپلائے، پارٹنر کی تہٕ منظور ٹیمپلیٹ ضروری۔ لاگ اِن کوڈس پیٹھ اثر چھُ نہ۔,"",pending
+feat_liveLocation,Live trip location,ٹرپک لائیو لوکیشن,"",pending
+featHelp_liveLocation,"The driver shares the truck position during the trip (with their consent), with a visible notification, few database writes and a stop when the trip ends. Off: the older sharing while the trip screen is open.",ڈرائیورچ رضامندی سیتۍ ٹرپ دوران ٹرکک جاے شیئر گژھِ: ظاہر نوٹیفکیشن، کم لکھائی، ٹرپ ختم گژھنس پیٹھ بند۔ بند: پرانہ طریقہ۔,"",pending
+feat_maps,Maps and road distance,نقشہ تہٕ روڈک فاصلہ,"",pending
+featHelp_maps,"Real road distance and time for fares and trips, and the trip map. Needs the functions deployed and a Maps key set as a secret. Off: the built-in city table.",کرایہ تہٕ ٹرپ خاطرٕ اصلی روڈک فاصلہ تہٕ وقت، ٹرپ نقشہ۔ فنکشن ڈپلائے تہٕ Maps کی ضروری۔ بند: شہرن ہند فہرست۔,"",pending
+khataTitle,Khata (who owes whom),کھاتہ (کُس کتھ باقی),"",pending
+khataAddParty,Add a party,پارٹی شامل کرو,"",pending
+khataPartyName,Name of the party,پارٹیک ناو,"",pending
+khataNote,Note (optional),نوٹ (اختیاری),"",pending
+khataEmpty,No party yet,اجی کانہہ پارٹی ناں,"",pending
+khataEmptyHint,Add the people you do business with and write what they owe you or what you owe them.,یمن سیتۍ لین دین چھُ تمام شامل کرو تہٕ لیکھو کُس کتھ دینچ چھُ۔,"",pending
+khataTheyOwe,They owe me,ییمن چھُ مہ دُن,"",pending
+khataIOwe,I owe them,مہ چھُ ییمن دُن,"",pending
+khataSettled,All settled,حساب برابر,"",pending
+khataRecordsOnly,This is only your own notebook. It is not a payment and not a legal account.,یہ چھُ صرف توہنز پننۍ کاپی۔ یہ چھُ ادائیگی ناں تہٕ قانونی کھاتہ تہِ ناں۔,"",pending
+khataTooMany,You have the most parties allowed (100). Delete one first.,توہہ سیتۍ چھ زیادہ پیٹھ زیادہ پارٹیز (100)۔ پیٹھ اکھ ہٹاو۔,"",pending
+khataAddOwed,They owe me more,ییمن چھُ مزید دُن,"",pending
+khataAddReceived,They paid,یمو دیت,"",pending
+khataAmount,Amount in rupees,رقم (روپے),"",pending
+khataNoLines,No lines yet. Tap one of the buttons above.,اجی کانہہ لائن ناں۔ وچھ بٹن دباو۔,"",pending
+khataDeleteLine,Delete this line,یہ لائن ہٹاو,"",pending
+khataDeleteLineHint,The balance is corrected. Enter the right amount again.,باقی گژھِ ٹھیک۔ صحیح رقم پھر ہیو۔,"",pending
+khataShare,Share statement,حساب شیئر کرو,"",pending
+khataCopied,The statement was copied. Paste it in a message.,حساب کاپی گیہ۔ پیغامس منز پیسٹ کرو۔,"",pending
+khataOwedWord,Owed,باقی,"",pending
+khataReceivedWord,Received,ملیو,"",pending
+khataBalanceWord,Balance,باقی رقم,"",pending
+kycChipVerified,{kind}: ID check passed,{kind}: ID چیک پاس,"",pending
+kycChipMismatch,{kind}: name on the record differs. Please look.,{kind}: ریکارڈس منز ناو الگ چھُ۔ وچھو۔,"",pending
+kycChipNotFound,{kind}: not found in the records. Please look.,{kind}: ریکارڈس منز ناں میلیو۔ وچھو۔,"",pending
+kycChipManual,No automatic ID check yet. Please look at the papers yourself.,اجی خود بخود ID چیک ناں سپد۔ دستاویز پانہ وچھو۔,"",pending
+kycKind_licence,Licence,لائسنس,"",pending
+kycKind_rc,RC,RC,"",pending
+kycKind_pan,PAN,PAN,"",pending
+kycKind_gstin,GSTIN,GSTIN,"",pending
+kycKind_aadhaar,Aadhaar (last 4),آدھار (آخری 4),"",pending
+liveNoticeTitle,Load 20 is sharing your trip location,Load 20 توہنزِ ٹرپک لوکیشن شیئر کران چھُ,"",pending
+liveNoticeText,Only the customer of this trip sees it. It stops when the trip ends.,صرف یم ٹرپکُن گاہک وچھ ہے۔ ٹرپ ختم گژھنس پیٹھ بند گژھِ۔,"",pending
+liveNoConsent,Turn on location sharing in Settings so the customer can follow this trip.,گاہک ٹرپ وچھن خاطرٕ سیٹنگن منز لوکیشن شیئرنگ آن کرو۔,"",pending
+liveNoPermission,Allow location for Load 20 in your phone settings to share this trip.,یہ ٹرپ شیئر کرنہ خاطرٕ فون سیٹنگن منز Load 20 ہس لوکیشنُک اجازت دیو۔,"",pending
+lastSeenNow,Last seen just now,ہُنہ ہی وچھنہ آو,"",pending
+lastSeenMinutes,Last seen {n} min ago,{n} منٹ پیٹھ وچھنہ آو,"",pending
+lastSeenHours,Last seen {n} h ago,{n} گھنٹہ پیٹھ وچھنہ آو,"",pending
+tripMapTitle,Trip map,ٹرپ نقشہ,"",pending
+tripMapOpen,Show on map,نقشس پیٹھ ہیو,"",pending
+tripMapNone,The map is not available for this trip.,یہ ٹرپس خاطرٕ نقشہ چھُ ناں دستیاب۔,"",pending
+tripMapPickup,Pickup,پِکپ,"",pending
+tripMapDrop,Drop,ڈراپ,"",pending
+tripMapDriver,Driver,ڈرائیور,"",pending
+payOnline,Pay online,آن لائن ادائیگی کرو,"",pending
+payOnlineDone,Payment received. The driver is paid when the trip is done.,ادائیگی ملیج۔ ٹرپ مکمل گژھنس پیٹھ ڈرائیورس پیسہ ملِ۔,"",pending
+payOnlineCancelled,Payment was not completed. Nothing was charged by us.,ادائیگی مکمل ناں آسی۔ اسہِ چھُ نہ کانہہ کٹ کور۔,"",pending
+payOnlineFailed,"Could not check the payment. If money was cut, it is safe: wait a few minutes or contact support.",ادائیگی چیک ناں گیہ۔ پیسہ کٹ آسہ تہِ چھُ محفوظ: کینہہ منٹ روزو یا سپورٹس سیتۍ گپ کرو۔,"",pending
+payOnlineUnavailable,"Online payment is not available right now. Use ""I have paid"" instead.","آن لائن ادائیگی چھِ ہُنہ دستیاب ناں۔ ""میہ ادائیگی کور"" استعمال کرو۔","",pending
+payHeldLine,Paid online: {amount}. Held safely and given to the driver when the trip is delivered.,آن لائن ادائیگی: {amount}۔ محفوظ رکھنہ آمت، ٹرپ پہنچنس پیٹھ ڈرائیورس ملِ۔,"",pending
+ptTrips,{n} trips done,{n} ٹرپ مکمل,"",pending
+ptTripsOne,1 trip done,1 ٹرپ مکمل,"",pending
+ptRating,{r} stars ({n}),{r} سٹار ({n}),"",pending
+ptSince,Since {month},{month} پیٹھ,"",pending
+ptVerified,Verified,تصدیق شدہ,"",pending
+ptNew,New on Load 20,Load 20 پیٹھ نوو,"",pending
+rrUsual,Usual price on this route: {low} to {high} ({n} trips),یم روٹس پیٹھ عام کرایہ: {low} پیٹھ {high} ({n} ٹرپ),"",pending
+feat_dispatchV2,Nearby-first dispatch and bidding,نیبر والین ہِن پیٹھ تہٕ بولی,"",pending
+featHelp_dispatchV2,"Loads go to the nearest drivers first, then wider rings. Customers can pick Instant, Bid or Schedule. Turn on only after the new Firestore rules are published. Off: the old open load and offers work as before.",لوڈ پیٹھ نیبر ڈرائیورن، پتھ زیادہ دائرس۔ نوو رول شائع گیہ پتھ ہی چالو کرو۔,"",pending
+feat_uiV2,New look and booking steps,نیو ڈیزائن تہٕ بُکنگ قدم,"",pending
+featHelp_uiV2,"The new home, 5-step booking, bid room, incoming-load card and trip screens. Turn it off to go back to the old screens. Works with or without the new dispatch switch.",نیو ہوم، 5 قدمن ہند بُکنگ، بولی کمرہ، یوان والہ لوڈک کارڈ تہٕ ٹرپ سکرین۔ بند کرو تہٕ پرانی سکرین واپس۔,"",pending
+adminDispatchMonitor,Dispatch monitor,ڈسپیچ مانیٹر,"",pending
+dmLive,Live loads,چالو لوڈ,"",pending
+dmFilled,Taken by a driver,ڈرائیور ہیت,"",pending
+dmExpiredNoBid,Expired with no bid,بغیر بولی ختم,"",pending
+dmExpiredBids,Expired with bids,بولی سیتۍ ختم,"",pending
+dmFirstBid,Time to first bid,پیوٚم بولی تام وقت,"",pending
+dmFillTime,Time to fill,بھرنہ وقت,"",pending
+dmAcceptance,"Taken, out of all finished",مکمل مٔنز ہیت,"",pending
+dmPriceVsEstimate,Price against estimate,اندازہ ہُند مقابلہ کرایہ,"",pending
+dmNoShows,No-show cancels,نہ یوان ہند وجہ ریٹھ,"",pending
+dmShown,Drivers shown,ڈرائیور ہیوکھ,"",pending
+dmShownNote,Known after the server wave is on.,سرور ویو چالو گژھنہ پتھ پتہ,"",pending
+dmRing,Ring {n},دائرہ {n},"",pending
+dmBids,{n} bids,{n} بولی,"",pending
+dmStalled,Nobody yet,اجی کانہہ ناں,"",pending
+dmMinutes,{n} min,{n} منٹ,"",pending
+dmSeconds,{n} s,{n} سیکنڈ,"",pending
+dmNone,No data yet,اجی ڈیٹا ناں,"",pending
+dmRecent,Recent loads,تازہ لوڈ,"",pending
+dmModeInstant,Instant,فوری,"",pending
+dmModeBid,Bid,بولی,"",pending
+dmModeScheduled,Schedule,شیڈول,"",pending
+brTitle,Bid room,بولی کمرہ,"",pending
+brBids,Bids,بولی,"",pending
+brWaiting,Drivers are looking at your load.,ڈرائیور توہنہ لوڈ وچھان چھِ۔,"",pending
+brWindowLeft,Bidding closes in,بولی بند گژھنہ,"",pending
+brWindowClosed,Bidding is closed.,بولی بند گیہ۔,"",pending
+brNoBids,No bids yet.,اجی بولی ناں۔,"",pending
+brNoBidsHelp,What next?,ہُن کیا کرو؟,"",pending
+brRaisePrice,Raise the price,کرایہ بڑھاو,"",pending
+brMoreTime,Give more time,زیادہ وقت دیو,"",pending
+brGoInstant,Go instant,فوری پیٹھ گژھو,"",pending
+brSchedule,Book for later,پتھ خاطر بُک کرو,"",pending
+brAccept,Accept this bid,یہ بولی قبول کرو,"",pending
+brAcceptAsk,Accept the bid of {amount}? The other bids will close.,{amount} ہنز بولی قبول کرو؟ بیاکھ بند گژھن۔,"",pending
+brYes,"Yes, accept",ہاں، قبول,"",pending
+brCounterTitle,Your counter price,توہنز جوابی کرایہ,"",pending
+brCounterHint,You can counter once. The driver can say yes.,توہہ ہیکو اکھ کَرہ جواب دِتھ۔,"",pending
+brSend,Send,بھیجو,"",pending
+brCounterSent,Counter sent: {amount},جوابی کرایہ بھیجُن: {amount},"",pending
+brSelectedWait,Waiting for the driver to confirm.,ڈرائیورنہ تصدیق پتھ انتظار۔,"",pending
+brCountered,You countered. Waiting for the driver.,توہہ جواب دیت۔ ڈرائیورنہ انتظار۔,"",pending
+brFound,A driver is confirmed.,ڈرائیور پکہ گیہ۔,"",pending
+brTrack,Open the trip,ٹرپ کھولو,"",pending
+brClosed,This load is closed.,یہ لوڈ بند چھُ۔,"",pending
+brAutoTitle,Auto-accept,خود بخود قبول,"",pending
+brAutoHint,The first bid that fits is accepted. It works while this app is open.,یُس پیوٚم بولی ٹھیک ییہ سو قبول۔ یہ چھُ ایپ کھۄلتھ چلان۔,"",pending
+brAutoMax,Highest price (rupees),زیادہ پیٹھ زیادہ کرایہ (روپے),"",pending
+brAutoRating,Lowest rating,کم پیٹھ کم ریٹنگ,"",pending
+brAny,Any,کانہہ,"",pending
+brVerifiedOnly,Verified drivers only,صرف تصدیق شُد ڈرائیور,"",pending
+brSave,Save,محفوظ کرو,"",pending
+brAutoOff,Turn off,بند کرو,"",pending
+brAutoOn,Auto-accept is on: up to {amount},خود بخود قبول چالو: {amount} تام,"",pending
+brAutoAccepted,A bid was accepted for you.,توہنہ خاطر اکھ بولی قبول گیہ۔,"",pending
+brChatAfter,Chat opens after the driver confirms. Phone numbers stay hidden.,ڈرائیور پکہ کرنس پتھ چیٹ کھولان۔ فون نمبر چھُ چھپاوتھ۔,"",pending
+bnote_on_the_way,I am on the way,میں چھس راستس پیٹھ,"",pending
+bnote_empty_return,Empty on return,واپسی پیٹھ خالی,"",pending
+bnote_loading_help,Loading help available,لوڈنگ مدد دستیاب,"",pending
+bnote_flexible_time,Flexible on time,وقتس منز لچکدار,"",pending
+bnote_clean_truck,Clean truck,صاف ٹرک,"",pending
+wzTitle,Book a truck,ٹرک بُک کرو,"",pending
+wzStepOf,Step {n} of {m},قدم {n} / {m},"",pending
+wzQ1,Where should the truck go?,ٹرک کتھ پیٹھ کتھ گژھی؟,"",pending
+wzQ2,What are you sending?,کیا چھوا ٹھہراوان؟,"",pending
+wzQ3,Which truck?,کُس ٹرک؟,"",pending
+wzQ4,What price and how?,کتھ کرایہ تہٕ کیتھ؟,"",pending
+wzQ5,Check and book,وچھو تہٕ بُک کرو,"",pending
+wzPickup,Pickup city,پِک اپ شار,"",pending
+wzDrop,Drop city,ڈراپ شار,"",pending
+wzRecent,Recent routes,تازہ روٹ,"",pending
+wzWeight,Weight: {w} tons,وزن: {w} ٹن,"",pending
+wzSuggested,Fits your load,توہنہ مالُک خاطر ٹھیک,"",pending
+wzTooSmall,Too small for this weight,یتھ وزنس چھُ لوٚکُت,"",pending
+wzCapacity,Up to {t} tons,{t} ٹن تام,"",pending
+wzNext,Next,پتھ,"",pending
+wzBack,Back,واپس,"",pending
+wzModeTitle,How should drivers reply?,ڈرائیور کیتھ جواب دین؟,"",pending
+wzModeInstant,Instant,فوری,"",pending
+wzModeInstantHint,Nearest drivers first. First yes wins.,نیبر ڈرائیور پیٹھ۔ پیوٚم ہاں جیتان۔,"",pending
+wzModeBid,Bid,بولی,"",pending
+wzModeBidHint,Drivers send prices. You choose.,ڈرائیور کرایہ بھیجان۔ توہہ چُنو۔,"",pending
+wzModeSchedule,Schedule,شیڈول,"",pending
+wzModeScheduleHint,Book for a later day or time.,پتھ ہُند دۄہ یا وقت خاطر۔,"",pending
+wzWhen,Pickup day and time,پِک اپ دۄہ تہٕ وقت,"",pending
+wzPickDate,Pick a day and time,دۄہ تہٕ وقت چُنو,"",pending
+wzTotal,Estimated total,اندازہ کُل,"",pending
+wzYourPrice,Your price,توہنز کرایہ,"",pending
+wzBookSlide,Slide to book,بُک کرنہ خاطر سرکاو,"",pending
+wzTerms,By booking you accept the terms of {app}.,بُک کرنس پیٹھ توہہ چھوو {app} ہند شرط قبول۔,"",pending
+wzDraftBack,Your earlier answers are back.,توہنہ پرانہ جواب واپس,"",pending
+wzNeedRoute,Choose both cities.,بنی شار چُنو۔,"",pending
+wzNeedGoods,Choose what you send and the weight.,مال تہٕ وزن چُنو۔,"",pending
+wzNeedTruck,Choose a truck.,ٹرک چُنو۔,"",pending
+wzNeedDate,Pick a pickup day.,پِک اپ دۄہ چُنو۔,"",pending
+wzNoQuote,We cannot work out a price for this route. Type your own price.,یتھ روٹک کرایہ ناں نیرُن۔ پننۍ کرایہ لیکھو۔,"",pending
+wzPostedBid,Bidding is open. Drivers are sending prices.,بولی شروع۔ ڈرائیور کرایہ بھیجان چھِ۔,"",pending
+wzNeedPrice,Type your price.,پننۍ کرایہ لیکھو۔,"",pending
+wzDateTooSoon,Choose a later time.,پتھ وقت چُنو۔,"",pending
+wzDateTooFar,Choose an earlier day.,پیٹھ دۄہ چُنو۔,"",pending
+hvBookBig,Book a truck,ٹرک بُک کرو,"",pending
+hvHeroSub,"Five easy questions. Pick instant, bid or schedule.",پانژ آسان سوال۔ فوری، بولی یا شیڈول چُنو۔,"",pending
+hvTrip,Your trip,توہنز ٹرپ,"",pending
+hvWaitingLoads,{n} load waiting for drivers,{n} لوڈ ڈرائیورنہ انتظار,"",pending
+hvOpen,Open,کھولو,"",pending
+hvTrust1,Verified drivers,تصدیق شُد ڈرائیور,"",pending
+hvTrust2,OTP at pickup and delivery,پِک اپ تہٕ ڈلیوری پیٹھ OTP,"",pending
+hvTrust3,Phone numbers stay hidden,فون نمبر چھُ چھپاوتھ,"",pending
+hvMore,More,مزید,"",pending
+hvTabHome,Home,ہوم,"",pending
+hvTabTrips,Trips,ٹرپ,"",pending
+hvTabHelp,Help,مدد,"",pending
+hvTabProfile,Profile,پروفائل,"",pending
+hvAgain,Book again,پھر بُک کرو,"",pending
+trActive,Active,چالو,"",pending
+trUpcoming,Upcoming,یوان وول,"",pending
+trPast,Past,پرانہ,"",pending
+trEmptyActive,No trip right now. Book a truck to start.,ہُن کانہہ ٹرپ ناں۔ شروع کرنہ ٹرک بُک کرو۔,"",pending
+trEmptyUpcoming,No trip is booked for later.,پتھ خاطر کانہہ ٹرپ بُک ناں۔,"",pending
+trEmptyPast,Finished trips will show here.,مکمل ٹرپ یتھ ظاہر گژھن۔,"",pending
+trWaitingDrivers,Waiting for drivers,ڈرائیورنہ انتظار,"",pending
+trLoadClosed,"Closed, no driver",بند، ڈرائیور ناں,"",pending
+uxInstTitle,Looking for a truck near you,توہنہ نیبر ٹرک لارن چھُ,"",pending
+uxInstReach,Searching within {km} km,{km} کلومیٹر اندر لارُن,"",pending
+uxInstRound,Round {n} of {m},قدم {n} / {m},"",pending
+uxInstStalled,No driver has said yes yet,اجی کانہہ ڈرائیور ہاں ناں وونُن,"",pending
+uxInstStalledHint,Raise the price a little or search wider.,کرایہ تھوڑ زیادہ کرو یا دائرہ بڑھاو۔,"",pending
+uxRaise5,Raise price 5%,کرایہ 5% بڑھاو,"",pending
+uxRaise10,Raise price 10%,کرایہ 10% بڑھاو,"",pending
+uxWiden,Search wider,دائرہ بڑھاو,"",pending
+uxWidenMax,Widest search reached,سب پیٹھ بوڈ دائرہ,"",pending
+uxPriceNow,Your price: {amount},توہنز کرایہ: {amount},"",pending
+uxPriceRaised,Price is now {amount},کرایہ ہُن {amount},"",pending
+uxPriceLimit,This is the highest price allowed.,یتھ پیٹھ زیادہ کرایہ ناں,"",pending
+uxTakenByOther,Someone else took this load,یہ لوڈ بیاکھ ہیت,"",pending
+dhOnlineOn,You are online,تۄہی چھِو آن لائن,"",pending
+dhOnlineOff,You are offline,تۄہی چھِو آف لائن,"",pending
+dhRadarOn,Looking for loads near you,توہندس نزدیک لوڈ ژھارن,"",pending
+dhRadarWait,{n} load waiting for you,{n} لوڈ توہنز انتظار,"",pending
+dhRadarOff,Go online to get loads,لوڈ ہیتن خاطر آن لائن گژھو,"",pending
+dhRadarNoTruck,Add a truck to get loads,لوڈ ہیتن خاطر ٹرک شامل کرو,"",pending
+dhTruckToday,Truck for today,ازکہ گاڈی,"",pending
+dhMore,More,مزید,"",pending
+dhUpcoming,Coming up,یوان,"",pending
+ilTitle,New load near you,توہندس نزدیک نوو لوڈ,"",pending
+ilPickupKm,Pickup {n} km from you,پِک اپ توہیہ {n} کلومیٹر,"",pending
+ilTripKm,Trip {n} km,ٹرپ {n} کلومیٹر,"",pending
+ilAcceptAt,Accept at {price},{price} پیٹھ منظور کرو,"",pending
+ilSendPrice,Send my price,پننۍ کرایہ بھیجو,"",pending
+ilSkip,Skip,چھوڑو,"",pending
+ilSkipWhy,Why skip? (you can leave this),کیازِ چھوڑ؟ (چھوڑ سکھ),"",pending
+ilWhyFar,Too far,ژور دور,"",pending
+ilWhyLow,Price too low,کرایہ کم,"",pending
+ilWhyTruck,Truck not free,گاڈی خالی ناں,"",pending
+ilWhyOther,Other,بیُن,"",pending
+ilQueue,{n} more waiting,{n} مزید انتظار,"",pending
+ilTimeUp,Time is up for this load,یم لوڈک وَقت ختم,"",pending
+ilNoTruck,No free truck fits this load,یم لوڈ خاطر خالی گاڈی ناں,"",pending
+bsTitle,Your price,توہنز کرایہ,"",pending
+bsEtaQ,How soon can you reach pickup?,پِک اپ تہِ کَس وَقتس پہنچوو؟,"",pending
+bsNoteQ,Add a note (optional),نوٹ شامل کرو (لازمی ناں),"",pending
+bsSend,Send price,کرایہ بھیجو,"",pending
+bsEdit,Change my price,پننۍ کرایہ بدلاو,"",pending
+bsEditOnce,You can change your price only once.,تۄہی ہیکھ کرایہ صرف اکھ پَیٹھ بدلاوتھ۔,"",pending
+bsWithdraw,Withdraw bid,بولی واپس نِو,"",pending
+bsSent,Price sent,کرایہ بھیجُن,"",pending
+bsOutOfRange,Price must be between {lo} and {hi}.,کرایہ {lo} تہِ {hi} ہندس درمیان آسُن چھُ۔,"",pending
+bsUsual,Usual: {lo} to {hi},عام طور: {lo} تہِ {hi},"",pending
+bsAlready,You already sent a price for this load.,تۄہی چھِو یم لوڈ خاطر پیٹھ کرایہ بھیجمُت۔,"",pending
+uxKm,{n} km,{n} کلومیٹر,"",pending
+uxRouteLabel,"From {from} to {to}, {km}","{from} پیٹھ {to}, {km}","",pending
+uxFareUsual,Usual price: {low} to {high},عام کرایہ: {low} پیٹھ {high},"",pending
+uxFareNoRange,No usual price for this route yet,یہ روٹک عام کرایہ اجی ناں,"",pending
+uxFareLow,Low price. Fewer drivers may say yes.,کم کرایہ۔ کم ڈرائیور ہاں وَنن۔,"",pending
+uxFareFair,Fair price. Good chance of a quick yes.,صحیح کرایہ۔ جلدی ہاں ملان۔,"",pending
+uxFareHigh,High price. You may pay more than needed.,زیادہ کرایہ۔ ضرورتھ پیٹھ زیادہ لگی۔,"",pending
+uxFareYour,Your price,توہنز کرایہ,"",pending
+uxFareEstimate,Estimate,اندازہ,"",pending
+uxSlideConfirm,Slide to confirm,پکہ کرنہ خاطر سرکاو,"",pending
+uxSlideDone,Done,گوو,"",pending
+uxSlideHint,"Slide the handle to the end, or double tap to confirm",ہینڈل آخر تام سرکاو یا دۄن ٹھیپ دیو,"",pending
+uxSecondsLeft,{n} seconds left,{n} سیکنڈ باقی,"",pending
+uxTagBestPrice,Best price,بہترین کرایہ,"",pending
+uxTagNearest,Nearest,سب پیٹھ نیب,"",pending
+uxTagTopRated,Top rated,بہترین ریٹنگ,"",pending
+uxTagFastest,Fastest,سب پیٹھ جلدی,"",pending
+uxVerified,Verified,تصدیق شُد,"",pending
+uxTripsN,{n} trips,{n} ٹرپ,"",pending
+uxNewDriver,New driver,نیٚو ڈرائیور,"",pending
+uxEtaMin,{n} min away,{n} منٹ دور,"",pending
+uxAccept,Accept,قبول کرو,"",pending
+uxCounter,Counter,جوابی کرایہ,"",pending
+uxEmptyTitle,Nothing here yet,یتھ اجی کینہہ ناں,"",pending
+uxErrorTitle,Something went wrong,کینہہ غلط گیہ,"",pending
+uxOfflineTitle,No internet,انٹرنیٹ ناں,"",pending
+uxTryAgain,Try again,پھر کوشش کرو,"",pending
+uxClose,Close,بند کرو,"",pending
+uxDismiss,Dismiss,ہٹاو,"",pending
+uxStepDone,done,مکمل,"",pending
+uxStepNow,now,ہُن,"",pending
+uxStepNext,next,پتھ,"",pending
+tkMore,More about this trip,یتھ ٹرپ بارے مزید,"",pending
+tkBilty,Bilty (LR),بِلٹی (LR),"",pending
+tkBiltyMake,Make bilty,بِلٹی بناو,"",pending
+tkBiltyOpen,See bilty,بِلٹی وچھ,"",pending
+tkBiltyHint,"Three copies: Full, Driver, Consignee. You see what stays hidden before you send.",ترے کاپی: پوٗر، ڈرائیور، کنسائنی۔ بھیجنہ برونہہ کنہ ظاہر کیا چھپاوتھ روزِ۔,"",pending
+pfLogoutAsk,Log out of this phone?,یتھ فونس منز لاگ آوٹ کرو؟,"",pending
+fdSortNearest,Nearest,نزدیک,"",pending
+fdSortPay,Best pay,زیادہ کرایہ,"",pending
+fdSortNew,Newest,نوو,"",pending
+mbWaiting,Waiting,انتظار,"",pending
+mbCountered,Counter price,جوابی قیمت,"",pending
+mbSelected,Selected,ژورنہ,"",pending
+mbLost,Lost,ناہ ملیو,"",pending
+mbChange,Change or withdraw,بدلاؤ یا واپس,"",pending
+mbNoneHere,Nothing here yet,یتھ ہاوتھ کینہہ نہ,"",pending
+tfStep,Step {n} of {total},قدم {n} / {total},"",pending
+tfHintPickup,Take a photo of the loaded goods and ask the customer for the pickup code.,لوڈ کرنہ آمُت مالچ فوٹو کھیو تہٕ کسٹمرہ پیٹھ پِک اپ کوڈ پرژھو۔,"",pending
+tfHintDelivered,Ask the customer for the delivery code. Delivery cannot be undone.,کسٹمرہ پیٹھ ڈیلیوری کوڈ پرژھو۔ ڈیلیوری واپس کٹھ ناہ تھاوُن۔,"",pending
+epMoneyTitle,Where your money is,توہنز پیسہ کَتھ چھُ,"",pending
+epWaitCustomer,Waiting for the customer to pay,کسٹمرچ پیمنٹ انتظار,"",pending
+epConfirmReceived,Confirm you got the money,پیسہ ملنچ تصدیق کرو,"",pending
+epInWallet,Done: in your wallet,ہویُن: والیٹس منز,"",pending
+obStateDone,Done,ہویُن,"",pending
+obStateNext,Do this next,ہُن یہ کرو,"",pending
+obStateLater,Later,پتہ,"",pending
+obDocAdded,Added,شامل,"",pending
+obDocMissing,Missing,باقی,"",pending
+obWhyRejected,Why it was not approved,کیازِ منظور ناہ آو,"",pending
+adGroupPeople,People and verification,لُکھ تہٕ تصدیق,"",pending
+adGroupOps,"Loads, trips and dispatch",لوڈ، ٹرپ تہٕ ڈسپیچ,"",pending
+adGroupSafety,Safety and trust,حفاظت تہٕ بھروسہ,"",pending
+adGroupMoney,Money,پیسہ,"",pending
+adGroupTools,"Pilot, support and settings",پائلٹ، مدد تہٕ سیٹنگ,"",pending
+fdBid,Bid,بولی,"",pending
+bsCustom,Or type your price (in rupees),یا پننۍ کرایہ لیکھ (روپیہ منز),"",pending

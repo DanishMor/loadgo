@@ -1,0 +1,335 @@
+﻿key,english,text,fix,status
+bizTitle,My business card,मेरा बिज़नेस कार्ड,"",pending
+bizShare,Share on WhatsApp,व्हाट्सऐप पर भेजें,"",pending
+bizShowPhone,Show my phone number on the card,कार्ड पर मेरा फ़ोन नंबर दिखाएँ,"",pending
+bizShowPhoneHint,Off by default. Anyone who gets the card can call you.,शुरू में बंद। कार्ड पाने वाला कोई भी आपको फ़ोन कर सकता है।,"",pending
+bizVerified,Verified on Load 20,Load 20 पर सत्यापित,"",pending
+bizFleet,{n} trucks,{n} ट्रक,"",pending
+bizOnApp,Find me on the app,मुझे ऐप पर खोजें,"",pending
+bizNoProfile,"Fill in your profile first, then your card is ready.","पहले अपनी प्रोफ़ाइल भरें, फिर कार्ड तैयार है।","",pending
+bizShareFailed,Could not share the card. Try again.,कार्ड नहीं भेज सके। फिर कोशिश करें।,"",pending
+checkinAsk,Your truck has been standing for a long time. Are you OK?,आपका ट्रक बहुत देर से रुका है। क्या आप ठीक हैं?,"",pending
+checkinNeedHelp,I need help,मुझे मदद चाहिए,"",pending
+checkinThanks,Thank you. Drive safe.,धन्यवाद। सुरक्षित चलाइए।,"",pending
+checkinHelpSent,Help is being asked for. Support has your position. Stay where it is safe.,मदद माँगी जा रही है। सहायता टीम के पास आपकी जगह है। सुरक्षित जगह रुकें।,"",pending
+checkinNoAnswerSent,"No answer, so support has been told. They will try to reach you.","जवाब नहीं मिला, इसलिए सहायता टीम को बता दिया गया है। वे आपसे संपर्क करेंगे।","",pending
+checkinNotSent,Could not send the alert. Please call for help.,अलर्ट नहीं भेज सके। कृपया फ़ोन करके मदद लें।,"",pending
+feat_bizCard,Business card to share,शेयर करने वाला बिज़नेस कार्ड,"",pending
+featHelp_bizCard,"Transporters and drivers can make a card (name, city, trucks, routes, verified mark) from their profile and send it as a picture on WhatsApp. The phone number is only on the card if the person turns it on each time.","ट्रांसपोर्टर और ड्राइवर अपनी प्रोफ़ाइल से कार्ड (नाम, शहर, ट्रक, रूट, सत्यापित निशान) बनाकर व्हाट्सऐप पर तस्वीर की तरह भेज सकते हैं। फ़ोन नंबर तभी दिखता है जब व्यक्ति हर बार चालू करे।","",pending
+feat_khata,Party khata,पार्टी खाता,"",pending
+featHelp_khata,"A private notebook in Profile: add the people you do business with, write what they owe you or what you owe them, see the balance and send a statement on WhatsApp. Records only, no money moves.","प्रोफ़ाइल में एक निजी कॉपी: जिनसे लेन-देन है उन्हें जोड़ें, लिखें कि किसका कितना बाकी है, बाकी रकम देखें और व्हाट्सऐप पर हिसाब भेजें। सिर्फ़ रिकॉर्ड, पैसा नहीं चलता।","",pending
+feat_safetyCheckin,Safety check-in on a long stop,लंबे स्टॉप पर सुरक्षा जाँच,"",pending
+featHelp_safetyCheckin,"When the truck stands for 30 minutes on the road, the driver is asked ""Are you OK?"". One tap for fine, one tap for help (an SOS to support and, with SMS on, to saved contacts). No answer in 10 minutes tells support too.","जब ट्रक सड़क पर 30 मिनट रुका रहे, ड्राइवर से पूछा जाता है ""क्या आप ठीक हैं?""। एक टैप में ठीक, एक टैप में मदद (सहायता टीम को SOS और एसएमएस चालू हो तो सेव संपर्कों को)। 10 मिनट में जवाब न आए तो भी सहायता टीम को बताया जाता है।","",pending
+feat_payHold,Hold online payment until delivery,ऑनलाइन भुगतान डिलीवरी तक रोकें,"",pending
+featHelp_payHold,"With online payment on, the driver's earning and commission are written when the trip is delivered, not when the customer pays. A refund before delivery lowers what is released. Needs the functions deployed. Off: the driver is credited at once.","ऑनलाइन भुगतान चालू होने पर ड्राइवर की कमाई और कमीशन ट्रिप पहुँचने पर लिखे जाते हैं, ग्राहक के भुगतान करते ही नहीं। डिलीवरी से पहले रिफ़ंड हो तो जारी रकम घटती है। फ़ंक्शन डिप्लॉय चाहिए। बंद: ड्राइवर को तुरंत मिलता है।","",pending
+feat_rateRange,Usual price on a route,रूट पर आम भाड़ा,"",pending
+featHelp_rateRange,"Shows the usual price range of finished trips on the same route and truck type (at least 5 trips), when a load is posted. The server collects only amounts, never names or booking ids. Needs the functions deployed.","लोड डालते समय उसी रूट और ट्रक प्रकार की पूरी हुई ट्रिपों की आम भाड़ा सीमा दिखाता है (कम से कम 5 ट्रिप)। सर्वर सिर्फ़ रकम जमा करता है, नाम या बुकिंग आईडी नहीं। फ़ंक्शन डिप्लॉय चाहिए।","",pending
+feat_tripTrustCard,Driver trust on offers and trips,ऑफ़र और ट्रिप पर ड्राइवर की साख,"",pending
+featHelp_tripTrustCard,"The customer sees the driver's trips done, star rating, verified mark and member-since month on offers and on the trip. Numbers are written by the server only; needs the server trip counts switch and the functions deployed. No name, phone or papers.","ग्राहक को ऑफ़र और ट्रिप पर ड्राइवर की पूरी हुई ट्रिप, स्टार रेटिंग, सत्यापित निशान और सदस्यता का महीना दिखता है। आँकड़े सिर्फ़ सर्वर लिखता है; सर्वर ट्रिप गिनती चालू और फ़ंक्शन डिप्लॉय चाहिए। नाम, फ़ोन या कागज़ात नहीं।","",pending
+feat_appCheckEnforce,Refuse calls from unknown apps,अनजान ऐप की कॉल मना करें,"",pending
+featHelp_appCheckEnforce,"The server refuses payment, maps, SMS and ID-check calls that do not carry the real app's proof (App Check). Turn on only after the app is registered and the logs show almost no missing proofs. Off: the calls are only counted.","सर्वर उन भुगतान, नक्शा, एसएमएस और ID जाँच कॉल को मना करता है जिनमें असली ऐप का प्रमाण (App Check) नहीं है। ऐप रजिस्टर होने और लॉग में लगभग कोई कमी न दिखने के बाद ही चालू करें। बंद: कॉल सिर्फ़ गिनी जाती हैं।","",pending
+feat_kycVerify,"ID checks (licence, RC, PAN, GST)","पहचान जाँच (लाइसेंस, RC, PAN, GST)","",pending
+featHelp_kycVerify,"After a driver saves papers, the server checks the numbers with the ID partner (or the sandbox) and shows the admin the answer. Without a partner the admin looks at the papers as before. Aadhaar: only the last four digits, never looked up.","ड्राइवर के कागज़ात सेव करने पर सर्वर नंबरों को ID पार्टनर (या सैंडबॉक्स) से जाँचता है और एडमिन को जवाब दिखाता है। पार्टनर न हो तो एडमिन पहले की तरह कागज़ देखता है। आधार: सिर्फ़ आख़िरी चार अंक, कभी खोजे नहीं जाते।","",pending
+feat_smsGateway,SMS messages,एसएमएस संदेश,"",pending
+featHelp_smsGateway,"Short SMS for trip steps to a customer who cannot get push, and the SOS message to the person's own emergency contacts. Needs the functions deployed, an SMS partner key and approved templates. The login code is not affected.","जिन ग्राहकों को पुश नहीं मिलता उन्हें ट्रिप के चरणों का छोटा एसएमएस, और SOS पर अपने आपातकालीन संपर्कों को संदेश। फ़ंक्शन डिप्लॉय, एसएमएस पार्टनर की और मंज़ूर टेम्पलेट चाहिए। लॉगिन कोड पर असर नहीं।","",pending
+feat_liveLocation,Live trip location,ट्रिप की लाइव लोकेशन,"",pending
+featHelp_liveLocation,"The driver shares the truck position during the trip (with their consent), with a visible notification, few database writes and a stop when the trip ends. Off: the older sharing while the trip screen is open.","ड्राइवर की सहमति से ट्रिप के दौरान ट्रक की जगह शेयर होती है: दिखने वाला नोटिफ़िकेशन, कम डेटाबेस लिखाई, ट्रिप खत्म होने पर बंद। बंद: पुराना तरीका (ट्रिप स्क्रीन खुली होने तक)।","",pending
+feat_maps,Maps and road distance,नक्शा और सड़क की दूरी,"",pending
+featHelp_maps,"Real road distance and time for fares and trips, and the trip map. Needs the functions deployed and a Maps key set as a secret. Off: the built-in city table.","किराये और ट्रिप के लिए असली सड़क की दूरी और समय, और ट्रिप का नक्शा। फ़ंक्शन डिप्लॉय और Maps की सीक्रेट चाहिए। बंद: शहरों की अंदर वाली तालिका।","",pending
+khataTitle,Khata (who owes whom),खाता (किसका कितना बाकी),"",pending
+khataAddParty,Add a party,पार्टी जोड़ें,"",pending
+khataPartyName,Name of the party,पार्टी का नाम,"",pending
+khataNote,Note (optional),नोट (वैकल्पिक),"",pending
+khataEmpty,No party yet,अभी कोई पार्टी नहीं,"",pending
+khataEmptyHint,Add the people you do business with and write what they owe you or what you owe them.,जिनसे आपका लेन-देन है उन्हें जोड़ें और लिखें कि उन्हें आपको कितना देना है या आपको कितना देना है।,"",pending
+khataTheyOwe,They owe me,उन्हें मुझे देना है,"",pending
+khataIOwe,I owe them,मुझे उन्हें देना है,"",pending
+khataSettled,All settled,हिसाब बराबर,"",pending
+khataRecordsOnly,This is only your own notebook. It is not a payment and not a legal account.,यह सिर्फ़ आपकी अपनी कॉपी है। यह भुगतान नहीं है और कानूनी खाता भी नहीं।,"",pending
+khataTooMany,You have the most parties allowed (100). Delete one first.,आपके पास अधिकतम पार्टियाँ (100) हैं। पहले एक हटाएँ।,"",pending
+khataAddOwed,They owe me more,उन्हें और देना है,"",pending
+khataAddReceived,They paid,उन्होंने दिया,"",pending
+khataAmount,Amount in rupees,रकम (रुपये),"",pending
+khataNoLines,No lines yet. Tap one of the buttons above.,अभी कोई लाइन नहीं। ऊपर का कोई बटन दबाएँ।,"",pending
+khataDeleteLine,Delete this line,यह लाइन हटाएँ,"",pending
+khataDeleteLineHint,The balance is corrected. Enter the right amount again.,बाकी रकम सुधर जाएगी। सही रकम फिर से डालें।,"",pending
+khataShare,Share statement,हिसाब भेजें,"",pending
+khataCopied,The statement was copied. Paste it in a message.,हिसाब कॉपी हो गया। संदेश में पेस्ट करें।,"",pending
+khataOwedWord,Owed,बाकी,"",pending
+khataReceivedWord,Received,मिला,"",pending
+khataBalanceWord,Balance,बाकी रकम,"",pending
+kycChipVerified,{kind}: ID check passed,{kind}: ID जाँच पास,"",pending
+kycChipMismatch,{kind}: name on the record differs. Please look.,{kind}: रिकॉर्ड में नाम अलग है। देखें।,"",pending
+kycChipNotFound,{kind}: not found in the records. Please look.,{kind}: रिकॉर्ड में नहीं मिला। देखें।,"",pending
+kycChipManual,No automatic ID check yet. Please look at the papers yourself.,अभी कोई अपने-आप ID जाँच नहीं हुई। कागज़ात खुद देखें।,"",pending
+kycKind_licence,Licence,लाइसेंस,"",pending
+kycKind_rc,RC,RC,"",pending
+kycKind_pan,PAN,PAN,"",pending
+kycKind_gstin,GSTIN,GSTIN,"",pending
+kycKind_aadhaar,Aadhaar (last 4),आधार (आख़िरी 4),"",pending
+liveNoticeTitle,Load 20 is sharing your trip location,Load 20 आपकी ट्रिप की लोकेशन शेयर कर रहा है,"",pending
+liveNoticeText,Only the customer of this trip sees it. It stops when the trip ends.,सिर्फ़ इस ट्रिप का ग्राहक इसे देखता है। ट्रिप खत्म होने पर बंद हो जाती है।,"",pending
+liveNoConsent,Turn on location sharing in Settings so the customer can follow this trip.,ग्राहक ट्रिप देख सके इसके लिए सेटिंग्स में लोकेशन शेयरिंग चालू करें।,"",pending
+liveNoPermission,Allow location for Load 20 in your phone settings to share this trip.,यह ट्रिप शेयर करने के लिए फ़ोन सेटिंग्स में Load 20 को लोकेशन की अनुमति दें।,"",pending
+lastSeenNow,Last seen just now,अभी-अभी देखा गया,"",pending
+lastSeenMinutes,Last seen {n} min ago,{n} मिनट पहले देखा गया,"",pending
+lastSeenHours,Last seen {n} h ago,{n} घंटे पहले देखा गया,"",pending
+tripMapTitle,Trip map,ट्रिप का नक्शा,"",pending
+tripMapOpen,Show on map,नक्शे पर देखें,"",pending
+tripMapNone,The map is not available for this trip.,इस ट्रिप के लिए नक्शा उपलब्ध नहीं है।,"",pending
+tripMapPickup,Pickup,पिकअप,"",pending
+tripMapDrop,Drop,ड्रॉप,"",pending
+tripMapDriver,Driver,ड्राइवर,"",pending
+payOnline,Pay online,ऑनलाइन भुगतान करें,"",pending
+payOnlineDone,Payment received. The driver is paid when the trip is done.,भुगतान मिल गया। ट्रिप पूरी होने पर ड्राइवर को पैसे मिलेंगे।,"",pending
+payOnlineCancelled,Payment was not completed. Nothing was charged by us.,भुगतान पूरा नहीं हुआ। हमने कुछ नहीं काटा।,"",pending
+payOnlineFailed,"Could not check the payment. If money was cut, it is safe: wait a few minutes or contact support.",भुगतान जाँच नहीं सके। पैसे कटे हों तो सुरक्षित हैं: कुछ मिनट रुकें या सहायता से बात करें।,"",pending
+payOnlineUnavailable,"Online payment is not available right now. Use ""I have paid"" instead.","ऑनलाइन भुगतान अभी उपलब्ध नहीं है। ""मैंने भुगतान कर दिया"" का उपयोग करें।","",pending
+payHeldLine,Paid online: {amount}. Held safely and given to the driver when the trip is delivered.,"ऑनलाइन भुगतान: {amount}। सुरक्षित रखा है, ट्रिप पहुँचने पर ड्राइवर को मिलेगा।","",pending
+ptTrips,{n} trips done,{n} ट्रिप पूरी,"",pending
+ptTripsOne,1 trip done,1 ट्रिप पूरी,"",pending
+ptRating,{r} stars ({n}),{r} स्टार ({n}),"",pending
+ptSince,Since {month},{month} से,"",pending
+ptVerified,Verified,सत्यापित,"",pending
+ptNew,New on Load 20,Load 20 पर नए,"",pending
+rrUsual,Usual price on this route: {low} to {high} ({n} trips),इस रूट पर आम भाड़ा: {low} से {high} ({n} ट्रिप),"",pending
+feat_dispatchV2,Nearby-first dispatch and bidding,पास के ड्राइवर पहले और बोली,"",pending
+featHelp_dispatchV2,"Loads go to the nearest drivers first, then wider rings. Customers can pick Instant, Bid or Schedule. Turn on only after the new Firestore rules are published. Off: the old open load and offers work as before.","लोड पहले सबसे पास के ड्राइवरों को जाता है, फिर बड़े घेरे में। ग्राहक तुरंत, बोली या शेड्यूल चुन सकते हैं। नए Firestore नियम प्रकाशित होने के बाद ही चालू करें। बंद होने पर पुराना खुला लोड और ऑफ़र पहले जैसे चलते हैं।","",pending
+feat_uiV2,New look and booking steps,नया डिज़ाइन और बुकिंग के चरण,"",pending
+featHelp_uiV2,"The new home, 5-step booking, bid room, incoming-load card and trip screens. Turn it off to go back to the old screens. Works with or without the new dispatch switch.","नया होम, 5 चरण की बुकिंग, बोली कक्ष, आने वाले लोड का कार्ड और ट्रिप स्क्रीन। बंद करने पर पुरानी स्क्रीन लौट आती हैं। नए डिस्पैच स्विच के साथ या बिना, दोनों में चलता है।","",pending
+adminDispatchMonitor,Dispatch monitor,डिस्पैच मॉनिटर,"",pending
+dmLive,Live loads,चालू लोड,"",pending
+dmFilled,Taken by a driver,ड्राइवर ने लिए,"",pending
+dmExpiredNoBid,Expired with no bid,बिना बोली ख़त्म,"",pending
+dmExpiredBids,Expired with bids,बोली के साथ ख़त्म,"",pending
+dmFirstBid,Time to first bid,पहली बोली में समय,"",pending
+dmFillTime,Time to fill,लोड भरने में समय,"",pending
+dmAcceptance,"Taken, out of all finished",पूरे हुए में से लिए गए,"",pending
+dmPriceVsEstimate,Price against estimate,अनुमान के मुक़ाबले भाड़ा,"",pending
+dmNoShows,No-show cancels,नहीं पहुँचने पर रद्द,"",pending
+dmShown,Drivers shown,दिखाए गए ड्राइवर,"",pending
+dmShownNote,Known after the server wave is on.,सर्वर वेव चालू होने के बाद पता चलेगा।,"",pending
+dmRing,Ring {n},घेरा {n},"",pending
+dmBids,{n} bids,{n} बोलियाँ,"",pending
+dmStalled,Nobody yet,अभी कोई नहीं,"",pending
+dmMinutes,{n} min,{n} मिनट,"",pending
+dmSeconds,{n} s,{n} से,"",pending
+dmNone,No data yet,अभी डेटा नहीं,"",pending
+dmRecent,Recent loads,हाल के लोड,"",pending
+dmModeInstant,Instant,तुरंत,"",pending
+dmModeBid,Bid,बोली,"",pending
+dmModeScheduled,Schedule,शेड्यूल,"",pending
+brTitle,Bid room,बोली कक्ष,"",pending
+brBids,Bids,बोलियाँ,"",pending
+brWaiting,Drivers are looking at your load.,ड्राइवर आपका लोड देख रहे हैं।,"",pending
+brWindowLeft,Bidding closes in,बोली बंद होने में,"",pending
+brWindowClosed,Bidding is closed.,बोली बंद हो गई।,"",pending
+brNoBids,No bids yet.,अभी कोई बोली नहीं।,"",pending
+brNoBidsHelp,What next?,अब क्या करें?,"",pending
+brRaisePrice,Raise the price,भाड़ा बढ़ाएँ,"",pending
+brMoreTime,Give more time,और समय दें,"",pending
+brGoInstant,Go instant,तुरंत पर जाएँ,"",pending
+brSchedule,Book for later,बाद के लिए बुक करें,"",pending
+brAccept,Accept this bid,यह बोली मंज़ूर करें,"",pending
+brAcceptAsk,Accept the bid of {amount}? The other bids will close.,{amount} की बोली मंज़ूर करें? बाकी बोलियाँ बंद हो जाएँगी।,"",pending
+brYes,"Yes, accept","हाँ, मंज़ूर","",pending
+brCounterTitle,Your counter price,आपका जवाबी भाड़ा,"",pending
+brCounterHint,You can counter once. The driver can say yes.,आप एक बार जवाब दे सकते हैं। ड्राइवर हाँ कह सकता है।,"",pending
+brSend,Send,भेजें,"",pending
+brCounterSent,Counter sent: {amount},जवाबी भाड़ा भेजा: {amount},"",pending
+brSelectedWait,Waiting for the driver to confirm.,ड्राइवर की पुष्टि का इंतज़ार।,"",pending
+brCountered,You countered. Waiting for the driver.,आपने जवाब दिया। ड्राइवर का इंतज़ार।,"",pending
+brFound,A driver is confirmed.,ड्राइवर पक्का हो गया।,"",pending
+brTrack,Open the trip,ट्रिप खोलें,"",pending
+brClosed,This load is closed.,यह लोड बंद हो गया है।,"",pending
+brAutoTitle,Auto-accept,अपने-आप मंज़ूर,"",pending
+brAutoHint,The first bid that fits is accepted. It works while this app is open.,जो पहली बोली फिट बैठे वह मंज़ूर हो जाती है। यह ऐप खुला रहने पर चलता है।,"",pending
+brAutoMax,Highest price (rupees),सबसे ज़्यादा भाड़ा (रुपये),"",pending
+brAutoRating,Lowest rating,सबसे कम रेटिंग,"",pending
+brAny,Any,कोई भी,"",pending
+brVerifiedOnly,Verified drivers only,सिर्फ़ सत्यापित ड्राइवर,"",pending
+brSave,Save,सहेजें,"",pending
+brAutoOff,Turn off,बंद करें,"",pending
+brAutoOn,Auto-accept is on: up to {amount},अपने-आप मंज़ूर चालू: {amount} तक,"",pending
+brAutoAccepted,A bid was accepted for you.,आपके लिए एक बोली मंज़ूर हो गई।,"",pending
+brChatAfter,Chat opens after the driver confirms. Phone numbers stay hidden.,ड्राइवर के पक्का करने पर चैट खुलेगी। फ़ोन नंबर छिपे रहते हैं।,"",pending
+bnote_on_the_way,I am on the way,मैं रास्ते में हूँ,"",pending
+bnote_empty_return,Empty on return,वापसी में ख़ाली,"",pending
+bnote_loading_help,Loading help available,लोडिंग में मदद मिलेगी,"",pending
+bnote_flexible_time,Flexible on time,समय में लचीला,"",pending
+bnote_clean_truck,Clean truck,साफ़ ट्रक,"",pending
+wzTitle,Book a truck,ट्रक बुक करें,"",pending
+wzStepOf,Step {n} of {m},चरण {n} / {m},"",pending
+wzQ1,Where should the truck go?,ट्रक कहाँ से कहाँ जाएगा?,"",pending
+wzQ2,What are you sending?,क्या भेज रहे हैं?,"",pending
+wzQ3,Which truck?,कौन सा ट्रक?,"",pending
+wzQ4,What price and how?,कितना भाड़ा और कैसे?,"",pending
+wzQ5,Check and book,जाँचें और बुक करें,"",pending
+wzPickup,Pickup city,उठाने का शहर,"",pending
+wzDrop,Drop city,पहुँचाने का शहर,"",pending
+wzRecent,Recent routes,हाल के रूट,"",pending
+wzWeight,Weight: {w} tons,वज़न: {w} टन,"",pending
+wzSuggested,Fits your load,आपके माल के लिए सही,"",pending
+wzTooSmall,Too small for this weight,इस वज़न के लिए छोटा है,"",pending
+wzCapacity,Up to {t} tons,{t} टन तक,"",pending
+wzNext,Next,आगे,"",pending
+wzBack,Back,पीछे,"",pending
+wzModeTitle,How should drivers reply?,ड्राइवर कैसे जवाब दें?,"",pending
+wzModeInstant,Instant,तुरंत,"",pending
+wzModeInstantHint,Nearest drivers first. First yes wins.,पहले पास के ड्राइवर। पहली हाँ जीतती है।,"",pending
+wzModeBid,Bid,बोली,"",pending
+wzModeBidHint,Drivers send prices. You choose.,ड्राइवर भाड़ा भेजते हैं। आप चुनते हैं।,"",pending
+wzModeSchedule,Schedule,शेड्यूल,"",pending
+wzModeScheduleHint,Book for a later day or time.,बाद के दिन या समय के लिए।,"",pending
+wzWhen,Pickup day and time,उठाने का दिन और समय,"",pending
+wzPickDate,Pick a day and time,दिन और समय चुनें,"",pending
+wzTotal,Estimated total,अनुमानित कुल,"",pending
+wzYourPrice,Your price,आपका भाड़ा,"",pending
+wzBookSlide,Slide to book,बुक करने के लिए सरकाएँ,"",pending
+wzTerms,By booking you accept the terms of {app}.,बुक करने पर आप {app} की शर्तें मानते हैं।,"",pending
+wzDraftBack,Your earlier answers are back.,आपके पुराने जवाब वापस आ गए।,"",pending
+wzNeedRoute,Choose both cities.,दोनों शहर चुनें।,"",pending
+wzNeedGoods,Choose what you send and the weight.,माल और वज़न चुनें।,"",pending
+wzNeedTruck,Choose a truck.,ट्रक चुनें।,"",pending
+wzNeedDate,Pick a pickup day.,उठाने का दिन चुनें।,"",pending
+wzNoQuote,We cannot work out a price for this route. Type your own price.,इस रूट का भाड़ा नहीं निकल सका। अपना भाड़ा लिखें।,"",pending
+wzPostedBid,Bidding is open. Drivers are sending prices.,बोली शुरू है। ड्राइवर भाड़ा भेज रहे हैं।,"",pending
+wzNeedPrice,Type your price.,अपना भाड़ा लिखें।,"",pending
+wzDateTooSoon,Choose a later time.,थोड़ा बाद का समय चुनें।,"",pending
+wzDateTooFar,Choose an earlier day.,थोड़ा पहले का दिन चुनें।,"",pending
+hvBookBig,Book a truck,ट्रक बुक करें,"",pending
+hvHeroSub,"Five easy questions. Pick instant, bid or schedule.","पाँच आसान सवाल। तुरंत, बोली या शेड्यूल चुनें।","",pending
+hvTrip,Your trip,आपकी ट्रिप,"",pending
+hvWaitingLoads,{n} load waiting for drivers,{n} लोड ड्राइवर का इंतज़ार कर रहा है,"",pending
+hvOpen,Open,खोलें,"",pending
+hvTrust1,Verified drivers,सत्यापित ड्राइवर,"",pending
+hvTrust2,OTP at pickup and delivery,उठाने और पहुँचाने पर OTP,"",pending
+hvTrust3,Phone numbers stay hidden,फ़ोन नंबर छिपे रहते हैं,"",pending
+hvMore,More,और,"",pending
+hvTabHome,Home,होम,"",pending
+hvTabTrips,Trips,ट्रिप,"",pending
+hvTabHelp,Help,मदद,"",pending
+hvTabProfile,Profile,प्रोफ़ाइल,"",pending
+hvAgain,Book again,फिर से बुक करें,"",pending
+trActive,Active,चालू,"",pending
+trUpcoming,Upcoming,आने वाली,"",pending
+trPast,Past,पुरानी,"",pending
+trEmptyActive,No trip right now. Book a truck to start.,अभी कोई ट्रिप नहीं। शुरू करने के लिए ट्रक बुक करें।,"",pending
+trEmptyUpcoming,No trip is booked for later.,बाद के लिए कोई ट्रिप बुक नहीं।,"",pending
+trEmptyPast,Finished trips will show here.,पूरी हुई ट्रिप यहाँ दिखेंगी।,"",pending
+trWaitingDrivers,Waiting for drivers,ड्राइवर का इंतज़ार,"",pending
+trLoadClosed,"Closed, no driver","बंद, कोई ड्राइवर नहीं","",pending
+uxInstTitle,Looking for a truck near you,आपके पास ट्रक ढूँढ रहे हैं,"",pending
+uxInstReach,Searching within {km} km,{km} किमी के अंदर खोज,"",pending
+uxInstRound,Round {n} of {m},चरण {n} / {m},"",pending
+uxInstStalled,No driver has said yes yet,अभी किसी ड्राइवर ने हाँ नहीं कही,"",pending
+uxInstStalledHint,Raise the price a little or search wider.,भाड़ा थोड़ा बढ़ाएँ या दायरा बढ़ाएँ।,"",pending
+uxRaise5,Raise price 5%,भाड़ा 5% बढ़ाएँ,"",pending
+uxRaise10,Raise price 10%,भाड़ा 10% बढ़ाएँ,"",pending
+uxWiden,Search wider,दायरा बढ़ाएँ,"",pending
+uxWidenMax,Widest search reached,सबसे बड़ा दायरा हो गया,"",pending
+uxPriceNow,Your price: {amount},आपका भाड़ा: {amount},"",pending
+uxPriceRaised,Price is now {amount},भाड़ा अब {amount} है,"",pending
+uxPriceLimit,This is the highest price allowed.,इससे ज़्यादा भाड़ा नहीं हो सकता।,"",pending
+uxTakenByOther,Someone else took this load,यह लोड किसी और ने ले लिया,"",pending
+dhOnlineOn,You are online,आप ऑनलाइन हैं,"",pending
+dhOnlineOff,You are offline,आप ऑफ़लाइन हैं,"",pending
+dhRadarOn,Looking for loads near you,आपके पास के लोड खोज रहे हैं,"",pending
+dhRadarWait,{n} load waiting for you,{n} लोड आपका इंतज़ार कर रहा है,"",pending
+dhRadarOff,Go online to get loads,लोड पाने के लिए ऑनलाइन हों,"",pending
+dhRadarNoTruck,Add a truck to get loads,लोड पाने के लिए ट्रक जोड़ें,"",pending
+dhTruckToday,Truck for today,आज की गाड़ी,"",pending
+dhMore,More,और,"",pending
+dhUpcoming,Coming up,आने वाली ट्रिप,"",pending
+ilTitle,New load near you,आपके पास नया लोड,"",pending
+ilPickupKm,Pickup {n} km from you,उठाने की जगह आपसे {n} किमी,"",pending
+ilTripKm,Trip {n} km,ट्रिप {n} किमी,"",pending
+ilAcceptAt,Accept at {price},{price} में स्वीकार करें,"",pending
+ilSendPrice,Send my price,अपना भाड़ा भेजें,"",pending
+ilSkip,Skip,छोड़ें,"",pending
+ilSkipWhy,Why skip? (you can leave this),क्यों छोड़ा? (छोड़ भी सकते हैं),"",pending
+ilWhyFar,Too far,बहुत दूर,"",pending
+ilWhyLow,Price too low,भाड़ा कम है,"",pending
+ilWhyTruck,Truck not free,गाड़ी खाली नहीं,"",pending
+ilWhyOther,Other,कुछ और,"",pending
+ilQueue,{n} more waiting,{n} और इंतज़ार में,"",pending
+ilTimeUp,Time is up for this load,इस लोड का समय खत्म,"",pending
+ilNoTruck,No free truck fits this load,इस लोड के लिए कोई खाली गाड़ी नहीं,"",pending
+bsTitle,Your price,आपका भाड़ा,"",pending
+bsEtaQ,How soon can you reach pickup?,उठाने की जगह कब तक पहुँचेंगे?,"",pending
+bsNoteQ,Add a note (optional),नोट जोड़ें (ज़रूरी नहीं),"",pending
+bsSend,Send price,भाड़ा भेजें,"",pending
+bsEdit,Change my price,मेरा भाड़ा बदलें,"",pending
+bsEditOnce,You can change your price only once.,आप भाड़ा सिर्फ़ एक बार बदल सकते हैं।,"",pending
+bsWithdraw,Withdraw bid,बोली वापस लें,"",pending
+bsSent,Price sent,भाड़ा भेज दिया,"",pending
+bsOutOfRange,Price must be between {lo} and {hi}.,भाड़ा {lo} से {hi} के बीच होना चाहिए।,"",pending
+bsUsual,Usual: {lo} to {hi},आम तौर पर: {lo} से {hi},"",pending
+bsAlready,You already sent a price for this load.,आप इस लोड का भाड़ा पहले भेज चुके हैं।,"",pending
+uxKm,{n} km,{n} किमी,"",pending
+uxRouteLabel,"From {from} to {to}, {km}","{from} से {to}, {km}","",pending
+uxFareUsual,Usual price: {low} to {high},आम भाड़ा: {low} से {high},"",pending
+uxFareNoRange,No usual price for this route yet,इस रूट का आम भाड़ा अभी नहीं है,"",pending
+uxFareLow,Low price. Fewer drivers may say yes.,कम भाड़ा। कम ड्राइवर हाँ कहेंगे।,"",pending
+uxFareFair,Fair price. Good chance of a quick yes.,सही भाड़ा। जल्दी हाँ मिलेगी।,"",pending
+uxFareHigh,High price. You may pay more than needed.,ज़्यादा भाड़ा। ज़रूरत से ज़्यादा लग सकता है।,"",pending
+uxFareYour,Your price,आपका भाड़ा,"",pending
+uxFareEstimate,Estimate,अनुमान,"",pending
+uxSlideConfirm,Slide to confirm,पक्का करने के लिए सरकाएँ,"",pending
+uxSlideDone,Done,हो गया,"",pending
+uxSlideHint,"Slide the handle to the end, or double tap to confirm","हैंडल को आखिर तक सरकाएँ, या दो बार दबाएँ","",pending
+uxSecondsLeft,{n} seconds left,{n} सेकंड बचे,"",pending
+uxTagBestPrice,Best price,सबसे कम भाड़ा,"",pending
+uxTagNearest,Nearest,सबसे पास,"",pending
+uxTagTopRated,Top rated,सबसे अच्छी रेटिंग,"",pending
+uxTagFastest,Fastest,सबसे जल्दी,"",pending
+uxVerified,Verified,सत्यापित,"",pending
+uxTripsN,{n} trips,{n} ट्रिप,"",pending
+uxNewDriver,New driver,नया ड्राइवर,"",pending
+uxEtaMin,{n} min away,{n} मिनट दूर,"",pending
+uxAccept,Accept,मंज़ूर करें,"",pending
+uxCounter,Counter,अपना भाड़ा बताएँ,"",pending
+uxEmptyTitle,Nothing here yet,यहाँ अभी कुछ नहीं,"",pending
+uxErrorTitle,Something went wrong,कुछ गड़बड़ हो गई,"",pending
+uxOfflineTitle,No internet,इंटरनेट नहीं है,"",pending
+uxTryAgain,Try again,फिर कोशिश करें,"",pending
+uxClose,Close,बंद करें,"",pending
+uxDismiss,Dismiss,हटाएँ,"",pending
+uxStepDone,done,हो गया,"",pending
+uxStepNow,now,अभी,"",pending
+uxStepNext,next,आगे,"",pending
+tkMore,More about this trip,इस ट्रिप की और जानकारी,"",pending
+tkBilty,Bilty (LR),बिल्टी (LR),"",pending
+tkBiltyMake,Make bilty,बिल्टी बनाएँ,"",pending
+tkBiltyOpen,See bilty,बिल्टी देखें,"",pending
+tkBiltyHint,"Three copies: Full, Driver, Consignee. You see what stays hidden before you send.","तीन कॉपी: पूरी, ड्राइवर, कंसाइनी। भेजने से पहले दिखेगा कि क्या छुपा रहेगा।","",pending
+pfLogoutAsk,Log out of this phone?,इस फ़ोन से लॉग आउट करें?,"",pending
+fdSortNearest,Nearest,सबसे पास,"",pending
+fdSortPay,Best pay,सबसे ज्यादा भाड़ा,"",pending
+fdSortNew,Newest,सबसे नया,"",pending
+mbWaiting,Waiting,इंतज़ार में,"",pending
+mbCountered,Counter price,ग्राहक का नया भाव,"",pending
+mbSelected,Selected,चुने गए,"",pending
+mbLost,Lost,नहीं मिले,"",pending
+mbChange,Change or withdraw,बदलें या वापस लें,"",pending
+mbNoneHere,Nothing here yet,यहाँ अभी कुछ नहीं,"",pending
+tfStep,Step {n} of {total},कदम {n} / {total},"",pending
+tfHintPickup,Take a photo of the loaded goods and ask the customer for the pickup code.,लदे माल की फोटो लें और ग्राहक से पिकअप कोड माँगें।,"",pending
+tfHintDelivered,Ask the customer for the delivery code. Delivery cannot be undone.,ग्राहक से डिलीवरी कोड माँगें। डिलीवरी वापस नहीं हो सकती।,"",pending
+epMoneyTitle,Where your money is,आपका पैसा कहाँ है,"",pending
+epWaitCustomer,Waiting for the customer to pay,ग्राहक के भुगतान का इंतज़ार,"",pending
+epConfirmReceived,Confirm you got the money,पैसे मिलने की पुष्टि करें,"",pending
+epInWallet,Done: in your wallet,हो गया: वॉलेट में,"",pending
+obStateDone,Done,हो गया,"",pending
+obStateNext,Do this next,अब यह करें,"",pending
+obStateLater,Later,बाद में,"",pending
+obDocAdded,Added,जोड़ा गया,"",pending
+obDocMissing,Missing,बाकी है,"",pending
+obWhyRejected,Why it was not approved,मंज़ूर क्यों नहीं हुआ,"",pending
+adGroupPeople,People and verification,लोग और सत्यापन,"",pending
+adGroupOps,"Loads, trips and dispatch","लोड, ट्रिप और डिस्पैच","",pending
+adGroupSafety,Safety and trust,सुरक्षा और भरोसा,"",pending
+adGroupMoney,Money,पैसा,"",pending
+adGroupTools,"Pilot, support and settings","पायलट, सहायता और सेटिंग","",pending
+fdBid,Bid,बोली,"",pending
+bsCustom,Or type your price (in rupees),या अपना भाड़ा लिखें (रुपये में),"",pending

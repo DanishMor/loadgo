@@ -1,0 +1,335 @@
+﻿key,english,text,fix,status
+bizTitle,My business card,என் வணிக அட்டை,"",pending
+bizShare,Share on WhatsApp,வாட்ஸ்அப்பில் பகிர்,"",pending
+bizShowPhone,Show my phone number on the card,அட்டையில் என் தொலைபேசி எண்ணைக் காட்டு,"",pending
+bizShowPhoneHint,Off by default. Anyone who gets the card can call you.,முதலில் அணைவு. அட்டையைப் பெறுபவர் யாரும் உங்களை அழைக்கலாம்.,"",pending
+bizVerified,Verified on Load 20,Load 20 இல் சரிபார்க்கப்பட்டது,"",pending
+bizFleet,{n} trucks,{n} லாரிகள்,"",pending
+bizOnApp,Find me on the app,செயலியில் என்னைக் கண்டுபிடியுங்கள்,"",pending
+bizNoProfile,"Fill in your profile first, then your card is ready.","முதலில் சுயவிவரத்தை நிரப்புங்கள், பிறகு அட்டை தயார்.","",pending
+bizShareFailed,Could not share the card. Try again.,அட்டையைப் பகிர முடியவில்லை. மீண்டும் முயலவும்.,"",pending
+checkinAsk,Your truck has been standing for a long time. Are you OK?,உங்கள் லாரி நீண்ட நேரமாக நிற்கிறது. நீங்கள் நலமா?,"",pending
+checkinNeedHelp,I need help,எனக்கு உதவி வேண்டும்,"",pending
+checkinThanks,Thank you. Drive safe.,நன்றி. பாதுகாப்பாக ஓட்டுங்கள்.,"",pending
+checkinHelpSent,Help is being asked for. Support has your position. Stay where it is safe.,உதவி கேட்கப்படுகிறது. ஆதரவுக் குழுவிடம் உங்கள் இடம் உள்ளது. பாதுகாப்பான இடத்தில் இருங்கள்.,"",pending
+checkinNoAnswerSent,"No answer, so support has been told. They will try to reach you.","பதில் இல்லை, எனவே ஆதரவுக் குழுவுக்குத் தெரிவிக்கப்பட்டது. அவர்கள் உங்களைத் தொடர்புகொள்வார்கள்.","",pending
+checkinNotSent,Could not send the alert. Please call for help.,எச்சரிக்கையை அனுப்ப முடியவில்லை. தயவுசெய்து அழைத்து உதவி பெறுங்கள்.,"",pending
+feat_bizCard,Business card to share,பகிர வணிக அட்டை,"",pending
+featHelp_bizCard,"Transporters and drivers can make a card (name, city, trucks, routes, verified mark) from their profile and send it as a picture on WhatsApp. The phone number is only on the card if the person turns it on each time.",டிரான்ஸ்போர்ட்டர்களும் ஓட்டுநர்களும் சுயவிவரத்திலிருந்து அட்டை உருவாக்கி வாட்ஸ்அப்பில் படமாக அனுப்பலாம். ஒவ்வொரு முறையும் இயக்கினால் மட்டுமே தொலைபேசி எண் வரும்.,"",pending
+feat_khata,Party khata,நபர் கணக்கு,"",pending
+featHelp_khata,"A private notebook in Profile: add the people you do business with, write what they owe you or what you owe them, see the balance and send a statement on WhatsApp. Records only, no money moves.","சுயவிவரத்தில் தனிப்பட்ட குறிப்பேடு: வணிகம் செய்பவர்களைச் சேர்த்து, யார் எவ்வளவு பாக்கி எழுதி, மீதத்தைப் பார்த்து வாட்ஸ்அப்பில் கணக்கு அனுப்பலாம். பதிவு மட்டுமே.","",pending
+feat_safetyCheckin,Safety check-in on a long stop,நீண்ட நிறுத்தத்தில் பாதுகாப்பு சரிபார்ப்பு,"",pending
+featHelp_safetyCheckin,"When the truck stands for 30 minutes on the road, the driver is asked ""Are you OK?"". One tap for fine, one tap for help (an SOS to support and, with SMS on, to saved contacts). No answer in 10 minutes tells support too.","லாரி சாலையில் 30 நிமிடம் நின்றால் ஓட்டுநரிடம் ""நீங்கள் நலமா?"" என்று கேட்கப்படும். ஒரு தொடுதல் நலம், ஒரு தொடுதல் உதவி (ஆதரவுக்கு SOS). 10 நிமிடம் பதில் இல்லையெனினும் ஆதரவுக்குத் தெரிவிக்கப்படும்.","",pending
+feat_payHold,Hold online payment until delivery,ஆன்லைன் கட்டணத்தை டெலிவரி வரை நிறுத்து,"",pending
+featHelp_payHold,"With online payment on, the driver's earning and commission are written when the trip is delivered, not when the customer pays. A refund before delivery lowers what is released. Needs the functions deployed. Off: the driver is credited at once.",ஆன்லைன் கட்டணம் இயக்கத்தில் ஓட்டுநரின் வருமானமும் கமிஷனும் பயணம் சேர்ந்ததும் பதிவாகும். டெலிவரிக்கு முன் ரீஃபண்ட் செய்தால் விடுவிக்கும் தொகை குறையும். செயல்பாடுகள் டெப்ளாய் தேவை. அணைப்பு: உடனே வரவு.,"",pending
+feat_rateRange,Usual price on a route,வழித்தடத்தில் வழக்கமான கட்டணம்,"",pending
+featHelp_rateRange,"Shows the usual price range of finished trips on the same route and truck type (at least 5 trips), when a load is posted. The server collects only amounts, never names or booking ids. Needs the functions deployed.",சுமை இடும்போது அதே வழித்தடம் மற்றும் லாரி வகையின் முடிந்த பயணங்களின் வழக்கமான கட்டண வரம்பைக் காட்டும் (குறைந்தது 5 பயணங்கள்). சர்வர் தொகையை மட்டும் சேகரிக்கும். செயல்பாடுகள் டெப்ளாய் தேவை.,"",pending
+feat_tripTrustCard,Driver trust on offers and trips,சலுகை மற்றும் பயணத்தில் ஓட்டுநர் நம்பகம்,"",pending
+featHelp_tripTrustCard,"The customer sees the driver's trips done, star rating, verified mark and member-since month on offers and on the trip. Numbers are written by the server only; needs the server trip counts switch and the functions deployed. No name, phone or papers.","வாடிக்கையாளர் சலுகை மற்றும் பயணத்தில் ஓட்டுநரின் முடித்த பயணங்கள், நட்சத்திர மதிப்பீடு, சரிபார்ப்பு குறி, உறுப்பினர் மாதம் ஆகியவற்றைக் காண்பார். எண்களை சர்வர் மட்டுமே எழுதும். பெயர், தொலைபேசி, ஆவணம் இல்லை.","",pending
+feat_appCheckEnforce,Refuse calls from unknown apps,தெரியாத செயலிகளின் அழைப்புகளை மறு,"",pending
+featHelp_appCheckEnforce,"The server refuses payment, maps, SMS and ID-check calls that do not carry the real app's proof (App Check). Turn on only after the app is registered and the logs show almost no missing proofs. Off: the calls are only counted.","உண்மையான செயலியின் சான்று (App Check) இல்லாத கட்டணம், வரைபடம், SMS, ID அழைப்புகளை சர்வர் மறுக்கும். செயலி பதிவு செய்து பதிவுகளில் குறைபாடு இல்லையெனில் மட்டும் இயக்கவும். அணைப்பு: எண்ணிக்கை மட்டும்.","",pending
+feat_kycVerify,"ID checks (licence, RC, PAN, GST)","அடையாளச் சரிபார்ப்பு (உரிமம், RC, PAN, GST)","",pending
+featHelp_kycVerify,"After a driver saves papers, the server checks the numbers with the ID partner (or the sandbox) and shows the admin the answer. Without a partner the admin looks at the papers as before. Aadhaar: only the last four digits, never looked up.",ஓட்டுநர் ஆவணங்களைச் சேமித்ததும் சர்வர் எண்களை ID கூட்டாளர் (அல்லது சாண்ட்பாக்ஸ்) மூலம் சரிபார்த்து நிர்வாகிக்குக் காட்டும். கூட்டாளர் இல்லையெனில் நிர்வாகி முன்பு போல் பார்ப்பார். ஆதார்: கடைசி நான்கு இலக்கம் மட்டும்.,"",pending
+feat_smsGateway,SMS messages,எஸ்எம்எஸ் செய்திகள்,"",pending
+featHelp_smsGateway,"Short SMS for trip steps to a customer who cannot get push, and the SOS message to the person's own emergency contacts. Needs the functions deployed, an SMS partner key and approved templates. The login code is not affected.","புஷ் பெற முடியாத வாடிக்கையாளருக்கு பயண படிகளின் சிறு எஸ்எம்எஸ், SOS செய்தி அவசர தொடர்புகளுக்கு. செயல்பாடுகள் டெப்ளாய், கூட்டாளர் விசை, அனுமதிக்கப்பட்ட வார்ப்புருக்கள் தேவை. உள்நுழைவு குறியீடு பாதிக்கப்படாது.","",pending
+feat_liveLocation,Live trip location,பயண நேரடி இருப்பிடம்,"",pending
+featHelp_liveLocation,"The driver shares the truck position during the trip (with their consent), with a visible notification, few database writes and a stop when the trip ends. Off: the older sharing while the trip screen is open.","ஓட்டுநர் சம்மதத்துடன் பயணத்தின் போது லாரி இருப்பிடம் பகிரப்படும்: தெரியும் அறிவிப்பு, குறைந்த பதிவுகள், பயணம் முடிந்ததும் நிற்கும். அணைப்பு: பழைய முறை.","",pending
+feat_maps,Maps and road distance,வரைபடம் மற்றும் சாலை தூரம்,"",pending
+featHelp_maps,"Real road distance and time for fares and trips, and the trip map. Needs the functions deployed and a Maps key set as a secret. Off: the built-in city table.","கட்டணம் மற்றும் பயணத்திற்கு உண்மையான சாலை தூரம், நேரம், பயண வரைபடம். செயல்பாடுகள் டெப்ளாய் மற்றும் Maps விசை தேவை. அணைப்பு: நகர அட்டவணை.","",pending
+khataTitle,Khata (who owes whom),கணக்கு (யார் எவ்வளவு பாக்கி),"",pending
+khataAddParty,Add a party,நபரைச் சேர்,"",pending
+khataPartyName,Name of the party,நபரின் பெயர்,"",pending
+khataNote,Note (optional),குறிப்பு (விருப்பம்),"",pending
+khataEmpty,No party yet,இன்னும் யாரும் இல்லை,"",pending
+khataEmptyHint,Add the people you do business with and write what they owe you or what you owe them.,"நீங்கள் வணிகம் செய்பவர்களைச் சேர்த்து, அவர்கள் உங்களுக்கு அல்லது நீங்கள் அவர்களுக்குத் தர வேண்டியதை எழுதுங்கள்.","",pending
+khataTheyOwe,They owe me,அவர்கள் எனக்குத் தர வேண்டும்,"",pending
+khataIOwe,I owe them,நான் அவர்களுக்குத் தர வேண்டும்,"",pending
+khataSettled,All settled,கணக்கு சரி,"",pending
+khataRecordsOnly,This is only your own notebook. It is not a payment and not a legal account.,"இது உங்கள் சொந்த குறிப்பேடு மட்டுமே. இது கட்டணமும் அல்ல, சட்டக் கணக்கும் அல்ல.","",pending
+khataTooMany,You have the most parties allowed (100). Delete one first.,அதிகபட்ச நபர்கள் (100) உள்ளனர். முதலில் ஒருவரை நீக்கவும்.,"",pending
+khataAddOwed,They owe me more,அவர்கள் மேலும் தர வேண்டும்,"",pending
+khataAddReceived,They paid,அவர்கள் கொடுத்தனர்,"",pending
+khataAmount,Amount in rupees,தொகை (ரூபாய்),"",pending
+khataNoLines,No lines yet. Tap one of the buttons above.,இன்னும் வரிகள் இல்லை. மேலே உள்ள பொத்தானைத் தொடவும்.,"",pending
+khataDeleteLine,Delete this line,இந்த வரியை நீக்கு,"",pending
+khataDeleteLineHint,The balance is corrected. Enter the right amount again.,இருப்பு சரிசெய்யப்படும். சரியான தொகையை மீண்டும் உள்ளிடவும்.,"",pending
+khataShare,Share statement,கணக்கைப் பகிர்,"",pending
+khataCopied,The statement was copied. Paste it in a message.,கணக்கு நகலெடுக்கப்பட்டது. செய்தியில் ஒட்டவும்.,"",pending
+khataOwedWord,Owed,பாக்கி,"",pending
+khataReceivedWord,Received,பெற்றது,"",pending
+khataBalanceWord,Balance,மீதம்,"",pending
+kycChipVerified,{kind}: ID check passed,{kind}: ID சரிபார்ப்பு தேர்ச்சி,"",pending
+kycChipMismatch,{kind}: name on the record differs. Please look.,{kind}: பதிவில் பெயர் வேறு. பார்க்கவும்.,"",pending
+kycChipNotFound,{kind}: not found in the records. Please look.,{kind}: பதிவில் இல்லை. பார்க்கவும்.,"",pending
+kycChipManual,No automatic ID check yet. Please look at the papers yourself.,இன்னும் தானியங்கி ID சரிபார்ப்பு இல்லை. ஆவணங்களை நீங்களே பாருங்கள்.,"",pending
+kycKind_licence,Licence,உரிமம்,"",pending
+kycKind_rc,RC,RC,"",pending
+kycKind_pan,PAN,PAN,"",pending
+kycKind_gstin,GSTIN,GSTIN,"",pending
+kycKind_aadhaar,Aadhaar (last 4),ஆதார் (கடைசி 4),"",pending
+liveNoticeTitle,Load 20 is sharing your trip location,Load 20 உங்கள் பயண இருப்பிடத்தைப் பகிர்கிறது,"",pending
+liveNoticeText,Only the customer of this trip sees it. It stops when the trip ends.,இந்தப் பயணத்தின் வாடிக்கையாளர் மட்டுமே பார்ப்பார். பயணம் முடிந்ததும் நிற்கும்.,"",pending
+liveNoConsent,Turn on location sharing in Settings so the customer can follow this trip.,வாடிக்கையாளர் பயணத்தைப் பின்தொடர அமைப்புகளில் இருப்பிடப் பகிர்வை இயக்கவும்.,"",pending
+liveNoPermission,Allow location for Load 20 in your phone settings to share this trip.,இந்தப் பயணத்தைப் பகிர தொலைபேசி அமைப்புகளில் Load 20 க்கு இருப்பிட அனுமதி அளிக்கவும்.,"",pending
+lastSeenNow,Last seen just now,இப்போதுதான் பார்க்கப்பட்டது,"",pending
+lastSeenMinutes,Last seen {n} min ago,{n} நிமிடம் முன்பு பார்க்கப்பட்டது,"",pending
+lastSeenHours,Last seen {n} h ago,{n} மணி நேரம் முன்பு பார்க்கப்பட்டது,"",pending
+tripMapTitle,Trip map,பயண வரைபடம்,"",pending
+tripMapOpen,Show on map,வரைபடத்தில் பார்,"",pending
+tripMapNone,The map is not available for this trip.,இந்தப் பயணத்திற்கு வரைபடம் இல்லை.,"",pending
+tripMapPickup,Pickup,பிக்அப்,"",pending
+tripMapDrop,Drop,டிராப்,"",pending
+tripMapDriver,Driver,ஓட்டுநர்,"",pending
+payOnline,Pay online,ஆன்லைனில் செலுத்து,"",pending
+payOnlineDone,Payment received. The driver is paid when the trip is done.,பணம் பெறப்பட்டது. பயணம் முடிந்ததும் ஓட்டுநருக்கு பணம் கிடைக்கும்.,"",pending
+payOnlineCancelled,Payment was not completed. Nothing was charged by us.,பணம் செலுத்துதல் முடியவில்லை. நாங்கள் எதுவும் பிடிக்கவில்லை.,"",pending
+payOnlineFailed,"Could not check the payment. If money was cut, it is safe: wait a few minutes or contact support.",பணம் செலுத்தியதைச் சரிபார்க்க முடியவில்லை. பணம் பிடிக்கப்பட்டிருந்தால் பாதுகாப்பானது: சில நிமிடம் காத்திருங்கள் அல்லது உதவியை அணுகுங்கள்.,"",pending
+payOnlineUnavailable,"Online payment is not available right now. Use ""I have paid"" instead.","ஆன்லைன் கட்டணம் இப்போது இல்லை. ""நான் செலுத்தினேன்"" என்பதைப் பயன்படுத்தவும்.","",pending
+payHeldLine,Paid online: {amount}. Held safely and given to the driver when the trip is delivered.,"ஆன்லைனில் செலுத்தியது: {amount}. பாதுகாப்பாக வைக்கப்பட்டு, பயணம் சேர்ந்ததும் ஓட்டுநருக்குத் தரப்படும்.","",pending
+ptTrips,{n} trips done,{n} பயணங்கள் முடிந்தன,"",pending
+ptTripsOne,1 trip done,1 பயணம் முடிந்தது,"",pending
+ptRating,{r} stars ({n}),{r} நட்சத்திரம் ({n}),"",pending
+ptSince,Since {month},{month} முதல்,"",pending
+ptVerified,Verified,சரிபார்க்கப்பட்டது,"",pending
+ptNew,New on Load 20,Load 20 இல் புதியவர்,"",pending
+rrUsual,Usual price on this route: {low} to {high} ({n} trips),இந்த வழித்தடத்தில் வழக்கமான கட்டணம்: {low} முதல் {high} ({n} பயணங்கள்),"",pending
+feat_dispatchV2,Nearby-first dispatch and bidding,அருகிலுள்ளவர்களுக்கு முதலில் மற்றும் ஏலம்,"",pending
+featHelp_dispatchV2,"Loads go to the nearest drivers first, then wider rings. Customers can pick Instant, Bid or Schedule. Turn on only after the new Firestore rules are published. Off: the old open load and offers work as before.","சுமை முதலில் அருகிலுள்ள ஓட்டுநர்களுக்கு, பின் பெரிய வட்டத்துக்கு செல்லும். புதிய விதிகள் வெளியான பிறகே இயக்கவும்.","",pending
+feat_uiV2,New look and booking steps,புதிய வடிவமைப்பு மற்றும் முன்பதிவு படிகள்,"",pending
+featHelp_uiV2,"The new home, 5-step booking, bid room, incoming-load card and trip screens. Turn it off to go back to the old screens. Works with or without the new dispatch switch.","புதிய முகப்பு, 5 படி முன்பதிவு, ஏல அறை, வரும் சுமை அட்டை மற்றும் பயணத் திரைகள். நிறுத்தினால் பழைய திரைகள் வரும்.","",pending
+adminDispatchMonitor,Dispatch monitor,அனுப்பு கண்காணிப்பு,"",pending
+dmLive,Live loads,நேரடி சுமைகள்,"",pending
+dmFilled,Taken by a driver,ஓட்டுநர் எடுத்தவை,"",pending
+dmExpiredNoBid,Expired with no bid,ஏலம் இல்லாமல் முடிந்தவை,"",pending
+dmExpiredBids,Expired with bids,ஏலங்களுடன் முடிந்தவை,"",pending
+dmFirstBid,Time to first bid,முதல் ஏலத்துக்கான நேரம்,"",pending
+dmFillTime,Time to fill,நிரப்ப ஆகும் நேரம்,"",pending
+dmAcceptance,"Taken, out of all finished",முடிந்தவற்றில் எடுக்கப்பட்டவை,"",pending
+dmPriceVsEstimate,Price against estimate,மதிப்பீட்டுடன் ஒப்பிட்ட கட்டணம்,"",pending
+dmNoShows,No-show cancels,வராததால் ரத்து,"",pending
+dmShown,Drivers shown,காட்டப்பட்ட ஓட்டுநர்கள்,"",pending
+dmShownNote,Known after the server wave is on.,சர்வர் அலை இயங்கிய பின் தெரியும்.,"",pending
+dmRing,Ring {n},வட்டம் {n},"",pending
+dmBids,{n} bids,{n} ஏலங்கள்,"",pending
+dmStalled,Nobody yet,இன்னும் யாரும் இல்லை,"",pending
+dmMinutes,{n} min,{n} நிமி,"",pending
+dmSeconds,{n} s,{n} வி,"",pending
+dmNone,No data yet,இன்னும் தரவு இல்லை,"",pending
+dmRecent,Recent loads,சமீபத்திய சுமைகள்,"",pending
+dmModeInstant,Instant,உடனடி,"",pending
+dmModeBid,Bid,ஏலம்,"",pending
+dmModeScheduled,Schedule,அட்டவணை,"",pending
+brTitle,Bid room,ஏல அறை,"",pending
+brBids,Bids,ஏலங்கள்,"",pending
+brWaiting,Drivers are looking at your load.,ஓட்டுநர்கள் உங்கள் சுமையைப் பார்க்கிறார்கள்.,"",pending
+brWindowLeft,Bidding closes in,ஏலம் முடிய,"",pending
+brWindowClosed,Bidding is closed.,ஏலம் முடிந்தது.,"",pending
+brNoBids,No bids yet.,இன்னும் ஏலம் இல்லை.,"",pending
+brNoBidsHelp,What next?,அடுத்து என்ன?,"",pending
+brRaisePrice,Raise the price,கட்டணத்தை உயர்த்து,"",pending
+brMoreTime,Give more time,கூடுதல் நேரம் கொடுங்கள்,"",pending
+brGoInstant,Go instant,உடனடிக்கு மாறு,"",pending
+brSchedule,Book for later,பின்னர் முன்பதிவு,"",pending
+brAccept,Accept this bid,இந்த ஏலத்தை ஏற்கவும்,"",pending
+brAcceptAsk,Accept the bid of {amount}? The other bids will close.,{amount} ஏலத்தை ஏற்கவா? மற்றவை மூடப்படும்.,"",pending
+brYes,"Yes, accept","ஆம், ஏற்கிறேன்","",pending
+brCounterTitle,Your counter price,உங்கள் எதிர் கட்டணம்,"",pending
+brCounterHint,You can counter once. The driver can say yes.,நீங்கள் ஒருமுறை மட்டும் எதிர் கட்டணம் கூறலாம்.,"",pending
+brSend,Send,அனுப்பு,"",pending
+brCounterSent,Counter sent: {amount},எதிர் கட்டணம் அனுப்பப்பட்டது: {amount},"",pending
+brSelectedWait,Waiting for the driver to confirm.,ஓட்டுநரின் உறுதிப்படுத்தலுக்காக காத்திருக்கிறோம்.,"",pending
+brCountered,You countered. Waiting for the driver.,நீங்கள் எதிர் கட்டணம் கூறினீர்கள். ஓட்டுநருக்காக காத்திருக்கிறோம்.,"",pending
+brFound,A driver is confirmed.,ஓட்டுநர் உறுதியானார்.,"",pending
+brTrack,Open the trip,பயணத்தைத் திற,"",pending
+brClosed,This load is closed.,இந்த சுமை மூடப்பட்டது.,"",pending
+brAutoTitle,Auto-accept,தானாக ஏற்பு,"",pending
+brAutoHint,The first bid that fits is accepted. It works while this app is open.,பொருந்தும் முதல் ஏலம் ஏற்கப்படும். இந்த ஆப் திறந்திருக்கும்போது இயங்கும்.,"",pending
+brAutoMax,Highest price (rupees),அதிகபட்ச கட்டணம் (ரூபாய்),"",pending
+brAutoRating,Lowest rating,குறைந்தபட்ச மதிப்பீடு,"",pending
+brAny,Any,எதுவும்,"",pending
+brVerifiedOnly,Verified drivers only,சரிபார்க்கப்பட்ட ஓட்டுநர்கள் மட்டும்,"",pending
+brSave,Save,சேமி,"",pending
+brAutoOff,Turn off,அணை,"",pending
+brAutoOn,Auto-accept is on: up to {amount},தானாக ஏற்பு இயக்கம்: {amount} வரை,"",pending
+brAutoAccepted,A bid was accepted for you.,உங்களுக்காக ஒரு ஏலம் ஏற்கப்பட்டது.,"",pending
+brChatAfter,Chat opens after the driver confirms. Phone numbers stay hidden.,ஓட்டுநர் உறுதிசெய்தபின் அரட்டை திறக்கும். தொலைபேசி எண்கள் மறைக்கப்படும்.,"",pending
+bnote_on_the_way,I am on the way,நான் வழியில் இருக்கிறேன்,"",pending
+bnote_empty_return,Empty on return,திரும்பும்போது காலி,"",pending
+bnote_loading_help,Loading help available,ஏற்றுவதற்கு உதவி உண்டு,"",pending
+bnote_flexible_time,Flexible on time,நேரத்தில் நெகிழ்வு,"",pending
+bnote_clean_truck,Clean truck,சுத்தமான லாரி,"",pending
+wzTitle,Book a truck,லாரி முன்பதிவு,"",pending
+wzStepOf,Step {n} of {m},படி {n} / {m},"",pending
+wzQ1,Where should the truck go?,லாரி எங்கிருந்து எங்கே?,"",pending
+wzQ2,What are you sending?,என்ன அனுப்புகிறீர்கள்?,"",pending
+wzQ3,Which truck?,எந்த லாரி?,"",pending
+wzQ4,What price and how?,"என்ன கட்டணம், எப்படி?","",pending
+wzQ5,Check and book,சரிபார்த்து முன்பதிவு,"",pending
+wzPickup,Pickup city,எடுக்கும் நகரம்,"",pending
+wzDrop,Drop city,சேர்க்கும் நகரம்,"",pending
+wzRecent,Recent routes,சமீபத்திய வழித்தடங்கள்,"",pending
+wzWeight,Weight: {w} tons,எடை: {w} டன்,"",pending
+wzSuggested,Fits your load,உங்கள் சரக்குக்கு ஏற்றது,"",pending
+wzTooSmall,Too small for this weight,இந்த எடைக்கு சிறியது,"",pending
+wzCapacity,Up to {t} tons,{t} டன் வரை,"",pending
+wzNext,Next,அடுத்து,"",pending
+wzBack,Back,பின்,"",pending
+wzModeTitle,How should drivers reply?,ஓட்டுநர்கள் எப்படி பதிலளிக்க?,"",pending
+wzModeInstant,Instant,உடனடி,"",pending
+wzModeInstantHint,Nearest drivers first. First yes wins.,அருகிலுள்ளவர்கள் முதலில். முதல் ஒப்புதல் வெல்லும்.,"",pending
+wzModeBid,Bid,ஏலம்,"",pending
+wzModeBidHint,Drivers send prices. You choose.,ஓட்டுநர்கள் கட்டணம் அனுப்புவர். நீங்கள் தேர்வு.,"",pending
+wzModeSchedule,Schedule,அட்டவணை,"",pending
+wzModeScheduleHint,Book for a later day or time.,பின்னர் ஒரு நாள் அல்லது நேரத்துக்கு.,"",pending
+wzWhen,Pickup day and time,"எடுக்கும் நாள், நேரம்","",pending
+wzPickDate,Pick a day and time,"நாள், நேரம் தேர்வு","",pending
+wzTotal,Estimated total,மதிப்பிடப்பட்ட மொத்தம்,"",pending
+wzYourPrice,Your price,உங்கள் கட்டணம்,"",pending
+wzBookSlide,Slide to book,முன்பதிவுக்கு நகர்த்தவும்,"",pending
+wzTerms,By booking you accept the terms of {app}.,முன்பதிவு செய்தால் {app} விதிகளை ஏற்கிறீர்கள்.,"",pending
+wzDraftBack,Your earlier answers are back.,உங்கள் முந்தைய பதில்கள் மீண்டன.,"",pending
+wzNeedRoute,Choose both cities.,இரு நகரங்களையும் தேர்வு செய்யுங்கள்.,"",pending
+wzNeedGoods,Choose what you send and the weight.,"சரக்கு, எடை தேர்வு செய்யுங்கள்.","",pending
+wzNeedTruck,Choose a truck.,லாரியைத் தேர்வு செய்யுங்கள்.,"",pending
+wzNeedDate,Pick a pickup day.,எடுக்கும் நாளைத் தேர்வு செய்யுங்கள்.,"",pending
+wzNoQuote,We cannot work out a price for this route. Type your own price.,இந்த வழித்தடத்தின் கட்டணம் கணக்கிட முடியவில்லை. உங்கள் கட்டணத்தை எழுதுங்கள்.,"",pending
+wzPostedBid,Bidding is open. Drivers are sending prices.,ஏலம் தொடங்கியது. ஓட்டுநர்கள் கட்டணம் அனுப்புகிறார்கள்.,"",pending
+wzNeedPrice,Type your price.,உங்கள் கட்டணத்தை எழுதுங்கள்.,"",pending
+wzDateTooSoon,Choose a later time.,பிந்தைய நேரத்தைத் தேர்வு செய்யுங்கள்.,"",pending
+wzDateTooFar,Choose an earlier day.,முந்தைய நாளைத் தேர்வு செய்யுங்கள்.,"",pending
+hvBookBig,Book a truck,லாரி முன்பதிவு,"",pending
+hvHeroSub,"Five easy questions. Pick instant, bid or schedule.","ஐந்து எளிய கேள்விகள். உடனடி, ஏலம் அல்லது அட்டவணை.","",pending
+hvTrip,Your trip,உங்கள் பயணம்,"",pending
+hvWaitingLoads,{n} load waiting for drivers,{n} சுமை ஓட்டுநருக்காக காத்திருக்கிறது,"",pending
+hvOpen,Open,திற,"",pending
+hvTrust1,Verified drivers,சரிபார்க்கப்பட்ட ஓட்டுநர்கள்,"",pending
+hvTrust2,OTP at pickup and delivery,எடுக்கும்போதும் சேர்க்கும்போதும் OTP,"",pending
+hvTrust3,Phone numbers stay hidden,தொலைபேசி எண்கள் மறைக்கப்படும்,"",pending
+hvMore,More,மேலும்,"",pending
+hvTabHome,Home,முகப்பு,"",pending
+hvTabTrips,Trips,பயணங்கள்,"",pending
+hvTabHelp,Help,உதவி,"",pending
+hvTabProfile,Profile,சுயவிவரம்,"",pending
+hvAgain,Book again,மீண்டும் முன்பதிவு,"",pending
+trActive,Active,செயலில்,"",pending
+trUpcoming,Upcoming,வரவிருக்கும்,"",pending
+trPast,Past,கடந்த,"",pending
+trEmptyActive,No trip right now. Book a truck to start.,இப்போது பயணம் இல்லை. தொடங்க லாரி முன்பதிவு செய்யுங்கள்.,"",pending
+trEmptyUpcoming,No trip is booked for later.,பின்னர் எந்தப் பயணமும் பதிவாகவில்லை.,"",pending
+trEmptyPast,Finished trips will show here.,முடிந்த பயணங்கள் இங்கே தெரியும்.,"",pending
+trWaitingDrivers,Waiting for drivers,ஓட்டுநருக்காக காத்திருக்கிறது,"",pending
+trLoadClosed,"Closed, no driver","மூடப்பட்டது, ஓட்டுநர் இல்லை","",pending
+uxInstTitle,Looking for a truck near you,உங்களுக்கு அருகில் லாரி தேடுகிறோம்,"",pending
+uxInstReach,Searching within {km} km,{km} கிமீக்குள் தேடல்,"",pending
+uxInstRound,Round {n} of {m},படி {n} / {m},"",pending
+uxInstStalled,No driver has said yes yet,இன்னும் எந்த ஓட்டுநரும் ஒப்புக்கொள்ளவில்லை,"",pending
+uxInstStalledHint,Raise the price a little or search wider.,கட்டணத்தை சற்று உயர்த்துங்கள் அல்லது தேடலை விரிவாக்குங்கள்.,"",pending
+uxRaise5,Raise price 5%,கட்டணம் 5% உயர்த்து,"",pending
+uxRaise10,Raise price 10%,கட்டணம் 10% உயர்த்து,"",pending
+uxWiden,Search wider,தேடலை விரிவாக்கு,"",pending
+uxWidenMax,Widest search reached,அதிகபட்ச தேடல் எட்டியது,"",pending
+uxPriceNow,Your price: {amount},உங்கள் கட்டணம்: {amount},"",pending
+uxPriceRaised,Price is now {amount},கட்டணம் இப்போது {amount},"",pending
+uxPriceLimit,This is the highest price allowed.,இதற்கு மேல் கட்டணம் இயலாது.,"",pending
+uxTakenByOther,Someone else took this load,இந்த சுமையை வேறொருவர் எடுத்துக்கொண்டார்,"",pending
+dhOnlineOn,You are online,நீங்கள் ஆன்லைனில் உள்ளீர்கள்,"",pending
+dhOnlineOff,You are offline,நீங்கள் ஆஃப்லைனில் உள்ளீர்கள்,"",pending
+dhRadarOn,Looking for loads near you,உங்கள் அருகிலுள்ள சுமைகளைத் தேடுகிறது,"",pending
+dhRadarWait,{n} load waiting for you,{n} சுமை உங்களுக்காக காத்திருக்கிறது,"",pending
+dhRadarOff,Go online to get loads,சுமை பெற ஆன்லைனுக்கு வாருங்கள்,"",pending
+dhRadarNoTruck,Add a truck to get loads,சுமை பெற லாரியைச் சேர்க்கவும்,"",pending
+dhTruckToday,Truck for today,இன்றைய வாகனம்,"",pending
+dhMore,More,மேலும்,"",pending
+dhUpcoming,Coming up,வரவிருக்கும்,"",pending
+ilTitle,New load near you,உங்கள் அருகில் புதிய சுமை,"",pending
+ilPickupKm,Pickup {n} km from you,ஏற்றும் இடம் {n} கிமீ தூரம்,"",pending
+ilTripKm,Trip {n} km,பயணம் {n} கிமீ,"",pending
+ilAcceptAt,Accept at {price},{price}க்கு ஏற்கவும்,"",pending
+ilSendPrice,Send my price,என் கட்டணத்தை அனுப்பு,"",pending
+ilSkip,Skip,தவிர்,"",pending
+ilSkipWhy,Why skip? (you can leave this),ஏன் தவிர்த்தீர்கள்? (விடலாம்),"",pending
+ilWhyFar,Too far,மிகவும் தூரம்,"",pending
+ilWhyLow,Price too low,கட்டணம் குறைவு,"",pending
+ilWhyTruck,Truck not free,வாகனம் காலியில்லை,"",pending
+ilWhyOther,Other,மற்றவை,"",pending
+ilQueue,{n} more waiting,{n} மேலும் காத்திருக்கின்றன,"",pending
+ilTimeUp,Time is up for this load,இந்த சுமைக்கு நேரம் முடிந்தது,"",pending
+ilNoTruck,No free truck fits this load,இந்த சுமைக்கு காலி வாகனம் இல்லை,"",pending
+bsTitle,Your price,உங்கள் கட்டணம்,"",pending
+bsEtaQ,How soon can you reach pickup?,ஏற்றும் இடத்தை எப்போது அடைவீர்கள்?,"",pending
+bsNoteQ,Add a note (optional),குறிப்பு சேர்க்கவும் (விருப்பம்),"",pending
+bsSend,Send price,கட்டணம் அனுப்பு,"",pending
+bsEdit,Change my price,என் கட்டணத்தை மாற்று,"",pending
+bsEditOnce,You can change your price only once.,கட்டணத்தை ஒரு முறை மட்டுமே மாற்றலாம்.,"",pending
+bsWithdraw,Withdraw bid,ஏலத்தைத் திரும்பப் பெறு,"",pending
+bsSent,Price sent,கட்டணம் அனுப்பப்பட்டது,"",pending
+bsOutOfRange,Price must be between {lo} and {hi}.,கட்டணம் {lo} முதல் {hi} வரை இருக்க வேண்டும்.,"",pending
+bsUsual,Usual: {lo} to {hi},வழக்கமாக: {lo} முதல் {hi},"",pending
+bsAlready,You already sent a price for this load.,இந்த சுமைக்கு ஏற்கனவே கட்டணம் அனுப்பிவிட்டீர்கள்.,"",pending
+uxKm,{n} km,{n} கிமீ,"",pending
+uxRouteLabel,"From {from} to {to}, {km}","{from} இலிருந்து {to}, {km}","",pending
+uxFareUsual,Usual price: {low} to {high},வழக்கமான கட்டணம்: {low} முதல் {high},"",pending
+uxFareNoRange,No usual price for this route yet,இந்த வழித்தடத்தின் வழக்கமான கட்டணம் இன்னும் இல்லை,"",pending
+uxFareLow,Low price. Fewer drivers may say yes.,குறைந்த கட்டணம். குறைவான ஓட்டுநர்கள் ஒப்புவர்.,"",pending
+uxFareFair,Fair price. Good chance of a quick yes.,சரியான கட்டணம். விரைவில் ஒப்புதல் கிடைக்கும்.,"",pending
+uxFareHigh,High price. You may pay more than needed.,அதிக கட்டணம். தேவைக்கு மேல் ஆகலாம்.,"",pending
+uxFareYour,Your price,உங்கள் கட்டணம்,"",pending
+uxFareEstimate,Estimate,மதிப்பீடு,"",pending
+uxSlideConfirm,Slide to confirm,உறுதிசெய்ய நகர்த்தவும்,"",pending
+uxSlideDone,Done,முடிந்தது,"",pending
+uxSlideHint,"Slide the handle to the end, or double tap to confirm",கைப்பிடியை இறுதிவரை நகர்த்தவும் அல்லது இருமுறை தட்டவும்,"",pending
+uxSecondsLeft,{n} seconds left,{n} விநாடி மீதம்,"",pending
+uxTagBestPrice,Best price,சிறந்த கட்டணம்,"",pending
+uxTagNearest,Nearest,அருகில்,"",pending
+uxTagTopRated,Top rated,உயர் மதிப்பீடு,"",pending
+uxTagFastest,Fastest,மிக விரைவு,"",pending
+uxVerified,Verified,சரிபார்க்கப்பட்டது,"",pending
+uxTripsN,{n} trips,{n} பயணங்கள்,"",pending
+uxNewDriver,New driver,புதிய ஓட்டுநர்,"",pending
+uxEtaMin,{n} min away,{n} நிமிடம் தொலைவில்,"",pending
+uxAccept,Accept,ஏற்கவும்,"",pending
+uxCounter,Counter,எதிர் கட்டணம்,"",pending
+uxEmptyTitle,Nothing here yet,இங்கே இன்னும் எதுவும் இல்லை,"",pending
+uxErrorTitle,Something went wrong,ஏதோ தவறு நடந்தது,"",pending
+uxOfflineTitle,No internet,இணையம் இல்லை,"",pending
+uxTryAgain,Try again,மீண்டும் முயற்சி,"",pending
+uxClose,Close,மூடு,"",pending
+uxDismiss,Dismiss,நீக்கு,"",pending
+uxStepDone,done,முடிந்தது,"",pending
+uxStepNow,now,இப்போது,"",pending
+uxStepNext,next,அடுத்து,"",pending
+tkMore,More about this trip,இந்தப் பயணம் பற்றி மேலும்,"",pending
+tkBilty,Bilty (LR),பில்டி (LR),"",pending
+tkBiltyMake,Make bilty,பில்டி உருவாக்கு,"",pending
+tkBiltyOpen,See bilty,பில்டி பார்,"",pending
+tkBiltyHint,"Three copies: Full, Driver, Consignee. You see what stays hidden before you send.","மூன்று நகல்: முழு, ஓட்டுநர், பெறுநர். அனுப்பும் முன் எது மறைக்கப்படும் எனப் பாருங்கள்.","",pending
+pfLogoutAsk,Log out of this phone?,இந்த தொலைபேசியிலிருந்து வெளியேறவா?,"",pending
+fdSortNearest,Nearest,அருகில்,"",pending
+fdSortPay,Best pay,அதிக கட்டணம்,"",pending
+fdSortNew,Newest,புதியது,"",pending
+mbWaiting,Waiting,காத்திருப்பு,"",pending
+mbCountered,Counter price,எதிர் விலை,"",pending
+mbSelected,Selected,தேர்ந்தெடுக்கப்பட்டது,"",pending
+mbLost,Lost,கிடைக்கவில்லை,"",pending
+mbChange,Change or withdraw,மாற்று அல்லது திரும்பப் பெறு,"",pending
+mbNoneHere,Nothing here yet,இங்கே இன்னும் எதுவும் இல்லை,"",pending
+tfStep,Step {n} of {total},படி {n} / {total},"",pending
+tfHintPickup,Take a photo of the loaded goods and ask the customer for the pickup code.,"ஏற்றிய பொருளை படம் எடுத்து, வாடிக்கையாளரிடம் பிக்அப் குறியீடு கேளுங்கள்.","",pending
+tfHintDelivered,Ask the customer for the delivery code. Delivery cannot be undone.,வாடிக்கையாளரிடம் டெலிவரி குறியீடு கேளுங்கள். டெலிவரியை திரும்பப் பெற முடியாது.,"",pending
+epMoneyTitle,Where your money is,உங்கள் பணம் எங்கே,"",pending
+epWaitCustomer,Waiting for the customer to pay,வாடிக்கையாளர் பணம் செலுத்த காத்திருப்பு,"",pending
+epConfirmReceived,Confirm you got the money,பணம் கிடைத்ததை உறுதிசெய்யுங்கள்,"",pending
+epInWallet,Done: in your wallet,முடிந்தது: வாலட்டில்,"",pending
+obStateDone,Done,முடிந்தது,"",pending
+obStateNext,Do this next,அடுத்து இதைச் செய்யுங்கள்,"",pending
+obStateLater,Later,பின்னர்,"",pending
+obDocAdded,Added,சேர்க்கப்பட்டது,"",pending
+obDocMissing,Missing,விடுபட்டது,"",pending
+obWhyRejected,Why it was not approved,ஏன் அங்கீகரிக்கப்படவில்லை,"",pending
+adGroupPeople,People and verification,நபர்கள் மற்றும் சரிபார்ப்பு,"",pending
+adGroupOps,"Loads, trips and dispatch","சுமை, பயணம் மற்றும் அனுப்புதல்","",pending
+adGroupSafety,Safety and trust,பாதுகாப்பு மற்றும் நம்பிக்கை,"",pending
+adGroupMoney,Money,பணம்,"",pending
+adGroupTools,"Pilot, support and settings","பைலட், ஆதரவு மற்றும் அமைப்புகள்","",pending
+fdBid,Bid,ஏலம்,"",pending
+bsCustom,Or type your price (in rupees),அல்லது உங்கள் கட்டணத்தை எழுதுங்கள் (ரூபாயில்),"",pending

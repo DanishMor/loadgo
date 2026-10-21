@@ -1,0 +1,335 @@
+﻿key,english,text,fix,status
+bizTitle,My business card,నా బిజినెస్ కార్డ్,"",pending
+bizShare,Share on WhatsApp,వాట్సాప్‌లో షేర్ చేయండి,"",pending
+bizShowPhone,Show my phone number on the card,కార్డ్‌పై నా ఫోన్ నంబర్ చూపించు,"",pending
+bizShowPhoneHint,Off by default. Anyone who gets the card can call you.,మొదట ఆఫ్. కార్డ్ పొందిన ఎవరైనా మీకు కాల్ చేయవచ్చు.,"",pending
+bizVerified,Verified on Load 20,Load 20 లో ధృవీకరించబడింది,"",pending
+bizFleet,{n} trucks,{n} ట్రక్కులు,"",pending
+bizOnApp,Find me on the app,యాప్‌లో నన్ను కనుగొనండి,"",pending
+bizNoProfile,"Fill in your profile first, then your card is ready.","ముందు ప్రొఫైల్ నింపండి, తర్వాత కార్డ్ సిద్ధం.","",pending
+bizShareFailed,Could not share the card. Try again.,కార్డ్ షేర్ చేయలేకపోయాం. మళ్లీ ప్రయత్నించండి.,"",pending
+checkinAsk,Your truck has been standing for a long time. Are you OK?,మీ ట్రక్ చాలా సేపటి నుండి ఆగి ఉంది. మీరు బాగున్నారా?,"",pending
+checkinNeedHelp,I need help,నాకు సహాయం కావాలి,"",pending
+checkinThanks,Thank you. Drive safe.,ధన్యవాదాలు. జాగ్రత్తగా నడపండి.,"",pending
+checkinHelpSent,Help is being asked for. Support has your position. Stay where it is safe.,సహాయం అడుగుతున్నాం. సపోర్ట్ దగ్గర మీ స్థానం ఉంది. సురక్షితమైన చోట ఉండండి.,"",pending
+checkinNoAnswerSent,"No answer, so support has been told. They will try to reach you.","సమాధానం లేదు, అందుకే సపోర్ట్‌కు తెలిపాం. వారు మిమ్మల్ని సంప్రదిస్తారు.","",pending
+checkinNotSent,Could not send the alert. Please call for help.,అలర్ట్ పంపలేకపోయాం. దయచేసి ఫోన్ చేసి సహాయం పొందండి.,"",pending
+feat_bizCard,Business card to share,షేర్ చేయడానికి బిజినెస్ కార్డ్,"",pending
+featHelp_bizCard,"Transporters and drivers can make a card (name, city, trucks, routes, verified mark) from their profile and send it as a picture on WhatsApp. The phone number is only on the card if the person turns it on each time.","ట్రాన్స్‌పోర్టర్లు, డ్రైవర్లు ప్రొఫైల్ నుండి కార్డ్ చేసి వాట్సాప్‌లో చిత్రంగా పంపవచ్చు. ప్రతిసారి ఆన్ చేస్తేనే ఫోన్ నంబర్ ఉంటుంది.","",pending
+feat_khata,Party khata,పార్టీ ఖాతా,"",pending
+featHelp_khata,"A private notebook in Profile: add the people you do business with, write what they owe you or what you owe them, see the balance and send a statement on WhatsApp. Records only, no money moves.","ప్రొఫైల్‌లో ప్రైవేట్ నోట్‌బుక్: వ్యాపారం చేసేవారిని జోడించి, ఎవరికి ఎంత బాకీ రాసి, బ్యాలెన్స్ చూసి వాట్సాప్‌లో లెక్క పంపండి. రికార్డు మాత్రమే.","",pending
+feat_safetyCheckin,Safety check-in on a long stop,సుదీర్ఘ స్టాప్‌లో భద్రతా తనిఖీ,"",pending
+featHelp_safetyCheckin,"When the truck stands for 30 minutes on the road, the driver is asked ""Are you OK?"". One tap for fine, one tap for help (an SOS to support and, with SMS on, to saved contacts). No answer in 10 minutes tells support too.","ట్రక్ రోడ్డుపై 30 నిమిషాలు ఆగితే డ్రైవర్‌ను ""మీరు బాగున్నారా?"" అని అడుగుతారు. ఒక ట్యాప్ బాగున్నాను, ఒక ట్యాప్ సహాయం (సపోర్ట్‌కు SOS). 10 నిమిషాల్లో సమాధానం లేకపోతే కూడా సపోర్ట్‌కు తెలుపుతారు.","",pending
+feat_payHold,Hold online payment until delivery,ఆన్‌లైన్ చెల్లింపును డెలివరీ వరకు ఆపండి,"",pending
+featHelp_payHold,"With online payment on, the driver's earning and commission are written when the trip is delivered, not when the customer pays. A refund before delivery lowers what is released. Needs the functions deployed. Off: the driver is credited at once.","ఆన్‌లైన్ చెల్లింపు ఆన్‌లో డ్రైవర్ సంపాదన, కమిషన్ ట్రిప్ చేరాక నమోదవుతాయి. డెలివరీకి ముందు రీఫండ్ చేస్తే విడుదల మొత్తం తగ్గుతుంది. ఫంక్షన్స్ డిప్లాయ్ కావాలి. ఆఫ్: వెంటనే జమ.","",pending
+feat_rateRange,Usual price on a route,రూట్‌లో సాధారణ ధర,"",pending
+featHelp_rateRange,"Shows the usual price range of finished trips on the same route and truck type (at least 5 trips), when a load is posted. The server collects only amounts, never names or booking ids. Needs the functions deployed.",లోడ్ పోస్ట్ చేసేటప్పుడు అదే రూట్ మరియు ట్రక్ రకానికి పూర్తయిన ట్రిప్‌ల సాధారణ ధర పరిధిని చూపిస్తుంది (కనీసం 5 ట్రిప్‌లు). సర్వర్ మొత్తాలను మాత్రమే సేకరిస్తుంది. ఫంక్షన్స్ డిప్లాయ్ కావాలి.,"",pending
+feat_tripTrustCard,Driver trust on offers and trips,ఆఫర్లు మరియు ట్రిప్‌లో డ్రైవర్ నమ్మకం,"",pending
+featHelp_tripTrustCard,"The customer sees the driver's trips done, star rating, verified mark and member-since month on offers and on the trip. Numbers are written by the server only; needs the server trip counts switch and the functions deployed. No name, phone or papers.","కస్టమర్‌కు ఆఫర్లు మరియు ట్రిప్‌లో డ్రైవర్ పూర్తి చేసిన ట్రిప్‌లు, స్టార్ రేటింగ్, ధృవీకరణ గుర్తు, సభ్యత్వ నెల కనిపిస్తాయి. సంఖ్యలను సర్వర్ మాత్రమే రాస్తుంది. పేరు, ఫోన్, పత్రాలు ఉండవు.","",pending
+feat_appCheckEnforce,Refuse calls from unknown apps,తెలియని యాప్ కాల్స్ తిరస్కరించు,"",pending
+featHelp_appCheckEnforce,"The server refuses payment, maps, SMS and ID-check calls that do not carry the real app's proof (App Check). Turn on only after the app is registered and the logs show almost no missing proofs. Off: the calls are only counted.","నిజమైన యాప్ రుజువు (App Check) లేని చెల్లింపు, మ్యాప్, SMS, ID కాల్స్‌ను సర్వర్ తిరస్కరిస్తుంది. యాప్ నమోదు చేసి లాగ్‌లలో లోపాలు లేనప్పుడే ఆన్ చేయండి. ఆఫ్: కాల్స్ లెక్కించడమే.","",pending
+feat_kycVerify,"ID checks (licence, RC, PAN, GST)","ID తనిఖీ (లైసెన్స్, RC, PAN, GST)","",pending
+featHelp_kycVerify,"After a driver saves papers, the server checks the numbers with the ID partner (or the sandbox) and shows the admin the answer. Without a partner the admin looks at the papers as before. Aadhaar: only the last four digits, never looked up.",డ్రైవర్ పత్రాలు సేవ్ చేశాక సర్వర్ సంఖ్యలను ID పార్ట్‌నర్ (లేదా శాండ్‌బాక్స్) తో తనిఖీ చేసి అడ్మిన్‌కు చూపిస్తుంది. పార్ట్‌నర్ లేకపోతే అడ్మిన్ ముందులా చూస్తారు. ఆధార్: చివరి నాలుగు అంకెలు మాత్రమే.,"",pending
+feat_smsGateway,SMS messages,SMS సందేశాలు,"",pending
+featHelp_smsGateway,"Short SMS for trip steps to a customer who cannot get push, and the SOS message to the person's own emergency contacts. Needs the functions deployed, an SMS partner key and approved templates. The login code is not affected.","పుష్ రాని కస్టమర్‌కు ట్రిప్ దశల చిన్న SMS, SOS సందేశం అత్యవసర సంప్రదింపులకు. ఫంక్షన్స్ డిప్లాయ్, పార్ట్‌నర్ కీ, ఆమోదిత టెంప్లేట్లు కావాలి. లాగిన్ కోడ్‌పై ప్రభావం లేదు.","",pending
+feat_liveLocation,Live trip location,ట్రిప్ లైవ్ లొకేషన్,"",pending
+featHelp_liveLocation,"The driver shares the truck position during the trip (with their consent), with a visible notification, few database writes and a stop when the trip ends. Off: the older sharing while the trip screen is open.","డ్రైవర్ అనుమతితో ట్రిప్ సమయంలో ట్రక్ స్థానం షేర్ అవుతుంది: కనిపించే నోటిఫికేషన్, తక్కువ రాతలు, ట్రిప్ ముగియగానే ఆగుతుంది. ఆఫ్: పాత పద్ధతి.","",pending
+feat_maps,Maps and road distance,మ్యాప్ మరియు రోడ్డు దూరం,"",pending
+featHelp_maps,"Real road distance and time for fares and trips, and the trip map. Needs the functions deployed and a Maps key set as a secret. Off: the built-in city table.","ఛార్జీ మరియు ట్రిప్‌కు నిజమైన రోడ్డు దూరం, సమయం, ట్రిప్ మ్యాప్. ఫంక్షన్స్ డిప్లాయ్ మరియు Maps కీ కావాలి. ఆఫ్: నగరాల పట్టిక.","",pending
+khataTitle,Khata (who owes whom),ఖాతా (ఎవరికి ఎంత బాకీ),"",pending
+khataAddParty,Add a party,పార్టీని జోడించండి,"",pending
+khataPartyName,Name of the party,పార్టీ పేరు,"",pending
+khataNote,Note (optional),గమనిక (ఐచ్ఛికం),"",pending
+khataEmpty,No party yet,ఇంకా పార్టీలు లేవు,"",pending
+khataEmptyHint,Add the people you do business with and write what they owe you or what you owe them.,మీరు వ్యాపారం చేసేవారిని జోడించి వారు మీకు లేదా మీరు వారికి ఇవ్వాల్సినది రాయండి.,"",pending
+khataTheyOwe,They owe me,వారు నాకు ఇవ్వాలి,"",pending
+khataIOwe,I owe them,నేను వారికి ఇవ్వాలి,"",pending
+khataSettled,All settled,లెక్క సరి,"",pending
+khataRecordsOnly,This is only your own notebook. It is not a payment and not a legal account.,"ఇది మీ స్వంత నోట్‌బుక్ మాత్రమే. ఇది చెల్లింపు కాదు, చట్టపరమైన ఖాతా కాదు.","",pending
+khataTooMany,You have the most parties allowed (100). Delete one first.,మీకు గరిష్ట పార్టీలు (100) ఉన్నాయి. ముందు ఒకదాన్ని తొలగించండి.,"",pending
+khataAddOwed,They owe me more,వారు ఇంకా ఇవ్వాలి,"",pending
+khataAddReceived,They paid,వారు ఇచ్చారు,"",pending
+khataAmount,Amount in rupees,మొత్తం (రూపాయలు),"",pending
+khataNoLines,No lines yet. Tap one of the buttons above.,ఇంకా లైన్లు లేవు. పై బటన్ నొక్కండి.,"",pending
+khataDeleteLine,Delete this line,ఈ లైన్‌ను తొలగించు,"",pending
+khataDeleteLineHint,The balance is corrected. Enter the right amount again.,బాకీ సరిదిద్దబడుతుంది. సరైన మొత్తం మళ్లీ నమోదు చేయండి.,"",pending
+khataShare,Share statement,లెక్క షేర్ చేయండి,"",pending
+khataCopied,The statement was copied. Paste it in a message.,లెక్క కాపీ అయింది. సందేశంలో పేస్ట్ చేయండి.,"",pending
+khataOwedWord,Owed,బాకీ,"",pending
+khataReceivedWord,Received,అందింది,"",pending
+khataBalanceWord,Balance,మిగిలిన మొత్తం,"",pending
+kycChipVerified,{kind}: ID check passed,{kind}: ID తనిఖీ పాస్,"",pending
+kycChipMismatch,{kind}: name on the record differs. Please look.,{kind}: రికార్డ్‌లో పేరు వేరు. చూడండి.,"",pending
+kycChipNotFound,{kind}: not found in the records. Please look.,{kind}: రికార్డ్‌లో దొరకలేదు. చూడండి.,"",pending
+kycChipManual,No automatic ID check yet. Please look at the papers yourself.,ఇంకా ఆటోమేటిక్ ID తనిఖీ లేదు. పత్రాలను మీరే చూడండి.,"",pending
+kycKind_licence,Licence,లైసెన్స్,"",pending
+kycKind_rc,RC,RC,"",pending
+kycKind_pan,PAN,PAN,"",pending
+kycKind_gstin,GSTIN,GSTIN,"",pending
+kycKind_aadhaar,Aadhaar (last 4),ఆధార్ (చివరి 4),"",pending
+liveNoticeTitle,Load 20 is sharing your trip location,Load 20 మీ ట్రిప్ లొకేషన్‌ను షేర్ చేస్తోంది,"",pending
+liveNoticeText,Only the customer of this trip sees it. It stops when the trip ends.,ఈ ట్రిప్ కస్టమర్ మాత్రమే చూస్తారు. ట్రిప్ ముగియగానే ఆగిపోతుంది.,"",pending
+liveNoConsent,Turn on location sharing in Settings so the customer can follow this trip.,కస్టమర్ ట్రిప్‌ను అనుసరించడానికి సెట్టింగ్స్‌లో లొకేషన్ షేరింగ్ ఆన్ చేయండి.,"",pending
+liveNoPermission,Allow location for Load 20 in your phone settings to share this trip.,ఈ ట్రిప్ షేర్ చేయడానికి ఫోన్ సెట్టింగ్స్‌లో Load 20 కు లొకేషన్ అనుమతి ఇవ్వండి.,"",pending
+lastSeenNow,Last seen just now,ఇప్పుడే కనిపించింది,"",pending
+lastSeenMinutes,Last seen {n} min ago,{n} నిమిషాల క్రితం కనిపించింది,"",pending
+lastSeenHours,Last seen {n} h ago,{n} గంటల క్రితం కనిపించింది,"",pending
+tripMapTitle,Trip map,ట్రిప్ మ్యాప్,"",pending
+tripMapOpen,Show on map,మ్యాప్‌లో చూడండి,"",pending
+tripMapNone,The map is not available for this trip.,ఈ ట్రిప్‌కు మ్యాప్ అందుబాటులో లేదు.,"",pending
+tripMapPickup,Pickup,పికప్,"",pending
+tripMapDrop,Drop,డ్రాప్,"",pending
+tripMapDriver,Driver,డ్రైవర్,"",pending
+payOnline,Pay online,ఆన్‌లైన్‌లో చెల్లించండి,"",pending
+payOnlineDone,Payment received. The driver is paid when the trip is done.,చెల్లింపు అందింది. ట్రిప్ పూర్తయ్యాక డ్రైవర్‌కు డబ్బు అందుతుంది.,"",pending
+payOnlineCancelled,Payment was not completed. Nothing was charged by us.,చెల్లింపు పూర్తి కాలేదు. మేము ఏమీ తీసుకోలేదు.,"",pending
+payOnlineFailed,"Could not check the payment. If money was cut, it is safe: wait a few minutes or contact support.",చెల్లింపు తనిఖీ చేయలేకపోయాం. డబ్బు కట్ అయితే సురక్షితమే: కొన్ని నిమిషాలు ఆగండి లేదా సహాయాన్ని సంప్రదించండి.,"",pending
+payOnlineUnavailable,"Online payment is not available right now. Use ""I have paid"" instead.","ఆన్‌లైన్ చెల్లింపు ఇప్పుడు అందుబాటులో లేదు. ""నేను చెల్లించాను"" వాడండి.","",pending
+payHeldLine,Paid online: {amount}. Held safely and given to the driver when the trip is delivered.,"ఆన్‌లైన్ చెల్లింపు: {amount}. సురక్షితంగా ఉంచాం, ట్రిప్ చేరాక డ్రైవర్‌కు ఇస్తాం.","",pending
+ptTrips,{n} trips done,{n} ట్రిప్‌లు పూర్తి,"",pending
+ptTripsOne,1 trip done,1 ట్రిప్ పూర్తి,"",pending
+ptRating,{r} stars ({n}),{r} స్టార్లు ({n}),"",pending
+ptSince,Since {month},{month} నుండి,"",pending
+ptVerified,Verified,ధృవీకరించబడింది,"",pending
+ptNew,New on Load 20,Load 20 లో కొత్త,"",pending
+rrUsual,Usual price on this route: {low} to {high} ({n} trips),ఈ రూట్‌లో సాధారణ ధర: {low} నుండి {high} ({n} ట్రిప్‌లు),"",pending
+feat_dispatchV2,Nearby-first dispatch and bidding,దగ్గరివారికి ముందు మరియు బిడ్డింగ్,"",pending
+featHelp_dispatchV2,"Loads go to the nearest drivers first, then wider rings. Customers can pick Instant, Bid or Schedule. Turn on only after the new Firestore rules are published. Off: the old open load and offers work as before.","లోడ్ ముందు దగ్గరి డ్రైవర్లకు, తర్వాత పెద్ద వలయానికి వెళ్తుంది. కొత్త నియమాలు ప్రచురించిన తర్వాతే ఆన్ చేయండి.","",pending
+feat_uiV2,New look and booking steps,కొత్త డిజైన్ మరియు బుకింగ్ దశలు,"",pending
+featHelp_uiV2,"The new home, 5-step booking, bid room, incoming-load card and trip screens. Turn it off to go back to the old screens. Works with or without the new dispatch switch.","కొత్త హోమ్, 5 దశల బుకింగ్, బిడ్ రూమ్, వచ్చే లోడ్ కార్డ్ మరియు ట్రిప్ స్క్రీన్లు. ఆఫ్ చేస్తే పాత స్క్రీన్లు వస్తాయి.","",pending
+adminDispatchMonitor,Dispatch monitor,డిస్పాచ్ మానిటర్,"",pending
+dmLive,Live loads,లైవ్ లోడ్లు,"",pending
+dmFilled,Taken by a driver,డ్రైవర్ తీసుకున్నవి,"",pending
+dmExpiredNoBid,Expired with no bid,బిడ్ లేకుండా ముగిశాయి,"",pending
+dmExpiredBids,Expired with bids,బిడ్లతో ముగిశాయి,"",pending
+dmFirstBid,Time to first bid,మొదటి బిడ్‌కు సమయం,"",pending
+dmFillTime,Time to fill,నింపడానికి సమయం,"",pending
+dmAcceptance,"Taken, out of all finished",పూర్తయిన వాటిలో తీసుకున్నవి,"",pending
+dmPriceVsEstimate,Price against estimate,అంచనాతో పోలిస్తే ధర,"",pending
+dmNoShows,No-show cancels,రాకపోవడం వల్ల రద్దు,"",pending
+dmShown,Drivers shown,చూపిన డ్రైవర్లు,"",pending
+dmShownNote,Known after the server wave is on.,సర్వర్ వేవ్ ఆన్ అయ్యాక తెలుస్తుంది.,"",pending
+dmRing,Ring {n},వలయం {n},"",pending
+dmBids,{n} bids,{n} బిడ్లు,"",pending
+dmStalled,Nobody yet,ఇంకా ఎవరూ లేరు,"",pending
+dmMinutes,{n} min,{n} నిమి,"",pending
+dmSeconds,{n} s,{n} సె,"",pending
+dmNone,No data yet,ఇంకా డేటా లేదు,"",pending
+dmRecent,Recent loads,ఇటీవలి లోడ్లు,"",pending
+dmModeInstant,Instant,తక్షణం,"",pending
+dmModeBid,Bid,బిడ్,"",pending
+dmModeScheduled,Schedule,షెడ్యూల్,"",pending
+brTitle,Bid room,బిడ్ రూమ్,"",pending
+brBids,Bids,బిడ్లు,"",pending
+brWaiting,Drivers are looking at your load.,డ్రైవర్లు మీ లోడ్ చూస్తున్నారు.,"",pending
+brWindowLeft,Bidding closes in,బిడ్డింగ్ ముగియడానికి,"",pending
+brWindowClosed,Bidding is closed.,బిడ్డింగ్ ముగిసింది.,"",pending
+brNoBids,No bids yet.,ఇంకా బిడ్లు లేవు.,"",pending
+brNoBidsHelp,What next?,తర్వాత ఏమి?,"",pending
+brRaisePrice,Raise the price,ధర పెంచండి,"",pending
+brMoreTime,Give more time,ఎక్కువ సమయం ఇవ్వండి,"",pending
+brGoInstant,Go instant,తక్షణంకు వెళ్ళండి,"",pending
+brSchedule,Book for later,తర్వాత కోసం బుక్ చేయండి,"",pending
+brAccept,Accept this bid,ఈ బిడ్ అంగీకరించండి,"",pending
+brAcceptAsk,Accept the bid of {amount}? The other bids will close.,{amount} బిడ్ అంగీకరించాలా? మిగతావి మూసివేయబడతాయి.,"",pending
+brYes,"Yes, accept","అవును, అంగీకరిస్తున్నాను","",pending
+brCounterTitle,Your counter price,మీ ప్రతి ధర,"",pending
+brCounterHint,You can counter once. The driver can say yes.,మీరు ఒక్కసారే ప్రతి ధర చెప్పవచ్చు.,"",pending
+brSend,Send,పంపండి,"",pending
+brCounterSent,Counter sent: {amount},ప్రతి ధర పంపబడింది: {amount},"",pending
+brSelectedWait,Waiting for the driver to confirm.,డ్రైవర్ నిర్ధారణ కోసం వేచి ఉన్నాము.,"",pending
+brCountered,You countered. Waiting for the driver.,మీరు ప్రతి ధర చెప్పారు. డ్రైవర్ కోసం వేచి ఉండండి.,"",pending
+brFound,A driver is confirmed.,డ్రైవర్ నిర్ధారించబడ్డారు.,"",pending
+brTrack,Open the trip,ట్రిప్ తెరవండి,"",pending
+brClosed,This load is closed.,ఈ లోడ్ మూసివేయబడింది.,"",pending
+brAutoTitle,Auto-accept,ఆటో-అంగీకారం,"",pending
+brAutoHint,The first bid that fits is accepted. It works while this app is open.,సరిపోయే మొదటి బిడ్ అంగీకరించబడుతుంది. ఈ యాప్ తెరిచి ఉన్నప్పుడు పని చేస్తుంది.,"",pending
+brAutoMax,Highest price (rupees),గరిష్ట ధర (రూపాయలు),"",pending
+brAutoRating,Lowest rating,కనీస రేటింగ్,"",pending
+brAny,Any,ఏదైనా,"",pending
+brVerifiedOnly,Verified drivers only,ధృవీకరించిన డ్రైవర్లు మాత్రమే,"",pending
+brSave,Save,సేవ్ చేయండి,"",pending
+brAutoOff,Turn off,ఆఫ్ చేయండి,"",pending
+brAutoOn,Auto-accept is on: up to {amount},ఆటో-అంగీకారం ఆన్: {amount} వరకు,"",pending
+brAutoAccepted,A bid was accepted for you.,మీ కోసం ఒక బిడ్ అంగీకరించబడింది.,"",pending
+brChatAfter,Chat opens after the driver confirms. Phone numbers stay hidden.,డ్రైవర్ నిర్ధారించిన తర్వాత చాట్ తెరుచుకుంటుంది. ఫోన్ నంబర్లు దాచబడతాయి.,"",pending
+bnote_on_the_way,I am on the way,నేను దారిలో ఉన్నాను,"",pending
+bnote_empty_return,Empty on return,తిరుగు ప్రయాణంలో ఖాళీ,"",pending
+bnote_loading_help,Loading help available,లోడింగ్ సహాయం ఉంది,"",pending
+bnote_flexible_time,Flexible on time,సమయంలో సౌలభ్యం,"",pending
+bnote_clean_truck,Clean truck,శుభ్రమైన ట్రక్,"",pending
+wzTitle,Book a truck,ట్రక్ బుక్ చేయండి,"",pending
+wzStepOf,Step {n} of {m},దశ {n} / {m},"",pending
+wzQ1,Where should the truck go?,ట్రక్ ఎక్కడి నుండి ఎక్కడికి?,"",pending
+wzQ2,What are you sending?,ఏమి పంపుతున్నారు?,"",pending
+wzQ3,Which truck?,ఏ ట్రక్?,"",pending
+wzQ4,What price and how?,"ఎంత ధర, ఎలా?","",pending
+wzQ5,Check and book,చూసి బుక్ చేయండి,"",pending
+wzPickup,Pickup city,తీసుకునే నగరం,"",pending
+wzDrop,Drop city,చేర్చే నగరం,"",pending
+wzRecent,Recent routes,ఇటీవలి రూట్లు,"",pending
+wzWeight,Weight: {w} tons,బరువు: {w} టన్నులు,"",pending
+wzSuggested,Fits your load,మీ సరుకుకు సరిపోతుంది,"",pending
+wzTooSmall,Too small for this weight,ఈ బరువుకు చిన్నది,"",pending
+wzCapacity,Up to {t} tons,{t} టన్నుల వరకు,"",pending
+wzNext,Next,తర్వాత,"",pending
+wzBack,Back,వెనుకకు,"",pending
+wzModeTitle,How should drivers reply?,డ్రైవర్లు ఎలా స్పందించాలి?,"",pending
+wzModeInstant,Instant,తక్షణం,"",pending
+wzModeInstantHint,Nearest drivers first. First yes wins.,దగ్గరి డ్రైవర్లు ముందు. మొదటి అంగీకారం గెలుస్తుంది.,"",pending
+wzModeBid,Bid,బిడ్,"",pending
+wzModeBidHint,Drivers send prices. You choose.,డ్రైవర్లు ధర పంపుతారు. మీరు ఎంచుకోండి.,"",pending
+wzModeSchedule,Schedule,షెడ్యూల్,"",pending
+wzModeScheduleHint,Book for a later day or time.,తర్వాతి రోజు లేదా సమయానికి.,"",pending
+wzWhen,Pickup day and time,"తీసుకునే రోజు, సమయం","",pending
+wzPickDate,Pick a day and time,"రోజు, సమయం ఎంచుకోండి","",pending
+wzTotal,Estimated total,అంచనా మొత్తం,"",pending
+wzYourPrice,Your price,మీ ధర,"",pending
+wzBookSlide,Slide to book,బుక్ చేయడానికి జరపండి,"",pending
+wzTerms,By booking you accept the terms of {app}.,బుక్ చేస్తే {app} నిబంధనలు అంగీకరిస్తారు.,"",pending
+wzDraftBack,Your earlier answers are back.,మీ మునుపటి సమాధానాలు తిరిగి వచ్చాయి.,"",pending
+wzNeedRoute,Choose both cities.,రెండు నగరాలు ఎంచుకోండి.,"",pending
+wzNeedGoods,Choose what you send and the weight.,"సరుకు, బరువు ఎంచుకోండి.","",pending
+wzNeedTruck,Choose a truck.,ట్రక్ ఎంచుకోండి.,"",pending
+wzNeedDate,Pick a pickup day.,తీసుకునే రోజు ఎంచుకోండి.,"",pending
+wzNoQuote,We cannot work out a price for this route. Type your own price.,ఈ రూట్ ధర లెక్కించలేకపోయాము. మీ ధర రాయండి.,"",pending
+wzPostedBid,Bidding is open. Drivers are sending prices.,బిడ్డింగ్ మొదలైంది. డ్రైవర్లు ధర పంపుతున్నారు.,"",pending
+wzNeedPrice,Type your price.,మీ ధర రాయండి.,"",pending
+wzDateTooSoon,Choose a later time.,తర్వాతి సమయం ఎంచుకోండి.,"",pending
+wzDateTooFar,Choose an earlier day.,ముందు రోజు ఎంచుకోండి.,"",pending
+hvBookBig,Book a truck,ట్రక్ బుక్ చేయండి,"",pending
+hvHeroSub,"Five easy questions. Pick instant, bid or schedule.","ఐదు సులభమైన ప్రశ్నలు. తక్షణం, బిడ్ లేదా షెడ్యూల్ ఎంచుకోండి.","",pending
+hvTrip,Your trip,మీ ట్రిప్,"",pending
+hvWaitingLoads,{n} load waiting for drivers,{n} లోడ్ డ్రైవర్ కోసం వేచి ఉంది,"",pending
+hvOpen,Open,తెరవండి,"",pending
+hvTrust1,Verified drivers,ధృవీకరించిన డ్రైవర్లు,"",pending
+hvTrust2,OTP at pickup and delivery,"తీసుకునేటప్పుడు, చేర్చేటప్పుడు OTP","",pending
+hvTrust3,Phone numbers stay hidden,ఫోన్ నంబర్లు దాచబడతాయి,"",pending
+hvMore,More,మరిన్ని,"",pending
+hvTabHome,Home,హోమ్,"",pending
+hvTabTrips,Trips,ట్రిప్‌లు,"",pending
+hvTabHelp,Help,సహాయం,"",pending
+hvTabProfile,Profile,ప్రొఫైల్,"",pending
+hvAgain,Book again,మళ్లీ బుక్ చేయండి,"",pending
+trActive,Active,యాక్టివ్,"",pending
+trUpcoming,Upcoming,రాబోయే,"",pending
+trPast,Past,గత,"",pending
+trEmptyActive,No trip right now. Book a truck to start.,ప్రస్తుతం ట్రిప్ లేదు. మొదలుపెట్టడానికి ట్రక్ బుక్ చేయండి.,"",pending
+trEmptyUpcoming,No trip is booked for later.,తర్వాత కోసం ఏ ట్రిప్ బుక్ కాలేదు.,"",pending
+trEmptyPast,Finished trips will show here.,పూర్తయిన ట్రిప్‌లు ఇక్కడ కనిపిస్తాయి.,"",pending
+trWaitingDrivers,Waiting for drivers,డ్రైవర్ కోసం వేచి ఉంది,"",pending
+trLoadClosed,"Closed, no driver","మూసివేయబడింది, డ్రైవర్ లేరు","",pending
+uxInstTitle,Looking for a truck near you,మీ దగ్గర ట్రక్ వెతుకుతున్నాము,"",pending
+uxInstReach,Searching within {km} km,{km} కిమీ లోపల వెతుకులాట,"",pending
+uxInstRound,Round {n} of {m},దశ {n} / {m},"",pending
+uxInstStalled,No driver has said yes yet,ఇంకా ఏ డ్రైవర్ ఒప్పుకోలేదు,"",pending
+uxInstStalledHint,Raise the price a little or search wider.,ధర కొంచెం పెంచండి లేదా పరిధి పెంచండి.,"",pending
+uxRaise5,Raise price 5%,ధర 5% పెంచండి,"",pending
+uxRaise10,Raise price 10%,ధర 10% పెంచండి,"",pending
+uxWiden,Search wider,పరిధి పెంచండి,"",pending
+uxWidenMax,Widest search reached,గరిష్ట పరిధి చేరింది,"",pending
+uxPriceNow,Your price: {amount},మీ ధర: {amount},"",pending
+uxPriceRaised,Price is now {amount},ధర ఇప్పుడు {amount},"",pending
+uxPriceLimit,This is the highest price allowed.,దీనికంటే ఎక్కువ ధర సాధ్యం కాదు.,"",pending
+uxTakenByOther,Someone else took this load,ఈ లోడ్‌ను వేరొకరు తీసుకున్నారు,"",pending
+dhOnlineOn,You are online,మీరు ఆన్‌లైన్‌లో ఉన్నారు,"",pending
+dhOnlineOff,You are offline,మీరు ఆఫ్‌లైన్‌లో ఉన్నారు,"",pending
+dhRadarOn,Looking for loads near you,మీ దగ్గరి లోడ్లను వెతుకుతోంది,"",pending
+dhRadarWait,{n} load waiting for you,{n} లోడ్ మీ కోసం వేచి ఉంది,"",pending
+dhRadarOff,Go online to get loads,లోడ్ కోసం ఆన్‌లైన్‌లోకి రండి,"",pending
+dhRadarNoTruck,Add a truck to get loads,లోడ్ కోసం ట్రక్ జోడించండి,"",pending
+dhTruckToday,Truck for today,ఈ రోజు వాహనం,"",pending
+dhMore,More,మరిన్ని,"",pending
+dhUpcoming,Coming up,రాబోయేవి,"",pending
+ilTitle,New load near you,మీ దగ్గర కొత్త లోడ్,"",pending
+ilPickupKm,Pickup {n} km from you,పికప్ మీ నుండి {n} కిమీ,"",pending
+ilTripKm,Trip {n} km,ట్రిప్ {n} కిమీ,"",pending
+ilAcceptAt,Accept at {price},{price}కి అంగీకరించండి,"",pending
+ilSendPrice,Send my price,నా ధర పంపండి,"",pending
+ilSkip,Skip,వదిలేయండి,"",pending
+ilSkipWhy,Why skip? (you can leave this),ఎందుకు వదిలారు? (వదిలేయవచ్చు),"",pending
+ilWhyFar,Too far,చాలా దూరం,"",pending
+ilWhyLow,Price too low,ధర తక్కువ,"",pending
+ilWhyTruck,Truck not free,వాహనం ఖాళీగా లేదు,"",pending
+ilWhyOther,Other,ఇతర,"",pending
+ilQueue,{n} more waiting,{n} ఇంకా వేచి ఉన్నాయి,"",pending
+ilTimeUp,Time is up for this load,ఈ లోడ్ సమయం ముగిసింది,"",pending
+ilNoTruck,No free truck fits this load,ఈ లోడ్‌కి ఖాళీ వాహనం లేదు,"",pending
+bsTitle,Your price,మీ ధర,"",pending
+bsEtaQ,How soon can you reach pickup?,పికప్‌కి ఎప్పుడు చేరుతారు?,"",pending
+bsNoteQ,Add a note (optional),నోట్ జోడించండి (ఐచ్ఛికం),"",pending
+bsSend,Send price,ధర పంపండి,"",pending
+bsEdit,Change my price,నా ధర మార్చండి,"",pending
+bsEditOnce,You can change your price only once.,మీరు ధరను ఒక్కసారే మార్చగలరు.,"",pending
+bsWithdraw,Withdraw bid,బిడ్ ఉపసంహరించండి,"",pending
+bsSent,Price sent,ధర పంపబడింది,"",pending
+bsOutOfRange,Price must be between {lo} and {hi}.,ధర {lo} నుండి {hi} మధ్య ఉండాలి.,"",pending
+bsUsual,Usual: {lo} to {hi},సాధారణంగా: {lo} నుండి {hi},"",pending
+bsAlready,You already sent a price for this load.,ఈ లోడ్‌కి మీరు ఇప్పటికే ధర పంపారు.,"",pending
+uxKm,{n} km,{n} కిమీ,"",pending
+uxRouteLabel,"From {from} to {to}, {km}","{from} నుండి {to}, {km}","",pending
+uxFareUsual,Usual price: {low} to {high},సాధారణ ధర: {low} నుండి {high},"",pending
+uxFareNoRange,No usual price for this route yet,ఈ రూట్ సాధారణ ధర ఇంకా లేదు,"",pending
+uxFareLow,Low price. Fewer drivers may say yes.,తక్కువ ధర. తక్కువ డ్రైవర్లు ఒప్పుకుంటారు.,"",pending
+uxFareFair,Fair price. Good chance of a quick yes.,సరైన ధర. త్వరగా ఒప్పుకుంటారు.,"",pending
+uxFareHigh,High price. You may pay more than needed.,ఎక్కువ ధర. అవసరానికి మించి కావచ్చు.,"",pending
+uxFareYour,Your price,మీ ధర,"",pending
+uxFareEstimate,Estimate,అంచనా,"",pending
+uxSlideConfirm,Slide to confirm,నిర్ధారించడానికి జరపండి,"",pending
+uxSlideDone,Done,అయింది,"",pending
+uxSlideHint,"Slide the handle to the end, or double tap to confirm",హ్యాండిల్‌ను చివరి వరకు జరపండి లేదా రెండుసార్లు నొక్కండి,"",pending
+uxSecondsLeft,{n} seconds left,{n} సెకన్లు మిగిలాయి,"",pending
+uxTagBestPrice,Best price,ఉత్తమ ధర,"",pending
+uxTagNearest,Nearest,దగ్గరలో,"",pending
+uxTagTopRated,Top rated,అత్యుత్తమ రేటింగ్,"",pending
+uxTagFastest,Fastest,అత్యంత వేగం,"",pending
+uxVerified,Verified,ధృవీకరించబడింది,"",pending
+uxTripsN,{n} trips,{n} ట్రిప్‌లు,"",pending
+uxNewDriver,New driver,కొత్త డ్రైవర్,"",pending
+uxEtaMin,{n} min away,{n} నిమిషాల దూరం,"",pending
+uxAccept,Accept,అంగీకరించు,"",pending
+uxCounter,Counter,ప్రతి ధర,"",pending
+uxEmptyTitle,Nothing here yet,ఇక్కడ ఇంకా ఏమీ లేదు,"",pending
+uxErrorTitle,Something went wrong,ఏదో తప్పు జరిగింది,"",pending
+uxOfflineTitle,No internet,ఇంటర్నెట్ లేదు,"",pending
+uxTryAgain,Try again,మళ్లీ ప్రయత్నించండి,"",pending
+uxClose,Close,మూసివేయి,"",pending
+uxDismiss,Dismiss,తొలగించు,"",pending
+uxStepDone,done,పూర్తి,"",pending
+uxStepNow,now,ఇప్పుడు,"",pending
+uxStepNext,next,తర్వాత,"",pending
+tkMore,More about this trip,ఈ ట్రిప్ గురించి మరిన్ని,"",pending
+tkBilty,Bilty (LR),బిల్టీ (LR),"",pending
+tkBiltyMake,Make bilty,బిల్టీ చేయండి,"",pending
+tkBiltyOpen,See bilty,బిల్టీ చూడండి,"",pending
+tkBiltyHint,"Three copies: Full, Driver, Consignee. You see what stays hidden before you send.","మూడు కాపీలు: పూర్తి, డ్రైవర్, కన్సైనీ. పంపే ముందు ఏది దాగి ఉంటుందో చూడండి.","",pending
+pfLogoutAsk,Log out of this phone?,ఈ ఫోన్ నుండి లాగ్ అవుట్ చేయాలా?,"",pending
+fdSortNearest,Nearest,దగ్గరి,"",pending
+fdSortPay,Best pay,ఎక్కువ ధర,"",pending
+fdSortNew,Newest,కొత్తవి,"",pending
+mbWaiting,Waiting,వేచి ఉన్నవి,"",pending
+mbCountered,Counter price,ప్రతి ధర,"",pending
+mbSelected,Selected,ఎంపికైనవి,"",pending
+mbLost,Lost,దక్కలేదు,"",pending
+mbChange,Change or withdraw,మార్చండి లేదా వెనక్కి తీసుకోండి,"",pending
+mbNoneHere,Nothing here yet,ఇక్కడ ఇంకా ఏమీ లేదు,"",pending
+tfStep,Step {n} of {total},దశ {n} / {total},"",pending
+tfHintPickup,Take a photo of the loaded goods and ask the customer for the pickup code.,లోడ్ చేసిన సరుకు ఫోటో తీసి కస్టమర్ నుండి పికప్ కోడ్ అడగండి.,"",pending
+tfHintDelivered,Ask the customer for the delivery code. Delivery cannot be undone.,కస్టమర్ నుండి డెలివరీ కోడ్ అడగండి. డెలివరీని వెనక్కి తీసుకోలేరు.,"",pending
+epMoneyTitle,Where your money is,మీ డబ్బు ఎక్కడ ఉంది,"",pending
+epWaitCustomer,Waiting for the customer to pay,కస్టమర్ చెల్లింపు కోసం వేచి ఉంది,"",pending
+epConfirmReceived,Confirm you got the money,డబ్బు అందిందని నిర్ధారించండి,"",pending
+epInWallet,Done: in your wallet,పూర్తయింది: వాలెట్‌లో,"",pending
+obStateDone,Done,పూర్తి,"",pending
+obStateNext,Do this next,తర్వాత ఇది చేయండి,"",pending
+obStateLater,Later,తర్వాత,"",pending
+obDocAdded,Added,జోడించారు,"",pending
+obDocMissing,Missing,లేదు,"",pending
+obWhyRejected,Why it was not approved,ఎందుకు ఆమోదం రాలేదు,"",pending
+adGroupPeople,People and verification,వ్యక్తులు మరియు ధృవీకరణ,"",pending
+adGroupOps,"Loads, trips and dispatch","లోడ్, ట్రిప్ మరియు డిస్పాచ్","",pending
+adGroupSafety,Safety and trust,భద్రత మరియు నమ్మకం,"",pending
+adGroupMoney,Money,డబ్బు,"",pending
+adGroupTools,"Pilot, support and settings","పైలట్, సపోర్ట్ మరియు సెట్టింగ్‌లు","",pending
+fdBid,Bid,బిడ్,"",pending
+bsCustom,Or type your price (in rupees),లేదా మీ ధర రాయండి (రూపాయల్లో),"",pending

@@ -1,0 +1,335 @@
+﻿key,english,text,fix,status
+bizTitle,My business card,আমার বিজনেস কার্ড,"",pending
+bizShare,Share on WhatsApp,হোয়াটসঅ্যাপে পাঠান,"",pending
+bizShowPhone,Show my phone number on the card,কার্ডে আমার ফোন নম্বর দেখান,"",pending
+bizShowPhoneHint,Off by default. Anyone who gets the card can call you.,শুরুতে বন্ধ। কার্ড যে পাবে সে-ই ফোন করতে পারবে।,"",pending
+bizVerified,Verified on Load 20,Load 20-তে যাচাইকৃত,"",pending
+bizFleet,{n} trucks,{n}টি ট্রাক,"",pending
+bizOnApp,Find me on the app,অ্যাপে আমাকে খুঁজুন,"",pending
+bizNoProfile,"Fill in your profile first, then your card is ready.","আগে প্রোফাইল পূরণ করুন, তারপর কার্ড তৈরি।","",pending
+bizShareFailed,Could not share the card. Try again.,কার্ড পাঠানো গেল না। আবার চেষ্টা করুন।,"",pending
+checkinAsk,Your truck has been standing for a long time. Are you OK?,আপনার ট্রাক অনেকক্ষণ দাঁড়িয়ে আছে। আপনি ঠিক আছেন?,"",pending
+checkinNeedHelp,I need help,আমার সাহায্য দরকার,"",pending
+checkinThanks,Thank you. Drive safe.,ধন্যবাদ। নিরাপদে চালান।,"",pending
+checkinHelpSent,Help is being asked for. Support has your position. Stay where it is safe.,সাহায্য চাওয়া হচ্ছে। সাপোর্টের কাছে আপনার অবস্থান আছে। নিরাপদ জায়গায় থাকুন।,"",pending
+checkinNoAnswerSent,"No answer, so support has been told. They will try to reach you.","উত্তর পাওয়া যায়নি, তাই সাপোর্টকে জানানো হয়েছে। তারা আপনার সঙ্গে যোগাযোগ করবে।","",pending
+checkinNotSent,Could not send the alert. Please call for help.,সতর্কতা পাঠানো গেল না। অনুগ্রহ করে ফোন করে সাহায্য নিন।,"",pending
+feat_bizCard,Business card to share,শেয়ার করার বিজনেস কার্ড,"",pending
+featHelp_bizCard,"Transporters and drivers can make a card (name, city, trucks, routes, verified mark) from their profile and send it as a picture on WhatsApp. The phone number is only on the card if the person turns it on each time.",ট্রান্সপোর্টার ও চালক প্রোফাইল থেকে কার্ড বানিয়ে হোয়াটসঅ্যাপে ছবি হিসেবে পাঠাতে পারেন। প্রতিবার চালু করলেই ফোন নম্বর থাকে।,"",pending
+feat_khata,Party khata,পার্টি খাতা,"",pending
+featHelp_khata,"A private notebook in Profile: add the people you do business with, write what they owe you or what you owe them, see the balance and send a statement on WhatsApp. Records only, no money moves.","প্রোফাইলে ব্যক্তিগত খাতা: লেনদেনের মানুষদের যোগ করুন, কার কত বাকি লিখুন, বাকি দেখুন এবং হোয়াটসঅ্যাপে হিসাব পাঠান। শুধু রেকর্ড।","",pending
+feat_safetyCheckin,Safety check-in on a long stop,দীর্ঘ থামায় নিরাপত্তা যাচাই,"",pending
+featHelp_safetyCheckin,"When the truck stands for 30 minutes on the road, the driver is asked ""Are you OK?"". One tap for fine, one tap for help (an SOS to support and, with SMS on, to saved contacts). No answer in 10 minutes tells support too.","ট্রাক রাস্তায় ৩০ মিনিট দাঁড়ালে চালককে ""আপনি ঠিক আছেন?"" জিজ্ঞেস করা হয়। এক ট্যাপে ঠিক, এক ট্যাপে সাহায্য (সাপোর্টকে SOS)। ১০ মিনিটে উত্তর না এলেও সাপোর্টকে জানানো হয়।","",pending
+feat_payHold,Hold online payment until delivery,অনলাইন পেমেন্ট ডেলিভারি পর্যন্ত ধরে রাখুন,"",pending
+featHelp_payHold,"With online payment on, the driver's earning and commission are written when the trip is delivered, not when the customer pays. A refund before delivery lowers what is released. Needs the functions deployed. Off: the driver is credited at once.",অনলাইন পেমেন্ট চালু থাকলে চালকের আয় ও কমিশন ট্রিপ পৌঁছালে লেখা হয়। ডেলিভারির আগে রিফান্ড হলে ছাড়ের অঙ্ক কমে। ফাংশন ডিপ্লয় লাগবে। বন্ধ: সঙ্গে সঙ্গে জমা।,"",pending
+feat_rateRange,Usual price on a route,রুটে সাধারণ ভাড়া,"",pending
+featHelp_rateRange,"Shows the usual price range of finished trips on the same route and truck type (at least 5 trips), when a load is posted. The server collects only amounts, never names or booking ids. Needs the functions deployed.",লোড দেওয়ার সময় একই রুট ও ট্রাকের ধরনের সম্পন্ন ট্রিপের সাধারণ ভাড়ার পরিসর দেখায় (অন্তত ৫টি ট্রিপ)। সার্ভার শুধু অঙ্ক জমা করে। ফাংশন ডিপ্লয় লাগবে।,"",pending
+feat_tripTrustCard,Driver trust on offers and trips,অফার ও ট্রিপে চালকের বিশ্বাসযোগ্যতা,"",pending
+featHelp_tripTrustCard,"The customer sees the driver's trips done, star rating, verified mark and member-since month on offers and on the trip. Numbers are written by the server only; needs the server trip counts switch and the functions deployed. No name, phone or papers.","গ্রাহক অফার ও ট্রিপে চালকের সম্পন্ন ট্রিপ, তারকা রেটিং, যাচাইয়ের চিহ্ন ও সদস্যতার মাস দেখেন। সংখ্যা শুধু সার্ভার লেখে। নাম, ফোন, নথি নয়।","",pending
+feat_appCheckEnforce,Refuse calls from unknown apps,অজানা অ্যাপের কল প্রত্যাখ্যান করুন,"",pending
+featHelp_appCheckEnforce,"The server refuses payment, maps, SMS and ID-check calls that do not carry the real app's proof (App Check). Turn on only after the app is registered and the logs show almost no missing proofs. Off: the calls are only counted.","আসল অ্যাপের প্রমাণ (App Check) ছাড়া পেমেন্ট, মানচিত্র, এসএমএস ও ID কল সার্ভার প্রত্যাখ্যান করে। অ্যাপ নিবন্ধিত হয়ে লগে ঘাটতি না থাকলে তবেই চালু করুন। বন্ধ: কল শুধু গোনা হয়।","",pending
+feat_kycVerify,"ID checks (licence, RC, PAN, GST)","পরিচয় যাচাই (লাইসেন্স, RC, PAN, GST)","",pending
+featHelp_kycVerify,"After a driver saves papers, the server checks the numbers with the ID partner (or the sandbox) and shows the admin the answer. Without a partner the admin looks at the papers as before. Aadhaar: only the last four digits, never looked up.",ড্রাইভার নথি সংরক্ষণ করলে সার্ভার নম্বর ID পার্টনার (বা স্যান্ডবক্স) দিয়ে যাচাই করে অ্যাডমিনকে দেখায়। পার্টনার না থাকলে অ্যাডমিন আগের মতো দেখেন। আধার: শুধু শেষ চার অঙ্ক।,"",pending
+feat_smsGateway,SMS messages,এসএমএস বার্তা,"",pending
+featHelp_smsGateway,"Short SMS for trip steps to a customer who cannot get push, and the SOS message to the person's own emergency contacts. Needs the functions deployed, an SMS partner key and approved templates. The login code is not affected.","পুশ না পাওয়া গ্রাহককে ট্রিপের ধাপের ছোট এসএমএস, আর SOS বার্তা জরুরি যোগাযোগে। ফাংশন ডিপ্লয়, পার্টনার কী ও অনুমোদিত টেমপ্লেট লাগবে। লগইন কোডে প্রভাব নেই।","",pending
+feat_liveLocation,Live trip location,ট্রিপের লাইভ লোকেশন,"",pending
+featHelp_liveLocation,"The driver shares the truck position during the trip (with their consent), with a visible notification, few database writes and a stop when the trip ends. Off: the older sharing while the trip screen is open.","চালকের সম্মতিতে ট্রিপের সময় ট্রাকের অবস্থান শেয়ার হয়: দৃশ্যমান বিজ্ঞপ্তি, কম লেখা, ট্রিপ শেষে বন্ধ। বন্ধ: পুরোনো পদ্ধতি।","",pending
+feat_maps,Maps and road distance,মানচিত্র ও রাস্তার দূরত্ব,"",pending
+featHelp_maps,"Real road distance and time for fares and trips, and the trip map. Needs the functions deployed and a Maps key set as a secret. Off: the built-in city table.","ভাড়া ও ট্রিপের জন্য আসল রাস্তার দূরত্ব ও সময়, ট্রিপ মানচিত্র। ফাংশন ডিপ্লয় ও Maps কী লাগবে। বন্ধ: শহরের তালিকা।","",pending
+khataTitle,Khata (who owes whom),খাতা (কার কত বাকি),"",pending
+khataAddParty,Add a party,পার্টি যোগ করুন,"",pending
+khataPartyName,Name of the party,পার্টির নাম,"",pending
+khataNote,Note (optional),নোট (ঐচ্ছিক),"",pending
+khataEmpty,No party yet,এখনও কোনো পার্টি নেই,"",pending
+khataEmptyHint,Add the people you do business with and write what they owe you or what you owe them.,যাদের সঙ্গে লেনদেন তাদের যোগ করুন এবং তারা আপনাকে বা আপনি তাদের কত দেবেন লিখুন।,"",pending
+khataTheyOwe,They owe me,তারা আমাকে দেবে,"",pending
+khataIOwe,I owe them,আমি তাদের দেব,"",pending
+khataSettled,All settled,হিসাব সমান,"",pending
+khataRecordsOnly,This is only your own notebook. It is not a payment and not a legal account.,"এটি শুধু আপনার নিজের খাতা। এটি পেমেন্ট নয়, আইনি হিসাবও নয়।","",pending
+khataTooMany,You have the most parties allowed (100). Delete one first.,আপনার সর্বোচ্চ পার্টি (১০০) আছে। আগে একটি মুছুন।,"",pending
+khataAddOwed,They owe me more,তারা আরও দেবে,"",pending
+khataAddReceived,They paid,তারা দিয়েছে,"",pending
+khataAmount,Amount in rupees,অঙ্ক (টাকা),"",pending
+khataNoLines,No lines yet. Tap one of the buttons above.,এখনও কোনো লাইন নেই। ওপরের বোতাম চাপুন।,"",pending
+khataDeleteLine,Delete this line,এই লাইন মুছুন,"",pending
+khataDeleteLineHint,The balance is corrected. Enter the right amount again.,বাকি ঠিক হয়ে যাবে। সঠিক অঙ্ক আবার লিখুন।,"",pending
+khataShare,Share statement,হিসাব পাঠান,"",pending
+khataCopied,The statement was copied. Paste it in a message.,হিসাব কপি হয়েছে। বার্তায় পেস্ট করুন।,"",pending
+khataOwedWord,Owed,বাকি,"",pending
+khataReceivedWord,Received,পেয়েছি,"",pending
+khataBalanceWord,Balance,অবশিষ্ট,"",pending
+kycChipVerified,{kind}: ID check passed,{kind}: ID যাচাই পাস,"",pending
+kycChipMismatch,{kind}: name on the record differs. Please look.,{kind}: রেকর্ডে নাম আলাদা। দেখুন।,"",pending
+kycChipNotFound,{kind}: not found in the records. Please look.,{kind}: রেকর্ডে পাওয়া যায়নি। দেখুন।,"",pending
+kycChipManual,No automatic ID check yet. Please look at the papers yourself.,এখনও স্বয়ংক্রিয় ID যাচাই হয়নি। নথি নিজে দেখুন।,"",pending
+kycKind_licence,Licence,লাইসেন্স,"",pending
+kycKind_rc,RC,RC,"",pending
+kycKind_pan,PAN,PAN,"",pending
+kycKind_gstin,GSTIN,GSTIN,"",pending
+kycKind_aadhaar,Aadhaar (last 4),আধার (শেষ ৪),"",pending
+liveNoticeTitle,Load 20 is sharing your trip location,Load 20 আপনার ট্রিপের লোকেশন শেয়ার করছে,"",pending
+liveNoticeText,Only the customer of this trip sees it. It stops when the trip ends.,শুধু এই ট্রিপের গ্রাহক দেখেন। ট্রিপ শেষে বন্ধ হয়।,"",pending
+liveNoConsent,Turn on location sharing in Settings so the customer can follow this trip.,গ্রাহক ট্রিপ দেখতে পারেন তাই সেটিংসে লোকেশন শেয়ারিং চালু করুন।,"",pending
+liveNoPermission,Allow location for Load 20 in your phone settings to share this trip.,এই ট্রিপ শেয়ার করতে ফোন সেটিংসে Load 20-কে লোকেশনের অনুমতি দিন।,"",pending
+lastSeenNow,Last seen just now,এইমাত্র দেখা গেছে,"",pending
+lastSeenMinutes,Last seen {n} min ago,{n} মিনিট আগে দেখা গেছে,"",pending
+lastSeenHours,Last seen {n} h ago,{n} ঘণ্টা আগে দেখা গেছে,"",pending
+tripMapTitle,Trip map,ট্রিপের মানচিত্র,"",pending
+tripMapOpen,Show on map,মানচিত্রে দেখুন,"",pending
+tripMapNone,The map is not available for this trip.,এই ট্রিপের জন্য মানচিত্র নেই।,"",pending
+tripMapPickup,Pickup,পিকআপ,"",pending
+tripMapDrop,Drop,ড্রপ,"",pending
+tripMapDriver,Driver,ড্রাইভার,"",pending
+payOnline,Pay online,অনলাইনে পরিশোধ করুন,"",pending
+payOnlineDone,Payment received. The driver is paid when the trip is done.,পেমেন্ট পাওয়া গেছে। ট্রিপ শেষ হলে ড্রাইভার টাকা পাবেন।,"",pending
+payOnlineCancelled,Payment was not completed. Nothing was charged by us.,পেমেন্ট সম্পূর্ণ হয়নি। আমরা কিছু কাটিনি।,"",pending
+payOnlineFailed,"Could not check the payment. If money was cut, it is safe: wait a few minutes or contact support.",পেমেন্ট যাচাই করা গেল না। টাকা কাটা গেলে তা নিরাপদ: কয়েক মিনিট অপেক্ষা করুন বা সহায়তায় যোগাযোগ করুন।,"",pending
+payOnlineUnavailable,"Online payment is not available right now. Use ""I have paid"" instead.","অনলাইন পেমেন্ট এখন পাওয়া যাচ্ছে না। ""আমি দিয়েছি"" ব্যবহার করুন।","",pending
+payHeldLine,Paid online: {amount}. Held safely and given to the driver when the trip is delivered.,"অনলাইনে পরিশোধ: {amount}। নিরাপদে রাখা আছে, ট্রিপ পৌঁছালে চালক পাবেন।","",pending
+ptTrips,{n} trips done,{n}টি ট্রিপ সম্পন্ন,"",pending
+ptTripsOne,1 trip done,১টি ট্রিপ সম্পন্ন,"",pending
+ptRating,{r} stars ({n}),{r} তারকা ({n}),"",pending
+ptSince,Since {month},{month} থেকে,"",pending
+ptVerified,Verified,যাচাইকৃত,"",pending
+ptNew,New on Load 20,Load 20-তে নতুন,"",pending
+rrUsual,Usual price on this route: {low} to {high} ({n} trips),এই রুটে সাধারণ ভাড়া: {low} থেকে {high} ({n}টি ট্রিপ),"",pending
+feat_dispatchV2,Nearby-first dispatch and bidding,কাছের চালকদের আগে ও বিড,"",pending
+featHelp_dispatchV2,"Loads go to the nearest drivers first, then wider rings. Customers can pick Instant, Bid or Schedule. Turn on only after the new Firestore rules are published. Off: the old open load and offers work as before.","লোড আগে কাছের চালকদের, তারপর বড় বৃত্তে যায়। নতুন নিয়ম প্রকাশের পরেই চালু করুন।","",pending
+feat_uiV2,New look and booking steps,নতুন ডিজাইন ও বুকিংয়ের ধাপ,"",pending
+featHelp_uiV2,"The new home, 5-step booking, bid room, incoming-load card and trip screens. Turn it off to go back to the old screens. Works with or without the new dispatch switch.","নতুন হোম, ৫ ধাপের বুকিং, বিড রুম, আসা লোডের কার্ড ও ট্রিপ স্ক্রিন। বন্ধ করলে পুরনো স্ক্রিন ফিরে আসে।","",pending
+adminDispatchMonitor,Dispatch monitor,ডিসপ্যাচ মনিটর,"",pending
+dmLive,Live loads,চলমান লোড,"",pending
+dmFilled,Taken by a driver,চালক নিয়েছে,"",pending
+dmExpiredNoBid,Expired with no bid,বিড ছাড়া শেষ,"",pending
+dmExpiredBids,Expired with bids,বিড সহ শেষ,"",pending
+dmFirstBid,Time to first bid,প্রথম বিডের সময়,"",pending
+dmFillTime,Time to fill,পূরণের সময়,"",pending
+dmAcceptance,"Taken, out of all finished",শেষ হওয়াগুলোর মধ্যে নেওয়া,"",pending
+dmPriceVsEstimate,Price against estimate,আনুমানিকের তুলনায় ভাড়া,"",pending
+dmNoShows,No-show cancels,না আসায় বাতিল,"",pending
+dmShown,Drivers shown,দেখানো চালক,"",pending
+dmShownNote,Known after the server wave is on.,সার্ভার ওয়েভ চালু হলে জানা যাবে।,"",pending
+dmRing,Ring {n},বৃত্ত {n},"",pending
+dmBids,{n} bids,{n}টি বিড,"",pending
+dmStalled,Nobody yet,এখনও কেউ নেই,"",pending
+dmMinutes,{n} min,{n} মিনিট,"",pending
+dmSeconds,{n} s,{n} সে,"",pending
+dmNone,No data yet,এখনও ডেটা নেই,"",pending
+dmRecent,Recent loads,সাম্প্রতিক লোড,"",pending
+dmModeInstant,Instant,তাৎক্ষণিক,"",pending
+dmModeBid,Bid,বিড,"",pending
+dmModeScheduled,Schedule,সময়সূচি,"",pending
+brTitle,Bid room,বিড রুম,"",pending
+brBids,Bids,বিড,"",pending
+brWaiting,Drivers are looking at your load.,চালকরা আপনার লোড দেখছে।,"",pending
+brWindowLeft,Bidding closes in,বিড বন্ধ হতে,"",pending
+brWindowClosed,Bidding is closed.,বিড বন্ধ হয়েছে।,"",pending
+brNoBids,No bids yet.,এখনও বিড নেই।,"",pending
+brNoBidsHelp,What next?,এখন কী করবেন?,"",pending
+brRaisePrice,Raise the price,ভাড়া বাড়ান,"",pending
+brMoreTime,Give more time,আরও সময় দিন,"",pending
+brGoInstant,Go instant,তাৎক্ষণিকে যান,"",pending
+brSchedule,Book for later,পরের জন্য বুক করুন,"",pending
+brAccept,Accept this bid,এই বিড গ্রহণ করুন,"",pending
+brAcceptAsk,Accept the bid of {amount}? The other bids will close.,{amount} বিড গ্রহণ করবেন? বাকিগুলো বন্ধ হবে।,"",pending
+brYes,"Yes, accept","হ্যাঁ, গ্রহণ","",pending
+brCounterTitle,Your counter price,আপনার পাল্টা ভাড়া,"",pending
+brCounterHint,You can counter once. The driver can say yes.,আপনি একবারই পাল্টা ভাড়া দিতে পারবেন।,"",pending
+brSend,Send,পাঠান,"",pending
+brCounterSent,Counter sent: {amount},পাল্টা ভাড়া পাঠানো হয়েছে: {amount},"",pending
+brSelectedWait,Waiting for the driver to confirm.,চালকের নিশ্চিতকরণের অপেক্ষা।,"",pending
+brCountered,You countered. Waiting for the driver.,আপনি পাল্টা ভাড়া দিয়েছেন। চালকের অপেক্ষা।,"",pending
+brFound,A driver is confirmed.,চালক নিশ্চিত হয়েছে।,"",pending
+brTrack,Open the trip,ট্রিপ খুলুন,"",pending
+brClosed,This load is closed.,এই লোড বন্ধ হয়েছে।,"",pending
+brAutoTitle,Auto-accept,স্বয়ংক্রিয় গ্রহণ,"",pending
+brAutoHint,The first bid that fits is accepted. It works while this app is open.,যে প্রথম বিড মেলে সেটি গ্রহণ হয়। অ্যাপ খোলা থাকলে কাজ করে।,"",pending
+brAutoMax,Highest price (rupees),সর্বোচ্চ ভাড়া (টাকা),"",pending
+brAutoRating,Lowest rating,সর্বনিম্ন রেটিং,"",pending
+brAny,Any,যেকোনো,"",pending
+brVerifiedOnly,Verified drivers only,শুধু যাচাইকৃত চালক,"",pending
+brSave,Save,সংরক্ষণ,"",pending
+brAutoOff,Turn off,বন্ধ করুন,"",pending
+brAutoOn,Auto-accept is on: up to {amount},স্বয়ংক্রিয় গ্রহণ চালু: {amount} পর্যন্ত,"",pending
+brAutoAccepted,A bid was accepted for you.,আপনার জন্য একটি বিড গ্রহণ হয়েছে।,"",pending
+brChatAfter,Chat opens after the driver confirms. Phone numbers stay hidden.,চালক নিশ্চিত করলে চ্যাট খুলবে। ফোন নম্বর লুকানো থাকে।,"",pending
+bnote_on_the_way,I am on the way,আমি পথে আছি,"",pending
+bnote_empty_return,Empty on return,ফেরার পথে খালি,"",pending
+bnote_loading_help,Loading help available,লোডিংয়ে সাহায্য আছে,"",pending
+bnote_flexible_time,Flexible on time,সময়ে নমনীয়,"",pending
+bnote_clean_truck,Clean truck,পরিষ্কার ট্রাক,"",pending
+wzTitle,Book a truck,ট্রাক বুক করুন,"",pending
+wzStepOf,Step {n} of {m},ধাপ {n} / {m},"",pending
+wzQ1,Where should the truck go?,ট্রাক কোথা থেকে কোথায়?,"",pending
+wzQ2,What are you sending?,কী পাঠাচ্ছেন?,"",pending
+wzQ3,Which truck?,কোন ট্রাক?,"",pending
+wzQ4,What price and how?,"কত ভাড়া, কীভাবে?","",pending
+wzQ5,Check and book,দেখে বুক করুন,"",pending
+wzPickup,Pickup city,তোলার শহর,"",pending
+wzDrop,Drop city,পৌঁছানোর শহর,"",pending
+wzRecent,Recent routes,সাম্প্রতিক রুট,"",pending
+wzWeight,Weight: {w} tons,ওজন: {w} টন,"",pending
+wzSuggested,Fits your load,আপনার মালের জন্য ঠিক,"",pending
+wzTooSmall,Too small for this weight,এই ওজনের জন্য ছোট,"",pending
+wzCapacity,Up to {t} tons,{t} টন পর্যন্ত,"",pending
+wzNext,Next,পরবর্তী,"",pending
+wzBack,Back,পিছনে,"",pending
+wzModeTitle,How should drivers reply?,চালকরা কীভাবে উত্তর দেবে?,"",pending
+wzModeInstant,Instant,তাৎক্ষণিক,"",pending
+wzModeInstantHint,Nearest drivers first. First yes wins.,আগে কাছের চালক। প্রথম হ্যাঁ জেতে।,"",pending
+wzModeBid,Bid,বিড,"",pending
+wzModeBidHint,Drivers send prices. You choose.,চালক ভাড়া পাঠায়। আপনি বাছুন।,"",pending
+wzModeSchedule,Schedule,সময়সূচি,"",pending
+wzModeScheduleHint,Book for a later day or time.,পরের দিন বা সময়ের জন্য।,"",pending
+wzWhen,Pickup day and time,তোলার দিন ও সময়,"",pending
+wzPickDate,Pick a day and time,দিন ও সময় বাছুন,"",pending
+wzTotal,Estimated total,আনুমানিক মোট,"",pending
+wzYourPrice,Your price,আপনার ভাড়া,"",pending
+wzBookSlide,Slide to book,বুক করতে স্লাইড করুন,"",pending
+wzTerms,By booking you accept the terms of {app}.,বুক করলে আপনি {app}-এর শর্ত মানছেন।,"",pending
+wzDraftBack,Your earlier answers are back.,আপনার আগের উত্তর ফিরেছে।,"",pending
+wzNeedRoute,Choose both cities.,দুটি শহরই বাছুন।,"",pending
+wzNeedGoods,Choose what you send and the weight.,মাল ও ওজন বাছুন।,"",pending
+wzNeedTruck,Choose a truck.,ট্রাক বাছুন।,"",pending
+wzNeedDate,Pick a pickup day.,তোলার দিন বাছুন।,"",pending
+wzNoQuote,We cannot work out a price for this route. Type your own price.,এই রুটের ভাড়া বের করা যায়নি। নিজের ভাড়া লিখুন।,"",pending
+wzPostedBid,Bidding is open. Drivers are sending prices.,বিড শুরু। চালকরা ভাড়া পাঠাচ্ছে।,"",pending
+wzNeedPrice,Type your price.,আপনার ভাড়া লিখুন।,"",pending
+wzDateTooSoon,Choose a later time.,পরের সময় বাছুন।,"",pending
+wzDateTooFar,Choose an earlier day.,আগের দিন বাছুন।,"",pending
+hvBookBig,Book a truck,ট্রাক বুক করুন,"",pending
+hvHeroSub,"Five easy questions. Pick instant, bid or schedule.","পাঁচটি সহজ প্রশ্ন। তাৎক্ষণিক, বিড বা সময়সূচি বাছুন।","",pending
+hvTrip,Your trip,আপনার ট্রিপ,"",pending
+hvWaitingLoads,{n} load waiting for drivers,{n}টি লোড চালকের অপেক্ষায়,"",pending
+hvOpen,Open,খুলুন,"",pending
+hvTrust1,Verified drivers,যাচাইকৃত চালক,"",pending
+hvTrust2,OTP at pickup and delivery,তোলা ও পৌঁছানোর সময় OTP,"",pending
+hvTrust3,Phone numbers stay hidden,ফোন নম্বর লুকানো থাকে,"",pending
+hvMore,More,আরও,"",pending
+hvTabHome,Home,হোম,"",pending
+hvTabTrips,Trips,ট্রিপ,"",pending
+hvTabHelp,Help,সাহায্য,"",pending
+hvTabProfile,Profile,প্রোফাইল,"",pending
+hvAgain,Book again,আবার বুক করুন,"",pending
+trActive,Active,চলমান,"",pending
+trUpcoming,Upcoming,আসন্ন,"",pending
+trPast,Past,পুরনো,"",pending
+trEmptyActive,No trip right now. Book a truck to start.,এখন কোনো ট্রিপ নেই। শুরু করতে ট্রাক বুক করুন।,"",pending
+trEmptyUpcoming,No trip is booked for later.,পরের জন্য কোনো ট্রিপ বুক নেই।,"",pending
+trEmptyPast,Finished trips will show here.,শেষ হওয়া ট্রিপ এখানে দেখাবে।,"",pending
+trWaitingDrivers,Waiting for drivers,চালকের অপেক্ষায়,"",pending
+trLoadClosed,"Closed, no driver","বন্ধ, চালক নেই","",pending
+uxInstTitle,Looking for a truck near you,আপনার কাছে ট্রাক খোঁজা হচ্ছে,"",pending
+uxInstReach,Searching within {km} km,{km} কিমির মধ্যে খোঁজ,"",pending
+uxInstRound,Round {n} of {m},ধাপ {n} / {m},"",pending
+uxInstStalled,No driver has said yes yet,এখনও কোনো চালক রাজি হয়নি,"",pending
+uxInstStalledHint,Raise the price a little or search wider.,ভাড়া একটু বাড়ান বা এলাকা বাড়ান।,"",pending
+uxRaise5,Raise price 5%,ভাড়া ৫% বাড়ান,"",pending
+uxRaise10,Raise price 10%,ভাড়া ১০% বাড়ান,"",pending
+uxWiden,Search wider,এলাকা বাড়ান,"",pending
+uxWidenMax,Widest search reached,সর্বোচ্চ এলাকা হয়েছে,"",pending
+uxPriceNow,Your price: {amount},আপনার ভাড়া: {amount},"",pending
+uxPriceRaised,Price is now {amount},ভাড়া এখন {amount},"",pending
+uxPriceLimit,This is the highest price allowed.,এর বেশি ভাড়া সম্ভব নয়।,"",pending
+uxTakenByOther,Someone else took this load,এই লোড অন্য কেউ নিয়েছে,"",pending
+dhOnlineOn,You are online,আপনি অনলাইনে আছেন,"",pending
+dhOnlineOff,You are offline,আপনি অফলাইনে আছেন,"",pending
+dhRadarOn,Looking for loads near you,আপনার কাছের লোড খোঁজা হচ্ছে,"",pending
+dhRadarWait,{n} load waiting for you,{n}টি লোড আপনার অপেক্ষায়,"",pending
+dhRadarOff,Go online to get loads,লোড পেতে অনলাইনে আসুন,"",pending
+dhRadarNoTruck,Add a truck to get loads,লোড পেতে ট্রাক যোগ করুন,"",pending
+dhTruckToday,Truck for today,আজকের গাড়ি,"",pending
+dhMore,More,আরও,"",pending
+dhUpcoming,Coming up,আসছে,"",pending
+ilTitle,New load near you,আপনার কাছে নতুন লোড,"",pending
+ilPickupKm,Pickup {n} km from you,পিকআপ আপনার থেকে {n} কিমি,"",pending
+ilTripKm,Trip {n} km,ট্রিপ {n} কিমি,"",pending
+ilAcceptAt,Accept at {price},{price}-এ নিন,"",pending
+ilSendPrice,Send my price,আমার ভাড়া পাঠান,"",pending
+ilSkip,Skip,বাদ দিন,"",pending
+ilSkipWhy,Why skip? (you can leave this),কেন বাদ দিলেন? (না বললেও চলে),"",pending
+ilWhyFar,Too far,অনেক দূর,"",pending
+ilWhyLow,Price too low,ভাড়া কম,"",pending
+ilWhyTruck,Truck not free,গাড়ি খালি নেই,"",pending
+ilWhyOther,Other,অন্য,"",pending
+ilQueue,{n} more waiting,আরও {n}টি অপেক্ষায়,"",pending
+ilTimeUp,Time is up for this load,এই লোডের সময় শেষ,"",pending
+ilNoTruck,No free truck fits this load,এই লোডের জন্য খালি গাড়ি নেই,"",pending
+bsTitle,Your price,আপনার ভাড়া,"",pending
+bsEtaQ,How soon can you reach pickup?,পিকআপে কখন পৌঁছাবেন?,"",pending
+bsNoteQ,Add a note (optional),নোট যোগ করুন (ঐচ্ছিক),"",pending
+bsSend,Send price,ভাড়া পাঠান,"",pending
+bsEdit,Change my price,আমার ভাড়া বদলান,"",pending
+bsEditOnce,You can change your price only once.,আপনি ভাড়া শুধু একবার বদলাতে পারবেন।,"",pending
+bsWithdraw,Withdraw bid,বিড প্রত্যাহার করুন,"",pending
+bsSent,Price sent,ভাড়া পাঠানো হয়েছে,"",pending
+bsOutOfRange,Price must be between {lo} and {hi}.,ভাড়া {lo} থেকে {hi}-এর মধ্যে হতে হবে।,"",pending
+bsUsual,Usual: {lo} to {hi},সাধারণত: {lo} থেকে {hi},"",pending
+bsAlready,You already sent a price for this load.,আপনি এই লোডের জন্য আগেই ভাড়া পাঠিয়েছেন।,"",pending
+uxKm,{n} km,{n} কিমি,"",pending
+uxRouteLabel,"From {from} to {to}, {km}","{from} থেকে {to}, {km}","",pending
+uxFareUsual,Usual price: {low} to {high},সাধারণ ভাড়া: {low} থেকে {high},"",pending
+uxFareNoRange,No usual price for this route yet,এই রুটের সাধারণ ভাড়া এখনও নেই,"",pending
+uxFareLow,Low price. Fewer drivers may say yes.,কম ভাড়া। কম চালক রাজি হবে।,"",pending
+uxFareFair,Fair price. Good chance of a quick yes.,ঠিক ভাড়া। তাড়াতাড়ি রাজি হবে।,"",pending
+uxFareHigh,High price. You may pay more than needed.,বেশি ভাড়া। প্রয়োজনের বেশি হতে পারে।,"",pending
+uxFareYour,Your price,আপনার ভাড়া,"",pending
+uxFareEstimate,Estimate,আনুমানিক,"",pending
+uxSlideConfirm,Slide to confirm,নিশ্চিত করতে স্লাইড করুন,"",pending
+uxSlideDone,Done,হয়েছে,"",pending
+uxSlideHint,"Slide the handle to the end, or double tap to confirm",হ্যান্ডেল শেষ পর্যন্ত টানুন বা দুবার চাপুন,"",pending
+uxSecondsLeft,{n} seconds left,{n} সেকেন্ড বাকি,"",pending
+uxTagBestPrice,Best price,সেরা ভাড়া,"",pending
+uxTagNearest,Nearest,সবচেয়ে কাছে,"",pending
+uxTagTopRated,Top rated,সেরা রেটিং,"",pending
+uxTagFastest,Fastest,সবচেয়ে দ্রুত,"",pending
+uxVerified,Verified,যাচাইকৃত,"",pending
+uxTripsN,{n} trips,{n}টি ট্রিপ,"",pending
+uxNewDriver,New driver,নতুন চালক,"",pending
+uxEtaMin,{n} min away,{n} মিনিট দূরে,"",pending
+uxAccept,Accept,গ্রহণ করুন,"",pending
+uxCounter,Counter,পাল্টা ভাড়া,"",pending
+uxEmptyTitle,Nothing here yet,এখানে এখনও কিছু নেই,"",pending
+uxErrorTitle,Something went wrong,কিছু ভুল হয়েছে,"",pending
+uxOfflineTitle,No internet,ইন্টারনেট নেই,"",pending
+uxTryAgain,Try again,আবার চেষ্টা করুন,"",pending
+uxClose,Close,বন্ধ করুন,"",pending
+uxDismiss,Dismiss,সরান,"",pending
+uxStepDone,done,সম্পন্ন,"",pending
+uxStepNow,now,এখন,"",pending
+uxStepNext,next,পরবর্তী,"",pending
+tkMore,More about this trip,এই ট্রিপ সম্পর্কে আরও,"",pending
+tkBilty,Bilty (LR),বিল্টি (LR),"",pending
+tkBiltyMake,Make bilty,বিল্টি বানান,"",pending
+tkBiltyOpen,See bilty,বিল্টি দেখুন,"",pending
+tkBiltyHint,"Three copies: Full, Driver, Consignee. You see what stays hidden before you send.","তিনটি কপি: পূর্ণ, চালক, কনসাইনি। পাঠানোর আগে দেখবেন কী লুকানো থাকবে।","",pending
+pfLogoutAsk,Log out of this phone?,এই ফোন থেকে লগ আউট করবেন?,"",pending
+fdSortNearest,Nearest,সবচেয়ে কাছে,"",pending
+fdSortPay,Best pay,সবচেয়ে বেশি ভাড়া,"",pending
+fdSortNew,Newest,সবচেয়ে নতুন,"",pending
+mbWaiting,Waiting,অপেক্ষায়,"",pending
+mbCountered,Counter price,পাল্টা দাম,"",pending
+mbSelected,Selected,নির্বাচিত,"",pending
+mbLost,Lost,পাওয়া যায়নি,"",pending
+mbChange,Change or withdraw,বদলান বা ফিরিয়ে নিন,"",pending
+mbNoneHere,Nothing here yet,এখানে এখনও কিছু নেই,"",pending
+tfStep,Step {n} of {total},ধাপ {n} / {total},"",pending
+tfHintPickup,Take a photo of the loaded goods and ask the customer for the pickup code.,বোঝাই মালের ছবি তুলুন এবং গ্রাহকের কাছে পিকআপ কোড চান।,"",pending
+tfHintDelivered,Ask the customer for the delivery code. Delivery cannot be undone.,গ্রাহকের কাছে ডেলিভারি কোড চান। ডেলিভারি ফেরানো যায় না।,"",pending
+epMoneyTitle,Where your money is,আপনার টাকা কোথায়,"",pending
+epWaitCustomer,Waiting for the customer to pay,গ্রাহকের পেমেন্টের অপেক্ষা,"",pending
+epConfirmReceived,Confirm you got the money,টাকা পেয়েছেন নিশ্চিত করুন,"",pending
+epInWallet,Done: in your wallet,হয়ে গেছে: ওয়ালেটে,"",pending
+obStateDone,Done,হয়েছে,"",pending
+obStateNext,Do this next,এরপর এটি করুন,"",pending
+obStateLater,Later,পরে,"",pending
+obDocAdded,Added,যোগ করা হয়েছে,"",pending
+obDocMissing,Missing,বাকি আছে,"",pending
+obWhyRejected,Why it was not approved,কেন অনুমোদন হয়নি,"",pending
+adGroupPeople,People and verification,মানুষ ও যাচাই,"",pending
+adGroupOps,"Loads, trips and dispatch","লোড, ট্রিপ ও ডিসপ্যাচ","",pending
+adGroupSafety,Safety and trust,নিরাপত্তা ও বিশ্বাস,"",pending
+adGroupMoney,Money,টাকা,"",pending
+adGroupTools,"Pilot, support and settings","পাইলট, সহায়তা ও সেটিংস","",pending
+fdBid,Bid,বিড,"",pending
+bsCustom,Or type your price (in rupees),অথবা আপনার ভাড়া লিখুন (টাকায়),"",pending

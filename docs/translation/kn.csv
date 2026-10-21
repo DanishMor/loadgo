@@ -1,0 +1,335 @@
+﻿key,english,text,fix,status
+bizTitle,My business card,ನನ್ನ ಬಿಸಿನೆಸ್ ಕಾರ್ಡ್,"",pending
+bizShare,Share on WhatsApp,ವಾಟ್ಸಾಪ್‌ನಲ್ಲಿ ಹಂಚಿಕೊಳ್ಳಿ,"",pending
+bizShowPhone,Show my phone number on the card,ಕಾರ್ಡ್‌ನಲ್ಲಿ ನನ್ನ ಫೋನ್ ಸಂಖ್ಯೆ ತೋರಿಸಿ,"",pending
+bizShowPhoneHint,Off by default. Anyone who gets the card can call you.,ಮೊದಲು ಆಫ್. ಕಾರ್ಡ್ ಪಡೆದ ಯಾರಾದರೂ ನಿಮಗೆ ಕರೆ ಮಾಡಬಹುದು.,"",pending
+bizVerified,Verified on Load 20,Load 20 ನಲ್ಲಿ ಪರಿಶೀಲಿತ,"",pending
+bizFleet,{n} trucks,{n} ಟ್ರಕ್‌ಗಳು,"",pending
+bizOnApp,Find me on the app,ಆ್ಯಪ್‌ನಲ್ಲಿ ನನ್ನನ್ನು ಹುಡುಕಿ,"",pending
+bizNoProfile,"Fill in your profile first, then your card is ready.","ಮೊದಲು ಪ್ರೊಫೈಲ್ ತುಂಬಿ, ನಂತರ ಕಾರ್ಡ್ ಸಿದ್ಧ.","",pending
+bizShareFailed,Could not share the card. Try again.,ಕಾರ್ಡ್ ಹಂಚಿಕೊಳ್ಳಲಾಗಲಿಲ್ಲ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.,"",pending
+checkinAsk,Your truck has been standing for a long time. Are you OK?,ನಿಮ್ಮ ಟ್ರಕ್ ಬಹಳ ಹೊತ್ತಿನಿಂದ ನಿಂತಿದೆ. ನೀವು ಚೆನ್ನಾಗಿದ್ದೀರಾ?,"",pending
+checkinNeedHelp,I need help,ನನಗೆ ಸಹಾಯ ಬೇಕು,"",pending
+checkinThanks,Thank you. Drive safe.,ಧನ್ಯವಾದ. ಸುರಕ್ಷಿತವಾಗಿ ಓಡಿಸಿ.,"",pending
+checkinHelpSent,Help is being asked for. Support has your position. Stay where it is safe.,ಸಹಾಯ ಕೇಳಲಾಗುತ್ತಿದೆ. ಬೆಂಬಲ ತಂಡಕ್ಕೆ ನಿಮ್ಮ ಸ್ಥಳ ಗೊತ್ತಿದೆ. ಸುರಕ್ಷಿತ ಸ್ಥಳದಲ್ಲಿರಿ.,"",pending
+checkinNoAnswerSent,"No answer, so support has been told. They will try to reach you.","ಉತ್ತರ ಬರಲಿಲ್ಲ, ಆದ್ದರಿಂದ ಬೆಂಬಲ ತಂಡಕ್ಕೆ ತಿಳಿಸಲಾಗಿದೆ. ಅವರು ನಿಮ್ಮನ್ನು ಸಂಪರ್ಕಿಸುತ್ತಾರೆ.","",pending
+checkinNotSent,Could not send the alert. Please call for help.,ಎಚ್ಚರಿಕೆ ಕಳುಹಿಸಲಾಗಲಿಲ್ಲ. ದಯವಿಟ್ಟು ಕರೆ ಮಾಡಿ ಸಹಾಯ ಪಡೆಯಿರಿ.,"",pending
+feat_bizCard,Business card to share,ಹಂಚಿಕೊಳ್ಳಲು ಬಿಸಿನೆಸ್ ಕಾರ್ಡ್,"",pending
+featHelp_bizCard,"Transporters and drivers can make a card (name, city, trucks, routes, verified mark) from their profile and send it as a picture on WhatsApp. The phone number is only on the card if the person turns it on each time.",ಟ್ರಾನ್ಸ್‌ಪೋರ್ಟರ್ ಮತ್ತು ಚಾಲಕರು ಪ್ರೊಫೈಲ್‌ನಿಂದ ಕಾರ್ಡ್ ಮಾಡಿ ವಾಟ್ಸಾಪ್‌ನಲ್ಲಿ ಚಿತ್ರವಾಗಿ ಕಳುಹಿಸಬಹುದು. ಫೋನ್ ಸಂಖ್ಯೆ ವ್ಯಕ್ತಿ ಪ್ರತಿ ಬಾರಿ ಆನ್ ಮಾಡಿದರೆ ಮಾತ್ರ.,"",pending
+feat_khata,Party khata,ಪಕ್ಷ ಖಾತೆ,"",pending
+featHelp_khata,"A private notebook in Profile: add the people you do business with, write what they owe you or what you owe them, see the balance and send a statement on WhatsApp. Records only, no money moves.","ಪ್ರೊಫೈಲ್‌ನಲ್ಲಿ ಖಾಸಗಿ ನೋಟ್‌ಬುಕ್: ವ್ಯವಹರಿಸುವವರನ್ನು ಸೇರಿಸಿ, ಯಾರಿಗೆ ಎಷ್ಟು ಬಾಕಿ ಬರೆಯಿರಿ, ಬಾಕಿ ನೋಡಿ, ವಾಟ್ಸಾಪ್‌ನಲ್ಲಿ ಲೆಕ್ಕ ಕಳುಹಿಸಿ. ದಾಖಲೆ ಮಾತ್ರ.","",pending
+feat_safetyCheckin,Safety check-in on a long stop,ದೀರ್ಘ ನಿಲುಗಡೆಯಲ್ಲಿ ಸುರಕ್ಷತಾ ಪರಿಶೀಲನೆ,"",pending
+featHelp_safetyCheckin,"When the truck stands for 30 minutes on the road, the driver is asked ""Are you OK?"". One tap for fine, one tap for help (an SOS to support and, with SMS on, to saved contacts). No answer in 10 minutes tells support too.","ಟ್ರಕ್ ರಸ್ತೆಯಲ್ಲಿ 30 ನಿಮಿಷ ನಿಂತರೆ ಚಾಲಕರನ್ನು ""ನೀವು ಚೆನ್ನಾಗಿದ್ದೀರಾ?"" ಎಂದು ಕೇಳಲಾಗುತ್ತದೆ. ಒಂದು ಟ್ಯಾಪ್ ಸರಿ, ಒಂದು ಟ್ಯಾಪ್ ಸಹಾಯ (ಬೆಂಬಲಕ್ಕೆ SOS). 10 ನಿಮಿಷ ಉತ್ತರ ಇಲ್ಲದಿದ್ದರೂ ಬೆಂಬಲಕ್ಕೆ ತಿಳಿಸಲಾಗುತ್ತದೆ.","",pending
+feat_payHold,Hold online payment until delivery,ಆನ್‌ಲೈನ್ ಪಾವತಿಯನ್ನು ಡೆಲಿವರಿವರೆಗೆ ತಡೆಹಿಡಿಯಿರಿ,"",pending
+featHelp_payHold,"With online payment on, the driver's earning and commission are written when the trip is delivered, not when the customer pays. A refund before delivery lowers what is released. Needs the functions deployed. Off: the driver is credited at once.",ಆನ್‌ಲೈನ್ ಪಾವತಿ ಆನ್ ಇದ್ದಾಗ ಚಾಲಕರ ಗಳಿಕೆ ಮತ್ತು ಕಮಿಷನ್ ಟ್ರಿಪ್ ತಲುಪಿದಾಗ ದಾಖಲಾಗುತ್ತದೆ. ಡೆಲಿವರಿ ಮುನ್ನ ರಿಫಂಡ್ ಆದರೆ ಬಿಡುಗಡೆ ಮೊತ್ತ ಕಡಿಮೆ. ಫಂಕ್ಷನ್ ನಿಯೋಜನೆ ಬೇಕು. ಆಫ್: ತಕ್ಷಣ ಜಮೆ.,"",pending
+feat_rateRange,Usual price on a route,ಮಾರ್ಗದಲ್ಲಿ ಸಾಮಾನ್ಯ ದರ,"",pending
+featHelp_rateRange,"Shows the usual price range of finished trips on the same route and truck type (at least 5 trips), when a load is posted. The server collects only amounts, never names or booking ids. Needs the functions deployed.",ಲೋಡ್ ಹಾಕುವಾಗ ಅದೇ ಮಾರ್ಗ ಮತ್ತು ಟ್ರಕ್ ಪ್ರಕಾರದ ಪೂರ್ಣ ಟ್ರಿಪ್‌ಗಳ ಸಾಮಾನ್ಯ ದರ ವ್ಯಾಪ್ತಿ ತೋರಿಸುತ್ತದೆ (ಕನಿಷ್ಠ 5 ಟ್ರಿಪ್). ಸರ್ವರ್ ಮೊತ್ತ ಮಾತ್ರ ಸಂಗ್ರಹಿಸುತ್ತದೆ. ಫಂಕ್ಷನ್ ನಿಯೋಜನೆ ಬೇಕು.,"",pending
+feat_tripTrustCard,Driver trust on offers and trips,ಆಫರ್ ಮತ್ತು ಟ್ರಿಪ್‌ನಲ್ಲಿ ಚಾಲಕರ ವಿಶ್ವಾಸ,"",pending
+featHelp_tripTrustCard,"The customer sees the driver's trips done, star rating, verified mark and member-since month on offers and on the trip. Numbers are written by the server only; needs the server trip counts switch and the functions deployed. No name, phone or papers.","ಗ್ರಾಹಕರಿಗೆ ಆಫರ್ ಮತ್ತು ಟ್ರಿಪ್‌ನಲ್ಲಿ ಚಾಲಕರ ಪೂರ್ಣಗೊಂಡ ಟ್ರಿಪ್, ನಕ್ಷತ್ರ ರೇಟಿಂಗ್, ಪರಿಶೀಲಿತ ಗುರುತು ಮತ್ತು ಸದಸ್ಯತ್ವ ತಿಂಗಳು ಕಾಣುತ್ತದೆ. ಅಂಕಿಗಳನ್ನು ಸರ್ವರ್ ಮಾತ್ರ ಬರೆಯುತ್ತದೆ. ಹೆಸರು, ಫೋನ್, ದಾಖಲೆ ಇಲ್ಲ.","",pending
+feat_appCheckEnforce,Refuse calls from unknown apps,ಅಪರಿಚಿತ ಆ್ಯಪ್ ಕರೆಗಳನ್ನು ನಿರಾಕರಿಸಿ,"",pending
+featHelp_appCheckEnforce,"The server refuses payment, maps, SMS and ID-check calls that do not carry the real app's proof (App Check). Turn on only after the app is registered and the logs show almost no missing proofs. Off: the calls are only counted.","ನಿಜವಾದ ಆ್ಯಪ್‌ನ ಪುರಾವೆ (App Check) ಇಲ್ಲದ ಪಾವತಿ, ನಕ್ಷೆ, SMS ಮತ್ತು ID ಕರೆಗಳನ್ನು ಸರ್ವರ್ ನಿರಾಕರಿಸುತ್ತದೆ. ಆ್ಯಪ್ ನೋಂದಾಯಿಸಿ ಲಾಗ್‌ನಲ್ಲಿ ಕೊರತೆ ಇಲ್ಲದ ಮೇಲೆ ಮಾತ್ರ ಆನ್ ಮಾಡಿ. ಆಫ್: ಕರೆಗಳನ್ನು ಎಣಿಸಲಾಗುತ್ತದೆ.","",pending
+feat_kycVerify,"ID checks (licence, RC, PAN, GST)","ಗುರುತಿನ ಪರಿಶೀಲನೆ (ಲೈಸೆನ್ಸ್, RC, PAN, GST)","",pending
+featHelp_kycVerify,"After a driver saves papers, the server checks the numbers with the ID partner (or the sandbox) and shows the admin the answer. Without a partner the admin looks at the papers as before. Aadhaar: only the last four digits, never looked up.",ಚಾಲಕರು ದಾಖಲೆ ಉಳಿಸಿದ ಮೇಲೆ ಸರ್ವರ್ ಸಂಖ್ಯೆಗಳನ್ನು ID ಪಾಲುದಾರ (ಅಥವಾ ಸ್ಯಾಂಡ್‌ಬಾಕ್ಸ್) ಮೂಲಕ ಪರಿಶೀಲಿಸಿ ಅಡ್ಮಿನ್‌ಗೆ ತೋರಿಸುತ್ತದೆ. ಪಾಲುದಾರ ಇಲ್ಲದಿದ್ದರೆ ಅಡ್ಮಿನ್ ಮೊದಲಿನಂತೆ ನೋಡುತ್ತಾರೆ. ಆಧಾರ್: ಕೊನೆಯ ನಾಲ್ಕು ಅಂಕೆ ಮಾತ್ರ.,"",pending
+feat_smsGateway,SMS messages,ಎಸ್‌ಎಂಎಸ್ ಸಂದೇಶಗಳು,"",pending
+featHelp_smsGateway,"Short SMS for trip steps to a customer who cannot get push, and the SOS message to the person's own emergency contacts. Needs the functions deployed, an SMS partner key and approved templates. The login code is not affected.","ಪುಶ್ ಪಡೆಯಲಾಗದ ಗ್ರಾಹಕರಿಗೆ ಟ್ರಿಪ್ ಹಂತಗಳ ಸಣ್ಣ ಎಸ್‌ಎಂಎಸ್, ಮತ್ತು SOS ಸಂದೇಶ ತುರ್ತು ಸಂಪರ್ಕಗಳಿಗೆ. ಫಂಕ್ಷನ್ ನಿಯೋಜನೆ, ಪಾಲುದಾರ ಕೀ ಮತ್ತು ಅನುಮೋದಿತ ಟೆಂಪ್ಲೇಟ್ ಬೇಕು. ಲಾಗಿನ್ ಕೋಡ್‌ಗೆ ಪರಿಣಾಮವಿಲ್ಲ.","",pending
+feat_liveLocation,Live trip location,ಟ್ರಿಪ್ ಲೈವ್ ಸ್ಥಳ,"",pending
+featHelp_liveLocation,"The driver shares the truck position during the trip (with their consent), with a visible notification, few database writes and a stop when the trip ends. Off: the older sharing while the trip screen is open.","ಚಾಲಕರ ಒಪ್ಪಿಗೆಯೊಂದಿಗೆ ಟ್ರಿಪ್ ವೇಳೆ ಟ್ರಕ್ ಸ್ಥಾನ ಹಂಚಿಕೆ: ಕಾಣುವ ಅಧಿಸೂಚನೆ, ಕಡಿಮೆ ಬರವಣಿಗೆ, ಟ್ರಿಪ್ ಮುಗಿದಾಗ ನಿಲುಗಡೆ. ಆಫ್: ಹಳೆಯ ವಿಧಾನ.","",pending
+feat_maps,Maps and road distance,ನಕ್ಷೆ ಮತ್ತು ರಸ್ತೆ ದೂರ,"",pending
+featHelp_maps,"Real road distance and time for fares and trips, and the trip map. Needs the functions deployed and a Maps key set as a secret. Off: the built-in city table.","ದರ ಮತ್ತು ಟ್ರಿಪ್‌ಗೆ ನಿಜವಾದ ರಸ್ತೆ ದೂರ ಮತ್ತು ಸಮಯ, ಟ್ರಿಪ್ ನಕ್ಷೆ. ಫಂಕ್ಷನ್ ನಿಯೋಜನೆ ಮತ್ತು Maps ಕೀ ಬೇಕು. ಆಫ್: ನಗರ ಪಟ್ಟಿ.","",pending
+khataTitle,Khata (who owes whom),ಖಾತೆ (ಯಾರಿಗೆ ಎಷ್ಟು ಬಾಕಿ),"",pending
+khataAddParty,Add a party,ಪಕ್ಷ ಸೇರಿಸಿ,"",pending
+khataPartyName,Name of the party,ಪಕ್ಷದ ಹೆಸರು,"",pending
+khataNote,Note (optional),ಟಿಪ್ಪಣಿ (ಐಚ್ಛಿಕ),"",pending
+khataEmpty,No party yet,ಇನ್ನೂ ಯಾವ ಪಕ್ಷವೂ ಇಲ್ಲ,"",pending
+khataEmptyHint,Add the people you do business with and write what they owe you or what you owe them.,ನೀವು ವ್ಯವಹರಿಸುವವರನ್ನು ಸೇರಿಸಿ ಮತ್ತು ಅವರು ನಿಮಗೆ ಅಥವಾ ನೀವು ಅವರಿಗೆ ಕೊಡಬೇಕಾದದ್ದನ್ನು ಬರೆಯಿರಿ.,"",pending
+khataTheyOwe,They owe me,ಅವರು ನನಗೆ ಕೊಡಬೇಕು,"",pending
+khataIOwe,I owe them,ನಾನು ಅವರಿಗೆ ಕೊಡಬೇಕು,"",pending
+khataSettled,All settled,ಲೆಕ್ಕ ಸರಿ,"",pending
+khataRecordsOnly,This is only your own notebook. It is not a payment and not a legal account.,ಇದು ನಿಮ್ಮ ಸ್ವಂತ ನೋಟ್‌ಬುಕ್ ಮಾತ್ರ. ಇದು ಪಾವತಿ ಅಥವಾ ಕಾನೂನು ಖಾತೆ ಅಲ್ಲ.,"",pending
+khataTooMany,You have the most parties allowed (100). Delete one first.,ನಿಮ್ಮಲ್ಲಿ ಗರಿಷ್ಠ ಪಕ್ಷಗಳಿವೆ (100). ಮೊದಲು ಒಂದನ್ನು ಅಳಿಸಿ.,"",pending
+khataAddOwed,They owe me more,ಅವರು ಇನ್ನೂ ಕೊಡಬೇಕು,"",pending
+khataAddReceived,They paid,ಅವರು ಕೊಟ್ಟರು,"",pending
+khataAmount,Amount in rupees,ಮೊತ್ತ (ರೂಪಾಯಿ),"",pending
+khataNoLines,No lines yet. Tap one of the buttons above.,ಇನ್ನೂ ಸಾಲುಗಳಿಲ್ಲ. ಮೇಲಿನ ಬಟನ್ ಒತ್ತಿ.,"",pending
+khataDeleteLine,Delete this line,ಈ ಸಾಲನ್ನು ಅಳಿಸಿ,"",pending
+khataDeleteLineHint,The balance is corrected. Enter the right amount again.,ಬಾಕಿ ಸರಿಪಡಿಸಲಾಗುತ್ತದೆ. ಸರಿಯಾದ ಮೊತ್ತವನ್ನು ಮತ್ತೆ ನಮೂದಿಸಿ.,"",pending
+khataShare,Share statement,ಲೆಕ್ಕ ಹಂಚಿಕೊಳ್ಳಿ,"",pending
+khataCopied,The statement was copied. Paste it in a message.,ಲೆಕ್ಕ ನಕಲಾಗಿದೆ. ಸಂದೇಶದಲ್ಲಿ ಅಂಟಿಸಿ.,"",pending
+khataOwedWord,Owed,ಬಾಕಿ,"",pending
+khataReceivedWord,Received,ಸಿಕ್ಕಿತು,"",pending
+khataBalanceWord,Balance,ಉಳಿದ ಮೊತ್ತ,"",pending
+kycChipVerified,{kind}: ID check passed,{kind}: ID ಪರಿಶೀಲನೆ ಪಾಸ್,"",pending
+kycChipMismatch,{kind}: name on the record differs. Please look.,{kind}: ದಾಖಲೆಯಲ್ಲಿ ಹೆಸರು ಬೇರೆ. ನೋಡಿ.,"",pending
+kycChipNotFound,{kind}: not found in the records. Please look.,{kind}: ದಾಖಲೆಯಲ್ಲಿ ಸಿಗಲಿಲ್ಲ. ನೋಡಿ.,"",pending
+kycChipManual,No automatic ID check yet. Please look at the papers yourself.,ಇನ್ನೂ ಸ್ವಯಂ ID ಪರಿಶೀಲನೆ ಆಗಿಲ್ಲ. ದಾಖಲೆಗಳನ್ನು ನೀವೇ ನೋಡಿ.,"",pending
+kycKind_licence,Licence,ಲೈಸೆನ್ಸ್,"",pending
+kycKind_rc,RC,RC,"",pending
+kycKind_pan,PAN,PAN,"",pending
+kycKind_gstin,GSTIN,GSTIN,"",pending
+kycKind_aadhaar,Aadhaar (last 4),ಆಧಾರ್ (ಕೊನೆಯ 4),"",pending
+liveNoticeTitle,Load 20 is sharing your trip location,Load 20 ನಿಮ್ಮ ಟ್ರಿಪ್ ಸ್ಥಳವನ್ನು ಹಂಚಿಕೊಳ್ಳುತ್ತಿದೆ,"",pending
+liveNoticeText,Only the customer of this trip sees it. It stops when the trip ends.,ಈ ಟ್ರಿಪ್‌ನ ಗ್ರಾಹಕ ಮಾತ್ರ ನೋಡುತ್ತಾರೆ. ಟ್ರಿಪ್ ಮುಗಿದಾಗ ನಿಲ್ಲುತ್ತದೆ.,"",pending
+liveNoConsent,Turn on location sharing in Settings so the customer can follow this trip.,ಗ್ರಾಹಕರು ಟ್ರಿಪ್ ಅನುಸರಿಸಲು ಸೆಟ್ಟಿಂಗ್ಸ್‌ನಲ್ಲಿ ಸ್ಥಳ ಹಂಚಿಕೆ ಆನ್ ಮಾಡಿ.,"",pending
+liveNoPermission,Allow location for Load 20 in your phone settings to share this trip.,ಈ ಟ್ರಿಪ್ ಹಂಚಿಕೊಳ್ಳಲು ಫೋನ್ ಸೆಟ್ಟಿಂಗ್ಸ್‌ನಲ್ಲಿ Load 20 ಗೆ ಸ್ಥಳದ ಅನುಮತಿ ನೀಡಿ.,"",pending
+lastSeenNow,Last seen just now,ಈಗಷ್ಟೇ ಕಂಡಿದ್ದು,"",pending
+lastSeenMinutes,Last seen {n} min ago,{n} ನಿಮಿಷಗಳ ಹಿಂದೆ ಕಂಡಿದ್ದು,"",pending
+lastSeenHours,Last seen {n} h ago,{n} ಗಂಟೆ ಹಿಂದೆ ಕಂಡಿದ್ದು,"",pending
+tripMapTitle,Trip map,ಟ್ರಿಪ್ ನಕ್ಷೆ,"",pending
+tripMapOpen,Show on map,ನಕ್ಷೆಯಲ್ಲಿ ನೋಡಿ,"",pending
+tripMapNone,The map is not available for this trip.,ಈ ಟ್ರಿಪ್‌ಗೆ ನಕ್ಷೆ ಲಭ್ಯವಿಲ್ಲ.,"",pending
+tripMapPickup,Pickup,ಪಿಕಪ್,"",pending
+tripMapDrop,Drop,ಡ್ರಾಪ್,"",pending
+tripMapDriver,Driver,ಡ್ರೈವರ್,"",pending
+payOnline,Pay online,ಆನ್‌ಲೈನ್‌ನಲ್ಲಿ ಪಾವತಿಸಿ,"",pending
+payOnlineDone,Payment received. The driver is paid when the trip is done.,ಪಾವತಿ ಬಂದಿದೆ. ಟ್ರಿಪ್ ಮುಗಿದ ಮೇಲೆ ಡ್ರೈವರ್‌ಗೆ ಹಣ ಸಿಗುತ್ತದೆ.,"",pending
+payOnlineCancelled,Payment was not completed. Nothing was charged by us.,ಪಾವತಿ ಪೂರ್ಣಗೊಳ್ಳಲಿಲ್ಲ. ನಾವು ಏನನ್ನೂ ಕಡಿತಗೊಳಿಸಿಲ್ಲ.,"",pending
+payOnlineFailed,"Could not check the payment. If money was cut, it is safe: wait a few minutes or contact support.",ಪಾವತಿ ಪರಿಶೀಲಿಸಲಾಗಲಿಲ್ಲ. ಹಣ ಕಡಿತವಾಗಿದ್ದರೆ ಸುರಕ್ಷಿತ: ಕೆಲವು ನಿಮಿಷ ಕಾಯಿರಿ ಅಥವಾ ಸಹಾಯವನ್ನು ಸಂಪರ್ಕಿಸಿ.,"",pending
+payOnlineUnavailable,"Online payment is not available right now. Use ""I have paid"" instead.","ಆನ್‌ಲೈನ್ ಪಾವತಿ ಈಗ ಲಭ್ಯವಿಲ್ಲ. ""ನಾನು ಪಾವತಿಸಿದ್ದೇನೆ"" ಬಳಸಿ.","",pending
+payHeldLine,Paid online: {amount}. Held safely and given to the driver when the trip is delivered.,"ಆನ್‌ಲೈನ್ ಪಾವತಿ: {amount}. ಸುರಕ್ಷಿತವಾಗಿ ಇಡಲಾಗಿದೆ, ಟ್ರಿಪ್ ತಲುಪಿದಾಗ ಚಾಲಕರಿಗೆ ಸಿಗುತ್ತದೆ.","",pending
+ptTrips,{n} trips done,{n} ಟ್ರಿಪ್ ಪೂರ್ಣ,"",pending
+ptTripsOne,1 trip done,1 ಟ್ರಿಪ್ ಪೂರ್ಣ,"",pending
+ptRating,{r} stars ({n}),{r} ನಕ್ಷತ್ರ ({n}),"",pending
+ptSince,Since {month},{month} ರಿಂದ,"",pending
+ptVerified,Verified,ಪರಿಶೀಲಿತ,"",pending
+ptNew,New on Load 20,Load 20 ನಲ್ಲಿ ಹೊಸಬರು,"",pending
+rrUsual,Usual price on this route: {low} to {high} ({n} trips),ಈ ಮಾರ್ಗದಲ್ಲಿ ಸಾಮಾನ್ಯ ದರ: {low} ರಿಂದ {high} ({n} ಟ್ರಿಪ್),"",pending
+feat_dispatchV2,Nearby-first dispatch and bidding,ಹತ್ತಿರದವರಿಗೆ ಮೊದಲು ಮತ್ತು ಬಿಡ್,"",pending
+featHelp_dispatchV2,"Loads go to the nearest drivers first, then wider rings. Customers can pick Instant, Bid or Schedule. Turn on only after the new Firestore rules are published. Off: the old open load and offers work as before.","ಲೋಡ್ ಮೊದಲು ಹತ್ತಿರದ ಚಾಲಕರಿಗೆ, ನಂತರ ದೊಡ್ಡ ವೃತ್ತಕ್ಕೆ ಹೋಗುತ್ತದೆ. ಹೊಸ ನಿಯಮ ಪ್ರಕಟವಾದ ನಂತರ ಮಾತ್ರ ಆನ್ ಮಾಡಿ.","",pending
+feat_uiV2,New look and booking steps,ಹೊಸ ವಿನ್ಯಾಸ ಮತ್ತು ಬುಕಿಂಗ್ ಹಂತಗಳು,"",pending
+featHelp_uiV2,"The new home, 5-step booking, bid room, incoming-load card and trip screens. Turn it off to go back to the old screens. Works with or without the new dispatch switch.","ಹೊಸ ಹೋಮ್, 5 ಹಂತದ ಬುಕಿಂಗ್, ಬಿಡ್ ಕೊಠಡಿ, ಬರುವ ಲೋಡ್ ಕಾರ್ಡ್ ಮತ್ತು ಟ್ರಿಪ್ ಪರದೆಗಳು. ಆಫ್ ಮಾಡಿದರೆ ಹಳೆಯ ಪರದೆಗಳು ಬರುತ್ತವೆ.","",pending
+adminDispatchMonitor,Dispatch monitor,ಡಿಸ್ಪ್ಯಾಚ್ ಮಾನಿಟರ್,"",pending
+dmLive,Live loads,ಲೈವ್ ಲೋಡ್‌ಗಳು,"",pending
+dmFilled,Taken by a driver,ಚಾಲಕರು ತೆಗೆದುಕೊಂಡವು,"",pending
+dmExpiredNoBid,Expired with no bid,ಬಿಡ್ ಇಲ್ಲದೆ ಮುಗಿದವು,"",pending
+dmExpiredBids,Expired with bids,ಬಿಡ್‌ಗಳೊಂದಿಗೆ ಮುಗಿದವು,"",pending
+dmFirstBid,Time to first bid,ಮೊದಲ ಬಿಡ್‌ಗೆ ಸಮಯ,"",pending
+dmFillTime,Time to fill,ಭರ್ತಿಗೆ ಸಮಯ,"",pending
+dmAcceptance,"Taken, out of all finished",ಮುಗಿದವುಗಳಲ್ಲಿ ತೆಗೆದುಕೊಂಡವು,"",pending
+dmPriceVsEstimate,Price against estimate,ಅಂದಾಜಿಗೆ ಹೋಲಿಸಿದ ದರ,"",pending
+dmNoShows,No-show cancels,ಬಾರದ ಕಾರಣ ರದ್ದು,"",pending
+dmShown,Drivers shown,ತೋರಿಸಿದ ಚಾಲಕರು,"",pending
+dmShownNote,Known after the server wave is on.,ಸರ್ವರ್ ವೇವ್ ಆನ್ ಆದ ನಂತರ ತಿಳಿಯುತ್ತದೆ.,"",pending
+dmRing,Ring {n},ವೃತ್ತ {n},"",pending
+dmBids,{n} bids,{n} ಬಿಡ್‌ಗಳು,"",pending
+dmStalled,Nobody yet,ಇನ್ನೂ ಯಾರೂ ಇಲ್ಲ,"",pending
+dmMinutes,{n} min,{n} ನಿಮಿ,"",pending
+dmSeconds,{n} s,{n} ಸೆ,"",pending
+dmNone,No data yet,ಇನ್ನೂ ಡೇಟಾ ಇಲ್ಲ,"",pending
+dmRecent,Recent loads,ಇತ್ತೀಚಿನ ಲೋಡ್‌ಗಳು,"",pending
+dmModeInstant,Instant,ತಕ್ಷಣ,"",pending
+dmModeBid,Bid,ಬಿಡ್,"",pending
+dmModeScheduled,Schedule,ವೇಳಾಪಟ್ಟಿ,"",pending
+brTitle,Bid room,ಬಿಡ್ ಕೊಠಡಿ,"",pending
+brBids,Bids,ಬಿಡ್‌ಗಳು,"",pending
+brWaiting,Drivers are looking at your load.,ಚಾಲಕರು ನಿಮ್ಮ ಲೋಡ್ ನೋಡುತ್ತಿದ್ದಾರೆ.,"",pending
+brWindowLeft,Bidding closes in,ಬಿಡ್ ಮುಚ್ಚಲು,"",pending
+brWindowClosed,Bidding is closed.,ಬಿಡ್ ಮುಚ್ಚಿದೆ.,"",pending
+brNoBids,No bids yet.,ಇನ್ನೂ ಬಿಡ್ ಇಲ್ಲ.,"",pending
+brNoBidsHelp,What next?,ಮುಂದೇನು?,"",pending
+brRaisePrice,Raise the price,ದರ ಹೆಚ್ಚಿಸಿ,"",pending
+brMoreTime,Give more time,ಹೆಚ್ಚು ಸಮಯ ನೀಡಿ,"",pending
+brGoInstant,Go instant,ತಕ್ಷಣಕ್ಕೆ ಹೋಗಿ,"",pending
+brSchedule,Book for later,ನಂತರಕ್ಕೆ ಬುಕ್ ಮಾಡಿ,"",pending
+brAccept,Accept this bid,ಈ ಬಿಡ್ ಒಪ್ಪಿ,"",pending
+brAcceptAsk,Accept the bid of {amount}? The other bids will close.,{amount} ಬಿಡ್ ಒಪ್ಪುವಿರಾ? ಇತರ ಬಿಡ್‌ಗಳು ಮುಚ್ಚುತ್ತವೆ.,"",pending
+brYes,"Yes, accept","ಹೌದು, ಒಪ್ಪಿ","",pending
+brCounterTitle,Your counter price,ನಿಮ್ಮ ಪ್ರತಿ ದರ,"",pending
+brCounterHint,You can counter once. The driver can say yes.,ನೀವು ಒಮ್ಮೆ ಮಾತ್ರ ಪ್ರತಿ ದರ ನೀಡಬಹುದು.,"",pending
+brSend,Send,ಕಳುಹಿಸಿ,"",pending
+brCounterSent,Counter sent: {amount},ಪ್ರತಿ ದರ ಕಳುಹಿಸಲಾಗಿದೆ: {amount},"",pending
+brSelectedWait,Waiting for the driver to confirm.,ಚಾಲಕರ ದೃಢೀಕರಣಕ್ಕಾಗಿ ಕಾಯುತ್ತಿದ್ದೇವೆ.,"",pending
+brCountered,You countered. Waiting for the driver.,ನೀವು ಪ್ರತಿ ದರ ನೀಡಿದ್ದೀರಿ. ಚಾಲಕರಿಗಾಗಿ ಕಾಯಿರಿ.,"",pending
+brFound,A driver is confirmed.,ಚಾಲಕ ದೃಢಪಟ್ಟಿದ್ದಾರೆ.,"",pending
+brTrack,Open the trip,ಟ್ರಿಪ್ ತೆರೆಯಿರಿ,"",pending
+brClosed,This load is closed.,ಈ ಲೋಡ್ ಮುಚ್ಚಿದೆ.,"",pending
+brAutoTitle,Auto-accept,ಸ್ವಯಂ ಒಪ್ಪಿಗೆ,"",pending
+brAutoHint,The first bid that fits is accepted. It works while this app is open.,ಹೊಂದುವ ಮೊದಲ ಬಿಡ್ ಒಪ್ಪಲಾಗುತ್ತದೆ. ಈ ಆ್ಯಪ್ ತೆರೆದಿರುವಾಗ ಕೆಲಸ ಮಾಡುತ್ತದೆ.,"",pending
+brAutoMax,Highest price (rupees),ಗರಿಷ್ಠ ದರ (ರೂಪಾಯಿ),"",pending
+brAutoRating,Lowest rating,ಕನಿಷ್ಠ ರೇಟಿಂಗ್,"",pending
+brAny,Any,ಯಾವುದೇ,"",pending
+brVerifiedOnly,Verified drivers only,ಪರಿಶೀಲಿತ ಚಾಲಕರು ಮಾತ್ರ,"",pending
+brSave,Save,ಉಳಿಸಿ,"",pending
+brAutoOff,Turn off,ಆಫ್ ಮಾಡಿ,"",pending
+brAutoOn,Auto-accept is on: up to {amount},ಸ್ವಯಂ ಒಪ್ಪಿಗೆ ಆನ್: {amount} ವರೆಗೆ,"",pending
+brAutoAccepted,A bid was accepted for you.,ನಿಮಗಾಗಿ ಒಂದು ಬಿಡ್ ಒಪ್ಪಲಾಗಿದೆ.,"",pending
+brChatAfter,Chat opens after the driver confirms. Phone numbers stay hidden.,ಚಾಲಕರು ದೃಢಪಡಿಸಿದ ನಂತರ ಚಾಟ್ ತೆರೆಯುತ್ತದೆ. ಫೋನ್ ಸಂಖ್ಯೆ ಮರೆಯಾಗಿರುತ್ತದೆ.,"",pending
+bnote_on_the_way,I am on the way,ನಾನು ದಾರಿಯಲ್ಲಿದ್ದೇನೆ,"",pending
+bnote_empty_return,Empty on return,ಹಿಂತಿರುಗುವಾಗ ಖಾಲಿ,"",pending
+bnote_loading_help,Loading help available,ಲೋಡಿಂಗ್ ಸಹಾಯ ಲಭ್ಯ,"",pending
+bnote_flexible_time,Flexible on time,ಸಮಯದಲ್ಲಿ ಹೊಂದಾಣಿಕೆ,"",pending
+bnote_clean_truck,Clean truck,ಸ್ವಚ್ಛ ಟ್ರಕ್,"",pending
+wzTitle,Book a truck,ಟ್ರಕ್ ಬುಕ್ ಮಾಡಿ,"",pending
+wzStepOf,Step {n} of {m},ಹಂತ {n} / {m},"",pending
+wzQ1,Where should the truck go?,ಟ್ರಕ್ ಎಲ್ಲಿಂದ ಎಲ್ಲಿಗೆ?,"",pending
+wzQ2,What are you sending?,ಏನು ಕಳುಹಿಸುತ್ತಿದ್ದೀರಿ?,"",pending
+wzQ3,Which truck?,ಯಾವ ಟ್ರಕ್?,"",pending
+wzQ4,What price and how?,ಎಷ್ಟು ದರ ಮತ್ತು ಹೇಗೆ?,"",pending
+wzQ5,Check and book,ಪರಿಶೀಲಿಸಿ ಬುಕ್ ಮಾಡಿ,"",pending
+wzPickup,Pickup city,ತೆಗೆದುಕೊಳ್ಳುವ ನಗರ,"",pending
+wzDrop,Drop city,ತಲುಪಿಸುವ ನಗರ,"",pending
+wzRecent,Recent routes,ಇತ್ತೀಚಿನ ಮಾರ್ಗಗಳು,"",pending
+wzWeight,Weight: {w} tons,ತೂಕ: {w} ಟನ್,"",pending
+wzSuggested,Fits your load,ನಿಮ್ಮ ಸರಕಿಗೆ ಸೂಕ್ತ,"",pending
+wzTooSmall,Too small for this weight,ಈ ತೂಕಕ್ಕೆ ಚಿಕ್ಕದು,"",pending
+wzCapacity,Up to {t} tons,{t} ಟನ್ ವರೆಗೆ,"",pending
+wzNext,Next,ಮುಂದೆ,"",pending
+wzBack,Back,ಹಿಂದೆ,"",pending
+wzModeTitle,How should drivers reply?,ಚಾಲಕರು ಹೇಗೆ ಉತ್ತರಿಸಬೇಕು?,"",pending
+wzModeInstant,Instant,ತಕ್ಷಣ,"",pending
+wzModeInstantHint,Nearest drivers first. First yes wins.,ಮೊದಲು ಹತ್ತಿರದ ಚಾಲಕರು. ಮೊದಲ ಒಪ್ಪಿಗೆ ಗೆಲ್ಲುತ್ತದೆ.,"",pending
+wzModeBid,Bid,ಬಿಡ್,"",pending
+wzModeBidHint,Drivers send prices. You choose.,ಚಾಲಕರು ದರ ಕಳುಹಿಸುತ್ತಾರೆ. ನೀವು ಆರಿಸಿ.,"",pending
+wzModeSchedule,Schedule,ವೇಳಾಪಟ್ಟಿ,"",pending
+wzModeScheduleHint,Book for a later day or time.,ನಂತರದ ದಿನ ಅಥವಾ ಸಮಯಕ್ಕೆ.,"",pending
+wzWhen,Pickup day and time,ತೆಗೆದುಕೊಳ್ಳುವ ದಿನ ಮತ್ತು ಸಮಯ,"",pending
+wzPickDate,Pick a day and time,ದಿನ ಮತ್ತು ಸಮಯ ಆರಿಸಿ,"",pending
+wzTotal,Estimated total,ಅಂದಾಜು ಒಟ್ಟು,"",pending
+wzYourPrice,Your price,ನಿಮ್ಮ ದರ,"",pending
+wzBookSlide,Slide to book,ಬುಕ್ ಮಾಡಲು ಸ್ಲೈಡ್ ಮಾಡಿ,"",pending
+wzTerms,By booking you accept the terms of {app}.,ಬುಕ್ ಮಾಡಿದರೆ {app} ನಿಯಮಗಳನ್ನು ಒಪ್ಪುತ್ತೀರಿ.,"",pending
+wzDraftBack,Your earlier answers are back.,ನಿಮ್ಮ ಹಿಂದಿನ ಉತ್ತರಗಳು ಮರಳಿವೆ.,"",pending
+wzNeedRoute,Choose both cities.,ಎರಡೂ ನಗರಗಳನ್ನು ಆರಿಸಿ.,"",pending
+wzNeedGoods,Choose what you send and the weight.,ಸರಕು ಮತ್ತು ತೂಕ ಆರಿಸಿ.,"",pending
+wzNeedTruck,Choose a truck.,ಟ್ರಕ್ ಆರಿಸಿ.,"",pending
+wzNeedDate,Pick a pickup day.,ತೆಗೆದುಕೊಳ್ಳುವ ದಿನ ಆರಿಸಿ.,"",pending
+wzNoQuote,We cannot work out a price for this route. Type your own price.,ಈ ಮಾರ್ಗದ ದರ ಲೆಕ್ಕ ಹಾಕಲಾಗಲಿಲ್ಲ. ನಿಮ್ಮ ದರ ಬರೆಯಿರಿ.,"",pending
+wzPostedBid,Bidding is open. Drivers are sending prices.,ಬಿಡ್ ಪ್ರಾರಂಭ. ಚಾಲಕರು ದರ ಕಳುಹಿಸುತ್ತಿದ್ದಾರೆ.,"",pending
+wzNeedPrice,Type your price.,ನಿಮ್ಮ ದರ ಬರೆಯಿರಿ.,"",pending
+wzDateTooSoon,Choose a later time.,ನಂತರದ ಸಮಯ ಆರಿಸಿ.,"",pending
+wzDateTooFar,Choose an earlier day.,ಮುಂಚಿನ ದಿನ ಆರಿಸಿ.,"",pending
+hvBookBig,Book a truck,ಟ್ರಕ್ ಬುಕ್ ಮಾಡಿ,"",pending
+hvHeroSub,"Five easy questions. Pick instant, bid or schedule.","ಐದು ಸುಲಭ ಪ್ರಶ್ನೆಗಳು. ತಕ್ಷಣ, ಬಿಡ್ ಅಥವಾ ವೇಳಾಪಟ್ಟಿ ಆರಿಸಿ.","",pending
+hvTrip,Your trip,ನಿಮ್ಮ ಟ್ರಿಪ್,"",pending
+hvWaitingLoads,{n} load waiting for drivers,{n} ಲೋಡ್ ಚಾಲಕರಿಗಾಗಿ ಕಾಯುತ್ತಿದೆ,"",pending
+hvOpen,Open,ತೆರೆಯಿರಿ,"",pending
+hvTrust1,Verified drivers,ಪರಿಶೀಲಿತ ಚಾಲಕರು,"",pending
+hvTrust2,OTP at pickup and delivery,ತೆಗೆದುಕೊಳ್ಳುವಾಗ ಮತ್ತು ತಲುಪಿಸುವಾಗ OTP,"",pending
+hvTrust3,Phone numbers stay hidden,ಫೋನ್ ಸಂಖ್ಯೆ ಮರೆಯಾಗಿರುತ್ತದೆ,"",pending
+hvMore,More,ಇನ್ನಷ್ಟು,"",pending
+hvTabHome,Home,ಹೋಮ್,"",pending
+hvTabTrips,Trips,ಟ್ರಿಪ್‌ಗಳು,"",pending
+hvTabHelp,Help,ಸಹಾಯ,"",pending
+hvTabProfile,Profile,ಪ್ರೊಫೈಲ್,"",pending
+hvAgain,Book again,ಮತ್ತೆ ಬುಕ್ ಮಾಡಿ,"",pending
+trActive,Active,ಸಕ್ರಿಯ,"",pending
+trUpcoming,Upcoming,ಮುಂಬರುವ,"",pending
+trPast,Past,ಹಿಂದಿನ,"",pending
+trEmptyActive,No trip right now. Book a truck to start.,ಈಗ ಟ್ರಿಪ್ ಇಲ್ಲ. ಪ್ರಾರಂಭಿಸಲು ಟ್ರಕ್ ಬುಕ್ ಮಾಡಿ.,"",pending
+trEmptyUpcoming,No trip is booked for later.,ನಂತರಕ್ಕೆ ಯಾವ ಟ್ರಿಪ್ ಬುಕ್ ಆಗಿಲ್ಲ.,"",pending
+trEmptyPast,Finished trips will show here.,ಮುಗಿದ ಟ್ರಿಪ್‌ಗಳು ಇಲ್ಲಿ ಕಾಣುತ್ತವೆ.,"",pending
+trWaitingDrivers,Waiting for drivers,ಚಾಲಕರಿಗಾಗಿ ಕಾಯುತ್ತಿದೆ,"",pending
+trLoadClosed,"Closed, no driver","ಮುಚ್ಚಲಾಗಿದೆ, ಚಾಲಕ ಇಲ್ಲ","",pending
+uxInstTitle,Looking for a truck near you,ನಿಮ್ಮ ಹತ್ತಿರ ಟ್ರಕ್ ಹುಡುಕುತ್ತಿದ್ದೇವೆ,"",pending
+uxInstReach,Searching within {km} km,{km} ಕಿಮೀ ಒಳಗೆ ಹುಡುಕಾಟ,"",pending
+uxInstRound,Round {n} of {m},ಹಂತ {n} / {m},"",pending
+uxInstStalled,No driver has said yes yet,ಇನ್ನೂ ಯಾವ ಚಾಲಕರೂ ಒಪ್ಪಿಲ್ಲ,"",pending
+uxInstStalledHint,Raise the price a little or search wider.,ದರ ಸ್ವಲ್ಪ ಹೆಚ್ಚಿಸಿ ಅಥವಾ ವ್ಯಾಪ್ತಿ ಹೆಚ್ಚಿಸಿ.,"",pending
+uxRaise5,Raise price 5%,ದರ 5% ಹೆಚ್ಚಿಸಿ,"",pending
+uxRaise10,Raise price 10%,ದರ 10% ಹೆಚ್ಚಿಸಿ,"",pending
+uxWiden,Search wider,ವ್ಯಾಪ್ತಿ ಹೆಚ್ಚಿಸಿ,"",pending
+uxWidenMax,Widest search reached,ಗರಿಷ್ಠ ವ್ಯಾಪ್ತಿ ತಲುಪಿದೆ,"",pending
+uxPriceNow,Your price: {amount},ನಿಮ್ಮ ದರ: {amount},"",pending
+uxPriceRaised,Price is now {amount},ದರ ಈಗ {amount},"",pending
+uxPriceLimit,This is the highest price allowed.,ಇದಕ್ಕಿಂತ ಹೆಚ್ಚು ದರ ಸಾಧ್ಯವಿಲ್ಲ.,"",pending
+uxTakenByOther,Someone else took this load,ಈ ಲೋಡ್ ಬೇರೆಯವರು ತೆಗೆದುಕೊಂಡರು,"",pending
+dhOnlineOn,You are online,ನೀವು ಆನ್‌ಲೈನ್ ಇದ್ದೀರಿ,"",pending
+dhOnlineOff,You are offline,ನೀವು ಆಫ್‌ಲೈನ್ ಇದ್ದೀರಿ,"",pending
+dhRadarOn,Looking for loads near you,ನಿಮ್ಮ ಬಳಿಯ ಲೋಡ್ ಹುಡುಕುತ್ತಿದೆ,"",pending
+dhRadarWait,{n} load waiting for you,{n} ಲೋಡ್ ನಿಮಗಾಗಿ ಕಾಯುತ್ತಿದೆ,"",pending
+dhRadarOff,Go online to get loads,ಲೋಡ್ ಪಡೆಯಲು ಆನ್‌ಲೈನ್ ಆಗಿ,"",pending
+dhRadarNoTruck,Add a truck to get loads,ಲೋಡ್ ಪಡೆಯಲು ಟ್ರಕ್ ಸೇರಿಸಿ,"",pending
+dhTruckToday,Truck for today,ಇಂದಿನ ವಾಹನ,"",pending
+dhMore,More,ಇನ್ನಷ್ಟು,"",pending
+dhUpcoming,Coming up,ಮುಂಬರುವ,"",pending
+ilTitle,New load near you,ನಿಮ್ಮ ಬಳಿ ಹೊಸ ಲೋಡ್,"",pending
+ilPickupKm,Pickup {n} km from you,ಪಿಕಪ್ ನಿಮ್ಮಿಂದ {n} ಕಿಮೀ,"",pending
+ilTripKm,Trip {n} km,ಟ್ರಿಪ್ {n} ಕಿಮೀ,"",pending
+ilAcceptAt,Accept at {price},{price}ಗೆ ಒಪ್ಪಿ,"",pending
+ilSendPrice,Send my price,ನನ್ನ ದರ ಕಳುಹಿಸಿ,"",pending
+ilSkip,Skip,ಬಿಟ್ಟುಬಿಡಿ,"",pending
+ilSkipWhy,Why skip? (you can leave this),ಏಕೆ ಬಿಟ್ಟಿರಿ? (ಬಿಡಬಹುದು),"",pending
+ilWhyFar,Too far,ತುಂಬಾ ದೂರ,"",pending
+ilWhyLow,Price too low,ದರ ಕಡಿಮೆ,"",pending
+ilWhyTruck,Truck not free,ವಾಹನ ಖಾಲಿ ಇಲ್ಲ,"",pending
+ilWhyOther,Other,ಇತರೆ,"",pending
+ilQueue,{n} more waiting,{n} ಇನ್ನೂ ಕಾಯುತ್ತಿವೆ,"",pending
+ilTimeUp,Time is up for this load,ಈ ಲೋಡ್ ಸಮಯ ಮುಗಿದಿದೆ,"",pending
+ilNoTruck,No free truck fits this load,ಈ ಲೋಡ್‌ಗೆ ಖಾಲಿ ವಾಹನ ಇಲ್ಲ,"",pending
+bsTitle,Your price,ನಿಮ್ಮ ದರ,"",pending
+bsEtaQ,How soon can you reach pickup?,ಪಿಕಪ್‌ಗೆ ಎಷ್ಟು ಹೊತ್ತಿಗೆ ತಲುಪುತ್ತೀರಿ?,"",pending
+bsNoteQ,Add a note (optional),ಟಿಪ್ಪಣಿ ಸೇರಿಸಿ (ಐಚ್ಛಿಕ),"",pending
+bsSend,Send price,ದರ ಕಳುಹಿಸಿ,"",pending
+bsEdit,Change my price,ನನ್ನ ದರ ಬದಲಿಸಿ,"",pending
+bsEditOnce,You can change your price only once.,ನೀವು ದರವನ್ನು ಒಮ್ಮೆ ಮಾತ್ರ ಬದಲಿಸಬಹುದು.,"",pending
+bsWithdraw,Withdraw bid,ಬಿಡ್ ಹಿಂಪಡೆಯಿರಿ,"",pending
+bsSent,Price sent,ದರ ಕಳುಹಿಸಲಾಗಿದೆ,"",pending
+bsOutOfRange,Price must be between {lo} and {hi}.,ದರ {lo} ರಿಂದ {hi} ನಡುವೆ ಇರಬೇಕು.,"",pending
+bsUsual,Usual: {lo} to {hi},ಸಾಮಾನ್ಯ: {lo} ರಿಂದ {hi},"",pending
+bsAlready,You already sent a price for this load.,ನೀವು ಈ ಲೋಡ್‌ಗೆ ಈಗಾಗಲೇ ದರ ಕಳುಹಿಸಿದ್ದೀರಿ.,"",pending
+uxKm,{n} km,{n} ಕಿಮೀ,"",pending
+uxRouteLabel,"From {from} to {to}, {km}","{from} ನಿಂದ {to}, {km}","",pending
+uxFareUsual,Usual price: {low} to {high},ಸಾಮಾನ್ಯ ದರ: {low} ರಿಂದ {high},"",pending
+uxFareNoRange,No usual price for this route yet,ಈ ಮಾರ್ಗದ ಸಾಮಾನ್ಯ ದರ ಇನ್ನೂ ಇಲ್ಲ,"",pending
+uxFareLow,Low price. Fewer drivers may say yes.,ಕಡಿಮೆ ದರ. ಕಡಿಮೆ ಚಾಲಕರು ಒಪ್ಪಬಹುದು.,"",pending
+uxFareFair,Fair price. Good chance of a quick yes.,ಸರಿಯಾದ ದರ. ಬೇಗ ಒಪ್ಪಿಗೆ ಸಿಗುತ್ತದೆ.,"",pending
+uxFareHigh,High price. You may pay more than needed.,ಹೆಚ್ಚು ದರ. ಅಗತ್ಯಕ್ಕಿಂತ ಹೆಚ್ಚು ಆಗಬಹುದು.,"",pending
+uxFareYour,Your price,ನಿಮ್ಮ ದರ,"",pending
+uxFareEstimate,Estimate,ಅಂದಾಜು,"",pending
+uxSlideConfirm,Slide to confirm,ಖಚಿತಪಡಿಸಲು ಸ್ಲೈಡ್ ಮಾಡಿ,"",pending
+uxSlideDone,Done,ಆಯಿತು,"",pending
+uxSlideHint,"Slide the handle to the end, or double tap to confirm",ಹ್ಯಾಂಡಲ್ ಕೊನೆಗೆ ಸ್ಲೈಡ್ ಮಾಡಿ ಅಥವಾ ಎರಡು ಬಾರಿ ಒತ್ತಿ,"",pending
+uxSecondsLeft,{n} seconds left,{n} ಸೆಕೆಂಡ್ ಉಳಿದಿದೆ,"",pending
+uxTagBestPrice,Best price,ಉತ್ತಮ ದರ,"",pending
+uxTagNearest,Nearest,ಹತ್ತಿರದ,"",pending
+uxTagTopRated,Top rated,ಅತ್ಯುತ್ತಮ ರೇಟಿಂಗ್,"",pending
+uxTagFastest,Fastest,ಅತಿ ವೇಗ,"",pending
+uxVerified,Verified,ಪರಿಶೀಲಿತ,"",pending
+uxTripsN,{n} trips,{n} ಟ್ರಿಪ್,"",pending
+uxNewDriver,New driver,ಹೊಸ ಚಾಲಕ,"",pending
+uxEtaMin,{n} min away,{n} ನಿಮಿಷ ದೂರ,"",pending
+uxAccept,Accept,ಒಪ್ಪಿ,"",pending
+uxCounter,Counter,ಪ್ರತಿ ದರ,"",pending
+uxEmptyTitle,Nothing here yet,ಇಲ್ಲಿ ಇನ್ನೂ ಏನೂ ಇಲ್ಲ,"",pending
+uxErrorTitle,Something went wrong,ಏನೋ ತಪ್ಪಾಯಿತು,"",pending
+uxOfflineTitle,No internet,ಇಂಟರ್ನೆಟ್ ಇಲ್ಲ,"",pending
+uxTryAgain,Try again,ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ,"",pending
+uxClose,Close,ಮುಚ್ಚಿ,"",pending
+uxDismiss,Dismiss,ತೆಗೆದುಹಾಕಿ,"",pending
+uxStepDone,done,ಮುಗಿದಿದೆ,"",pending
+uxStepNow,now,ಈಗ,"",pending
+uxStepNext,next,ಮುಂದೆ,"",pending
+tkMore,More about this trip,ಈ ಟ್ರಿಪ್ ಬಗ್ಗೆ ಇನ್ನಷ್ಟು,"",pending
+tkBilty,Bilty (LR),ಬಿಲ್ಟಿ (LR),"",pending
+tkBiltyMake,Make bilty,ಬಿಲ್ಟಿ ಮಾಡಿ,"",pending
+tkBiltyOpen,See bilty,ಬಿಲ್ಟಿ ನೋಡಿ,"",pending
+tkBiltyHint,"Three copies: Full, Driver, Consignee. You see what stays hidden before you send.","ಮೂರು ಪ್ರತಿಗಳು: ಪೂರ್ಣ, ಚಾಲಕ, ಕನ್ಸೈನಿ. ಕಳುಹಿಸುವ ಮೊದಲು ಏನು ಮರೆಯಾಗಿರುತ್ತದೆ ಎಂದು ನೋಡಿ.","",pending
+pfLogoutAsk,Log out of this phone?,ಈ ಫೋನ್‌ನಿಂದ ಲಾಗ್ ಔಟ್ ಮಾಡಬೇಕೆ?,"",pending
+fdSortNearest,Nearest,ಹತ್ತಿರದ,"",pending
+fdSortPay,Best pay,ಹೆಚ್ಚು ಬಾಡಿಗೆ,"",pending
+fdSortNew,Newest,ಹೊಸದು,"",pending
+mbWaiting,Waiting,ಕಾಯುತ್ತಿದೆ,"",pending
+mbCountered,Counter price,ಪ್ರತಿ ದರ,"",pending
+mbSelected,Selected,ಆಯ್ಕೆಯಾಗಿದೆ,"",pending
+mbLost,Lost,ಸಿಗಲಿಲ್ಲ,"",pending
+mbChange,Change or withdraw,ಬದಲಿಸಿ ಅಥವಾ ಹಿಂಪಡೆಯಿರಿ,"",pending
+mbNoneHere,Nothing here yet,ಇಲ್ಲಿ ಇನ್ನೂ ಏನೂ ಇಲ್ಲ,"",pending
+tfStep,Step {n} of {total},ಹಂತ {n} / {total},"",pending
+tfHintPickup,Take a photo of the loaded goods and ask the customer for the pickup code.,ಲೋಡ್ ಮಾಡಿದ ಸರಕಿನ ಫೋಟೋ ತೆಗೆದು ಗ್ರಾಹಕರಿಂದ ಪಿಕಪ್ ಕೋಡ್ ಕೇಳಿ.,"",pending
+tfHintDelivered,Ask the customer for the delivery code. Delivery cannot be undone.,ಗ್ರಾಹಕರಿಂದ ಡೆಲಿವರಿ ಕೋಡ್ ಕೇಳಿ. ಡೆಲಿವರಿ ಹಿಂತೆಗೆಯಲು ಸಾಧ್ಯವಿಲ್ಲ.,"",pending
+epMoneyTitle,Where your money is,ನಿಮ್ಮ ಹಣ ಎಲ್ಲಿದೆ,"",pending
+epWaitCustomer,Waiting for the customer to pay,ಗ್ರಾಹಕರ ಪಾವತಿಗಾಗಿ ಕಾಯುತ್ತಿದೆ,"",pending
+epConfirmReceived,Confirm you got the money,ಹಣ ಬಂದಿದೆ ಎಂದು ಖಚಿತಪಡಿಸಿ,"",pending
+epInWallet,Done: in your wallet,ಮುಗಿದಿದೆ: ವಾಲೆಟ್‌ನಲ್ಲಿ,"",pending
+obStateDone,Done,ಆಯಿತು,"",pending
+obStateNext,Do this next,ಇದನ್ನು ಮುಂದೆ ಮಾಡಿ,"",pending
+obStateLater,Later,ನಂತರ,"",pending
+obDocAdded,Added,ಸೇರಿಸಲಾಗಿದೆ,"",pending
+obDocMissing,Missing,ಬಾಕಿ ಇದೆ,"",pending
+obWhyRejected,Why it was not approved,ಏಕೆ ಒಪ್ಪಿಗೆ ಸಿಗಲಿಲ್ಲ,"",pending
+adGroupPeople,People and verification,ಜನರು ಮತ್ತು ಪರಿಶೀಲನೆ,"",pending
+adGroupOps,"Loads, trips and dispatch","ಲೋಡ್, ಟ್ರಿಪ್ ಮತ್ತು ಡಿಸ್ಪ್ಯಾಚ್","",pending
+adGroupSafety,Safety and trust,ಸುರಕ್ಷತೆ ಮತ್ತು ವಿಶ್ವಾಸ,"",pending
+adGroupMoney,Money,ಹಣ,"",pending
+adGroupTools,"Pilot, support and settings","ಪೈಲಟ್, ಬೆಂಬಲ ಮತ್ತು ಸೆಟ್ಟಿಂಗ್‌ಗಳು","",pending
+fdBid,Bid,ಬಿಡ್,"",pending
+bsCustom,Or type your price (in rupees),ಅಥವಾ ನಿಮ್ಮ ದರ ಬರೆಯಿರಿ (ರೂಪಾಯಿಯಲ್ಲಿ),"",pending

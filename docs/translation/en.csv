@@ -1,0 +1,335 @@
+﻿key,english,text,fix,status
+bizTitle,My business card,My business card,"",pending
+bizShare,Share on WhatsApp,Share on WhatsApp,"",pending
+bizShowPhone,Show my phone number on the card,Show my phone number on the card,"",pending
+bizShowPhoneHint,Off by default. Anyone who gets the card can call you.,Off by default. Anyone who gets the card can call you.,"",pending
+bizVerified,Verified on Load 20,Verified on Load 20,"",pending
+bizFleet,{n} trucks,{n} trucks,"",pending
+bizOnApp,Find me on the app,Find me on the app,"",pending
+bizNoProfile,"Fill in your profile first, then your card is ready.","Fill in your profile first, then your card is ready.","",pending
+bizShareFailed,Could not share the card. Try again.,Could not share the card. Try again.,"",pending
+checkinAsk,Your truck has been standing for a long time. Are you OK?,Your truck has been standing for a long time. Are you OK?,"",pending
+checkinNeedHelp,I need help,I need help,"",pending
+checkinThanks,Thank you. Drive safe.,Thank you. Drive safe.,"",pending
+checkinHelpSent,Help is being asked for. Support has your position. Stay where it is safe.,Help is being asked for. Support has your position. Stay where it is safe.,"",pending
+checkinNoAnswerSent,"No answer, so support has been told. They will try to reach you.","No answer, so support has been told. They will try to reach you.","",pending
+checkinNotSent,Could not send the alert. Please call for help.,Could not send the alert. Please call for help.,"",pending
+feat_bizCard,Business card to share,Business card to share,"",pending
+featHelp_bizCard,"Transporters and drivers can make a card (name, city, trucks, routes, verified mark) from their profile and send it as a picture on WhatsApp. The phone number is only on the card if the person turns it on each time.","Transporters and drivers can make a card (name, city, trucks, routes, verified mark) from their profile and send it as a picture on WhatsApp. The phone number is only on the card if the person turns it on each time.","",pending
+feat_khata,Party khata,Party khata,"",pending
+featHelp_khata,"A private notebook in Profile: add the people you do business with, write what they owe you or what you owe them, see the balance and send a statement on WhatsApp. Records only, no money moves.","A private notebook in Profile: add the people you do business with, write what they owe you or what you owe them, see the balance and send a statement on WhatsApp. Records only, no money moves.","",pending
+feat_safetyCheckin,Safety check-in on a long stop,Safety check-in on a long stop,"",pending
+featHelp_safetyCheckin,"When the truck stands for 30 minutes on the road, the driver is asked ""Are you OK?"". One tap for fine, one tap for help (an SOS to support and, with SMS on, to saved contacts). No answer in 10 minutes tells support too.","When the truck stands for 30 minutes on the road, the driver is asked ""Are you OK?"". One tap for fine, one tap for help (an SOS to support and, with SMS on, to saved contacts). No answer in 10 minutes tells support too.","",pending
+feat_payHold,Hold online payment until delivery,Hold online payment until delivery,"",pending
+featHelp_payHold,"With online payment on, the driver's earning and commission are written when the trip is delivered, not when the customer pays. A refund before delivery lowers what is released. Needs the functions deployed. Off: the driver is credited at once.","With online payment on, the driver's earning and commission are written when the trip is delivered, not when the customer pays. A refund before delivery lowers what is released. Needs the functions deployed. Off: the driver is credited at once.","",pending
+feat_rateRange,Usual price on a route,Usual price on a route,"",pending
+featHelp_rateRange,"Shows the usual price range of finished trips on the same route and truck type (at least 5 trips), when a load is posted. The server collects only amounts, never names or booking ids. Needs the functions deployed.","Shows the usual price range of finished trips on the same route and truck type (at least 5 trips), when a load is posted. The server collects only amounts, never names or booking ids. Needs the functions deployed.","",pending
+feat_tripTrustCard,Driver trust on offers and trips,Driver trust on offers and trips,"",pending
+featHelp_tripTrustCard,"The customer sees the driver's trips done, star rating, verified mark and member-since month on offers and on the trip. Numbers are written by the server only; needs the server trip counts switch and the functions deployed. No name, phone or papers.","The customer sees the driver's trips done, star rating, verified mark and member-since month on offers and on the trip. Numbers are written by the server only; needs the server trip counts switch and the functions deployed. No name, phone or papers.","",pending
+feat_appCheckEnforce,Refuse calls from unknown apps,Refuse calls from unknown apps,"",pending
+featHelp_appCheckEnforce,"The server refuses payment, maps, SMS and ID-check calls that do not carry the real app's proof (App Check). Turn on only after the app is registered and the logs show almost no missing proofs. Off: the calls are only counted.","The server refuses payment, maps, SMS and ID-check calls that do not carry the real app's proof (App Check). Turn on only after the app is registered and the logs show almost no missing proofs. Off: the calls are only counted.","",pending
+feat_kycVerify,"ID checks (licence, RC, PAN, GST)","ID checks (licence, RC, PAN, GST)","",pending
+featHelp_kycVerify,"After a driver saves papers, the server checks the numbers with the ID partner (or the sandbox) and shows the admin the answer. Without a partner the admin looks at the papers as before. Aadhaar: only the last four digits, never looked up.","After a driver saves papers, the server checks the numbers with the ID partner (or the sandbox) and shows the admin the answer. Without a partner the admin looks at the papers as before. Aadhaar: only the last four digits, never looked up.","",pending
+feat_smsGateway,SMS messages,SMS messages,"",pending
+featHelp_smsGateway,"Short SMS for trip steps to a customer who cannot get push, and the SOS message to the person's own emergency contacts. Needs the functions deployed, an SMS partner key and approved templates. The login code is not affected.","Short SMS for trip steps to a customer who cannot get push, and the SOS message to the person's own emergency contacts. Needs the functions deployed, an SMS partner key and approved templates. The login code is not affected.","",pending
+feat_liveLocation,Live trip location,Live trip location,"",pending
+featHelp_liveLocation,"The driver shares the truck position during the trip (with their consent), with a visible notification, few database writes and a stop when the trip ends. Off: the older sharing while the trip screen is open.","The driver shares the truck position during the trip (with their consent), with a visible notification, few database writes and a stop when the trip ends. Off: the older sharing while the trip screen is open.","",pending
+feat_maps,Maps and road distance,Maps and road distance,"",pending
+featHelp_maps,"Real road distance and time for fares and trips, and the trip map. Needs the functions deployed and a Maps key set as a secret. Off: the built-in city table.","Real road distance and time for fares and trips, and the trip map. Needs the functions deployed and a Maps key set as a secret. Off: the built-in city table.","",pending
+khataTitle,Khata (who owes whom),Khata (who owes whom),"",pending
+khataAddParty,Add a party,Add a party,"",pending
+khataPartyName,Name of the party,Name of the party,"",pending
+khataNote,Note (optional),Note (optional),"",pending
+khataEmpty,No party yet,No party yet,"",pending
+khataEmptyHint,Add the people you do business with and write what they owe you or what you owe them.,Add the people you do business with and write what they owe you or what you owe them.,"",pending
+khataTheyOwe,They owe me,They owe me,"",pending
+khataIOwe,I owe them,I owe them,"",pending
+khataSettled,All settled,All settled,"",pending
+khataRecordsOnly,This is only your own notebook. It is not a payment and not a legal account.,This is only your own notebook. It is not a payment and not a legal account.,"",pending
+khataTooMany,You have the most parties allowed (100). Delete one first.,You have the most parties allowed (100). Delete one first.,"",pending
+khataAddOwed,They owe me more,They owe me more,"",pending
+khataAddReceived,They paid,They paid,"",pending
+khataAmount,Amount in rupees,Amount in rupees,"",pending
+khataNoLines,No lines yet. Tap one of the buttons above.,No lines yet. Tap one of the buttons above.,"",pending
+khataDeleteLine,Delete this line,Delete this line,"",pending
+khataDeleteLineHint,The balance is corrected. Enter the right amount again.,The balance is corrected. Enter the right amount again.,"",pending
+khataShare,Share statement,Share statement,"",pending
+khataCopied,The statement was copied. Paste it in a message.,The statement was copied. Paste it in a message.,"",pending
+khataOwedWord,Owed,Owed,"",pending
+khataReceivedWord,Received,Received,"",pending
+khataBalanceWord,Balance,Balance,"",pending
+kycChipVerified,{kind}: ID check passed,{kind}: ID check passed,"",pending
+kycChipMismatch,{kind}: name on the record differs. Please look.,{kind}: name on the record differs. Please look.,"",pending
+kycChipNotFound,{kind}: not found in the records. Please look.,{kind}: not found in the records. Please look.,"",pending
+kycChipManual,No automatic ID check yet. Please look at the papers yourself.,No automatic ID check yet. Please look at the papers yourself.,"",pending
+kycKind_licence,Licence,Licence,"",pending
+kycKind_rc,RC,RC,"",pending
+kycKind_pan,PAN,PAN,"",pending
+kycKind_gstin,GSTIN,GSTIN,"",pending
+kycKind_aadhaar,Aadhaar (last 4),Aadhaar (last 4),"",pending
+liveNoticeTitle,Load 20 is sharing your trip location,Load 20 is sharing your trip location,"",pending
+liveNoticeText,Only the customer of this trip sees it. It stops when the trip ends.,Only the customer of this trip sees it. It stops when the trip ends.,"",pending
+liveNoConsent,Turn on location sharing in Settings so the customer can follow this trip.,Turn on location sharing in Settings so the customer can follow this trip.,"",pending
+liveNoPermission,Allow location for Load 20 in your phone settings to share this trip.,Allow location for Load 20 in your phone settings to share this trip.,"",pending
+lastSeenNow,Last seen just now,Last seen just now,"",pending
+lastSeenMinutes,Last seen {n} min ago,Last seen {n} min ago,"",pending
+lastSeenHours,Last seen {n} h ago,Last seen {n} h ago,"",pending
+tripMapTitle,Trip map,Trip map,"",pending
+tripMapOpen,Show on map,Show on map,"",pending
+tripMapNone,The map is not available for this trip.,The map is not available for this trip.,"",pending
+tripMapPickup,Pickup,Pickup,"",pending
+tripMapDrop,Drop,Drop,"",pending
+tripMapDriver,Driver,Driver,"",pending
+payOnline,Pay online,Pay online,"",pending
+payOnlineDone,Payment received. The driver is paid when the trip is done.,Payment received. The driver is paid when the trip is done.,"",pending
+payOnlineCancelled,Payment was not completed. Nothing was charged by us.,Payment was not completed. Nothing was charged by us.,"",pending
+payOnlineFailed,"Could not check the payment. If money was cut, it is safe: wait a few minutes or contact support.","Could not check the payment. If money was cut, it is safe: wait a few minutes or contact support.","",pending
+payOnlineUnavailable,"Online payment is not available right now. Use ""I have paid"" instead.","Online payment is not available right now. Use ""I have paid"" instead.","",pending
+payHeldLine,Paid online: {amount}. Held safely and given to the driver when the trip is delivered.,Paid online: {amount}. Held safely and given to the driver when the trip is delivered.,"",pending
+ptTrips,{n} trips done,{n} trips done,"",pending
+ptTripsOne,1 trip done,1 trip done,"",pending
+ptRating,{r} stars ({n}),{r} stars ({n}),"",pending
+ptSince,Since {month},Since {month},"",pending
+ptVerified,Verified,Verified,"",pending
+ptNew,New on Load 20,New on Load 20,"",pending
+rrUsual,Usual price on this route: {low} to {high} ({n} trips),Usual price on this route: {low} to {high} ({n} trips),"",pending
+feat_dispatchV2,Nearby-first dispatch and bidding,Nearby-first dispatch and bidding,"",pending
+featHelp_dispatchV2,"Loads go to the nearest drivers first, then wider rings. Customers can pick Instant, Bid or Schedule. Turn on only after the new Firestore rules are published. Off: the old open load and offers work as before.","Loads go to the nearest drivers first, then wider rings. Customers can pick Instant, Bid or Schedule. Turn on only after the new Firestore rules are published. Off: the old open load and offers work as before.","",pending
+feat_uiV2,New look and booking steps,New look and booking steps,"",pending
+featHelp_uiV2,"The new home, 5-step booking, bid room, incoming-load card and trip screens. Turn it off to go back to the old screens. Works with or without the new dispatch switch.","The new home, 5-step booking, bid room, incoming-load card and trip screens. Turn it off to go back to the old screens. Works with or without the new dispatch switch.","",pending
+adminDispatchMonitor,Dispatch monitor,Dispatch monitor,"",pending
+dmLive,Live loads,Live loads,"",pending
+dmFilled,Taken by a driver,Taken by a driver,"",pending
+dmExpiredNoBid,Expired with no bid,Expired with no bid,"",pending
+dmExpiredBids,Expired with bids,Expired with bids,"",pending
+dmFirstBid,Time to first bid,Time to first bid,"",pending
+dmFillTime,Time to fill,Time to fill,"",pending
+dmAcceptance,"Taken, out of all finished","Taken, out of all finished","",pending
+dmPriceVsEstimate,Price against estimate,Price against estimate,"",pending
+dmNoShows,No-show cancels,No-show cancels,"",pending
+dmShown,Drivers shown,Drivers shown,"",pending
+dmShownNote,Known after the server wave is on.,Known after the server wave is on.,"",pending
+dmRing,Ring {n},Ring {n},"",pending
+dmBids,{n} bids,{n} bids,"",pending
+dmStalled,Nobody yet,Nobody yet,"",pending
+dmMinutes,{n} min,{n} min,"",pending
+dmSeconds,{n} s,{n} s,"",pending
+dmNone,No data yet,No data yet,"",pending
+dmRecent,Recent loads,Recent loads,"",pending
+dmModeInstant,Instant,Instant,"",pending
+dmModeBid,Bid,Bid,"",pending
+dmModeScheduled,Schedule,Schedule,"",pending
+brTitle,Bid room,Bid room,"",pending
+brBids,Bids,Bids,"",pending
+brWaiting,Drivers are looking at your load.,Drivers are looking at your load.,"",pending
+brWindowLeft,Bidding closes in,Bidding closes in,"",pending
+brWindowClosed,Bidding is closed.,Bidding is closed.,"",pending
+brNoBids,No bids yet.,No bids yet.,"",pending
+brNoBidsHelp,What next?,What next?,"",pending
+brRaisePrice,Raise the price,Raise the price,"",pending
+brMoreTime,Give more time,Give more time,"",pending
+brGoInstant,Go instant,Go instant,"",pending
+brSchedule,Book for later,Book for later,"",pending
+brAccept,Accept this bid,Accept this bid,"",pending
+brAcceptAsk,Accept the bid of {amount}? The other bids will close.,Accept the bid of {amount}? The other bids will close.,"",pending
+brYes,"Yes, accept","Yes, accept","",pending
+brCounterTitle,Your counter price,Your counter price,"",pending
+brCounterHint,You can counter once. The driver can say yes.,You can counter once. The driver can say yes.,"",pending
+brSend,Send,Send,"",pending
+brCounterSent,Counter sent: {amount},Counter sent: {amount},"",pending
+brSelectedWait,Waiting for the driver to confirm.,Waiting for the driver to confirm.,"",pending
+brCountered,You countered. Waiting for the driver.,You countered. Waiting for the driver.,"",pending
+brFound,A driver is confirmed.,A driver is confirmed.,"",pending
+brTrack,Open the trip,Open the trip,"",pending
+brClosed,This load is closed.,This load is closed.,"",pending
+brAutoTitle,Auto-accept,Auto-accept,"",pending
+brAutoHint,The first bid that fits is accepted. It works while this app is open.,The first bid that fits is accepted. It works while this app is open.,"",pending
+brAutoMax,Highest price (rupees),Highest price (rupees),"",pending
+brAutoRating,Lowest rating,Lowest rating,"",pending
+brAny,Any,Any,"",pending
+brVerifiedOnly,Verified drivers only,Verified drivers only,"",pending
+brSave,Save,Save,"",pending
+brAutoOff,Turn off,Turn off,"",pending
+brAutoOn,Auto-accept is on: up to {amount},Auto-accept is on: up to {amount},"",pending
+brAutoAccepted,A bid was accepted for you.,A bid was accepted for you.,"",pending
+brChatAfter,Chat opens after the driver confirms. Phone numbers stay hidden.,Chat opens after the driver confirms. Phone numbers stay hidden.,"",pending
+bnote_on_the_way,I am on the way,I am on the way,"",pending
+bnote_empty_return,Empty on return,Empty on return,"",pending
+bnote_loading_help,Loading help available,Loading help available,"",pending
+bnote_flexible_time,Flexible on time,Flexible on time,"",pending
+bnote_clean_truck,Clean truck,Clean truck,"",pending
+wzTitle,Book a truck,Book a truck,"",pending
+wzStepOf,Step {n} of {m},Step {n} of {m},"",pending
+wzQ1,Where should the truck go?,Where should the truck go?,"",pending
+wzQ2,What are you sending?,What are you sending?,"",pending
+wzQ3,Which truck?,Which truck?,"",pending
+wzQ4,What price and how?,What price and how?,"",pending
+wzQ5,Check and book,Check and book,"",pending
+wzPickup,Pickup city,Pickup city,"",pending
+wzDrop,Drop city,Drop city,"",pending
+wzRecent,Recent routes,Recent routes,"",pending
+wzWeight,Weight: {w} tons,Weight: {w} tons,"",pending
+wzSuggested,Fits your load,Fits your load,"",pending
+wzTooSmall,Too small for this weight,Too small for this weight,"",pending
+wzCapacity,Up to {t} tons,Up to {t} tons,"",pending
+wzNext,Next,Next,"",pending
+wzBack,Back,Back,"",pending
+wzModeTitle,How should drivers reply?,How should drivers reply?,"",pending
+wzModeInstant,Instant,Instant,"",pending
+wzModeInstantHint,Nearest drivers first. First yes wins.,Nearest drivers first. First yes wins.,"",pending
+wzModeBid,Bid,Bid,"",pending
+wzModeBidHint,Drivers send prices. You choose.,Drivers send prices. You choose.,"",pending
+wzModeSchedule,Schedule,Schedule,"",pending
+wzModeScheduleHint,Book for a later day or time.,Book for a later day or time.,"",pending
+wzWhen,Pickup day and time,Pickup day and time,"",pending
+wzPickDate,Pick a day and time,Pick a day and time,"",pending
+wzTotal,Estimated total,Estimated total,"",pending
+wzYourPrice,Your price,Your price,"",pending
+wzBookSlide,Slide to book,Slide to book,"",pending
+wzTerms,By booking you accept the terms of {app}.,By booking you accept the terms of {app}.,"",pending
+wzDraftBack,Your earlier answers are back.,Your earlier answers are back.,"",pending
+wzNeedRoute,Choose both cities.,Choose both cities.,"",pending
+wzNeedGoods,Choose what you send and the weight.,Choose what you send and the weight.,"",pending
+wzNeedTruck,Choose a truck.,Choose a truck.,"",pending
+wzNeedDate,Pick a pickup day.,Pick a pickup day.,"",pending
+wzNoQuote,We cannot work out a price for this route. Type your own price.,We cannot work out a price for this route. Type your own price.,"",pending
+wzPostedBid,Bidding is open. Drivers are sending prices.,Bidding is open. Drivers are sending prices.,"",pending
+wzNeedPrice,Type your price.,Type your price.,"",pending
+wzDateTooSoon,Choose a later time.,Choose a later time.,"",pending
+wzDateTooFar,Choose an earlier day.,Choose an earlier day.,"",pending
+hvBookBig,Book a truck,Book a truck,"",pending
+hvHeroSub,"Five easy questions. Pick instant, bid or schedule.","Five easy questions. Pick instant, bid or schedule.","",pending
+hvTrip,Your trip,Your trip,"",pending
+hvWaitingLoads,{n} load waiting for drivers,{n} load waiting for drivers,"",pending
+hvOpen,Open,Open,"",pending
+hvTrust1,Verified drivers,Verified drivers,"",pending
+hvTrust2,OTP at pickup and delivery,OTP at pickup and delivery,"",pending
+hvTrust3,Phone numbers stay hidden,Phone numbers stay hidden,"",pending
+hvMore,More,More,"",pending
+hvTabHome,Home,Home,"",pending
+hvTabTrips,Trips,Trips,"",pending
+hvTabHelp,Help,Help,"",pending
+hvTabProfile,Profile,Profile,"",pending
+hvAgain,Book again,Book again,"",pending
+trActive,Active,Active,"",pending
+trUpcoming,Upcoming,Upcoming,"",pending
+trPast,Past,Past,"",pending
+trEmptyActive,No trip right now. Book a truck to start.,No trip right now. Book a truck to start.,"",pending
+trEmptyUpcoming,No trip is booked for later.,No trip is booked for later.,"",pending
+trEmptyPast,Finished trips will show here.,Finished trips will show here.,"",pending
+trWaitingDrivers,Waiting for drivers,Waiting for drivers,"",pending
+trLoadClosed,"Closed, no driver","Closed, no driver","",pending
+uxInstTitle,Looking for a truck near you,Looking for a truck near you,"",pending
+uxInstReach,Searching within {km} km,Searching within {km} km,"",pending
+uxInstRound,Round {n} of {m},Round {n} of {m},"",pending
+uxInstStalled,No driver has said yes yet,No driver has said yes yet,"",pending
+uxInstStalledHint,Raise the price a little or search wider.,Raise the price a little or search wider.,"",pending
+uxRaise5,Raise price 5%,Raise price 5%,"",pending
+uxRaise10,Raise price 10%,Raise price 10%,"",pending
+uxWiden,Search wider,Search wider,"",pending
+uxWidenMax,Widest search reached,Widest search reached,"",pending
+uxPriceNow,Your price: {amount},Your price: {amount},"",pending
+uxPriceRaised,Price is now {amount},Price is now {amount},"",pending
+uxPriceLimit,This is the highest price allowed.,This is the highest price allowed.,"",pending
+uxTakenByOther,Someone else took this load,Someone else took this load,"",pending
+dhOnlineOn,You are online,You are online,"",pending
+dhOnlineOff,You are offline,You are offline,"",pending
+dhRadarOn,Looking for loads near you,Looking for loads near you,"",pending
+dhRadarWait,{n} load waiting for you,{n} load waiting for you,"",pending
+dhRadarOff,Go online to get loads,Go online to get loads,"",pending
+dhRadarNoTruck,Add a truck to get loads,Add a truck to get loads,"",pending
+dhTruckToday,Truck for today,Truck for today,"",pending
+dhMore,More,More,"",pending
+dhUpcoming,Coming up,Coming up,"",pending
+ilTitle,New load near you,New load near you,"",pending
+ilPickupKm,Pickup {n} km from you,Pickup {n} km from you,"",pending
+ilTripKm,Trip {n} km,Trip {n} km,"",pending
+ilAcceptAt,Accept at {price},Accept at {price},"",pending
+ilSendPrice,Send my price,Send my price,"",pending
+ilSkip,Skip,Skip,"",pending
+ilSkipWhy,Why skip? (you can leave this),Why skip? (you can leave this),"",pending
+ilWhyFar,Too far,Too far,"",pending
+ilWhyLow,Price too low,Price too low,"",pending
+ilWhyTruck,Truck not free,Truck not free,"",pending
+ilWhyOther,Other,Other,"",pending
+ilQueue,{n} more waiting,{n} more waiting,"",pending
+ilTimeUp,Time is up for this load,Time is up for this load,"",pending
+ilNoTruck,No free truck fits this load,No free truck fits this load,"",pending
+bsTitle,Your price,Your price,"",pending
+bsEtaQ,How soon can you reach pickup?,How soon can you reach pickup?,"",pending
+bsNoteQ,Add a note (optional),Add a note (optional),"",pending
+bsSend,Send price,Send price,"",pending
+bsEdit,Change my price,Change my price,"",pending
+bsEditOnce,You can change your price only once.,You can change your price only once.,"",pending
+bsWithdraw,Withdraw bid,Withdraw bid,"",pending
+bsSent,Price sent,Price sent,"",pending
+bsOutOfRange,Price must be between {lo} and {hi}.,Price must be between {lo} and {hi}.,"",pending
+bsUsual,Usual: {lo} to {hi},Usual: {lo} to {hi},"",pending
+bsAlready,You already sent a price for this load.,You already sent a price for this load.,"",pending
+uxKm,{n} km,{n} km,"",pending
+uxRouteLabel,"From {from} to {to}, {km}","From {from} to {to}, {km}","",pending
+uxFareUsual,Usual price: {low} to {high},Usual price: {low} to {high},"",pending
+uxFareNoRange,No usual price for this route yet,No usual price for this route yet,"",pending
+uxFareLow,Low price. Fewer drivers may say yes.,Low price. Fewer drivers may say yes.,"",pending
+uxFareFair,Fair price. Good chance of a quick yes.,Fair price. Good chance of a quick yes.,"",pending
+uxFareHigh,High price. You may pay more than needed.,High price. You may pay more than needed.,"",pending
+uxFareYour,Your price,Your price,"",pending
+uxFareEstimate,Estimate,Estimate,"",pending
+uxSlideConfirm,Slide to confirm,Slide to confirm,"",pending
+uxSlideDone,Done,Done,"",pending
+uxSlideHint,"Slide the handle to the end, or double tap to confirm","Slide the handle to the end, or double tap to confirm","",pending
+uxSecondsLeft,{n} seconds left,{n} seconds left,"",pending
+uxTagBestPrice,Best price,Best price,"",pending
+uxTagNearest,Nearest,Nearest,"",pending
+uxTagTopRated,Top rated,Top rated,"",pending
+uxTagFastest,Fastest,Fastest,"",pending
+uxVerified,Verified,Verified,"",pending
+uxTripsN,{n} trips,{n} trips,"",pending
+uxNewDriver,New driver,New driver,"",pending
+uxEtaMin,{n} min away,{n} min away,"",pending
+uxAccept,Accept,Accept,"",pending
+uxCounter,Counter,Counter,"",pending
+uxEmptyTitle,Nothing here yet,Nothing here yet,"",pending
+uxErrorTitle,Something went wrong,Something went wrong,"",pending
+uxOfflineTitle,No internet,No internet,"",pending
+uxTryAgain,Try again,Try again,"",pending
+uxClose,Close,Close,"",pending
+uxDismiss,Dismiss,Dismiss,"",pending
+uxStepDone,done,done,"",pending
+uxStepNow,now,now,"",pending
+uxStepNext,next,next,"",pending
+tkMore,More about this trip,More about this trip,"",pending
+tkBilty,Bilty (LR),Bilty (LR),"",pending
+tkBiltyMake,Make bilty,Make bilty,"",pending
+tkBiltyOpen,See bilty,See bilty,"",pending
+tkBiltyHint,"Three copies: Full, Driver, Consignee. You see what stays hidden before you send.","Three copies: Full, Driver, Consignee. You see what stays hidden before you send.","",pending
+pfLogoutAsk,Log out of this phone?,Log out of this phone?,"",pending
+fdSortNearest,Nearest,Nearest,"",pending
+fdSortPay,Best pay,Best pay,"",pending
+fdSortNew,Newest,Newest,"",pending
+mbWaiting,Waiting,Waiting,"",pending
+mbCountered,Counter price,Counter price,"",pending
+mbSelected,Selected,Selected,"",pending
+mbLost,Lost,Lost,"",pending
+mbChange,Change or withdraw,Change or withdraw,"",pending
+mbNoneHere,Nothing here yet,Nothing here yet,"",pending
+tfStep,Step {n} of {total},Step {n} of {total},"",pending
+tfHintPickup,Take a photo of the loaded goods and ask the customer for the pickup code.,Take a photo of the loaded goods and ask the customer for the pickup code.,"",pending
+tfHintDelivered,Ask the customer for the delivery code. Delivery cannot be undone.,Ask the customer for the delivery code. Delivery cannot be undone.,"",pending
+epMoneyTitle,Where your money is,Where your money is,"",pending
+epWaitCustomer,Waiting for the customer to pay,Waiting for the customer to pay,"",pending
+epConfirmReceived,Confirm you got the money,Confirm you got the money,"",pending
+epInWallet,Done: in your wallet,Done: in your wallet,"",pending
+obStateDone,Done,Done,"",pending
+obStateNext,Do this next,Do this next,"",pending
+obStateLater,Later,Later,"",pending
+obDocAdded,Added,Added,"",pending
+obDocMissing,Missing,Missing,"",pending
+obWhyRejected,Why it was not approved,Why it was not approved,"",pending
+adGroupPeople,People and verification,People and verification,"",pending
+adGroupOps,"Loads, trips and dispatch","Loads, trips and dispatch","",pending
+adGroupSafety,Safety and trust,Safety and trust,"",pending
+adGroupMoney,Money,Money,"",pending
+adGroupTools,"Pilot, support and settings","Pilot, support and settings","",pending
+fdBid,Bid,Bid,"",pending
+bsCustom,Or type your price (in rupees),Or type your price (in rupees),"",pending
