@@ -21,7 +21,10 @@ void main() {
   test('the four named staff roles exist, finance included, and normalise keeps unknown ones out', () {
     expect(StaffRole.all, containsAll(['super', 'support', 'ops', 'finance', 'verifier']));
     expect(StaffRole.normalise('finance'), 'finance');
-    expect(StaffRole.normalise('owner-of-the-universe'), StaffRole.superAdmin); // missing / unknown -> rules treat it as no powers; the panel falls back to super only for a missing field
+    expect(StaffRole.normalise('owner-of-the-universe'), StaffRole.none); // unknown -> the rules give no powers, so the panel opens nothing (Z21)
+    expect(StaffRole.normalise(null), StaffRole.superAdmin); // a missing field is super in the rules too
+    expect(staffCan('owner-of-the-universe', 'adminAnalytics'), isFalse);
+    expect(staffCan(null, 'adminConfig'), isTrue);
   });
 
   test('every adminIn([...]) in the rules names real roles', () {

@@ -251,7 +251,7 @@ void main() {
   });
 
   group('staff roles (BE7)', () {
-    test('super sees everything; others only their areas; unknown role is treated as super', () {
+    test('super sees everything; others only their areas; a missing role is super, an unknown role opens nothing', () {
       for (final area in staffAreas.keys) {
         expect(staffCan(StaffRole.superAdmin, area), isTrue, reason: area);
         expect(staffCan(null, area), isTrue, reason: 'no role = super: $area');
@@ -263,7 +263,7 @@ void main() {
       expect(staffCan(StaffRole.ops, 'flaggedUsers'), isTrue);
       expect(staffCan(StaffRole.ops, 'adminConfig'), isFalse);
       expect(staffCan(StaffRole.support, 'adminConfig'), isFalse);
-      expect(staffCan('nonsense', 'adminConfig'), isTrue);
+      expect(staffCan('nonsense', 'adminConfig'), isFalse); // Z21: an unknown role opens nothing, as in the rules
       expect(staffCan('support', 'unknownArea'), isFalse);
     });
 

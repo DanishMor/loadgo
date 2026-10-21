@@ -268,3 +268,22 @@ Re-run after H1 to H34.
 
 Free gaps: 0 (the open S3 needs either a larger rules refactor or the deployed functions, both written in the plan)
 Open bugs: 0 (S1 and S2); 3 (S3 and S4) with a plan
+
+## Z21 (2026-10-21): free-gap audit, Load 20 FINAL2
+Method (be clear about the limit): I re-read `KNOWN_RISKS`, `KNOWN_ISSUES`, `BLOCKED`, `NEXT_TASKS`, `SCREEN_INVENTORY` (124 screens), the drift and index tools' output, and the two problems the owner found on the phone. I did not re-read every screen's code line by line. Roles and flows covered: customer, driver, transporter, admin, bilty, chat and call, bid and dispatch, wallet records, support, onboarding.
+
+| ID | Gap found | Free? | Result |
+|---|---|---|---|
+| Z-1 | LR register hid every LR when only the share-link query was slow or denied (owner feedback 1) | FREE | Done (Z2): LRs show, a note says the links did not load |
+| Z-2 | Error screens gave no reason and no way to diagnose | FREE | Done (Z1, Z3): E-PERM / E-INDEX / E-NET / E-TIMEOUT, Help > Diagnose problem |
+| Z-3 | Verification screen: "Coming Soon" toast on Refresh, "Do this next" on the team's step (owner feedback 2) | FREE | Done (Z7) |
+| Z-4 | A tile with no action fell back to a "Coming soon" toast | FREE | Done (Z7): removed, guard test |
+| Z-5 | First-run empty states without a next step (driver bids, earnings, upcoming trips, loads; transporter loads/trips; fleet vehicles) | FREE | Done (Z8) |
+| Z-6 | Admin app showed an unknown staff role as super (H-7, KNOWN_RISKS 10) | FREE | Done: an unknown role opens nothing, a missing role is still super, like the rules |
+| Z-7 | Composite indexes and app-vs-rules fields had no automatic check | FREE | Done (Z4, Z5): 0 missing, 0 drift |
+| Z-8 | Queued trip code sits in plain preferences (KNOWN_RISKS 6) | free package, but needs a real-phone check of Android Keystore storage | Moved to NOT_FREE.md |
+| Z-9 | Register for the customer and fleet-owner side of an LR (rules allow it, no screen) | free, but a product decision (which copy a non-issuer may see) | Moved to NOT_FREE.md |
+| Z-10 | Extra fields planted on a new load (KNOWN_RISKS 1) | needs a rules split (owner review) or a Function | Moved to NOT_FREE.md |
+| Z-11 | Admin "Test lab" with fake bidders | would weaken the rules | Skipped (BLOCKED.md) |
+
+Free gaps: 0

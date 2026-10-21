@@ -1,6 +1,7 @@
 /// Staff roles of the admin panel (BE7). `admins/{uid}.role` holds one; a
-/// missing value means [StaffRole.superAdmin]. The rules (`adminIn([...])`)
-/// decide who may write what; this table only hides what a role cannot use.
+/// MISSING value means [StaffRole.superAdmin] (like the rules: `get('role', 'super')`),
+/// a value that is not one of [all] means [StaffRole.none]: no area, same as the rules (Z21, BUG_REPORT H-7).
+/// The rules (`adminIn([...])`) decide who may write what; this table only hides what a role cannot use.
 class StaffRole {
   StaffRole._();
   static const superAdmin = 'super';
@@ -10,7 +11,10 @@ class StaffRole {
   static const finance = 'finance';
   static const all = [superAdmin, support, verifier, ops, finance];
 
-  static String normalise(Object? v) => all.contains(v) ? v as String : superAdmin;
+  /// A role the panel does not know: it opens nothing.
+  static const none = 'none';
+
+  static String normalise(Object? v) => v == null ? superAdmin : (all.contains(v) ? v as String : none);
 }
 
 /// Dashboard entry key (`admin_<key>`) -> roles that work on it. Every staff

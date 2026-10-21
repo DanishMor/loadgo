@@ -2,8 +2,8 @@
 
 Plan: docs/MASTER_PLAN_PART5.md. Read it, then continue from NEXT. Part 4 is complete (git log, tags ux-v2-phase4..6).
 
-LAST_DONE: FINAL2 Z1-Z8, Z10-Z20 done; Z9 skipped (BLOCKED.md).
-NEXT: Z21 gap audit (GAP_AUDIT.md "Free gaps: 0", NOT_FREE.md), Z22 final regression + docs + tag final-free-complete.
+LAST_DONE: FINAL2 Z1-Z8, Z10-Z21 done; Z9 skipped (BLOCKED.md).
+NEXT: Z22 final regression (tool/run_regression.ps1), rules tests, redteam, functions tests, web builds, update KNOWN_RISKS/WHERE_IS_WHAT/TEST_PLAN/RELEASE_CANDIDATE, tag final-free-complete.
 
 Unfinished / to remember:
 - Never edit hosting/*.html by hand: edit tool/templates/hosting/ and run `dart run tool/apply_app_info.dart`. Scripts and styles live in hosting/assets/.

@@ -13,7 +13,7 @@ Things that are true today and are not fixed by code in this repo. Each says why
 | 7 | Every staff role can read all user profiles (admin console). Insider misuse is limited by `audit_events` for contact and chat views only. | By design for support work. | Per-role field-level views. |
 | 8 | Admin screens copy CSV (payout queue, cohorts) to the clipboard. | Intentional convenience for the owner. | Optional export-to-file. |
 | 9 | Vehicle papers (policy numbers) are readable by every signed-in user. | Needed for matching today. | A private subcollection. |
-| 10 | The admin app shows an unknown staff role as super in menus (BUG_REPORT H-7, S4). Rules and server refuse it. | UI only. | One-line change in `staff_roles.dart` with its test. |
+| 10 | (Closed in Z21) The admin app now opens nothing for an unknown staff role; a missing role is still super, like the rules. | - | - |
 | 11 | Only tested on emulators and fakes. No real phone, no real network, no external penetration test. | Rules of this work. | `docs/PENTEST_CHECKLIST.md`, the phone sheet in `docs/RELEASE_CANDIDATE.md`. |
 | 12 | Certificate pinning and root detection are not used. | Decisions with reasons in `docs/SECURITY_DECISIONS.md`. | Revisit when a first-party API exists. |
 | 13 | `firestore_rules_test` dev tools have 16 audit findings (in `firebase`, `firebase-tools`). Not shipped. | Fixing needs major upgrades. | A planned tools upgrade, run through the full rules suite. |
