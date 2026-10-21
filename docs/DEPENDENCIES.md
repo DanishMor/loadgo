@@ -45,3 +45,10 @@ Mahine mein ek baar `flutter pub outdated`, patch/minor lagao, analyze + poora t
 
 ### Functions ka `npm audit` (2026-10-17, G39)
 `npm audit --omit=dev` ne 9 baat batayi (2 high, 7 moderate), sab `firebase-admin` 12 ke andar ke packages se (`node-forge`, `uuid`, `google-gax`, `teeny-request`, `retry-request`, `@google-cloud/*`). Fix sirf `firebase-admin` ka major upgrade hai. Dekhiye "Functions upgrade" neeche.
+
+## Z18 (2026-10-21): KGP warning, what `flutter pub outdated` says
+Checked on a throw-away branch (nothing changed, branch deleted). Flutter 3.47.5.
+- Every direct `firebase_*`, `cloud_firestore`, `cloud_functions`, `firebase_app_check` and `flutter_webrtc` is already at the newest version of its **current major**. The only newer versions are majors: firebase_core 5.0.0, firebase_auth 7.0.0, cloud_firestore 7.0.0, cloud_functions 7.0.0, firebase_analytics 13.0.0, firebase_crashlytics 6.0.0, firebase_messaging 17.0.0, firebase_remote_config 7.0.0, firebase_storage 14.0.0, firebase_app_check 0.5.0.
+- The rule for this task is "patch or minor only, no major". So there was nothing to step up and no step to revert. Only transitive `*_platform_interface` and `*_web` patches are available; they do not touch the Kotlin plugin warning, so they were left alone.
+- Whether the Firebase majors remove the KGP warning is **UNVERIFIED** (not tested here; their changelogs were not read). A major upgrade is a separate, deliberate job: one family at a time on its own branch, full regression, `flutter build web --release`, and an owner check on a real phone (login, push, call).
+- The APK is not built by Claude. Owner check (docs/OWNER_TODO.md): after any dependency change, build the release APK and see whether the "future Flutter versions" warning is still printed. It is only a warning today (`android.builtInKotlin=false`).

@@ -2,8 +2,8 @@
 
 Plan: docs/MASTER_PLAN_PART5.md. Read it, then continue from NEXT. Part 4 is complete (git log, tags ux-v2-phase4..6).
 
-LAST_DONE: FINAL2 Z1-Z7, Z10-Z17 done; Z9 skipped (BLOCKED.md).
-NEXT: Z18 dependency health (own branch), Z19 SIZE.md, Z20 CI, then Z8, Z21, Z22 from docs/MASTER_PLAN_FINAL2.md.
+LAST_DONE: FINAL2 Z1-Z7, Z10-Z18 done; Z9 skipped (BLOCKED.md).
+NEXT: Z19 SIZE.md, Z20 CI, then Z8, Z21, Z22 from docs/MASTER_PLAN_FINAL2.md.
 
 Unfinished / to remember:
 - Never edit hosting/*.html by hand: edit tool/templates/hosting/ and run `dart run tool/apply_app_info.dart`. Scripts and styles live in hosting/assets/.
