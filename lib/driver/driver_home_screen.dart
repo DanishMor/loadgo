@@ -152,11 +152,6 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
     );
   }
 
-  void _snack(String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(msg), behavior: SnackBarBehavior.floating),
-    );
-  }
 
   String _greeting() {
     final h = DateTime.now().hour;
@@ -180,10 +175,10 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
         ),
       );
 
-  Widget _tile(IconData icon, String label, {VoidCallback? onTap}) => Expanded(
+  Widget _tile(IconData icon, String label, {required VoidCallback onTap}) => Expanded(
         child: InkWell(
           borderRadius: BorderRadius.circular(18),
-          onTap: onTap ?? () => _snack(tr(context, 'comingSoon')),
+          onTap: onTap,
           child: Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(color: AppColors.card, borderRadius: BorderRadius.circular(18), border: Border.all(color: AppColors.border)),
