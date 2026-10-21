@@ -9,6 +9,8 @@ import '../l10n/l10n.dart';
 import '../theme/design_tokens.dart';
 import 'common.dart';
 import 'ds/illustrations.dart';
+import '../diagnose/diagnose.dart';
+import '../diagnose/diagnose_screen.dart';
 
 typedef StreamFactory<D> = Stream<D> Function();
 
@@ -192,6 +194,7 @@ class ErrorRetry extends StatelessWidget {
       icon: const Icon(Icons.refresh_rounded),
       label: Text(tr(context, 'retry')),
     );
+    final diagnose = DiagnoseButton(messageKey: messageKey);
     if (compact) {
       return AppCard(
         child: Row(
@@ -205,6 +208,7 @@ class ErrorRetry extends StatelessWidget {
               ),
             ),
             retry,
+            diagnose,
           ],
         ),
       );
@@ -213,7 +217,7 @@ class ErrorRetry extends StatelessWidget {
       icon: Icons.cloud_off_rounded,
       illustration: _isOffline(messageKey) ? IllustrationKind.noNetwork : IllustrationKind.error,
       title: tr(context, messageKey),
-      action: retry,
+      action: Column(mainAxisSize: MainAxisSize.min, children: [retry, diagnose]),
     );
   }
 }
@@ -236,10 +240,24 @@ class ErrorState extends StatelessWidget {
         Icon(Icons.cloud_off_rounded, color: AppColors.faint),
         const SizedBox(width: 12),
         Expanded(child: Text(tr(context, key), style: DsStyle.inherit.copyWith(color: AppColors.muted))),
+        DiagnoseButton(messageKey: key),
       ]));
     }
-    return EmptyState(icon: Icons.cloud_off_rounded, illustration: _isOffline(key) ? IllustrationKind.noNetwork : IllustrationKind.error, title: tr(context, key));
+    return EmptyState(icon: Icons.cloud_off_rounded, illustration: _isOffline(key) ? IllustrationKind.noNetwork : IllustrationKind.error, title: tr(context, key), action: DiagnoseButton(messageKey: key));
   }
+}
+
+/// Z3: the short reason code (E-PERM, E-INDEX, E-NET, E-TIMEOUT) as a button that opens the Diagnose screen.
+class DiagnoseButton extends StatelessWidget {
+  final String messageKey;
+  const DiagnoseButton({super.key, required this.messageKey});
+
+  @override
+  Widget build(BuildContext context) => TextButton(
+        key: const ValueKey('diagnoseBtn'),
+        onPressed: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const DiagnoseScreen())),
+        child: Text('${tr(context, 'dgOpen')} (${Diagnose.codeForKey(messageKey)})'),
+      );
 }
 
 /// Thin strip shown under the app while the device has no connection; lists

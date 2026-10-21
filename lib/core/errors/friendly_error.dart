@@ -14,6 +14,7 @@ class FriendlyError {
   static const busy = 'errorBusy';
   static const conflict = 'errorConflict';
   static const generic = 'errorGeneric';
+  static const index = 'errorIndex';
 
   static String of(Object? error) {
     if (error is FirebaseException) {
@@ -23,6 +24,7 @@ class FriendlyError {
         'unavailable' || 'deadline-exceeded' || 'network-request-failed' => network,
         'not-found' => notFound,
         'resource-exhausted' || 'aborted' || 'too-many-requests' => busy,
+        'failed-precondition' when (error.message ?? '').toLowerCase().contains('index') => index,
         'already-exists' || 'failed-precondition' => conflict,
         _ => generic,
       };

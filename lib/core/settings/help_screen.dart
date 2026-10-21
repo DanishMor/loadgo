@@ -5,6 +5,7 @@ import '../support/problem_report.dart';
 import '../widgets/feature_gate.dart';
 
 import '../l10n/l10n.dart';
+import '../diagnose/diagnose_screen.dart';
 import 'feedback_screen.dart';
 import 'legal_screens.dart';
 import 'onboarding_screen.dart';
@@ -89,6 +90,13 @@ class HelpScreen extends StatelessWidget {
             trailing: const Icon(Icons.chevron_right_rounded),
             onTap: () => showProblemReportSheet(context, screen: 'help'),
           ),
+        ),
+        ListTile(
+          key: const ValueKey('helpDiagnose'),
+          leading: const Icon(Icons.health_and_safety_outlined),
+          title: Text(tr(context, 'dgTitle')),
+          trailing: const Icon(Icons.chevron_right_rounded),
+          onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => DiagnoseScreen(role: role))),
         ),
         ListTile(
           key: const ValueKey('helpTour'),

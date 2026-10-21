@@ -2,8 +2,8 @@
 
 Plan: docs/MASTER_PLAN_PART5.md. Read it, then continue from NEXT. Part 4 is complete (git log, tags ux-v2-phase4..6).
 
-LAST_DONE: FINAL2 Z2, Z7a, Z4 done (tool/check_indexes.js, docs/INDEX_CHECK.md, test/index_check_test.dart).
-NEXT: Z1 Diagnose screen, Z3 error codes, Z5 rules drift, Z6, Z7 rest, Z8... from docs/MASTER_PLAN_FINAL2.md.
+LAST_DONE: FINAL2 Z2, Z7a, Z4, Z1, Z3 done (Diagnose screen in Help, error codes on error screens).
+NEXT: Z5 rules drift, Z6 RULES_PUBLISH.md, Z7 rest (dead buttons, SCREEN_INVENTORY, guard test), Z8, Z9... from docs/MASTER_PLAN_FINAL2.md. Not yet: Diagnose link from Settings (only Help has it).
 
 Unfinished / to remember:
 - Never edit hosting/*.html by hand: edit tool/templates/hosting/ and run `dart run tool/apply_app_info.dart`. Scripts and styles live in hosting/assets/.
