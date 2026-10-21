@@ -29,3 +29,6 @@ Abhi id `com.example.transport_app` hai. Play Store `com.example.*` accept nahi 
 - [ ] `docs/PLAY_LISTING.md`, hosting pages, support e-mail (`docs/PLACEHOLDERS.md`).
 - [ ] Domain le li ho to `ShareLinks`, `PolicyLinks`, manifest aur `config/app.policyBaseUrl` mein host badlein (`docs/PAID_UPGRADE_PLAN.md`).
 - [ ] Trademark filing ka faisla (vakeel).
+
+## Script se package id badalna (Z16)
+`.\tool\change_package_id.ps1 -NewId in.load20.app` pehle DRY RUN deta hai (kya badlega ki list). `-Apply` se likhta hai; `-MoveNamespace` se Kotlin package folder aur namespace bhi. Aakhir mein Firebase ke steps (naya Android app, SHA-1/SHA-256, naya google-services.json, test numbers) aur chetavni (purani app uninstall karni padegi) chhapta hai. `google-services.json` ko script chhoota nahi. Test repo ki copy par chalta hai: `flutter test --concurrency=1 test/change_package_id_test.dart`.
