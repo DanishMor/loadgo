@@ -2,8 +2,8 @@
 
 Plan: docs/MASTER_PLAN_PART5.md. Read it, then continue from NEXT. Part 4 is complete (git log, tags ux-v2-phase4..6).
 
-LAST_DONE: FINAL2 complete (Z9 skipped, web builds not run for low memory). Tag final-free-complete.
-NEXT: nothing in code. Run flutter build web --release (normal and admin) when free memory is over 5 GB. Owner: docs/OWNER_TODO.md.
+LAST_DONE: Elite E0 (baseline, tag pre-elite), E1 skipped (no OWNER_BUGS.md), E2 (rules 243 KB -> 200 KB, size test). Plan: docs/MASTER_PLAN_ELITE.md.
+NEXT: E3 flag registry (docs/FLAGS.md, admin Features groups, guard test), then E4, E5. Free RAM was 2.7 GB: wait for over 3 GB before big test batches.
 
 Unfinished / to remember:
 - Never edit hosting/*.html by hand: edit tool/templates/hosting/ and run `dart run tool/apply_app_info.dart`. Scripts and styles live in hosting/assets/.

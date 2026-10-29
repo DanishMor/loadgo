@@ -1,69 +1,41 @@
 rules_version = '2';
-
 // LoadGo Firestore security rules.
 // Tests: firestore_rules_test/ (run against the emulator, see README there).
 service cloud.firestore {
   match /databases/{database}/documents {
-
     function signedIn() {
       return request.auth != null;
     }
-
     function isUser(id) {
       return signedIn() && request.auth.uid == id;
     }
-
     function changedKeys() {
       return request.resource.data.diff(resource.data).affectedKeys();
     }
-
     function docPath(collection, id) {
       return /databases/$(database)/documents/$(collection)/$(id);
     }
-
-    // ------------------------------------------------------------------
-    // users/{uid}: only the owner can read/write their own profile.
-    // Drivers cannot approve themselves: verification fields may only be
-    // initialised to pending/false; admins change them via Console/Admin SDK.
-    // ------------------------------------------------------------------
     function verificationInitOk(d) {
       return d.get('verified', false) == false
           && d.get('verificationStatus', 'pending') == 'pending';
     }
-
-    // Admins are allowlisted by an admins/{uid} document, created by hand in
-    // the Firebase Console (rules never let a client write it). Admin powers
-    // are listed per collection below.
     function isAdmin() {
       return signedIn() && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
     }
-
-    // Staff roles (BE7): admins/{uid}.role is super (default, also when the
-    // field is missing), support, verifier or ops. Reading stays open to every
-    // admin; writes are split by what each role works on. Keep in sync with
-    // lib/core/admin/staff_roles.dart.
     function adminIn(roles) {
       return isAdmin()
           && get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.get('role', 'super') in roles;
     }
-
-    // Demo data (Task 53; the cheap id check comes first because the load
-    // rules sit at the 1000-expression limit): only a super admin creates documents with
-    // `demo: true`, and only under an id that starts with demo_. They are the
-    // only documents of these four collections an admin may delete (the id
-    // prefix is checked again, so a user's own doc flagged demo stays safe).
     function demoCreate(id) {
       return id.matches('demo_[A-Za-z0-9_]+')
           && request.resource.data.get('demo', false) == true
           && adminIn(['super']);
     }
-
     function demoDelete(id) {
       return id.matches('demo_[A-Za-z0-9_]+')
           && resource.data.get('demo', false) == true
           && adminIn(['super']);
     }
-
     function adminVerificationUpdate() {
       return adminIn(['super', 'verifier'])
           && changedKeys().hasOnly(['verified', 'verificationStatus', 'verificationMeta', 'updatedAt'])
@@ -83,16 +55,12 @@ service cloud.firestore {
           && request.resource.data.verificationStatus in ['pending', 'approved', 'rejected']
           && request.resource.data.verified == (request.resource.data.verificationStatus == 'approved');
     }
-
-    // Free-text profile fields are capped (form input limits).
     function validProfileText(d) {
       return d.get('name', '') is string && d.get('name', '').size() <= 80
           && d.get('driverName', '') is string && d.get('driverName', '').size() <= 80
           && d.get('email', '') is string && d.get('email', '').size() <= 100
           && d.get('companyName', '') is string && d.get('companyName', '').size() <= 100;
     }
-
-    // Optional profile extras: addresses (K6), business type (A5), payout UPI id (K8).
     function validProfileExtras(d) {
       return (!('addresses' in d)
               || (d.addresses is map && d.addresses.keys().hasOnly(['current', 'permanent'])
@@ -106,10 +74,6 @@ service cloud.firestore {
                   && d.payoutProfile.get('upiId', '').matches('^$|^[a-zA-Z0-9._-]{2,40}@[a-zA-Z]{2,20}$')
                   && d.payoutProfile.get('holder', '') is string && d.payoutProfile.get('holder', '').size() <= 80));
     }
-
-    // Transporter profile (Task 67): `fleet` holds the PAN plus the office
-    // city, operating routes, vehicle types and vehicle count. Verification
-    // stays in the admin-only `verified` fields, never here.
     function validFleetProfile(d) {
       return !('fleet' in d)
           || (d.fleet is map
@@ -120,15 +84,10 @@ service cloud.firestore {
               && d.fleet.get('vehicleTypes', []) is list && d.fleet.get('vehicleTypes', []).size() <= 12
               && d.fleet.get('vehicleCount', 0) is int && d.fleet.get('vehicleCount', 0) >= 0 && d.fleet.get('vehicleCount', 0) <= 100000);
     }
-
-    // At most three {name, phone} emergency contacts on the profile.
     function validEmergencyContacts(d) {
       return !('emergencyContacts' in d)
           || (d.emergencyContacts is list && d.emergencyContacts.size() <= 3);
     }
-
-    // Driver onboarding documents. Aadhaar is only ever the last four digits;
-    // a full number cannot pass the regex. kycComplete needs the documents.
     function validKyc(d) {
       return (!('driverKyc' in d)
               || (d.driverKyc is map
@@ -140,9 +99,6 @@ service cloud.firestore {
                   && d.driverKyc.get('dlExpiry', null) is timestamp))
           && (d.get('kycComplete', false) == false || 'driverKyc' in d);
     }
-
-    // Driver's last known position, saved with a geohash for nearest-first
-    // lists. Needs the location consent; the timestamp must be the server time.
     function validLastLocation(d) {
       return !('lastLocation' in d)
           || (d.get('consents', {}).get('location', false) == true
@@ -154,8 +110,6 @@ service cloud.firestore {
               && d.lastLocation.geohash.matches('^[0-9b-hjkmnp-z]{4,12}$')
               && d.lastLocation.updatedAt == request.time);
     }
-
-    // identityHashes: type -> identity_index id (see identity_index below).
     function validIdentityHashes(d) {
       return !('identityHashes' in d)
           || (d.identityHashes is map
@@ -165,55 +119,37 @@ service cloud.firestore {
               && d.identityHashes.get('rc', '0').matches('^[0-9a-f]{64}$|^0$')
               && d.identityHashes.get('gst', '0').matches('^[0-9a-f]{64}$|^0$'));
     }
-
-    // users.referralCode: set once, 6-8 capital letters / digits.
     function referralCodeOk(d) {
       return !('referralCode' in d) || (d.referralCode is string && d.referralCode.matches('^[A-Z0-9]{6,8}$'));
     }
-
     function referralCodeKept() {
       return !changedKeys().hasAny(['referralCode']) || resource.data.get('referralCode', null) == null;
     }
-
-    // users.plan / planUntil: written by admins only (Pro plan, by hand).
     function planFieldsAbsent(d) {
       return !d.keys().hasAny(['plan', 'planUntil']);
     }
-
     function adminPlanUpdate() {
       return adminIn(['super'])
           && changedKeys().hasOnly(['plan', 'planUntil', 'updatedAt'])
           && request.resource.data.get('plan', 'free') in ['free', 'pro']
           && (!('planUntil' in request.resource.data) || request.resource.data.planUntil is timestamp);
     }
-
-    // users.docOverrideUntil: an admin lets a driver with an expired licence
-    // work until that date (see canTransact). Admin-only.
     function adminDocOverride() {
       return adminIn(['super', 'verifier'])
           && changedKeys().hasOnly(['docOverrideUntil', 'updatedAt'])
           && request.resource.data.docOverrideUntil is timestamp;
     }
-
-    // Owners cannot write the review record; admins do (adminVerificationUpdate).
     function reviewMetaAbsent(d) {
       return !('verificationMeta' in d);
     }
-
-    // Anti-fraud fields. riskTier/riskReason/riskUpdatedAt are admin-only;
-    // cancelCount only goes up by one (see cancelCounted()).
     function riskFieldsAbsent(d) {
       return !d.keys().hasAny(['riskTier', 'riskReason', 'riskUpdatedAt', 'reviewFlag']) && d.get('cancelCount', 0) in [0, 1];
     }
-
     function ownerRiskFieldsUntouched() {
       return !changedKeys().hasAny(['riskTier', 'riskReason', 'riskUpdatedAt', 'reviewFlag'])
           && (!changedKeys().hasAny(['cancelCount'])
               || request.resource.data.cancelCount == resource.data.get('cancelCount', 0) + 1);
     }
-
-    // K13: an admin marks a mismatch (name, RC owner, vehicle...) for manual
-    // review, or clears it by removing the field. The owner cannot touch it.
     function adminReviewFlagUpdate() {
       let d = request.resource.data;
       return adminIn(['super', 'verifier'])
@@ -225,19 +161,9 @@ service cloud.firestore {
                   && d.reviewFlag.by == request.auth.uid
                   && d.reviewFlag.at == request.time));
     }
-
-    // Task 68: chat strikes. The owner's own client records a violation (it
-    // blocked a message that shared a number, UPI id or app) by creating
-    // violations/{uid}_{seq} and raising chatStrikes by one in the same batch.
-    // The ladder is enforced here: strikes 1-2 warn, 3 blocks chat and calls
-    // for 24 hours, 4 for 3 days, 5 and more for 7 days and an admin review.
-    // The block end may be at most one hour earlier than the ladder says (a
-    // phone clock can be off). Thirty clean days take one strike off.
-    // TODO(functions): do this server side so a modified app cannot skip it.
     function chatFieldsAbsent(d) {
       return !d.keys().hasAny(['chatStrikes', 'chatSeq', 'chatStrikeAt', 'chatBlockedUntil', 'chatReview']);
     }
-
     function chatBlockOk(strikes) {
       let a = request.resource.data;
       return strikes < 3
@@ -247,7 +173,6 @@ service cloud.firestore {
               && a.chatBlockedUntil <= request.time + duration.value(8, 'd')
               && (strikes < 5 || a.get('chatReview', false) == true));
     }
-
     function chatViolationStep() {
       let a = request.resource.data;
       let seq = resource.data.get('chatSeq', 0) + 1;
@@ -259,7 +184,6 @@ service cloud.firestore {
           && existsAfter(docPath('violations', request.auth.uid + '_' + string(seq)))
           && chatBlockOk(strikes);
     }
-
     function chatDecayStep() {
       let a = request.resource.data;
       return changedKeys().hasOnly(['chatStrikes', 'chatStrikeAt', 'updatedAt'])
@@ -268,14 +192,10 @@ service cloud.firestore {
           && a.chatStrikeAt == request.time
           && request.time >= resource.data.get('chatStrikeAt', request.time) + duration.value(30, 'd');
     }
-
     function chatFieldsOk() {
       return !changedKeys().hasAny(['chatStrikes', 'chatSeq', 'chatStrikeAt', 'chatBlockedUntil', 'chatReview'])
           || chatViolationStep() || chatDecayStep();
     }
-
-    // An admin lengthens or lifts a chat suspension, resets the strikes or
-    // clears the review flag.
     function adminChatUpdate() {
       let a = request.resource.data;
       return adminIn(['super', 'support', 'ops'])
@@ -284,7 +204,6 @@ service cloud.firestore {
           && (!('chatBlockedUntil' in a) || (a.chatBlockedUntil is timestamp && a.chatBlockedUntil <= request.time + duration.value(365, 'd')))
           && a.get('chatReview', false) is bool;
     }
-
     function adminRiskUpdate() {
       let d = request.resource.data;
       return adminIn(['super', 'ops'])
@@ -293,37 +212,26 @@ service cloud.firestore {
           && d.riskReason is string && d.riskReason.size() <= 200
           && d.riskUpdatedAt == request.time;
     }
-
-    // restricted / suspended accounts cannot post, offer or accept.
-    // Riskier tiers and an expired licence (no admin override) cannot transact.
     function userMayTransact(u) {
       return u.get('riskTier', 'normal') in ['normal', 'review']
           && (!('driverKyc' in u)
               || u.driverKyc.get('dlExpiry', request.time) > request.time - duration.value(1, 'd')
               || u.get('docOverrideUntil', request.time) > request.time);
     }
-
     function canTransact(uid) {
       let p = /databases/$(database)/documents/users/$(uid);
       return !exists(p) || userMayTransact(get(p).data);
     }
-
-    // A cancellation must bump the canceller's cancelCount in the same batch.
     function cancelCounted() {
       let ref = /databases/$(database)/documents/users/$(request.auth.uid);
       return getAfter(ref).data.get('cancelCount', 0)
           == (exists(ref) ? get(ref).data.get('cancelCount', 0) : 0) + 1;
     }
-
-    // notificationPrefs / consents: maps of booleans with known keys only.
     function validBoolMap(d, field, keys) {
       return !(field in d)
           || (d[field] is map && d[field].keys().hasOnly(keys)
               && d[field].get(keys[0], false) is bool && d[field].get(keys[1], false) is bool && d[field].get(keys[2], false) is bool);
     }
-
-    // Business profile: legal name, optional GSTIN in the official format
-    // (format only, never verified), address.
     function validBusiness(d) {
       return !('business' in d)
           || (d.business is map && d.business.keys().hasOnly(['legalName', 'gstin', 'address'])
@@ -332,7 +240,6 @@ service cloud.firestore {
               && d.business.get('gstin', '') is string
               && d.business.get('gstin', '').matches('^$|^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$'));
     }
-
     function validNotificationPrefs(d) {
       return !('notificationPrefs' in d)
           || (d.notificationPrefs is map
@@ -343,39 +250,27 @@ service cloud.firestore {
               && d.notificationPrefs.get('payments', false) is bool
               && d.notificationPrefs.get('reminders', false) is bool);
     }
-
     function validPrefs(d) {
       return validNotificationPrefs(d)
           && validBoolMap(d, 'consents', ['location', 'analytics', 'marketing']);
     }
-
-    // `role` (customer | driver) is set once and then frozen; selectedRole
-    // must keep matching it. Older accounts without `role` may set it once.
     function validRole(r) {
       return r == null || r in ['customer', 'driver', 'fleet'];
     }
-
     function roleLockOk() {
       let before = resource.data.get('role', null);
       let after = request.resource.data.get('role', null);
       return (before == null ? validRole(after) : after == before
               && request.resource.data.get('selectedRole', before) == before);
     }
-
-    // Wallet security switches in config/features.flags (F11). Both default OFF.
     function walletFlag(name) {
       let p = /databases/$(database)/documents/config/features;
       return exists(p) && get(p).data.get('flags', {}).get(name, false) == true;
     }
-
-    // walletStepUp: the sign-in used must be fresh (a code entered in the last 5 minutes).
-    // auth_time is the time of the last full sign-in, refreshed by re-authenticating.
     function stepUpOk() {
       return !walletFlag('walletStepUp')
           || request.auth.token.get('auth_time', 0) >= request.time.toMillis() / 1000 - 300;
     }
-
-    // Changing payout details needs a fresh code; payoutChangedAt (server time) starts the waiting time.
     function payoutChangeOk() {
       return !changedKeys().hasAny(['payoutProfile', 'payoutChangedAt'])
           || (stepUpOk()
@@ -385,7 +280,6 @@ service cloud.firestore {
                   || !changedKeys().hasAny(['payoutProfile'])
                   || request.resource.data.get('payoutChangedAt', null) == request.time));
     }
-
     match /users/{userId} {
       allow read: if isUser(userId) || isAdmin();
       allow create: if isUser(userId) && verificationInitOk(request.resource.data)
@@ -394,7 +288,6 @@ service cloud.firestore {
               || request.resource.data.get('selectedRole', request.resource.data.role) == request.resource.data.role)
           && validEmergencyContacts(request.resource.data) && validProfileExtras(request.resource.data) && validFleetProfile(request.resource.data) && riskFieldsAbsent(request.resource.data) && chatFieldsAbsent(request.resource.data)
           && validPrefs(request.resource.data) && validBusiness(request.resource.data);
-      // Demo data (Task 53), after the normal create so it costs nothing there.
       allow create: if demoCreate(userId);
       allow delete: if demoDelete(userId);
       allow update: if adminVerificationUpdate() || adminChatUpdate() || adminReviewFlagUpdate() || adminRiskUpdate() || adminPlanUpdate() || adminDocOverride() || (isUser(userId)
@@ -405,26 +298,16 @@ service cloud.firestore {
           && (!changedKeys().hasAny(['verified', 'verificationStatus'])
               || (resource.data.get('verificationStatus', null) == null
                   && verificationInitOk(request.resource.data))
-              // New documents after a rejection put the driver back in review (MASTER-6 Task 21).
               || (resource.data.get('verificationStatus', null) == 'rejected'
                   && request.resource.data.verificationStatus == 'pending'
                   && request.resource.data.verified == false)));
-      // Account deletion from the app. Restricted, suspended and banned
-      // accounts go through support so a ban cannot be dodged.
-      // TODO(functions): do the whole deletion with the Admin SDK.
       allow delete: if isUser(userId)
           && resource.data.get('riskTier', 'normal') in ['normal', 'review'];
     }
-
-    // kyc_checks/{uid}: the answer of the ID check (G13). Written only by the server (Admin SDK); admins read it.
-    // It is a separate collection on purpose: a person can edit their own user document, so a "verified" there could be forged.
     match /kyc_checks/{userId} {
       allow read: if isAdmin();
       allow write: if false;
     }
-
-    // users/{uid}/khata/{partyId} (G23): the owner's private notebook of who owes whom. Records only. The balance is kept
-    // together with the lines by the app in one batch; only the owner sees any of it (admins do not).
     match /users/{userId}/khata/{partyId} {
       allow read, delete: if isUser(userId);
       allow create, update: if isUser(userId)
@@ -433,7 +316,6 @@ service cloud.firestore {
           && request.resource.data.get('note', '') is string && request.resource.data.get('note', '').size() <= 60
           && request.resource.data.balancePaise is int
           && request.resource.data.balancePaise <= 1000000000000 && request.resource.data.balancePaise >= -1000000000000;
-
       match /entries/{entryId} {
         allow read, delete: if isUser(userId);
         allow create: if isUser(userId)
@@ -447,8 +329,6 @@ service cloud.firestore {
         allow update: if false;
       }
     }
-
-    // users/{uid}/admin_notes: internal notes about a user. Admins only, append-only.
     match /users/{userId}/admin_notes/{noteId} {
       allow read: if isAdmin();
       allow create: if isAdmin()
@@ -458,16 +338,11 @@ service cloud.firestore {
           && request.resource.data.createdAt == request.time;
       allow update, delete: if false;
     }
-
-    // users/{uid}/blocked/{otherUid}: people this user does not want
-    // messages from. Only the owner sees or changes the list.
     match /users/{userId}/blocked/{otherId} {
       allow read, delete: if isUser(userId);
       allow create, update: if isUser(userId) && otherId != userId
           && request.resource.data.keys().hasOnly(['createdAt']);
     }
-
-    // users/{uid}/saved_places: the owner's frequent addresses.
     match /users/{userId}/saved_places/{placeId} {
       allow read, delete: if isUser(userId);
       allow create, update: if isUser(userId)
@@ -479,9 +354,6 @@ service cloud.firestore {
           && request.resource.data.name is string && request.resource.data.name.size() >= 1 && request.resource.data.name.size() <= 40
           && request.resource.data.address is string && request.resource.data.address.size() >= 2 && request.resource.data.address.size() <= 200;
     }
-
-    // users/{uid}/saved_searches: named load / truck filters. The cap of 10
-    // per kind is enforced by the app (rules cannot count).
     match /users/{userId}/saved_searches/{searchId} {
       allow read, delete: if isUser(userId);
       allow create, update: if isUser(userId)
@@ -493,9 +365,6 @@ service cloud.firestore {
                                                          'minWeight', 'maxWeight', 'minCapacity', 'onOrAfter', 'onOrBefore'])
           && request.resource.data.createdAt == request.time;
     }
-
-    // users/{uid}/load_templates: loads the customer repeats (no dates).
-    // The 20-template cap is enforced by the app (rules cannot count).
     match /users/{userId}/load_templates/{templateId} {
       allow read, delete: if isUser(userId);
       allow create, update: if isUser(userId)
@@ -515,10 +384,6 @@ service cloud.firestore {
           && request.resource.data.get('costCenter', 'x') is string && request.resource.data.get('costCenter', 'x').size() <= 30
           && request.resource.data.createdAt == request.time;
     }
-
-    // users/{uid}/recurring_loads: a shipment that repeats weekly or monthly.
-    // Nothing posts by itself; the app offers it when due. The 10-per-user cap
-    // is enforced by the app.
     match /users/{userId}/recurring_loads/{recurringId} {
       allow read, delete: if isUser(userId);
       allow create, update: if isUser(userId)
@@ -540,11 +405,6 @@ service cloud.firestore {
           && request.resource.data.nextDueAt is timestamp
           && request.resource.data.active is bool;
     }
-
-    // users/{uid}/favourite_drivers and blocked_drivers: private lists keyed by
-    // the driver's uid. A blocked driver is copied onto new loads
-    // (blockedDriverIds) so the driver cannot accept them; the app also hides
-    // those loads from that driver's feed.
     match /users/{userId}/favourite_drivers/{driverId} {
       allow read, delete: if isUser(userId);
       allow create, update: if isUser(userId)
@@ -555,7 +415,6 @@ service cloud.firestore {
           && request.resource.data.get('vehicleNumber', '') is string && request.resource.data.get('vehicleNumber', '').size() <= 12
           && request.resource.data.createdAt == request.time;
     }
-
     match /users/{userId}/blocked_drivers/{driverId} {
       allow read, delete: if isUser(userId);
       allow create, update: if isUser(userId)
@@ -564,8 +423,6 @@ service cloud.firestore {
           && request.resource.data.get('name', '') is string && request.resource.data.get('name', '').size() <= 60
           && request.resource.data.createdAt == request.time;
     }
-
-    // users/{uid}/branches: a business's warehouses, factories, ports, CFS.
     match /users/{userId}/branches/{branchId} {
       allow read, delete: if isUser(userId);
       allow create, update: if isUser(userId)
@@ -576,9 +433,6 @@ service cloud.firestore {
           && request.resource.data.city is string && request.resource.data.city.size() <= 60
           && request.resource.data.createdAt == request.time;
     }
-
-    // shipments/{id}: a two-leg import/export move that links two loads.
-    // Immutable after creation; the loads carry the live status.
     match /shipments/{shipmentId} {
       allow read: if signedIn() && (resource.data.ownerId == request.auth.uid || isAdmin());
       allow create: if signedIn()
@@ -595,11 +449,6 @@ service cloud.firestore {
           && request.resource.data.createdAt == request.time;
       allow update, delete: if false;
     }
-
-    // handovers/{shipmentId}: controlled handover between the drivers of the
-    // two legs (IE10). The leg-1 driver hands the container over, the leg-2
-    // driver confirms it; the rules compare the seal numbers. Neither side can
-    // be changed afterwards.
     function handoverLegOk(bookingId, leg, shipmentId) {
       let b = get(docPath('bookings', bookingId)).data;
       let l = get(docPath('loads', b.loadId)).data;
@@ -607,7 +456,6 @@ service cloud.firestore {
           && l.get('shipmentId', '') == shipmentId
           && l.get('shipmentLeg', 0) == leg;
     }
-
     match /handovers/{shipmentId} {
       allow read: if signedIn()
           && (request.auth.uid == resource.data.leg1.driverId
@@ -640,8 +488,6 @@ service cloud.firestore {
           && request.resource.data.leg2.at == request.time;
       allow delete: if false;
     }
-
-    // users/{uid}/favourite_routes: routes a driver wants recommendations for.
     match /users/{userId}/favourite_routes/{routeId} {
       allow read, delete: if isUser(userId);
       allow create, update: if isUser(userId)
@@ -650,50 +496,30 @@ service cloud.firestore {
           && request.resource.data.drop is string && request.resource.data.drop.size() >= 2 && request.resource.data.drop.size() <= 100
           && request.resource.data.createdAt == request.time;
     }
-
-    // ------------------------------------------------------------------
-    // vehicles: any signed-in user can read (load matching); only the owner
-    // can write. Numbers are reserved in vehicle_numbers/{number} so the same
-    // registration cannot be added twice (across accounts). availability:
-    // owner toggles available/maintenance (on_trip comes with bookings);
-    // only admins suspend or lift a suspension.
-    // ------------------------------------------------------------------
     function availabilityOf(d) {
       return d.get('availability', 'available');
     }
-
-    // Document expiry. A vehicle whose insurance, permit or fitness paper has
-    // run out (expiry before yesterday's midnight, day granularity) cannot take
-    // bookings, and 'doc_expired' is the state the app puts it in. Only an
-    // admin override (docOverrideUntil in the future) lifts that.
     function paperClear(d, kind) {
       return d.get('docs', {}).get(kind, {}).get('expiry', request.time) > request.time - duration.value(1, 'd');
     }
-
     function vehiclePapersClear(d) {
       return paperClear(d, 'insurance') && paperClear(d, 'permit') && paperClear(d, 'fitness');
     }
-
     function overrideActive(d) {
       return d.get('docOverrideUntil', request.time) > request.time;
     }
-
     function validVehicleDocs(d) {
       return !('docs' in d) || (d.docs is map
           && d.docs.keys().hasOnly(['insurance', 'puc', 'fitness', 'permit']));
     }
-
-    // Optional cargo space (m), fuel and body type.
     function validDimension(d, k) {
       return !(k in d) || (d[k] is number && d[k] > 0 && d[k] <= 30);
     }
-
     function validVehicleProfile(d) {
       return validDimension(d, 'lengthM') && validDimension(d, 'widthM') && validDimension(d, 'heightM')
           && (!('fuel' in d) || d.fuel in ['diesel', 'petrol', 'cng', 'electric', 'lpg'])
           && (!('bodyType' in d) || d.bodyType in ['open', 'closed', 'container', 'flatbed', 'tanker', 'tipper', 'refrigerated', 'other']);
     }
-
     function validVehicle(d) {
       return d.keys().hasAll(['ownerId', 'number', 'type', 'capacity', 'status'])
           && d.number is string && d.number.size() >= 6 && d.number.size() <= 12
@@ -708,48 +534,35 @@ service cloud.firestore {
           && validVehicleProfile(d)
           && (!('assignedDriverId' in d) || (d.assignedDriverId is string && d.assignedDriverId.size() >= 1 && d.assignedDriverId.size() <= 60))
           && (!('attachedTo' in d) || (d.attachedTo is string && d.attachedTo.size() >= 1 && d.attachedTo.size() <= 60))
-          // RC photo must point at Firebase Storage when present.
           && (!('rcImageUrl' in d) || (d.rcImageUrl is string
               && d.rcImageUrl.matches('https://firebasestorage[.]googleapis[.]com/.*|http://(127[.]0[.]0[.]1|localhost|10[.]0[.]2[.]2):9199/.*')));
     }
-
     function numberReservedFor(vehicleId, number) {
       return existsAfter(docPath('vehicle_numbers', number))
           && getAfter(docPath('vehicle_numbers', number)).data.vehicleId == vehicleId;
     }
-
     function ownerAvailabilityOk() {
       let before = availabilityOf(resource.data);
       let after = availabilityOf(request.resource.data);
       return (before == after || (before != 'suspended' && after != 'suspended'))
           && (before != 'doc_expired' || after == 'doc_expired' || vehiclePapersClear(request.resource.data) || overrideActive(resource.data));
     }
-
-    // A fleet owner assigns a vehicle to one of their active drivers
-    // (fleet_members); that driver can then take loads with it and flip it
-    // between available and on_trip.
     function activeMember(ownerId, driverId) {
       return exists(docPath('fleet_members', ownerId + '_' + driverId))
           && get(docPath('fleet_members', ownerId + '_' + driverId)).data.active == true;
     }
-
     function assignmentOk() {
       let now = request.resource.data.get('assignedDriverId', null);
       return now == resource.data.get('assignedDriverId', null)
           || now == null
           || (now is string && activeMember(request.auth.uid, now));
     }
-
-    // Attaching (Task 67): a driver who joined a transporter's fleet (an
-    // accepted phone invite = consent) attaches their own vehicle to it, and
-    // can detach it again. The transporter may then flip its availability.
     function attachOk() {
       let now = request.resource.data.get('attachedTo', null);
       return now == resource.data.get('attachedTo', null)
           || now == null
           || (now is string && activeMember(now, request.auth.uid));
     }
-
     function transporterAvailability() {
       return resource.data.get('attachedTo', '') == request.auth.uid
           && activeMember(request.auth.uid, resource.data.ownerId)
@@ -757,24 +570,18 @@ service cloud.firestore {
           && availabilityOf(resource.data) in ['available', 'on_trip']
           && request.resource.data.availability in ['available', 'on_trip'];
     }
-
-    // The transporter may run vehicle [v] when it is their own or one a member
-    // attached and is still a member of the fleet.
     function transporterVehicle(v, uid) {
       return v.ownerId == uid || (v.get('attachedTo', '') == uid && activeMember(uid, v.ownerId));
     }
-
     function isTransporter(uid) {
       return get(docPath('users', uid)).data.get('role', '') == 'fleet';
     }
-
     function assignedDriverAvailability() {
       return resource.data.get('assignedDriverId', '') == request.auth.uid
           && changedKeys().hasOnly(['availability', 'updatedAt'])
           && availabilityOf(resource.data) in ['available', 'on_trip']
           && request.resource.data.availability in ['available', 'on_trip'];
     }
-
     match /vehicles/{vehicleId} {
       allow read: if signedIn();
       allow create: if signedIn()
@@ -783,7 +590,6 @@ service cloud.firestore {
           && availabilityOf(request.resource.data) == 'available'
           && !('docOverrideUntil' in request.resource.data)
           && numberReservedFor(vehicleId, request.resource.data.number);
-      // Demo data (Task 53), after the normal create so it costs nothing there.
       allow create: if demoCreate(vehicleId);
       allow delete: if demoDelete(vehicleId);
       allow update: if signedIn()
@@ -804,11 +610,6 @@ service cloud.firestore {
               && validVehicle(request.resource.data)));
       allow delete: if signedIn() && resource.data.ownerId == request.auth.uid;
     }
-
-    // transporter_accounts/{bookingId}: the transporter's private books for a
-    // trip they hold (Task 67): what the party pays, what the driver is owed,
-    // other costs and what has come in. Integer paise, a record only; no money
-    // moves. TODO(functions): nothing server side is needed for a private record.
     function accountLineOk(a) {
       return a.revenuePaise is int && a.revenuePaise >= 0 && a.revenuePaise <= 100000000
           && a.driverPayPaise is int && a.driverPayPaise >= 0 && a.driverPayPaise <= 100000000
@@ -817,7 +618,6 @@ service cloud.firestore {
           && a.partyName is string && a.partyName.size() <= 80
           && a.updatedAt == request.time;
     }
-
     match /transporter_accounts/{bookingId} {
       allow read: if signedIn() && resource.data.ownerId == request.auth.uid;
       allow create: if signedIn()
@@ -832,13 +632,8 @@ service cloud.firestore {
           && resource.data.ownerId == request.auth.uid
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['partyName', 'revenuePaise', 'driverPayPaise', 'otherCostPaise', 'receivedPaise', 'updatedAt'])
           && accountLineOk(request.resource.data);
-      // The owner may delete their own books (account deletion).
       allow delete: if signedIn() && resource.data.ownerId == request.auth.uid;
     }
-
-    // vehicle_expenses/{id}: fuel, toll, repair and service lines the vehicle's
-    // owner keeps for their own books (paise). Private to the owner; a wrong
-    // line is deleted and entered again.
     match /vehicle_expenses/{expenseId} {
       allow read, delete: if signedIn() && resource.data.ownerId == request.auth.uid;
       allow create: if signedIn()
@@ -853,33 +648,19 @@ service cloud.firestore {
           && request.resource.data.createdAt == request.time;
       allow update: if false;
     }
-
-    // ------------------------------------------------------------------
-    // Driver network. driver_presence/{uid}: where a driver chose to be seen
-    // (rounded to about 1 km, for a limited time, or not at all). Drivers who
-    // chose "nearby" appear in a geohash list; "connections" is read one
-    // driver at a time by connected drivers; "trip" and "hidden" store no
-    // position. Expiry is checked on single reads only: a list cannot be
-    // filtered by time in rules, so the app hides expired entries
-    // (TODO(functions): remove them).
-    // ------------------------------------------------------------------
     function linkId(a, b) {
       return a < b ? a + '_' + b : b + '_' + a;
     }
-
     function blockedBy(other) {
       return exists(/databases/$(database)/documents/users/$(other)/blocked/$(request.auth.uid));
     }
-
     function otherMember(members) {
       return members[0] == request.auth.uid ? members[1] : members[0];
     }
-
     function linkConnected(a, b) {
       return exists(docPath('driver_links', linkId(a, b)))
           && get(docPath('driver_links', linkId(a, b))).data.status == 'connected';
     }
-
     function presenceShapeOk(d) {
       return d.name is string && d.name.size() <= 80
           && d.mode in ['nearby', 'connections', 'trip', 'hidden']
@@ -893,7 +674,6 @@ service cloud.firestore {
                   && d.sharedUntil <= request.time + duration.value(24, 'h'))
               : d.keys().hasOnly(['name', 'mode', 'updatedAt']));
     }
-
     match /driver_presence/{uid} {
       allow get: if isUser(uid)
           || (signedIn() && resource.data.get('sharedUntil', request.time) > request.time
@@ -905,10 +685,6 @@ service cloud.firestore {
           && presenceShapeOk(request.resource.data);
       allow delete: if isUser(uid);
     }
-
-    // driver_links/{smallerUid_largerUid}: a connection request, then a
-    // connection. Only the other driver accepts; either may end it. Someone
-    // who blocked you cannot be asked.
     function messageCardOk(c) {
       return c is map
           && c.keys().hasOnly(['loadId', 'pickup', 'drop', 'cargoType', 'weight', 'vehicleType', 'budgetPaise'])
@@ -920,8 +696,6 @@ service cloud.firestore {
           && c.vehicleType is string && c.vehicleType.size() <= 30
           && (!('budgetPaise' in c) || (c.budgetPaise is int && c.budgetPaise >= 0 && c.budgetPaise <= 10000000000));
     }
-
-    // A chat message of the driver network: text and/or a load card.
     function networkMessageOk(d) {
       return d.keys().hasOnly(['senderId', 'senderName', 'text', 'loadCard', 'flagged', 'createdAt'])
           && d.senderId == request.auth.uid
@@ -932,7 +706,6 @@ service cloud.firestore {
           && d.flagged is bool
           && d.createdAt == request.time;
     }
-
     match /driver_links/{pairId} {
       allow read: if signedIn() && request.auth.uid in resource.data.members;
       allow create: if signedIn()
@@ -956,7 +729,6 @@ service cloud.firestore {
           && request.resource.data.status == 'connected'
           && request.resource.data.updatedAt == request.time;
       allow delete: if signedIn() && request.auth.uid in resource.data.members;
-
       match /messages/{messageId} {
         allow read: if signedIn()
             && request.auth.uid in get(docPath('driver_links', pairId)).data.members
@@ -970,10 +742,6 @@ service cloud.firestore {
         allow update, delete: if false;
       }
     }
-
-    // driver_groups/{id}: a trip, route, convoy or fleet group. Created with
-    // only the owner; the owner adds connected drivers one at a time and may
-    // remove anyone; a member leaves by removing themselves.
     match /driver_groups/{groupId} {
       allow read: if signedIn() && request.auth.uid in resource.data.memberIds;
       allow create: if signedIn()
@@ -1001,7 +769,6 @@ service cloud.firestore {
                   && resource.data.memberIds.hasAll(request.resource.data.memberIds)
                   && request.resource.data.memberIds.size() == resource.data.memberIds.size() - 1));
       allow delete: if signedIn() && resource.data.ownerId == request.auth.uid;
-
       match /messages/{messageId} {
         allow read: if signedIn() && request.auth.uid in get(docPath('driver_groups', groupId)).data.memberIds;
         allow create: if signedIn()
@@ -1011,43 +778,24 @@ service cloud.firestore {
         allow update, delete: if false;
       }
     }
-
-    // identity_index/{sha256(type + number)} = {uid, role, type, createdAt}.
-    // One document (licence, PAN, RC, GST) can belong to one account only: the
-    // id is derived from the number, so a second create is an update and
-    // fails. The profile points at its entries with users.identityHashes
-    // (type -> id); an entry can only be created for the hash the profile
-    // names in the same batch. The owner may delete an entry only when the
-    // profile now names another entry that exists and is theirs (a changed
-    // number), or - for the optional GST only - names none. Admins can change
-    // or free any entry. get is open to signed-in users so the app can show a
-    // clear "already registered" message; list is closed and the id is a
-    // hash, so it does not reveal the number.
-    // LATER(paid): Cloud Function with an HMAC secret instead of a plain hash.
     function identityHashAfter(type) {
       return getAfter(docPath('users', request.auth.uid)).data.get('identityHashes', {}).get(type, '');
     }
-
     function ownsIdentityAfter(h) {
       return h is string && h.matches('^[0-9a-f]{64}$')
           && existsAfter(docPath('identity_index', h))
           && getAfter(docPath('identity_index', h)).data.uid == request.auth.uid;
     }
-
     function identityReplaced(type, hash) {
       let h = identityHashAfter(type);
       return h != hash && (ownsIdentityAfter(h) || (type == 'gst' && h == ''));
     }
-
-    // Entries written before the type field existed: the owner may drop one
-    // only while the profile names at least one other entry of theirs.
     function legacyIdentityReplaced(hash) {
       return (identityHashAfter('dl') != hash && ownsIdentityAfter(identityHashAfter('dl')))
           || (identityHashAfter('pan') != hash && ownsIdentityAfter(identityHashAfter('pan')))
           || (identityHashAfter('rc') != hash && ownsIdentityAfter(identityHashAfter('rc')))
           || (identityHashAfter('gst') != hash && ownsIdentityAfter(identityHashAfter('gst')));
     }
-
     match /identity_index/{hash} {
       allow get: if signedIn();
       allow list: if false;
@@ -1068,10 +816,6 @@ service cloud.firestore {
                   ? legacyIdentityReplaced(hash)
                   : identityReplaced(resource.data.type, hash)));
     }
-
-    // vehicle_numbers/{number}: {ownerId, vehicleId}. Created next to the
-    // vehicle it names; a second create for the same number is an update and
-    // is refused. Freed when the vehicle is deleted or renumbered.
     match /vehicle_numbers/{number} {
       allow get: if signedIn();
       allow list: if false;
@@ -1086,47 +830,25 @@ service cloud.firestore {
           && (!existsAfter(docPath('vehicles', resource.data.vehicleId))
               || getAfter(docPath('vehicles', resource.data.vehicleId)).data.number != number);
     }
-
-    // ------------------------------------------------------------------
-    // loads: open loads are visible to every signed-in user; the shipper and
-    // the matched driver can always see theirs. The shipper owns writes while
-    // the load is open; drivers can only match (with a booking) and close
-    // (after delivery).
-    // ------------------------------------------------------------------
-    // A business owner's booker (business_members) may post loads on the
-    // company's behalf; the load then carries businessId and the owner reads it.
     function activeBooker(ownerId, memberId) {
       return exists(docPath('business_members', ownerId + '_' + memberId))
           && get(docPath('business_members', ownerId + '_' + memberId)).data.active == true;
     }
-
-    // Business roles (DOC10). Keep the lists in sync with lib/core/enterprise/
-    // business_roles.dart: postLoads = booker/manager/dispatch, approveLoads and
-    // manageContracts = manager, viewStatements = manager/accounts/viewer,
-    // manageExpenses and businessSupport = manager/accounts, managePool =
-    // manager/dispatch; every active member reads the company's loads and
-    // bookings. The owner may do everything.
     function bizRoleIn(ownerId, memberId, roles) {
       let p = docPath('business_members', ownerId + '_' + memberId);
       return exists(p) && get(p).data.active == true && get(p).data.get('role', 'booker') in roles;
     }
-
     function bizActs(ownerId, roles) {
       return ownerId is string && ownerId != ''
           && (ownerId == request.auth.uid || bizRoleIn(ownerId, request.auth.uid, roles));
     }
-
     function bizReads(ownerId) {
       return ownerId is string && ownerId != ''
           && (ownerId == request.auth.uid || activeBooker(ownerId, request.auth.uid));
     }
-
-    // An approval limit (business_settings) the poster's load goes over: the
-    // load waits for the owner or a manager. Owners and managers post freely.
     function loadAmountPaise(d) {
       return d.get('budget', null) != null ? d.budget * 100 : d.get('estimate', {}).get('total', 0);
     }
-
     function approvalNeeded(d) {
       return d.get('businessId', '') != '' && d.businessId != d.shipperId
           && exists(docPath('business_settings', d.businessId))
@@ -1134,8 +856,6 @@ service cloud.firestore {
           && loadAmountPaise(d) > get(docPath('business_settings', d.businessId)).data.approvalLimitPaise
           && !bizRoleIn(d.businessId, d.shipperId, ['manager']);
     }
-
-    // The owner or a manager approves or rejects a load that is waiting.
     function businessApproval() {
       let a = request.resource.data;
       return resource.data.status == 'awaiting_approval'
@@ -1146,25 +866,18 @@ service cloud.firestore {
           && ((a.status == 'open' && a.approval.decision == 'approved' && !('cancelled' in a))
               || (a.status == 'closed' && a.approval.decision == 'rejected' && a.get('cancelled', false) == true));
     }
-
-    // public (default) | favourites | invite: the last two list the drivers who may accept.
     function validVisibility(d) {
       return !('visibility' in d)
           || (d.visibility == 'public' && !('allowedDriverIds' in d))
           || (d.visibility in ['favourites', 'invite'] && d.get('allowedDriverIds', []) is list
               && d.get('allowedDriverIds', []).size() >= 1 && d.get('allowedDriverIds', []).size() <= 20);
     }
-
-    // Part 4 (dispatchV2): how a load is offered. All optional; an old load has none (= instant).
     function validAutoAccept(a) {
       return a is map && a.keys().hasOnly(['maxPaise', 'minRating', 'verifiedOnly'])
           && a.maxPaise is int && a.maxPaise > 0 && a.maxPaise <= 100000000
           && a.minRating is number && a.minRating >= 0 && a.minRating <= 5
           && a.verifiedOnly is bool;
     }
-
-    // One cheap check first: a load without any of these fields (every old load) costs a single expression,
-    // which matters because a load with a promo is already close to the rules' limit of 1000 expressions.
     function validDispatchFields(d) {
       return !d.keys().hasAny(['mode', 'bidWindowEnds', 'autoAccept', 'ringBoost'])
           || (d.get('mode', 'instant') in ['instant', 'bid', 'scheduled']
@@ -1172,7 +885,6 @@ service cloud.firestore {
               && (!('autoAccept' in d) || validAutoAccept(d.autoAccept))
               && (!('ringBoost' in d) || (d.ringBoost is int && d.ringBoost >= 0 && d.ringBoost <= 3)));
     }
-
     function validLoad(d) {
       return d.pickup is string && d.pickup.size() > 1 && d.pickup.size() <= 200
           && d.drop is string && d.drop.size() > 1 && d.drop.size() <= 200
@@ -1183,7 +895,6 @@ service cloud.firestore {
           && (d.get('budget', null) == null || (d.budget is number && d.budget > 0 && d.budget <= 1000000000))
           && d.pickupDate is timestamp
           && (!('estimate' in d) || validEstimate(d.estimate))
-          // Part 5: short-circuit when absent (most loads). This rule is at the 1000-expression limit; a real promo load (docs/RULES_CONTRACT.md) did not fit.
           && (!('extraPickups' in d) || validStops(d.extraPickups))
           && (!('extraDrops' in d) || validStops(d.extraDrops))
           && d.get('pickupSlot', 'any') in ['any', 'morning', 'midday', 'afternoon', 'evening']
@@ -1207,9 +918,6 @@ service cloud.firestore {
           && !prohibitedText(d.get('notes', ''))
           && !prohibitedText(d.cargoType);
     }
-
-    // freight | rental (4/8/12 hours) | movers (items, floor, lift, packing);
-    // 0-4 helpers on any of them. Fields of other types are not allowed.
     function validMovers(m) {
       return m is map && m.keys().hasOnly(['items', 'floor', 'hasLift', 'packing'])
           && m.items is list && m.items.size() >= 1 && m.items.size() <= 30
@@ -1219,7 +927,6 @@ service cloud.firestore {
           && m.floor is int && m.floor >= 0 && m.floor <= 50
           && m.hasLift is bool && m.packing is bool;
     }
-
     function validBookingType(d) {
       let t = d.get('bookingType', 'freight');
       return t in ['freight', 'rental', 'movers']
@@ -1227,8 +934,6 @@ service cloud.firestore {
           && (t == 'rental' ? d.get('rentalHours', 0) in [4, 8, 12] : !('rentalHours' in d))
           && (t == 'movers' ? validMovers(d.get('movers', null)) : !('movers' in d));
     }
-
-    // Import/export details, branch and shipment links (all optional).
     function validTradeFields(d) {
       return (!('containerNumber' in d) || (d.containerNumber is string && d.containerNumber.matches('^[A-Z]{4}[0-9]{7}$')))
           && (!('sealNumber' in d) || (d.sealNumber is string && d.sealNumber.matches('^[A-Za-z0-9-]{1,20}$')))
@@ -1236,21 +941,14 @@ service cloud.firestore {
           && (!('shipmentId' in d) || (d.shipmentId is string && d.shipmentId.size() >= 1 && d.shipmentId.size() <= 60))
           && (!('shipmentLeg' in d) || d.shipmentLeg in [1, 2]);
     }
-
-    // At most 2 extra stops per side (3 pickups / 3 drops in total).
     function validStops(l) {
       return l is list && l.size() <= 2
           && (l.size() < 1 || (l[0] is string && l[0].size() > 1 && l[0].size() <= 200))
           && (l.size() < 2 || (l[1] is string && l[1].size() > 1 && l[1].size() <= 200));
     }
-
-    // Prohibited goods. Keep in sync with lib/core/constants/prohibited_cargo.dart.
     function prohibitedText(t) {
       return t is string && t.lower().matches('(.*[^a-z])?(explosives?|dynamite|detonator|gunpowder|firearms?|guns?|pistol|rifle|ammunition|bullets|grenade|narcotics|drugs|ganja|charas|heroin|cocaine|opium|radioactive|ivory|counterfeit|fake currency|wildlife|animal skin|fireworks|crackers|patakhe|human remains)([^a-z].*)?');
     }
-
-    // Client-side fare estimate (integer paise). TODO(functions): compute
-    // and sign it server-side; rules can only check the shape.
     function validEstimate(e) {
       return e is map
           && e.total is int && e.total >= 0
@@ -1261,17 +959,11 @@ service cloud.firestore {
           && e.get('itemHandlingCharge', 0) is int && e.get('itemHandlingCharge', 0) >= 0
           && e.get('floorCharge', 0) is int && e.get('floorCharge', 0) >= 0
           && e.get('packingCharge', 0) is int && e.get('packingCharge', 0) >= 0;
-    // surgeCharge / surgePercent / surgeKind are not checked here: the promo
-    // load create rules sit at the 1000-expression limit. They only sit inside
-    // the estimate, which is a client-side figure anyway (TODO(functions)).
     }
-
-    // Shipper edits/cancels a load that nobody has accepted yet.
     function shipperEdit() {
       return resource.data.shipperId == request.auth.uid
           && resource.data.status == 'open'
           && request.resource.data.status in ['open', 'closed']
-          // Closing by the shipper is a cancellation and must be flagged.
           && request.resource.data.get('cancelled', false) == (request.resource.data.status == 'closed')
           && (request.resource.data.status == 'open' || cancelCounted())
           && (!('cancelReason' in request.resource.data)
@@ -1279,8 +971,6 @@ service cloud.firestore {
           && !changedKeys().hasAny(['shipperId', 'driverId', 'bookingId', 'createdAt', 'promo', 'creditsUsedPaise', 'declaredValuePaise'])
           && validLoad(request.resource.data);
     }
-
-    // The poster withdraws a load that is still waiting for approval.
     function posterCancelsWaiting() {
       return resource.data.shipperId == request.auth.uid
           && resource.data.status == 'awaiting_approval'
@@ -1288,9 +978,6 @@ service cloud.firestore {
           && request.resource.data.status == 'closed'
           && request.resource.data.get('cancelled', false) == true;
     }
-
-    // Driver accepts: open -> matched, in the same batch that creates the
-    // booking (request.resource.data.bookingId) for this driver.
     function driverMatch(loadId) {
       let bookingId = request.resource.data.bookingId;
       let booking = getAfter(docPath('bookings', bookingId));
@@ -1304,11 +991,8 @@ service cloud.firestore {
           && booking.data.driverId == request.auth.uid
           && booking.data.loadId == loadId
           && booking.data.status == 'accepted'
-          // A bid-mode load is taken only through a bid the customer selected, never by a direct accept.
           && (resource.data.get('mode', 'instant') != 'bid' || booking.data.get('offerId', null) != null);
     }
-
-    // Driver delivers: matched -> closed, together with booking -> delivered.
     function driverClose() {
       return resource.data.status == 'matched'
           && (resource.data.driverId == request.auth.uid
@@ -1317,9 +1001,6 @@ service cloud.firestore {
           && changedKeys().hasOnly(['status', 'closedAt'])
           && getAfter(docPath('bookings', resource.data.bookingId)).data.status == 'delivered';
     }
-
-    // Driver backs out before pickup: matched -> open, clearing the match,
-    // together with booking -> cancelled.
     function driverReopen() {
       return resource.data.status == 'matched'
           && resource.data.driverId == request.auth.uid
@@ -1329,9 +1010,6 @@ service cloud.firestore {
           && changedKeys().hasOnly(['status', 'driverId', 'bookingId', 'matchedAt', 'reopenedAt'])
           && getAfter(docPath('bookings', resource.data.bookingId)).data.status == 'cancelled';
     }
-
-    // Admin moves a matched load to another driver, together with the
-    // booking (see adminReassignBooking).
     function adminReassignLoad() {
       return isAdmin()
           && resource.data.status == 'matched'
@@ -1339,17 +1017,12 @@ service cloud.firestore {
           && request.resource.data.driverId == getAfter(docPath('bookings', resource.data.bookingId)).data.driverId
           && request.resource.data.driverId != resource.data.driverId;
     }
-
-    // Admin backfills pickupGeohash on loads posted before the field existed.
     function adminGeohashBackfill() {
       return isAdmin()
           && !('pickupGeohash' in resource.data)
           && changedKeys().hasOnly(['pickupGeohash'])
           && request.resource.data.pickupGeohash.matches('^[0-9b-hjkmnp-z]{4,12}$');
     }
-
-    // Shipper closes a matched advance-booking load as cancelled, together
-    // with the booking being cancelled by the customer.
     function shipperCancelsMatchedScheduled() {
       return resource.data.shipperId == request.auth.uid
           && resource.data.status == 'matched'
@@ -1360,16 +1033,9 @@ service cloud.firestore {
           && getAfter(docPath('bookings', resource.data.bookingId)).data.status == 'cancelled'
           && getAfter(docPath('bookings', resource.data.bookingId)).data.get('cancellation', {}).get('by', '') == 'customer';
     }
-
-    // rate_limits/{uid}_{kind}: how many loads, offers (bids) and chat
-    // messages a user created in the current hour. Every such create must bump
-    // the counter in the same batch (rateBumped); the counter itself only moves
-    // up by one inside a window, restarts at 1 when the hour is over (the
-    // window start is the server time), and never passes the limit.
     function rateLimitFor(kind) {
       return kind == 'load' ? 30 : (kind == 'offer' ? 60 : (kind == 'call' ? 20 : (kind == 'ticket' ? 10 : 120)));
     }
-
     function validRateCounter(id) {
       let d = request.resource.data;
       let kind = id.split('_')[1];
@@ -1382,15 +1048,11 @@ service cloud.firestore {
               ? (d.count == 1 && d.windowStart == request.time)
               : (d.count == get(ref).data.count + 1 && d.windowStart == get(ref).data.windowStart));
     }
-
     match /rate_limits/{counterId} {
       allow read: if signedIn() && counterId.matches(request.auth.uid + '_(load|offer|message|call|ticket)');
       allow create, update: if signedIn() && counterId.matches(request.auth.uid + '_(load|offer|message|call|ticket)') && validRateCounter(counterId);
       allow delete: if false;
     }
-
-    // The bump names the one document it pays for (`last`), so a single bump
-    // cannot cover several creates in one batch.
     function rateBumped(kind, docId) {
       let ref = docPath('rate_limits', request.auth.uid + '_' + kind);
       let after = getAfter(ref).data;
@@ -1398,7 +1060,6 @@ service cloud.firestore {
           && (after.windowStart == request.time
               || after.count == get(ref).data.count + 1);
     }
-
     match /loads/{loadId} {
       allow read: if signedIn()
           && (resource.data.status == 'open'
@@ -1412,15 +1073,12 @@ service cloud.firestore {
           && canTransact(request.auth.uid)
           && rateBumped('load', loadId)
           && !request.resource.data.keys().hasAny(['driverId', 'bookingId', 'cancelReason'])
-          // Part 5 (H4): createdAt is never the phone clock. This rule is at the 1000-expression limit: even three more forbidden keys broke the
-          // promo tests, and a full key whitelist did too (extra keys on a load: docs/KNOWN_RISKS.md).
           && request.resource.data.get('createdAt', request.time) == request.time
           && validLoad(request.resource.data)
           && (!('scheduledAt' in request.resource.data)
               || (request.resource.data.scheduledAt >= request.time + duration.value(30, 'm')
                   && request.resource.data.scheduledAt <= request.time + duration.value(90, 'd')))
           && offersCreateOk(loadId, request.resource.data);
-      // Demo data (Task 53), after the normal create so it costs nothing there.
       allow create: if demoCreate(loadId);
       allow delete: if demoDelete(loadId);
       allow update: if signedIn()
@@ -1429,24 +1087,13 @@ service cloud.firestore {
           && resource.data.shipperId == request.auth.uid
           && resource.data.status == 'open';
     }
-
-    // ------------------------------------------------------------------
-    // bookings/{bookingId}: only the involved driver and customer can read.
-    // Only the driver writes: create when accepting an open load (with their
-    // own vehicle), advance status one step at a time, or cancel before
-    // pickup (which must reopen the load).
-    // ------------------------------------------------------------------
-    // accepted -> driver_arriving -> loading -> picked_up (pickup OTP)
-    //   -> in_transit -> unloading -> delivered (delivery OTP)
     function nextBookingStatus(s) {
       return {'accepted': 'driver_arriving', 'driver_arriving': 'loading', 'loading': 'picked_up',
               'picked_up': 'in_transit', 'in_transit': 'unloading', 'unloading': 'delivered'}.get(s, 'none');
     }
-
     function tripOtps(bookingId) {
       return get(/databases/$(database)/documents/bookings/$(bookingId)/secrets/otp).data;
     }
-
     function validPickupProof(p) {
       return p is map && p.keys().hasOnly(['packages', 'weightTons', 'sealNumber', 'damageNote'])
           && p.packages is int && p.packages > 0 && p.packages <= 100000
@@ -1454,19 +1101,12 @@ service cloud.firestore {
           && p.sealNumber is string && p.sealNumber.size() <= 40
           && p.damageNote is string && p.damageNote.size() <= 300;
     }
-
     function validDeliveryProof(p) {
       return p is map && p.keys().hasOnly(['receiverName', 'receiverPhone', 'damageNote'])
           && p.receiverName is string && p.receiverName.size() >= 2 && p.receiverName.size() <= 60
           && p.receiverPhone is string && p.receiverPhone.matches('^$|^[+]?[0-9]{10,13}$')
           && p.damageNote is string && p.damageNote.size() <= 300;
     }
-
-    // One status step by the assigned driver. Pickup and delivery carry the
-    // customer's OTP, which must equal the secret only the customer can read.
-    // Wrong guesses are limited by otp_attempts (F2); a server-side second check comes with Functions.
-    // A guess stored in otp_attempts/{kind} (counted, F2) that equals the secret,
-    // not older than 10 minutes, with the counter reset in the same batch.
     function guessCommitted(bookingId, kind) {
       let p = /databases/$(database)/documents/bookings/$(bookingId)/otp_attempts/$(kind);
       return exists(p)
@@ -1474,7 +1114,6 @@ service cloud.firestore {
           && get(p).data.guessAt > request.time - duration.value(10, 'm')
           && existsAfter(p) && getAfter(p).data.count == 0;
     }
-
     function driverStep(bookingId) {
       let before = resource.data.status;
       let after = request.resource.data;
@@ -1492,10 +1131,6 @@ service cloud.firestore {
                   && guessCommitted(bookingId, 'delivery')
                   && validDeliveryProof(after.deliveryProof)));
     }
-
-    // Payment records (no money moves): customer marks paid with the amount,
-    // then the driver confirms and writes the two ledger lines in the same
-    // batch. LATER(paid): gateway. TODO(functions): commission server-side.
     function customerMarksPaid() {
       let after = request.resource.data;
       return resource.data.status != 'cancelled'
@@ -1505,7 +1140,6 @@ service cloud.firestore {
           && after.paidAmountPaise is int && after.paidAmountPaise > 0 && after.paidAmountPaise <= 100000000
           && after.paymentMarkedAt == request.time;
     }
-
     function driverConfirmsPayment(bookingId) {
       return resource.data.get('paymentStatus', 'pending') == 'customer_marked_paid'
           && changedKeys().hasOnly(['paymentStatus', 'paymentConfirmedAt', 'updatedAt'])
@@ -1514,8 +1148,6 @@ service cloud.firestore {
           && existsAfter(docPath('ledger', bookingId + '_trip_earning'))
           && existsAfter(docPath('ledger', bookingId + '_platform_commission'));
     }
-
-    // Driver reports a breakdown once on an active trip.
     function breakdownReport() {
       let b = request.resource.data.breakdown;
       return resource.data.status in ['accepted', 'driver_arriving', 'loading', 'picked_up', 'in_transit', 'unloading']
@@ -1526,9 +1158,6 @@ service cloud.firestore {
           && b.replacementRequested is bool
           && b.reportedAt == request.time;
     }
-
-    // After a breakdown with a replacement requested, the driver moves the trip
-    // to another vehicle they own or are assigned, one that can carry the load.
     function driverReplacesVehicle() {
       let nv = request.resource.data.get('vehicleId', '');
       let v = get(docPath('vehicles', nv)).data;
@@ -1544,8 +1173,6 @@ service cloud.firestore {
           && request.resource.data.replacedVehicleIds is list && request.resource.data.replacedVehicleIds.size() <= 3
           && resource.data.vehicleId in request.resource.data.replacedVehicleIds;
     }
-
-    // Either party records the e-way bill number (12 digits) or clears it.
     function ewayBillUpdate() {
       return changedKeys().hasOnly(['ewayBillNo', 'ewayValidUntil', 'updatedAt'])
           && request.resource.data.ewayBillNo is string
@@ -1555,9 +1182,6 @@ service cloud.firestore {
                   && request.resource.data.ewayValidUntil is timestamp
                   && request.resource.data.ewayValidUntil < request.time + duration.value(366, 'd')));
     }
-
-    // Advance payment record (no money moves): the customer records one
-    // advance while the booking is open and unpaid, the driver confirms it.
     function customerRecordsAdvance() {
       let a = request.resource.data;
       return resource.data.status in ['accepted', 'driver_arriving', 'loading', 'picked_up', 'in_transit', 'unloading']
@@ -1568,25 +1192,18 @@ service cloud.firestore {
           && a.advancePaise < resource.data.get('agreedFarePaise', resource.data.get('fareEstimate', 100000000))
           && a.advanceMarkedAt == request.time;
     }
-
     function driverConfirmsAdvance() {
       return 'advancePaise' in resource.data
           && !('advanceConfirmedAt' in resource.data)
           && changedKeys().hasOnly(['advanceConfirmedAt', 'updatedAt'])
           && request.resource.data.advanceConfirmedAt == request.time;
     }
-
-    // The driver's UPI id for a UPI payment link on this booking.
     function driverSharesUpi() {
       return resource.data.status != 'cancelled'
           && changedKeys().hasOnly(['payUpiId', 'updatedAt'])
           && request.resource.data.payUpiId is string
           && request.resource.data.payUpiId.matches('^[a-zA-Z0-9._-]{2,40}@[a-zA-Z]{2,20}$');
     }
-
-    // Waiting at the loading / unloading point (record only). Minutes can
-    // only grow, by no more than the time the clock was running (+1 minute),
-    // and a clock can only be started while loading / unloading.
     function stageClockOk(stage) {
       let before = resource.data.get('detention', {});
       let after = request.resource.data.get('detention', {});
@@ -1601,8 +1218,6 @@ service cloud.firestore {
           && (!wasRunning || isRunning || grew <= (request.time.toMillis() - before[startedKey].toMillis()) / 60000 + 1)
           && (!isRunning || wasRunning || resource.data.status == stage);
     }
-
-    // GPS evidence and odometer readings, each set once by the driver.
     function evidenceUpdate() {
       let b = resource.data;
       let a = request.resource.data;
@@ -1621,7 +1236,6 @@ service cloud.firestore {
               || (!('odometerEnd' in b) && a.odometerEnd is int && a.odometerEnd >= b.get('odometerStart', 0) && a.odometerEnd <= 9999999
                   && b.status in ['in_transit', 'unloading', 'delivered']));
     }
-
     function detentionUpdate() {
       return changedKeys().hasOnly(['detention', 'updatedAt'])
           && resource.data.status in ['loading', 'unloading']
@@ -1629,10 +1243,6 @@ service cloud.firestore {
           && request.resource.data.detention.keys().hasOnly(['loadingMinutes', 'unloadingMinutes', 'loadingStartedAt', 'unloadingStartedAt'])
           && stageClockOk('loading') && stageClockOk('unloading');
     }
-
-    // Whose vehicle takes the load: the driver's own (no fleetOwnerId, or the
-    // transporter's own id), the one a transporter assigned to them, or one a
-    // member attached to the transporter who books it (Task 67).
     function bookingVehicleOk(b) {
       let v = get(docPath('vehicles', b.vehicleId)).data;
       let uid = request.auth.uid;
@@ -1642,7 +1252,6 @@ service cloud.firestore {
               ? b.get('fleetOwnerId', '') == v.ownerId
               : (v.get('attachedTo', '') == uid && activeMember(uid, v.ownerId) && b.get('fleetOwnerId', '') == uid && isTransporter(uid)));
     }
-
     function validBookingCreate(bookingId) {
       let b = request.resource.data;
       let load = get(docPath('loads', b.loadId)).data;
@@ -1660,7 +1269,6 @@ service cloud.firestore {
           && !(request.auth.uid in load.get('blockedDriverIds', []))
           && (load.get('visibility', 'public') == 'public' || request.auth.uid in load.get('allowedDriverIds', []))
           && b.customerId == load.shipperId
-          // Denormalized copy must match the load the customer posted.
           && b.pickup == load.pickup
           && b.drop == load.drop
           && b.weight == load.weight
@@ -1689,10 +1297,6 @@ service cloud.firestore {
           && availabilityOf(get(docPath('vehicles', b.vehicleId)).data) == 'available'
           && (vehiclePapersClear(get(docPath('vehicles', b.vehicleId)).data) || overrideActive(get(docPath('vehicles', b.vehicleId)).data));
     }
-
-    // A booking from an offer: the driver's own selected offer for this
-    // load, at its price, confirmed in the same batch. Without an offer the
-    // booking may not claim an agreed fare.
     function offerConfirmOk(bookingId, b) {
       return (!('offerId' in b) && !('agreedFarePaise' in b))
           || (b.offerId == b.loadId + '_' + request.auth.uid
@@ -1701,34 +1305,23 @@ service cloud.firestore {
               && getAfter(docPath('offers', b.offerId)).data.status == 'confirmed'
               && getAfter(docPath('offers', b.offerId)).data.bookingId == bookingId);
     }
-
-    // Live location: the driver may refresh their position only while on the
-    // way to the pickup or in transit, without touching anything else.
     function driverLocationUpdate() {
       return resource.data.status in ['driver_arriving', 'in_transit']
           && request.resource.data.status == resource.data.status
           && changedKeys().hasOnly(['lastKnownLocation', 'locationUpdatedAt'])
           && request.resource.data.lastKnownLocation is latlng;
     }
-
-    // Same lists as lib/core/constants/cancel_reasons.dart.
     function customerCancelReasons() {
       return ['found_other', 'plan_changed', 'price_high', 'driver_delay', 'wrong_details', 'other'];
     }
-
     function driverCancelReasons() {
       return ['vehicle_problem', 'load_mismatch', 'customer_unreachable', 'personal', 'price_low', 'other'];
     }
-
-    // Recorded policy charge for a driver cancellation. No money moves.
     function validCancellation(c) {
       return c == null || (c is map && c.keys().hasOnly(['by', 'chargePaise', 'reason'])
           && c.by in ['driver', 'customer'] && c.chargePaise is int && c.chargePaise >= 0 && c.chargePaise <= 10000000
           && (!('reason' in c) || (c.by == 'driver' ? c.reason in driverCancelReasons() : c.reason in customerCancelReasons())));
     }
-
-    // Customer cancels an advance booking the driver has not started: the
-    // booking is cancelled, with the load closed as cancelled in the same batch.
     function customerCancelsScheduled() {
       return resource.data.status == 'accepted'
           && 'scheduledAt' in resource.data
@@ -1741,11 +1334,6 @@ service cloud.firestore {
           && getAfter(docPath('loads', resource.data.loadId)).data.status == 'closed'
           && getAfter(docPath('loads', resource.data.loadId)).data.get('cancelled', false) == true;
     }
-
-    // Admin reassigns a not-yet-picked-up booking to another driver and
-    // vehicle (the driver details are copied from that driver's profile).
-    // Task 67: the transporter who holds the booking picks the vehicle and
-    // the member driver who runs it, and may change them until loading ends.
     function transporterAssigns() {
       let a = request.resource.data;
       return resource.data.get('fleetOwnerId', '') == request.auth.uid
@@ -1757,7 +1345,6 @@ service cloud.firestore {
           && transporterVehicle(get(docPath('vehicles', a.assignedVehicleId)).data, request.auth.uid)
           && get(docPath('vehicles', a.assignedVehicleId)).data.number == a.assignedVehicleNumber;
     }
-
     function adminReassignBooking() {
       let a = request.resource.data;
       return isAdmin()
@@ -1769,7 +1356,6 @@ service cloud.firestore {
           && get(docPath('vehicles', a.vehicleId)).data.ownerId == a.driverId
           && getAfter(docPath('loads', resource.data.loadId)).data.driverId == a.driverId;
     }
-
     match /bookings/{bookingId} {
       allow read: if signedIn()
           && (resource.data.driverId == request.auth.uid
@@ -1779,7 +1365,6 @@ service cloud.firestore {
               || bizReads(resource.data.get('businessId', ''))
               || isAdmin());
       allow create: if signedIn() && validBookingCreate(bookingId);
-      // Demo data (Task 53), after the normal create so it costs nothing there.
       allow create: if demoCreate(bookingId);
       allow delete: if demoDelete(bookingId);
       allow update: if signedIn()
@@ -1806,17 +1391,10 @@ service cloud.firestore {
                   && cancelCounted()
                   && getAfter(docPath('loads', resource.data.loadId)).data.status == 'open'))));
       allow delete: if false;
-
-      // messages: customer <-> driver chat. Plain text up to 500 chars,
-      // stamped with the server time, never edited or deleted. Someone who
-      // blocked you does not receive your messages.
       function isParty(b) {
         return request.auth.uid == b.driverId || request.auth.uid == b.customerId || request.auth.uid == b.get('assignedDriverId', '');
       }
-
       match /messages/{messageId} {
-        // An admin reads a chat only after opening a review for it (chat_reviews),
-        // which needs a report or a dispute ticket about that booking.
         allow read: if signedIn() && (isParty(get(docPath('bookings', bookingId)).data)
             || (isAdmin() && exists(docPath('chat_reviews', bookingId))));
         allow create: if signedIn()
@@ -1836,18 +1414,12 @@ service cloud.firestore {
                        : get(docPath('bookings', bookingId)).data.driverId)/blocked/$(request.auth.uid));
         allow update, delete: if false;
       }
-
-      // chat_reads/{uid}: when each party last read the chat (unread badge).
-      // MASTER-6 Task 33: both parties may read the mark (the "Seen" tick); only the owner writes it.
       match /chat_reads/{userId} {
         allow read: if signedIn() && isParty(get(docPath('bookings', bookingId)).data);
         allow write: if isUser(userId)
             && isParty(get(docPath('bookings', bookingId)).data)
             && (request.resource == null || request.resource.data.keys().hasOnly(['lastReadAt']));
       }
-
-      // signatures/receiver: the receiver's signature as stroke data, saved
-      // once by the driver at unloading / delivery.
       match /signatures/{sigId} {
         allow read: if signedIn() && isParty(get(docPath('bookings', bookingId)).data);
         allow create: if signedIn()
@@ -1863,9 +1435,6 @@ service cloud.firestore {
             && request.resource.data.createdAt == request.time;
         allow update, delete: if false;
       }
-
-      // cargo_docs: append-only references to cargo documents (a changed
-      // document is a new record, so the history is kept).
       match /cargo_docs/{docId} {
         allow read: if signedIn() && isParty(get(docPath('bookings', bookingId)).data);
         allow create: if signedIn()
@@ -1879,14 +1448,6 @@ service cloud.firestore {
             && request.resource.data.createdAt == request.time;
         allow update, delete: if false;
       }
-
-      // secrets/otp: pickup and delivery codes. Only the customer creates and
-      // reads them; nobody can change them afterwards.
-      // otp_attempts/{pickup|delivery}: every guess at a trip code is written
-      // here first (counter + 1, the guess itself), because rules cannot count
-      // requests they refuse. The 5th guess locks the code entry for 15 minutes.
-      // The booking step then only passes with a stored guess equal to the
-      // secret, and resets the counter in the same batch. Customer and driver read.
       match /otp_attempts/{kind} {
         function attemptDriver() {
           let b = get(docPath('bookings', bookingId)).data;
@@ -1898,8 +1459,6 @@ service cloud.firestore {
               && d.count is int && d.guess is string && d.guess.matches('^[0-9]{6}$')
               && d.actorId == request.auth.uid;
         }
-        // The next guess: +1. Count 5 means locked until guessAt + 15 minutes
-        // (no client clock involved); after that counting restarts at 1.
         function attemptNext(prevExists) {
           let d = request.resource.data;
           let full = prevExists && resource.data.count >= 5;
@@ -1910,7 +1469,6 @@ service cloud.firestore {
               && d.count == prevCount + 1 && d.count <= 5
               && d.guessAt == request.time;
         }
-        // After the right code: clear the counter. Only possible while the stored guess is the secret.
         function attemptReset() {
           let d = request.resource.data;
           return attemptKeysOk(d)
@@ -1926,7 +1484,6 @@ service cloud.firestore {
         allow update: if signedIn() && kind in ['pickup', 'delivery'] && attemptDriver()
             && (attemptNext(true) || attemptReset());
       }
-
       match /secrets/{secretId} {
         allow get: if signedIn() && get(docPath('bookings', bookingId)).data.customerId == request.auth.uid;
         allow create: if signedIn()
@@ -1938,38 +1495,22 @@ service cloud.firestore {
         allow list, update, delete: if false;
       }
     }
-
-    // ------------------------------------------------------------------
-    // offers/{loadId}_{driverId}: a driver's price for an open load. The
-    // driver creates/withdraws and accepts a counter; the load's shipper
-    // counters once, selects or rejects; the driver confirms a selected
-    // offer together with creating the booking. Only these two people read it.
-    // ------------------------------------------------------------------
     function offerKeysSame(fields) {
       return changedKeys().hasOnly(fields.concat(['status', 'updatedAt']));
     }
-
-    // A driver's price must be 30% to 300% of the load's fare estimate (same
-    // integer maths as lib/core/pricing/offer_bounds.dart). Loads without an
-    // estimate have no limits.
     function offerWithinEstimate(price, load) {
       let est = load.get('estimate', null);
       return est == null || !('total' in est) || !(est.total is int) || est.total <= 0
           || (price * 100 >= est.total * 30 && price * 100 <= est.total * 300);
     }
-
-    // Part 4: how soon the driver can be there and one note chip; nothing typed by hand.
     function validBidExtras(o) {
       return (!('etaMinutes' in o) || (o.etaMinutes is int && o.etaMinutes >= 1 && o.etaMinutes <= 1440))
           && (!('pickupKm' in o) || (o.pickupKm is int && o.pickupKm >= 0 && o.pickupKm <= 3000))
           && (!('noteChip' in o) || o.noteChip in ['on_the_way', 'empty_return', 'loading_help', 'flexible_time', 'clean_truck']);
     }
-
-    // A bid in bid mode is open only while its window is; the other modes have no window.
     function bidWindowOpen(load) {
       return load.get('mode', 'instant') != 'bid' || !('bidWindowEnds' in load) || load.bidWindowEnds > request.time;
     }
-
     function validOfferCreate(offerId) {
       let o = request.resource.data;
       let load = get(docPath('loads', o.loadId)).data;
@@ -1981,7 +1522,6 @@ service cloud.firestore {
           && validBidExtras(o)
           && o.driverId == request.auth.uid
           && (!('fleetOwnerId' in o) || (o.fleetOwnerId == request.auth.uid && isTransporter(request.auth.uid)))
-          // The "Verified transporter" mark on a bid is only true for an admin-approved account.
           && (!('companyVerified' in o) || (o.companyVerified == true && 'fleetOwnerId' in o && get(docPath('users', request.auth.uid)).data.get('verified', false) == true))
           && canTransact(request.auth.uid)
           && rateBumped('offer', offerId)
@@ -2000,13 +1540,11 @@ service cloud.firestore {
           && (vehicle.ownerId == request.auth.uid || 'fleetOwnerId' in o)
           && vehicle.number == o.vehicleNumber;
     }
-
     function driverOfferUpdate(offerId) {
       let before = resource.data;
       let after = request.resource.data;
       return before.driverId == request.auth.uid
           && ((before.status in ['pending', 'countered', 'selected'] && after.status == 'withdrawn' && offerKeysSame([]))
-              // One edit of a pending bid: a new price inside the same 30% to 300% limits, a new ETA or note, then it is locked.
               || (before.status == 'pending' && after.status == 'pending' && !before.get('edited', false) && after.edited == true
                   && offerKeysSame(['pricePaise', 'edited', 'etaMinutes', 'pickupKm', 'noteChip'])
                   && after.originalPaise == before.originalPaise
@@ -2022,7 +1560,6 @@ service cloud.firestore {
                   && existsAfter(docPath('bookings', after.bookingId))
                   && getAfter(docPath('bookings', after.bookingId)).data.offerId == offerId));
     }
-
     function customerOfferUpdate() {
       let before = resource.data;
       let after = request.resource.data;
@@ -2035,22 +1572,13 @@ service cloud.firestore {
               || (before.status == 'selected' && after.status == 'pending' && offerKeysSame([]))
               || (before.status in ['pending', 'selected'] && after.status == 'rejected' && offerKeysSame([])));
     }
-
     match /offers/{offerId} {
-      // The two people of the bid, and the dispatch monitor (super and ops) which only counts and times bids.
       allow read: if signedIn()
           && (resource.data.driverId == request.auth.uid || resource.data.customerId == request.auth.uid || adminIn(['super', 'ops']));
       allow create: if signedIn() && validOfferCreate(offerId);
       allow update: if signedIn() && (driverOfferUpdate(offerId) || customerOfferUpdate());
       allow delete: if false;
     }
-
-    // ------------------------------------------------------------------
-    // ledger/{bookingId}_{type}: append-only driver wallet lines, written by
-    // the booking's driver together with confirming payment received. The
-    // earning equals the amount the customer marked paid; the commission is
-    // negative and at most half of it.
-    // ------------------------------------------------------------------
     function validLedgerLine(entryId) {
       let e = request.resource.data;
       let b = getAfter(docPath('bookings', e.bookingId)).data;
@@ -2063,9 +1591,6 @@ service cloud.firestore {
           && ((e.type == 'trip_earning' && e.amountPaise == b.paidAmountPaise)
               || (e.type == 'platform_commission' && e.amountPaise <= 0 && e.amountPaise * -2 <= b.paidAmountPaise));
     }
-
-    // A correction by finance or super (F8): the ledger is never edited, a
-    // mistake is answered by a signed line with a reason.
     function validAdjustment(entryId) {
       let e = request.resource.data;
       return adminIn(['super', 'finance'])
@@ -2079,22 +1604,15 @@ service cloud.firestore {
           && e.by == request.auth.uid
           && e.createdAt == request.time;
     }
-
     match /ledger/{entryId} {
       allow read: if signedIn() && (resource.data.driverId == request.auth.uid || isAdmin());
       allow create: if signedIn() && (validAdjustment(entryId) || validLedgerLine(entryId));
       allow update, delete: if false;
     }
-
-    // wallets/{uid}: the summary of the lines. Only the server writes it (Cloud
-    // Functions, Phase C); until then the app computes the balance from the
-    // ledger. The owner and admins read.
     match /wallets/{uid} {
       allow read: if signedIn() && (request.auth.uid == uid || isAdmin());
       allow write: if false;
     }
-
-    // wallet_freezes/{uid}: finance or super stops payouts for one person, with a reason.
     match /wallet_freezes/{uid} {
       allow read: if signedIn() && (request.auth.uid == uid || isAdmin());
       allow create, update: if adminIn(['super', 'finance'])
@@ -2105,17 +1623,10 @@ service cloud.firestore {
           && request.resource.data.updatedAt == request.time;
       allow delete: if false;
     }
-
-    // ------------------------------------------------------------------
-    // tickets: help desk. Users open tickets (optionally about one of their
-    // bookings; disputes must name one), reply, escalate up to level 3 and
-    // close. Admins see everything and manage status/priority.
-    // ------------------------------------------------------------------
     function isBookingParty(bookingId) {
       let b = get(docPath('bookings', bookingId)).data;
       return b.driverId == request.auth.uid || b.customerId == request.auth.uid;
     }
-
     function validTicketCreate() {
       let t = request.resource.data;
       return t.keys().hasOnly(['userId', 'category', 'priority', 'status', 'bookingId', 'businessId', 'subject', 'description',
@@ -2131,7 +1642,6 @@ service cloud.firestore {
           && (!('bookingId' in t) || isBookingParty(t.bookingId))
           && (t.category != 'dispute' || 'bookingId' in t);
     }
-
     function ownerTicketUpdate() {
       let before = resource.data;
       let after = request.resource.data;
@@ -2141,7 +1651,6 @@ service cloud.firestore {
                   && after.escalationLevel == before.escalationLevel + 1 && after.escalationLevel <= 3)
               || (changedKeys().hasOnly(['status', 'updatedAt']) && after.status == 'closed'));
     }
-
     match /tickets/{ticketId} {
       allow read: if signedIn() && (resource.data.userId == request.auth.uid || isAdmin()
           || bizActs(resource.data.get('businessId', ''), ['manager', 'accounts']));
@@ -2152,7 +1661,6 @@ service cloud.firestore {
               && request.resource.data.status in ['open', 'in_progress', 'resolved', 'closed']
               && request.resource.data.priority in ['low', 'normal', 'high', 'urgent']));
       allow delete: if false;
-
       match /replies/{replyId} {
         allow read: if signedIn()
             && (get(docPath('tickets', ticketId)).data.userId == request.auth.uid || isAdmin()
@@ -2170,11 +1678,6 @@ service cloud.firestore {
         allow update, delete: if false;
       }
     }
-
-    // ------------------------------------------------------------------
-    // sos_alerts: a user raises an alert (optionally tied to their booking,
-    // with a last known position). Admins acknowledge/resolve.
-    // ------------------------------------------------------------------
     match /sos_alerts/{alertId} {
       allow read: if signedIn() && (resource.data.userId == request.auth.uid || isAdmin());
       allow create: if signedIn()
@@ -2190,45 +1693,25 @@ service cloud.firestore {
           && request.resource.data.status in ['open', 'acknowledged', 'resolved'];
       allow delete: if false;
     }
-
-    // ------------------------------------------------------------------
-    // reports: a booking party reports the other one. Reporters see their
-    // own reports; admins review them. Nobody edits a report after filing.
-    // ------------------------------------------------------------------
     function bookingParty(b, uid) {
       return uid == b.customerId || uid == b.driverId || uid == b.get('assignedDriverId', '');
     }
-
     function reportAboutOtherParty(r) {
       let b = get(docPath('bookings', r.bookingId)).data;
       return bookingParty(b, request.auth.uid) && bookingParty(b, r.reportedId);
     }
-
-    // Task 68. A chat message or a call needs the sender not to be suspended
-    // (users.chatBlockedUntil in the past or absent). The text may not carry
-    // a mobile number or an "@": the app blocks far more before sending, this
-    // is only the part a modified app cannot get around.
     function chatAllowed(uid) {
       let p = docPath('users', uid);
       return !exists(p) || get(p).data.get('chatBlockedUntil', request.time) <= request.time;
     }
-
     function chatTextClean(t) {
       return !t.matches('(?s).*@.*')
           && !t.matches('(?s).*(^|[^0-9])([+]?91[ -]?|0)?[6-9][0-9]{9}([^0-9]|$).*');
     }
-
-    // What the Sahayak assistant could not answer (Task 48). The app strips
-    // numbers and links first; the rules only cap the size and shape.
-    // Optional `expireAt` (Task 7): a Firestore TTL policy on this field
-    // (console setting, free) deletes the record then. Absent = kept. Only an
-    // upper bound (with room for a wrong phone clock): an early date just
-    // means the record goes sooner.
     function expireOk(d, maxDays) {
       return !('expireAt' in d)
           || (d.expireAt is timestamp && d.expireAt <= request.time + duration.value(maxDays, 'd'));
     }
-
     match /assistant_unknown/{id} {
       allow read: if adminIn(['super', 'support']);
       allow create: if signedIn()
@@ -2248,9 +1731,6 @@ service cloud.firestore {
           && request.resource.data.resolvedAt == request.time;
       allow delete: if false;
     }
-
-    // In-app feedback (Task 50): one document per submission, written by the
-    // sender, read by super and support admins only. Nobody edits or deletes.
     match /feedback/{id} {
       allow read: if adminIn(['super', 'support']);
       allow create: if signedIn()
@@ -2264,16 +1744,6 @@ service cloud.firestore {
           && request.resource.data.createdAt == request.time;
       allow update, delete: if false;
     }
-
-    // A sample of client errors for the admin health screen (Task 52). No
-    // user id and no free-form personal data: the app strips e-mail, links and
-    // long numbers from the message. Any signed-in user writes, super and ops
-    // admins read, nobody edits or deletes.
-    // trip_shares/{token}: a public "follow my trip" link (Task 64). The
-    // 24-letter token is the secret, so anyone with it may get ONE document
-    // (never list) until it ends. Only the route, status, vehicle number and
-    // the driver's first name are stored. A party of the booking creates it
-    // and keeps its status current; the owner can end it.
     match /trip_shares/{token} {
       allow get: if resource.data.expiresAt > request.time;
       allow list: if signedIn() && isBookingParty(resource.data.bookingId);
@@ -2301,49 +1771,25 @@ service cloud.firestore {
           && request.resource.data.statusAt == request.time;
       allow delete: if signedIn() && resource.data.ownerId == request.auth.uid;
     }
-
-
-    // ------------------------------------------------------------------
-    // Bilty / LR (Task 70). One document per version:
-    //   lrs/{issuer}_{year}_{seq}_v{n}            the public part
-    //   lrs/{id}/private/details                  rate group + GST + phones
-    //   lrs/{id}/private/compliance               goods value, invoice no, GSTINs, e-way bill no
-    // Only a transporter (own booking, bookings.fleetOwnerId) or the customer
-    // (own booking) issues one; drivers and admins never do. The private
-    // documents are for the issuer, both parties and admins, never the driver.
-    // A version never changes after it is written; only its status moves
-    // (issued -> superseded | cancelled) and the issuer can change the
-    // compliance mode. lr_series/{issuer}_{year}.next is the per-issuer number
-    // counter, bumped in the same batch.
-    // ------------------------------------------------------------------
     function lrAuditParty(b) {
       let uid = request.auth.uid;
       return uid in [b.customerId, b.driverId, b.get('assignedDriverId', ''), b.get('fleetOwnerId', '')];
     }
-
-    // The person on the road: the driver a transporter assigned, or the driver
-    // of a booking that has no transporter.
     function lrTripDriver(b) {
       let uid = request.auth.uid;
       return uid == b.get('assignedDriverId', '') || (uid == b.driverId && !('fleetOwnerId' in b));
     }
-
     function lrTripDriverId(b, id) {
       return id == b.get('assignedDriverId', '') || (id == b.driverId && !('fleetOwnerId' in b));
     }
-
-    // An inspection grant (Task 71): the issuer lets the trip driver read the
-    // compliance group until expiresAt. The rules stop honouring it at that time.
     function lrGrantValid(lrId) {
       let g = /databases/$(database)/documents/lrs/$(lrId)/inspection_grants/$(request.auth.uid);
       return exists(g) && get(g).data.expiresAt > request.time;
     }
-
     function lrPrivateReader(l) {
       let uid = request.auth.uid;
       return l.issuerId == uid || l.customerId == uid || l.get('fleetOwnerId', '') == uid || isAdmin();
     }
-
     function lrIssuerOk(l, b) {
       let uid = request.auth.uid;
       return l.issuerId == uid
@@ -2351,18 +1797,15 @@ service cloud.firestore {
           && ((l.issuerRole == 'customer' && b.customerId == uid)
               || (l.issuerRole == 'transporter' && b.get('fleetOwnerId', '') == uid && isTransporter(uid)));
     }
-
     function lrIdOf(l) {
       return l.issuerId + '_' + string(l.year) + '_' + string(l.seq) + '_v' + string(l.version);
     }
-
     function lrSeriesOk(l) {
       let sid = l.issuerId + '_' + string(l.year);
       let after = getAfter(docPath('lr_series', sid)).data;
       return after.next == l.seq + 1
           && (exists(docPath('lr_series', sid)) ? get(docPath('lr_series', sid)).data.next == l.seq : l.seq == 1);
     }
-
     function lrPublicShape(l) {
       return l.keys().hasOnly(['bookingId', 'issuerId', 'issuerRole', 'customerId', 'fleetOwnerId', 'lrNo', 'seq', 'year', 'version',
                                'status', 'cancelReason', 'supersededBy', 'date', 'pickup', 'drop', 'route', 'goods', 'packages', 'weightTons',
@@ -2387,7 +1830,6 @@ service cloud.firestore {
           && (!('issuerName' in l) || (l.issuerName is string && l.issuerName.size() <= 80))
           && l.createdAt == request.time;
     }
-
     match /lr_series/{seriesId} {
       allow read: if signedIn() && seriesId.matches(request.auth.uid + '_[0-9]{4}');
       allow create, update: if signedIn()
@@ -2397,9 +1839,7 @@ service cloud.firestore {
           && request.resource.data.next == (resource == null ? 1 : resource.data.next) + 1
           && request.resource.data.updatedAt == request.time;
     }
-
     match /lrs/{lrId} {
-      // The issuer, the customer and the fleet owner can also list by their own id (the register); the booking check stays for everyone else.
       allow read: if signedIn() && (isAdmin()
           || resource.data.issuerId == request.auth.uid
           || resource.data.customerId == request.auth.uid
@@ -2416,8 +1856,6 @@ service cloud.firestore {
               ? lrSeriesOk(request.resource.data)
               : (get(docPath('lrs', request.resource.data.issuerId + '_' + string(request.resource.data.year) + '_' + string(request.resource.data.seq) + '_v' + string(request.resource.data.version - 1))).data.issuerId == request.auth.uid
                  && getAfter(docPath('lrs', request.resource.data.issuerId + '_' + string(request.resource.data.year) + '_' + string(request.resource.data.seq) + '_v' + string(request.resource.data.version - 1))).data.status == 'superseded'));
-      // The issuer moves the status once (issued -> superseded | cancelled)
-      // and may change the compliance mode; nothing else of a version changes.
       allow update: if signedIn()
           && resource.data.issuerId == request.auth.uid
           && ((changedKeys().hasOnly(['status', 'supersededBy', 'updatedAt'])
@@ -2435,7 +1873,6 @@ service cloud.firestore {
                   && request.resource.data.complianceMode in ['hide', 'show', 'inspection_on_request']
                   && request.resource.data.updatedAt == request.time));
       allow delete: if false;
-
       match /private/details {
         allow read: if signedIn() && lrPrivateReader(get(docPath('lrs', lrId)).data);
         allow create: if signedIn()
@@ -2450,10 +1887,7 @@ service cloud.firestore {
             && request.resource.data.get('consignorPhone', '') is string && request.resource.data.get('consigneePhone', '') is string;
         allow update, delete: if false;
       }
-
       match /private/compliance {
-        // The driver never reads `details` (the rate group). The compliance
-        // group opens to the trip driver only in mode `show` or with a valid grant.
         allow read: if signedIn()
             && (lrPrivateReader(get(docPath('lrs', lrId)).data)
                 || (lrTripDriver(get(docPath('bookings', get(docPath('lrs', lrId)).data.bookingId)).data)
@@ -2468,10 +1902,6 @@ service cloud.firestore {
             && request.resource.data.get('ewayBillNo', '') is string && request.resource.data.get('ewayBillNo', '').size() <= 12;
         allow update, delete: if false;
       }
-      // Inspection mode (Task 71). Grant: the issuer creates it for the trip
-      // driver (2 hours after an approval, up to 72 hours when approved in
-      // advance); the driver reads it; after expiresAt the compliance rule above
-      // refuses. Request: the driver asks, the issuer answers.
       match /inspection_grants/{driverId} {
         allow read: if signedIn() && (driverId == request.auth.uid || lrPrivateReader(get(docPath('lrs', lrId)).data));
         allow create, update: if signedIn()
@@ -2488,10 +1918,6 @@ service cloud.firestore {
             && request.resource.data.createdAt == request.time;
         allow delete: if signedIn() && get(docPath('lrs', lrId)).data.issuerId == request.auth.uid;
       }
-
-      // Inspection log (MASTER-6 Task 32): who asked, who allowed or refused and
-      // when, for the owner's grant history. Append only. The issuer writes the
-      // answers, the trip driver writes "requested".
       match /inspection_log/{entryId} {
         allow read: if signedIn() && (resource.data.driverId == request.auth.uid || get(docPath('lrs', lrId)).data.issuerId == request.auth.uid);
         allow create: if signedIn()
@@ -2507,7 +1933,6 @@ service cloud.firestore {
                     && lrTripDriver(get(docPath('bookings', get(docPath('lrs', lrId)).data.bookingId)).data)));
         allow update, delete: if false;
       }
-
       match /inspection_requests/{driverId} {
         allow read: if signedIn() && (driverId == request.auth.uid || lrPrivateReader(get(docPath('lrs', lrId)).data));
         allow create: if signedIn()
@@ -2541,14 +1966,6 @@ service cloud.firestore {
         allow delete: if false;
       }
     }
-
-    // lr_shares/{token}: a link to one copy of an LR (Task 70). The 128-bit
-    // token (32 hex letters) is the secret: anyone holding it may GET one
-    // document while it is neither expired nor revoked; nobody lists. `fields`
-    // is a snapshot of that copy type only, so a driver copy has no rate,
-    // margin, phone or compliance field and a consignee copy has no margin.
-    // The issuer creates, revokes and lists their own; anyone with the token
-    // adds one to the view counter.
     function lrShareFieldsOk(d) {
       let f = d.fields;
       return f is map && f.size() <= 30
@@ -2560,7 +1977,6 @@ service cloud.firestore {
                  && (d.copyType != 'driver' || !f.keys().hasAny(['freightPaise', 'advancePaise', 'balancePaise', 'marginPaise', 'gstPaise', 'consignorPhone', 'consigneePhone', 'goodsValuePaise', 'invoiceNo', 'consignorGstin', 'consigneeGstin', 'ewayBillNo', 'ewayValidUntil']))
                  && (d.copyType != 'consignee' || !f.keys().hasAny(['marginPaise', 'consignorPhone', 'consigneePhone']))));
     }
-
     match /lr_shares/{token} {
       allow get: if resource.data.expiresAt > request.time && resource.data.revoked == false;
       allow list: if signedIn() && resource.data.ownerId == request.auth.uid;
@@ -2591,7 +2007,6 @@ service cloud.firestore {
               && (request.resource.data.revoked == resource.data.revoked || request.resource.data.revoked == true));
       allow delete: if false;
     }
-
     match /app_errors/{id} {
       allow read: if adminIn(['super', 'ops']);
       allow create: if signedIn()
@@ -2606,7 +2021,6 @@ service cloud.firestore {
           && request.resource.data.createdAt == request.time;
       allow update, delete: if false;
     }
-
     match /reports/{reportId} {
       allow read: if signedIn() && (resource.data.reporterId == request.auth.uid || isAdmin());
       allow create: if signedIn()
@@ -2620,12 +2034,6 @@ service cloud.firestore {
       allow update: if adminIn(['super', 'support', 'ops']) && changedKeys().hasOnly(['status', 'resolvedAt', 'resolvedBy', 'adminNote']);
       allow delete: if false;
     }
-
-    // violations/{uid}_{seq}: one blocked chat message (Task 68). Create-only,
-    // by the sender, in the same batch that raises users.chatStrikes by one
-    // (the rules of users/{uid} check the id, the count and the ladder).
-    // The excerpt is what the person tried to send; only admins and the
-    // person read it.
     match /violations/{violationId} {
       allow read: if signedIn() && (resource.data.userId == request.auth.uid || adminIn(['super', 'support', 'ops']));
       allow create: if signedIn()
@@ -2641,10 +2049,6 @@ service cloud.firestore {
               == (exists(docPath('users', request.auth.uid)) ? get(docPath('users', request.auth.uid)).data.get('chatStrikes', 0) : 0) + 1;
       allow update, delete: if false;
     }
-
-    // strike_appeals/{violationId} (MASTER-6 Task 34): the person asks an admin to look at
-    // one strike again, once, within 14 days; an admin grants (the app then takes one
-    // strike off) or rejects it with a short note.
     match /strike_appeals/{violationId} {
       allow read: if signedIn() && (resource.data.userId == request.auth.uid || adminIn(['super', 'support', 'ops']));
       allow create: if signedIn()
@@ -2665,9 +2069,6 @@ service cloud.firestore {
           && (!('note' in request.resource.data) || (request.resource.data.note is string && request.resource.data.note.size() <= 200));
       allow delete: if false;
     }
-
-    // chat_reviews/{bookingId}: an admin opens one chat for review. Needs a
-    // report (reportId) or a dispute ticket (ticketId) about the same booking.
     match /chat_reviews/{bookingId} {
       allow read: if adminIn(['super', 'support', 'ops']);
       allow create: if adminIn(['super', 'support', 'ops'])
@@ -2680,26 +2081,16 @@ service cloud.firestore {
                   && get(docPath('tickets', request.resource.data.ticketId)).data.category == 'dispute'));
       allow update, delete: if false;
     }
-
-    // calls/{callId}: signalling for an in-app voice call (Task 68). Free
-    // WebRTC: the two phones swap an offer, an answer and network candidates
-    // through these documents; the audio itself never touches Firestore. Only
-    // two people of a confirmed booking, never when the caller is suspended.
-    // Metadata (who, when, how it ended) is kept for admins. No phone number
-    // is stored. LATER(paid): a masked-number provider and a push to ring.
     function callMedia(m) {
       return m is map && m.keys().hasOnly(['type', 'sdp']) && m.type in ['offer', 'answer']
           && m.sdp is string && m.sdp.size() >= 20 && m.sdp.size() <= 12000;
     }
-
     function callBookingOk(c) {
       let b = get(docPath('bookings', c.bookingId)).data;
       return b.status in ['accepted', 'driver_arriving', 'loading', 'picked_up', 'in_transit', 'unloading']
           && bookingParty(b, c.callerId) && bookingParty(b, c.calleeId);
     }
-
     match /calls/{callId} {
-      // (not `uid in [a, b]`: a list query on one field would hit an undefined element)
       allow read: if signedIn() && (resource.data.callerId == request.auth.uid || resource.data.calleeId == request.auth.uid
           || adminIn(['super', 'support', 'ops']));
       allow create: if signedIn()
@@ -2731,7 +2122,6 @@ service cloud.firestore {
                   && changedKeys().hasOnly(['status', 'updatedAt'])
                   && request.resource.data.status == 'ended'));
       allow delete: if false;
-
       match /candidates/{candidateId} {
         allow read: if signedIn() && request.auth.uid in [get(docPath('calls', callId)).data.callerId, get(docPath('calls', callId)).data.calleeId];
         allow create: if signedIn()
@@ -2746,13 +2136,6 @@ service cloud.firestore {
         allow update, delete: if false;
       }
     }
-
-    // ------------------------------------------------------------------
-    // audit_events: append-only log of verification, accept, status change,
-    // cancel and risk change. Anyone signed in appends their own events;
-    // verification and risk_change are admin-only; only admins read.
-    // TODO(functions): write from triggers so clients cannot skip or forge.
-    // ------------------------------------------------------------------
     match /audit_events/{eventId} {
       allow read: if isAdmin();
       allow create: if signedIn()
@@ -2780,11 +2163,6 @@ service cloud.firestore {
                   && request.auth.uid in [get(docPath('bookings', request.resource.data.bookingId)).data.driverId, get(docPath('bookings', request.resource.data.bookingId)).data.customerId]));
       allow update, delete: if false;
     }
-
-    // ------------------------------------------------------------------
-    // ratings/{bookingId}_{raterUid}: after delivery, each party rates the
-    // other exactly once. Readable by any signed-in user (profile averages).
-    // ------------------------------------------------------------------
     function validRating(ratingId) {
       let r = request.resource.data;
       let b = get(docPath('bookings', r.bookingId)).data;
@@ -2801,16 +2179,6 @@ service cloud.firestore {
               && r.cats.get('safety', 3) is int && r.cats.get('safety', 3) >= 1 && r.cats.get('safety', 3) <= 5))
           && r.keys().hasOnly(['bookingId', 'raterId', 'ratedId', 'stars', 'comment', 'cats', 'createdAt']);
     }
-
-    // rating_flags/{ratingId}: written by the rater in the same batch as a
-    // rating under 3 stars; only admins read and resolve them.
-    // TODO(functions): create the flag server side.
-    // invoices/{bookingId}: the GST invoice the driver (transporter) issues
-    // after delivery. Numbers run in a series per issuer and financial year:
-    // `invoice_series/{uid}_{fy}.next` is bumped in the same batch, so numbers
-    // are gapless and cannot repeat. Amounts are a snapshot; the e-way bill
-    // fields are record only (nothing is sent to the GST portal).
-    // LATER(paid): GSP / e-way bill API.
     match /invoice_series/{seriesId} {
       allow read: if signedIn() && seriesId.matches(request.auth.uid + '_[0-9]{4}-[0-9]{2}');
       allow create: if signedIn() && seriesId.matches(request.auth.uid + '_[0-9]{4}-[0-9]{2}')
@@ -2823,7 +2191,6 @@ service cloud.firestore {
           && request.resource.data.updatedAt == request.time;
       allow delete: if false;
     }
-
     function validInvoice(bookingId) {
       let i = request.resource.data;
       let b = get(docPath('bookings', bookingId)).data;
@@ -2856,7 +2223,6 @@ service cloud.firestore {
           && (!('ewayDistanceKm' in i) || (i.ewayDistanceKm is int && i.ewayDistanceKm >= 0 && i.ewayDistanceKm <= 5000))
           && i.issuedAt == request.time;
     }
-
     match /invoices/{bookingId} {
       allow read: if signedIn() && (resource.data.issuerId == request.auth.uid
           || resource.data.customerId == request.auth.uid || isAdmin());
@@ -2869,17 +2235,9 @@ service cloud.firestore {
               && request.resource.data.ewayDistanceKm >= 0 && request.resource.data.ewayDistanceKm <= 5000));
       allow delete: if false;
     }
-
-    // claims/{bookingId}_{openerUid}: a damage / shortage / delay claim opened
-    // by the customer or the driver of a booking that reached unloading.
-    // One per party per booking. Both parties and admins read it; only admins
-    // change status and resolution (record only: no money moves). The
-    // timeline is the append-only `events` subcollection.
-    // TODO(functions): notify the other party.
     function claimParty(c) {
       return request.auth.uid == c.customerId || request.auth.uid == c.driverId;
     }
-
     match /claims/{claimId} {
       allow read: if signedIn() && (claimParty(resource.data) || isAdmin());
       allow create: if signedIn() && validClaim(claimId);
@@ -2895,7 +2253,6 @@ service cloud.firestore {
               && request.resource.data.resolutionNote.size() <= 1000))
           && request.resource.data.updatedAt == request.time;
       allow delete: if false;
-
       match /events/{eventId} {
         allow read: if signedIn() && (claimParty(get(docPath('claims', claimId)).data) || isAdmin());
         allow create: if signedIn()
@@ -2911,7 +2268,6 @@ service cloud.firestore {
         allow update, delete: if false;
       }
     }
-
     function validClaim(claimId) {
       let c = request.resource.data;
       let b = get(docPath('bookings', c.bookingId)).data;
@@ -2927,7 +2283,6 @@ service cloud.firestore {
           && c.status == 'open'
           && c.createdAt == request.time && c.updatedAt == request.time;
     }
-
     match /rating_flags/{ratingId} {
       allow read: if isAdmin();
       allow create: if signedIn()
@@ -2947,12 +2302,9 @@ service cloud.firestore {
           && request.resource.data.handledAt == request.time;
       allow delete: if false;
     }
-
     match /ratings/{ratingId} {
       allow read: if signedIn();
       allow create: if signedIn() && validRating(ratingId);
-      // Moderation (MASTER-5 Task 33): support / super admins can blank an abusive
-      // comment. The stars stay; nothing else can change; nobody deletes.
       allow update: if adminIn(['super', 'support'])
           && changedKeys().hasOnly(['comment', 'moderated', 'moderatedAt'])
           && request.resource.data.comment == ''
@@ -2960,11 +2312,6 @@ service cloud.firestore {
           && request.resource.data.moderatedAt == request.time;
       allow delete: if false;
     }
-
-    // ------------------------------------------------------------------
-    // config/{docId}: app configuration (vehicle_types, pricing, ...).
-    // Every signed-in user reads it; only admins write.
-    // ------------------------------------------------------------------
     function validConfig(docId) {
       let d = request.resource.data;
       return (docId == 'vehicle_types'
@@ -2975,13 +2322,6 @@ service cloud.firestore {
               && d.items is list && d.items.size() <= 20)
           || (docId != 'vehicle_types' && docId != 'reply_templates' && d.size() <= 100);
     }
-
-    // admins/{uid}: the admin allowlist. A user may read only their own
-    // entry (so the app can show the Admin menu); nobody writes it from a
-    // client. Add one by hand in the Firebase Console.
-    // deletion_requests/{uid}: a user asks for account deletion (one doc per
-    // user, only while none is pending); admins review and mark it done.
-    // TODO(functions): perform the deletion with the Admin SDK.
     match /deletion_requests/{uid} {
       allow read: if isUser(uid) || isAdmin();
       allow create: if isUser(uid)
@@ -3001,19 +2341,10 @@ service cloud.firestore {
           && request.resource.data.status in ['pending', 'approved', 'done', 'rejected'];
       allow delete: if false;
     }
-
     match /admins/{uid} {
       allow read: if isUser(uid);
       allow write: if false;
     }
-
-    // ------------------------------------------------------------------
-    // Devices: users/{uid}/devices/{deviceId} (the owner's list), device_links
-    // (who signed in on which device, for admins) and risk_signals (written
-    // when an account appears on a new device). The device id is a random
-    // value kept on the phone, not a hardware id.
-    // TODO(functions): revoke refresh tokens when a device is revoked.
-    // ------------------------------------------------------------------
     match /users/{userId}/devices/{deviceId} {
       allow read: if isUser(userId) || isAdmin();
       allow create, update: if isUser(userId)
@@ -3025,7 +2356,6 @@ service cloud.firestore {
           && deviceId.matches('^[a-z0-9-]{8,40}$');
       allow delete: if isUser(userId);
     }
-
     match /device_links/{linkId} {
       allow read: if isAdmin();
       allow create: if signedIn()
@@ -3035,7 +2365,6 @@ service cloud.firestore {
           && request.resource.data.createdAt == request.time;
       allow update, delete: if false;
     }
-
     match /risk_signals/{signalId} {
       allow read: if isAdmin();
       allow create: if signedIn()
@@ -3046,11 +2375,6 @@ service cloud.firestore {
       allow update: if adminIn(['super', 'ops', 'verifier']) && changedKeys().hasOnly(['reviewed', 'reviewedBy', 'reviewedAt']);
       allow delete: if false;
     }
-
-    // ------------------------------------------------------------------
-    // fraud_cases/{id}: admin-only case management (alert -> evidence ->
-    // action -> resolution). Notes are append-only.
-    // ------------------------------------------------------------------
     match /fraud_cases/{caseId} {
       allow read: if isAdmin();
       allow create: if adminIn(['super', 'ops'])
@@ -3067,7 +2391,6 @@ service cloud.firestore {
           && (!('outcome' in request.resource.data) || request.resource.data.outcome in ['no_action', 'warned', 'restricted', 'suspended'])
           && (!(request.resource.data.status in ['resolved', 'dismissed']) || 'outcome' in request.resource.data);
       allow delete: if false;
-
       match /notes/{noteId} {
         allow read: if isAdmin();
         allow create: if adminIn(['super', 'ops'])
@@ -3078,18 +2401,9 @@ service cloud.firestore {
         allow update, delete: if false;
       }
     }
-
-    // ------------------------------------------------------------------
-    // Fleet owners. fleet_invites/{ownerId}_{phoneDigits}: the owner invites a
-    // driver by phone number; the driver (matched by the phone number on
-    // their sign-in token) accepts or declines. fleet_members/{ownerId}_
-    // {driverUid}: created by the driver once an accepted invite exists; either
-    // side can end it. Vehicles are then assigned to members (see vehicles).
-    // ------------------------------------------------------------------
     function phoneDigits(p) {
       return p.replace('[+]', '');
     }
-
     match /fleet_invites/{inviteId} {
       allow read: if signedIn() && (resource.data.ownerId == request.auth.uid
           || resource.data.phone == request.auth.token.get('phone_number', ''));
@@ -3109,7 +2423,6 @@ service cloud.firestore {
                   && resource.data.status == 'pending' && request.resource.data.status in ['accepted', 'declined']));
       allow delete: if false;
     }
-
     match /fleet_members/{memberId} {
       allow read: if signedIn() && (resource.data.ownerId == request.auth.uid || resource.data.driverId == request.auth.uid);
       allow create: if signedIn()
@@ -3122,13 +2435,10 @@ service cloud.firestore {
           && get(docPath('users', request.auth.uid)).data.get('role', '') == 'driver'
           && getAfter(docPath('fleet_invites', request.resource.data.ownerId + '_' + phoneDigits(request.auth.token.get('phone_number', '')))).data.status == 'accepted'
           && request.resource.data.driverPhone == request.auth.token.get('phone_number', '');
-      // Either side ends the membership (active goes true -> false only).
       allow update: if signedIn()
           && ((resource.data.ownerId == request.auth.uid || resource.data.driverId == request.auth.uid)
               && changedKeys().hasOnly(['active', 'endedAt'])
               && resource.data.active == true && request.resource.data.active == false);
-      // The driver shares the expiry date of their licence with the fleet they
-      // belong to (the transporter gets a reminder). Only the date, only by the driver.
       allow update: if signedIn()
           && resource.data.driverId == request.auth.uid
           && resource.data.active == true
@@ -3136,15 +2446,6 @@ service cloud.firestore {
           && request.resource.data.licenceExpiry is timestamp;
       allow delete: if false;
     }
-
-    // ------------------------------------------------------------------
-    // Business accounts. A customer with a company profile (the owner) invites
-    // team members by phone (same flow as fleet_invites). Members are bookers:
-    // loads they post carry businessId = the owner, so the owner sees them and
-    // the monthly statement. business_statements/{ownerId}_{yyyy-MM} is the
-    // owner's saved record of a month (totals in paise per cost center);
-    // it is a record, not an invoice or a payment.
-    // ------------------------------------------------------------------
     match /business_invites/{inviteId} {
       allow read: if signedIn() && (resource.data.ownerId == request.auth.uid
           || resource.data.phone == request.auth.token.get('phone_number', ''));
@@ -3165,7 +2466,6 @@ service cloud.firestore {
                   && resource.data.status == 'pending' && request.resource.data.status in ['accepted', 'declined']));
       allow delete: if false;
     }
-
     match /business_members/{memberId} {
       allow read: if signedIn() && (resource.data.ownerId == request.auth.uid || resource.data.memberId == request.auth.uid);
       allow create: if signedIn()
@@ -3189,9 +2489,6 @@ service cloud.firestore {
                   && request.resource.data.role in ['manager', 'dispatch', 'accounts', 'viewer', 'booker']));
       allow delete: if false;
     }
-
-    // business_settings/{ownerId}: the owner's rules for the team. approvalLimitPaise
-    // = loads above it, posted by members other than managers, wait for approval.
     match /business_settings/{ownerId} {
       allow read: if bizReads(ownerId);
       allow create, update: if isUser(ownerId)
@@ -3202,8 +2499,6 @@ service cloud.firestore {
           && request.resource.data.updatedAt == request.time;
       allow delete: if false;
     }
-
-    // business_contracts: vehicles the company hires on contract (a record).
     match /business_contracts/{contractId} {
       allow read: if bizReads(resource.data.ownerId);
       allow create: if signedIn()
@@ -3220,9 +2515,6 @@ service cloud.firestore {
       allow update: if false;
       allow delete: if bizActs(resource.data.ownerId, ['manager']);
     }
-
-    // business_pool/{ownerId}_{driverId}: drivers the company approved; loads
-    // can be limited to them (visibility invite).
     match /business_pool/{poolId} {
       allow read: if bizReads(resource.data.ownerId);
       allow create: if signedIn()
@@ -3236,9 +2528,6 @@ service cloud.firestore {
       allow update: if false;
       allow delete: if bizActs(resource.data.ownerId, ['manager', 'dispatch']);
     }
-
-    // business_expenses: costs outside the freight bills (fuel on own vehicles,
-    // toll, loading, detention). A record for the spend dashboard (paise).
     match /business_expenses/{expenseId} {
       allow read: if bizActs(resource.data.ownerId, ['manager', 'accounts', 'viewer']);
       allow create: if signedIn()
@@ -3254,7 +2543,6 @@ service cloud.firestore {
       allow update: if false;
       allow delete: if bizActs(resource.data.ownerId, ['manager', 'accounts']);
     }
-
     match /business_statements/{statementId} {
       allow read: if bizActs(resource.data.ownerId, ['manager', 'accounts', 'viewer']);
       allow create, update: if signedIn()
@@ -3268,14 +2556,6 @@ service cloud.firestore {
           && request.resource.data.createdAt == request.time;
       allow delete: if false;
     }
-
-    // ------------------------------------------------------------------
-    // Empty-truck board. truck_posts/{id}: a verified driver's free truck
-    // (route, date up to 30 days ahead, own active vehicle). truck_requests/
-    // {postId}_{customerId}: one request per customer per post; the post's
-    // driver answers; the customer can withdraw. Nothing is booked here: an
-    // accepted request lets the customer post a load reserved for the driver.
-    // ------------------------------------------------------------------
     match /truck_posts/{postId} {
       allow read: if signedIn();
       allow create: if signedIn()
@@ -3300,7 +2580,6 @@ service cloud.firestore {
           && request.resource.data.status == 'closed';
       allow delete: if false;
     }
-
     match /truck_requests/{requestId} {
       allow read: if signedIn() && (resource.data.customerId == request.auth.uid || resource.data.driverId == request.auth.uid || isAdmin());
       allow create: if signedIn()
@@ -3319,7 +2598,6 @@ service cloud.firestore {
           && request.resource.data.get('note', '') is string && request.resource.data.get('note', '').size() <= 200
           && request.resource.data.status == 'pending'
           && request.resource.data.createdAt == request.time;
-      // The driver answers a pending request; the customer can withdraw one.
       allow update: if signedIn()
           && resource.data.status == 'pending'
           && ((resource.data.driverId == request.auth.uid
@@ -3330,39 +2608,21 @@ service cloud.firestore {
                   && request.resource.data.status == 'withdrawn'));
       allow delete: if false;
     }
-
-    // ------------------------------------------------------------------
-    // payouts/{id}: a driver asks for money from their wallet. Record only:
-    // an admin pays by hand and marks it paid or rejected. The rules cannot
-    // sum the ledger, so the balance and the one-open-request limit are
-    // checked in the app. TODO(functions): check them on the server.
-    // ------------------------------------------------------------------
     function walletFrozen(uid) {
       let p = /databases/$(database)/documents/wallet_freezes/$(uid);
       return exists(p) && get(p).data.get('frozen', false) == true;
     }
-
-    // Maker-checker is switched on in config/features (flag walletMakerChecker,
-    // default OFF): then a payout is approved by one finance admin and paid by another.
     function makerCheckerOn() {
       let p = /databases/$(database)/documents/config/features;
       return exists(p) && get(p).data.get('flags', {}).get('walletMakerChecker', false) == true;
     }
-
-    // When the server has written a summary, a request may not exceed what it says is available.
     function summaryAllows(uid, amount) {
       let p = /databases/$(database)/documents/wallets/$(uid);
       return !exists(p) || !(get(p).data.get('availablePaise', null) is int) || amount <= get(p).data.availablePaise;
     }
-
-    // walletLimits (F11): a waiting time after the payout details changed, and a
-    // limit per day on the number and the total of payouts. The rules cannot sum
-    // earlier payouts, so every request also moves a per-day counter in the same
-    // batch (payout_counters/{uid}_{yyyymmdd}). Limits live in config/wallet.
     function payoutDay() {
       return request.time.year() * 10000 + request.time.month() * 100 + request.time.day();
     }
-
     function payoutLimitsOk(payoutId) {
       let cfgP = /databases/$(database)/documents/config/wallet;
       let cfg = exists(cfgP) ? get(cfgP).data : {};
@@ -3376,7 +2636,6 @@ service cloud.firestore {
               && getAfter(cp).data.totalPaise <= cfg.get('dailyLimitPaise', 5000000)
               && getAfter(cp).data.count <= cfg.get('maxPerDay', 3));
     }
-
     match /payout_counters/{counterId} {
       function counterKeys(t) {
         return t.keys().hasOnly(['count', 'totalPaise', 'lastPayoutId', 'updatedAt'])
@@ -3395,7 +2654,6 @@ service cloud.firestore {
           && request.resource.data.totalPaise == resource.data.totalPaise + getAfter(/databases/$(database)/documents/payouts/$(request.resource.data.lastPayoutId)).data.amountPaise;
       allow delete: if false;
     }
-
     match /payouts/{payoutId} {
       allow read: if signedIn() && (resource.data.driverId == request.auth.uid || isAdmin());
       allow create: if signedIn()
@@ -3412,20 +2670,17 @@ service cloud.firestore {
           && canTransact(request.auth.uid);
       allow update: if adminIn(['super', 'finance'])
           && (
-              // The old single step, only while maker-checker is off.
               (!makerCheckerOn()
                   && resource.data.status == 'requested'
                   && changedKeys().hasOnly(['status', 'handledBy', 'handledAt'])
                   && request.resource.data.status in ['paid', 'rejected']
                   && request.resource.data.handledBy == request.auth.uid
                   && request.resource.data.handledAt == request.time)
-              // Maker: approve.
               || (resource.data.status == 'requested'
                   && changedKeys().hasOnly(['status', 'approvedBy', 'approvedAt'])
                   && request.resource.data.status == 'approved'
                   && request.resource.data.approvedBy == request.auth.uid
                   && request.resource.data.approvedAt == request.time)
-              // Checker: pay, with the bank or UPI reference, by someone other than the approver.
               || (resource.data.status == 'approved'
                   && resource.data.get('approvedBy', request.auth.uid) != request.auth.uid
                   && changedKeys().hasOnly(['status', 'paidBy', 'paidAt', 'reference'])
@@ -3434,7 +2689,6 @@ service cloud.firestore {
                   && request.resource.data.paidAt == request.time
                   && request.resource.data.reference is string
                   && request.resource.data.reference.size() >= 4 && request.resource.data.reference.size() <= 60)
-              // Reject at either stage, with a reason.
               || (resource.data.status in ['requested', 'approved']
                   && changedKeys().hasOnly(['status', 'handledBy', 'handledAt', 'reason'])
                   && request.resource.data.status == 'rejected'
@@ -3442,7 +2696,6 @@ service cloud.firestore {
                   && request.resource.data.handledAt == request.time
                   && request.resource.data.reason is string
                   && request.resource.data.reason.size() >= 3 && request.resource.data.reason.size() <= 200)
-              // Reverse a paid payout (the transfer failed or came back), with a reason.
               || (resource.data.status == 'paid'
                   && changedKeys().hasOnly(['status', 'reversedBy', 'reversedAt', 'reason'])
                   && request.resource.data.status == 'reversed'
@@ -3453,12 +2706,6 @@ service cloud.firestore {
           );
       allow delete: if false;
     }
-
-    // ------------------------------------------------------------------
-    // Driver extras (record only; TODO(functions) to count and settle):
-    // tips after delivery, admin-made incentives with once-only claims, and
-    // Pro plan requests that an admin answers by hand.
-    // ------------------------------------------------------------------
     match /tips/{bookingId} {
       allow read: if signedIn() && (resource.data.customerId == request.auth.uid
           || resource.data.driverId == request.auth.uid || isAdmin());
@@ -3474,7 +2721,6 @@ service cloud.firestore {
           && request.resource.data.createdAt == request.time;
       allow update, delete: if false;
     }
-
     function validIncentive() {
       let i = request.resource.data;
       return i.keys().hasOnly(['title', 'targetTrips', 'windowDays', 'bonusPaise', 'startsAt', 'active', 'createdAt', 'updatedAt'])
@@ -3485,15 +2731,11 @@ service cloud.firestore {
           && i.startsAt is timestamp
           && i.active is bool;
     }
-
     match /incentives/{incentiveId} {
       allow read: if signedIn();
       allow create, update: if adminIn(['super']) && validIncentive();
       allow delete: if false;
     }
-
-    // incentive_claims/{incentiveId}_{driverId}: one claim per driver per
-    // incentive. The rules cannot count trips: an admin checks before paying.
     match /incentive_claims/{claimId} {
       allow read: if signedIn() && (resource.data.driverId == request.auth.uid || isAdmin());
       allow create: if signedIn()
@@ -3515,9 +2757,6 @@ service cloud.firestore {
           && request.resource.data.status == 'paid';
       allow delete: if false;
     }
-
-    // plan_requests/{driverUid}: "I would like Pro". The plan itself lives on
-    // users/{uid}.plan and only an admin can change it.
     match /plan_requests/{driverUid} {
       allow read: if isUser(driverUid) || isAdmin();
       allow create: if isUser(driverUid)
@@ -3526,7 +2765,6 @@ service cloud.firestore {
           && request.resource.data.plan == 'pro'
           && request.resource.data.status == 'pending'
           && request.resource.data.createdAt == request.time;
-      // The driver can ask again after an answer (the same document, back to pending).
       allow update: if (isUser(driverUid)
               && resource.data.status in ['approved', 'rejected']
               && request.resource.data.keys().hasOnly(['uid', 'plan', 'status', 'createdAt'])
@@ -3538,37 +2776,23 @@ service cloud.firestore {
               && request.resource.data.status in ['approved', 'rejected']);
       allow delete: if false;
     }
-
-    // ------------------------------------------------------------------
-    // Customer offers: promo codes, credits ledger, referrals.
-    // All of it is "record only": no money moves and totals are not summed
-    // by the server. The rules enforce what they can: promo limits through
-    // create-only slot documents, one referral per user, positive credits
-    // only from a referral or an admin.
-    // TODO(functions): sum balances, expire credits and settle discounts.
-    // ------------------------------------------------------------------
     function slotPath(code, n) {
       return /databases/$(database)/documents/promos/$(code)/slots/$(n);
     }
-
     function usePath(code, id) {
       return /databases/$(database)/documents/promos/$(code)/uses/$(id);
     }
-
     function creditPath(uid, id) {
       return /databases/$(database)/documents/users/$(uid)/credits/$(id);
     }
-
     function promoDiscount(p, total) {
       let raw = p.type == 'percent' ? math.floor(total * p.value / 100) : p.value;
       let capped = (p.get('maxDiscountPaise', 0) > 0 && raw > p.maxDiscountPaise) ? p.maxDiscountPaise : raw;
       return capped > total ? total : capped;
     }
-
     function promoUsable(p) {
       return p.active == true && p.expiresAt > request.time;
     }
-
     function validPromoDoc(code) {
       let p = request.resource.data;
       return p.keys().hasOnly(['code', 'type', 'value', 'maxDiscountPaise', 'minOrderPaise', 'expiresAt', 'usageLimit',
@@ -3585,17 +2809,11 @@ service cloud.firestore {
           && p.perUserLimit is int && p.perUserLimit >= 1 && p.perUserLimit <= 100
           && p.active is bool;
     }
-
     match /promos/{code} {
       allow get: if signedIn();
       allow list: if isAdmin();
       allow create, update: if adminIn(['super']) && validPromoDoc(code);
       allow delete: if false;
-
-      // One document per redemption, numbered 1..usageLimit (no user id, so a
-      // signed-in user can probe for a free number). A second create for the
-      // same number is an update and fails, so the limit holds even when two
-      // people redeem at once.
       match /slots/{n} {
         allow get: if signedIn();
         allow list: if isAdmin();
@@ -3609,8 +2827,6 @@ service cloud.firestore {
             && getAfter(docPath('loads', request.resource.data.loadId)).data.promo.slot == int(n);
         allow update, delete: if false;
       }
-
-      // The same, per user: id is uid_1 .. uid_perUserLimit.
       match /uses/{useId} {
         allow get: if signedIn() && useId.matches('^' + request.auth.uid + '_[0-9]+$');
         allow list: if isAdmin();
@@ -3626,16 +2842,9 @@ service cloud.firestore {
         allow update, delete: if false;
       }
     }
-
-    // The offer on a new load: the code must be usable, the order big enough,
-    // the discount exactly what the code gives, and the slot / per-user
-    // documents must be created in the same batch.
-    // config/offers switches (promoEnabled, creditsEnabled, referralEnabled):
-    // all OFF until an admin turns them on.
     function offersOn(flag) {
       return exists(docPath('config', 'offers')) && get(docPath('config', 'offers')).data.get(flag, false) == true;
     }
-
     function validPromoOnCreate(loadId, d) {
       let pr = d.get('promo', null);
       let p = get(docPath('promos', pr.code)).data;
@@ -3651,33 +2860,23 @@ service cloud.firestore {
           && getAfter(slotPath(pr.code, string(pr.slot))).data.loadId == loadId
           && getAfter(usePath(pr.code, d.shipperId + '_' + string(pr.use))).data.loadId == loadId;
     }
-
     function validCreditsOnCreate(loadId, d) {
       let used = d.get('creditsUsedPaise', 0);
       return used is int && used >= 0
-          // The spend line's own rule (users/*/credits) checks the switch, the load id and that the amount is within the estimate.
           && (used == 0 || getAfter(creditPath(d.shipperId, 'spend_' + loadId)).data.amountPaise == -used);
     }
-
     function offersCreateOk(loadId, d) {
-      // validPromoShape(d) already runs in validLoad; not repeated here (the load create rule is near the 1000-expression limit).
       return (!('promo' in d) || validPromoOnCreate(loadId, d)) && validCreditsOnCreate(loadId, d);
     }
-
     function validPromoShape(d) {
       return !('promo' in d)
           || (d.promo is map && d.promo.code is string && d.promo.code.matches('^[A-Z0-9]{3,20}$'));
     }
-
     function referralBonus() {
       return exists(docPath('config', 'offers'))
           ? get(docPath('config', 'offers')).data.get('referralBonusPaise', 10000)
           : 10000;
     }
-
-    // users/{uid}/credits/{id}: append-only ledger lines (signed paise).
-    // Owner: spend lines tied to their own new load, and the two referral
-    // lines of a valid referral. Admin: grants and refunds.
     match /users/{userId}/credits/{lineId} {
       allow read: if isUser(userId) || isAdmin();
       allow create: if signedIn()
@@ -3703,9 +2902,6 @@ service cloud.firestore {
                   && (!('note' in request.resource.data) || request.resource.data.note.size() <= 200)));
       allow update, delete: if false;
     }
-
-    // referral_codes/{CODE} = {uid}: a user's own short code (set once on the
-    // profile as users.referralCode).
     match /referral_codes/{code} {
       allow get: if signedIn();
       allow list: if false;
@@ -3716,9 +2912,6 @@ service cloud.firestore {
           && getAfter(docPath('users', request.auth.uid)).data.referralCode == code;
       allow update, delete: if false;
     }
-
-    // referrals/{refereeUid}: one referral per user, never your own code, only
-    // in the first 7 days of the account, and both credit lines in the batch.
     match /referrals/{refereeUid} {
       allow read: if isUser(refereeUid) || isAdmin() || resource.data.referrerUid == request.auth.uid;
       allow create: if isUser(refereeUid)
@@ -3732,13 +2925,6 @@ service cloud.firestore {
           && existsAfter(creditPath(request.resource.data.referrerUid, 'referral_from_' + request.auth.uid));
       allow update, delete: if false;
     }
-
-    // Pilot invite codes (MASTER-6 Task 1). invite_codes/{code}: an admin makes
-    // a code (role, route label, uses, last day); any signed-in person can read
-    // one code by id but only an admin lists them. A person raises `uses` by
-    // exactly one together with their own invite_redemptions/{uid}.
-    // TODO(functions): the redemption belongs in a trigger; today the app only
-    // gates the sign-up screens, the rules keep the counter honest.
     match /invite_codes/{code} {
       allow get: if signedIn();
       allow list: if isAdmin();
@@ -3765,7 +2951,6 @@ service cloud.firestore {
               && getAfter(docPath('invite_redemptions', request.auth.uid)).data.code == code);
       allow delete: if false;
     }
-
     match /invite_redemptions/{uid} {
       allow read: if isUser(uid) || isAdmin();
       allow create: if isUser(uid)
@@ -3777,9 +2962,6 @@ service cloud.firestore {
               == get(docPath('invite_codes', request.resource.data.code)).data.uses + 1;
       allow update, delete: if false;
     }
-
-    // pilot_whitelist/{phoneDigits}: people let in without a code. A person can
-    // read only the entry of their own sign-in phone number.
     match /pilot_whitelist/{digits} {
       allow get: if signedIn() && digits == phoneDigits(request.auth.token.get('phone_number', ''));
       allow list: if isAdmin();
@@ -3791,10 +2973,6 @@ service cloud.firestore {
       allow update: if false;
       allow delete: if adminIn(['super', 'ops']);
     }
-
-    // waitlist/{uid}_{from}_{to}: a person asks to hear when a closed route
-    // opens (MASTER-6 Task 2). The owner reads and deletes their entries;
-    // admins read them all. TODO(functions): notify on open.
     match /waitlist/{entryId} {
       allow read: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid);
       allow create: if signedIn()
@@ -3808,11 +2986,6 @@ service cloud.firestore {
       allow update: if false;
       allow delete: if signedIn() && resource.data.uid == request.auth.uid;
     }
-
-    // dispatch_suggestions/{loadId}_{driverId} (MASTER-6 Task 4): an admin
-    // suggests an unfilled load to a driver. It assigns nothing; the driver
-    // reads their own and can only mark it seen or declined.
-    // TODO(functions): notify the driver.
     match /dispatch_suggestions/{id} {
       allow read: if isAdmin() || (signedIn() && resource.data.driverId == request.auth.uid);
       allow create: if adminIn(['super', 'ops'])
@@ -3831,10 +3004,6 @@ service cloud.firestore {
           && request.resource.data.status in ['seen', 'declined'];
       allow delete: if adminIn(['super', 'ops']) || (signedIn() && resource.data.driverId == request.auth.uid);
     }
-
-    // trip_surveys/{bookingId}_{uid} (MASTER-6 Task 7): "would you use it
-    // again?" from each side of a delivered trip, once. The owner reads and
-    // deletes their answer; admins read all.
     match /trip_surveys/{id} {
       allow read: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid);
       allow create: if signedIn()
@@ -3852,11 +3021,6 @@ service cloud.firestore {
       allow update: if false;
       allow delete: if signedIn() && resource.data.uid == request.auth.uid;
     }
-
-    // payment_nudges/{bookingId}_{customer|driver} (MASTER-6 Task 8): an admin
-    // reminds the party that is slow with a payment record. The person reads
-    // their own; a second nudge needs a six-hour gap.
-    // TODO(functions): send a push.
     match /payment_nudges/{id} {
       allow read: if isAdmin() || (signedIn() && resource.data.userId == request.auth.uid);
       allow create: if adminIn(['super', 'ops', 'support', 'finance'])
@@ -3875,9 +3039,6 @@ service cloud.firestore {
           && request.time > resource.data.lastAt + duration.value(6, 'h');
       allow delete: if signedIn() && resource.data.userId == request.auth.uid;
     }
-
-    // config_history/{id} (MASTER-6 Task 13): the version of a config document
-    // that a save replaced, so a super admin can put it back. Append-only.
     match /config_history/{id} {
       allow read: if adminIn(['super']);
       allow create: if adminIn(['super'])
@@ -3888,17 +3049,10 @@ service cloud.firestore {
           && request.resource.data.createdAt == request.time;
       allow update, delete: if false;
     }
-
-    // credit_balances/{uid}: the real credits balance, added up by the server
-    // (functions/src/credits.js). Clients read their own; nobody writes from a client.
     match /credit_balances/{uid} {
       allow read: if signedIn() && (request.auth.uid == uid || isAdmin());
       allow write: if false;
     }
-
-    // trip_counts/{uid}: delivered trips counted once each by the server (for
-    // incentives). public_trust/{uid}: the safe numbers other people may see
-    // about a driver (trips, rating, verified, member since). Server-written only.
     match /trip_counts/{uid} {
       allow read: if signedIn() && (request.auth.uid == uid || isAdmin());
       allow write: if false;
@@ -3906,40 +3060,27 @@ service cloud.firestore {
         allow read, write: if false;
       }
     }
-
-    // route_rates/{from}_{to}_{type} (G20): the last 30 final amounts of finished trips on a route. Server-written only;
-    // one document at a time by its id (the list cannot be read). route_rates_seen is the server's own bookkeeping.
     match /route_rates/{key} {
       allow get: if signedIn();
       allow list, write: if false;
     }
-
     match /route_rates_seen/{bookingId} {
       allow read, write: if false;
     }
-
     match /public_trust/{uid} {
-      // One person at a time (by id); the whole list cannot be read.
       allow get: if signedIn();
       allow list, write: if false;
     }
-
-    // reconciliation_reports/{yyyymmdd}: the server's daily check of every earnings book. Admins read.
     match /reconciliation_reports/{day} {
       allow read: if isAdmin();
       allow write: if false;
     }
-
-    // Records of uploaded photos and papers (F28): the file itself is in Cloud
-    // Storage (storage.rules); this says what it is. Never a download link:
-    // the app reads the file with its sign-in. Append-only, owner deletes.
     function validUploadMeta(d, folder, id) {
       return d.size is int && d.size > 0 && d.size < 5 * 1024 * 1024
           && d.contentType is string && d.contentType.matches('image/(jpeg|png|webp|heic|heif)')
           && d.path is string && d.path.matches(folder + '/' + id + '[.][a-z0-9]{3,4}')
           && d.createdAt == request.time;
     }
-
     match /users/{userId}/uploads/{uploadId} {
       allow read: if isUser(userId) || isAdmin();
       allow create: if isUser(userId)
@@ -3951,7 +3092,6 @@ service cloud.firestore {
       allow update: if false;
       allow delete: if isUser(userId);
     }
-
     match /bookings/{bookingId}/proofs/{proofId} {
       function proofParty(b) {
         return request.auth.uid == b.driverId || request.auth.uid == b.get('assignedDriverId', '') || request.auth.uid == b.customerId;
@@ -3968,18 +3108,11 @@ service cloud.firestore {
                   || request.auth.uid == get(docPath('bookings', bookingId)).data.get('assignedDriverId', '')));
       allow update, delete: if false;
     }
-
     match /config/{docId} {
       allow read: if signedIn();
       allow create, update: if adminIn(['super']) && validConfig(docId);
       allow delete: if false;
     }
-
-    // ------------------------------------------------------------------
-    // notifications: in-app messages between the two parties of a booking.
-    // Created by one party for the other (same transaction as the event);
-    // only the recipient reads them and may only mark them read.
-    // ------------------------------------------------------------------
     function validNotification() {
       let n = request.resource.data;
       let b = getAfter(docPath('bookings', n.relatedId)).data;
@@ -3991,7 +3124,6 @@ service cloud.firestore {
           && request.auth.uid in [b.driverId, b.customerId, b.get('assignedDriverId', ''), b.get('fleetOwnerId', '')]
           && n.userId in [b.driverId, b.customerId, b.get('assignedDriverId', ''), b.get('fleetOwnerId', '')];
     }
-
     match /notifications/{notificationId} {
       allow read: if signedIn() && resource.data.userId == request.auth.uid;
       allow create: if signedIn() && validNotification();
@@ -4001,9 +3133,6 @@ service cloud.firestore {
           && request.resource.data.read == true;
       allow delete: if signedIn() && resource.data.userId == request.auth.uid;
     }
-
-    // Anything not matched above is closed (this is Firestore's default; the
-    // explicit rule documents it and a test pins it).
     match /{document=**} {
       allow read, write: if false;
     }
