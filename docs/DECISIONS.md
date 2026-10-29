@@ -49,3 +49,4 @@ One line per assumption taken without asking.
 - E3 (2026-10-29): legal gate flags are camelCase keys (legalGateEscrow, not legalGate.escrow), because a dot would split the Firestore field path in config/features.flags.
 - E3: Elite flags are added to Features.registry only when their feature is finished; until then they are 'planned' in docs/FLAGS.md and a test blocks registering them, so no half-built screen is reachable. Kill-switch groups get Elite keys as each flag goes live.
 - E2: firestore.rules comments were moved to docs/firestore.rules.annotated.txt (not deployed) to get 43 KB of room; no rule text changed.
+- E4: default builds use the `No...` adapters (calm 'not configured'), not the fakes, so no made-up data can reach a real user; fakes are for tests only. Client cost caps only stop a runaway phone; the server must repeat them (E79).

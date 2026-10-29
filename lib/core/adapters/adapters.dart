@@ -3,6 +3,9 @@
 // "not configured" default that fails in a calm, typed way. The app today uses
 // the free paths; docs/PAID_ADAPTERS.md says how to plug a provider in and
 // which contract test it must pass (test/adapter_contract_test.dart).
+export 'connect_adapters.dart';
+export 'connect_registry.dart';
+export 'cost_guard.dart';
 export 'eway_adapter.dart';
 export 'kyc_adapter.dart';
 export 'maps_adapter.dart';

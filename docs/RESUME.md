@@ -2,8 +2,8 @@
 
 Plan: docs/MASTER_PLAN_PART5.md. Read it, then continue from NEXT. Part 4 is complete (git log, tags ux-v2-phase4..6).
 
-LAST_DONE: Elite E3 (flag groups on Admin > Features, docs/FLAGS.md, test/flag_registry_test.dart). Before: E0, E2; E1 skipped. Plan: docs/MASTER_PLAN_ELITE.md.
-NEXT: E4 connect-ready adapter kit (lib/core/adapters has some already: reuse), then E5 LICENSES.md, tag elite-phase0.
+LAST_DONE: Elite E4 (connect kit: 12 new adapters, ConnectKit registry, CostGuard, 18 docs/CONNECT_*.md, test/connect_kit_test.dart). Before: E0, E2, E3; E1 skipped. Plan: docs/MASTER_PLAN_ELITE.md.
+NEXT: E5 docs/LICENSES.md + dependency policy test, then tag elite-phase0 and the phase 0 critic pass.
 
 Unfinished / to remember:
 - Never edit hosting/*.html by hand: edit tool/templates/hosting/ and run `dart run tool/apply_app_info.dart`. Scripts and styles live in hosting/assets/.

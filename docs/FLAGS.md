@@ -94,6 +94,8 @@ Status `planned` = not registered and not reachable. `live` = registered, entry 
 | `erpApi` | E54 | planned | server | off | functions deployed | high | - |
 | `esgReport` | E55 | planned | core | off | - | low | - |
 | `chatV2` | E57 | planned | core | off | - | medium | - |
+| `autoTranslate` | E57 | planned | connect | off | chatV2 | medium | - |
+| `whatsappGateway` | E58 | planned | connect | off | - | high | - |
 | `trackingV2` | E59 | planned | connect | off | liveLocation, maps | medium | - |
 | `deviceIngest` | E60 | planned | server | off | functions deployed | medium | - |
 | `loyaltyTiers` | E61 | planned | core | off | - | medium | - |

@@ -24,3 +24,9 @@ Everything in `lib/core/adapters/` is the plug for a paid service. Today the app
 ## Rules the interfaces follow
 - Money is always `int` paise. Phone numbers are E.164. Results are typed values (`ok` / `failure`), not exceptions, so a provider outage never crashes a screen.
 - Each default (`No...`) must be safe to ship: no network call, no throw.
+
+## Elite connect kit (E4)
+- `lib/core/adapters/connect_adapters.dart`: Toll, Places, WhatsApp, Payout, Liveness, OCR, Translation, Speech, Device telemetry, Insurance quotes, Credit partner links, ERP webhooks (interface, `No...` default, `Fake...`).
+- `lib/core/adapters/connect_registry.dart` (`ConnectKit`): one line per service with its switch, owner sheet (`docs/CONNECT_<ID>.md`) and cost caps. The real adapter is used only when the switch is ON and `config/providers.<id>.configured` is true. `config/providers` holds only booleans and caps, never a key.
+- `lib/core/adapters/cost_guard.dart`: daily and per-user caps, and the switch as kill switch. Config may lower caps, never raise them.
+- Test: `test/connect_kit_test.dart`.
