@@ -46,3 +46,6 @@ One line per assumption taken without asking.
 - Z1: Diagnose probes use the same service streams as the screens (first event, 6 s timeout); limit 1 is not forced because the services own their limits. Server time difference is not measured (no free read gives it, the screen never writes). Device model shows the platform name only (no new plugin).
 - Z9: skipped, rules would have to let an admin write documents under another user's id; written in docs/BLOCKED.md.
 - Z22: web release builds not run: free memory was 4.4 GB, rule says 5 GB.
+- E3 (2026-10-29): legal gate flags are camelCase keys (legalGateEscrow, not legalGate.escrow), because a dot would split the Firestore field path in config/features.flags.
+- E3: Elite flags are added to Features.registry only when their feature is finished; until then they are 'planned' in docs/FLAGS.md and a test blocks registering them, so no half-built screen is reachable. Kill-switch groups get Elite keys as each flag goes live.
+- E2: firestore.rules comments were moved to docs/firestore.rules.annotated.txt (not deployed) to get 43 KB of room; no rule text changed.

@@ -5,7 +5,25 @@ class FeatureSpec {
   final String key;
   final bool pilotOn;
   final bool normalOn;
-  const FeatureSpec(this.key, {required this.pilotOn, this.normalOn = true});
+
+  /// E3: the heading on Admin > Features (one of [FeatureGroup.all]).
+  final String group;
+  const FeatureSpec(this.key, {required this.pilotOn, this.normalOn = true, this.group = FeatureGroup.core});
+}
+
+/// E3: the headings on Admin > Features, in screen order. docs/FLAGS.md lists every flag by group.
+class FeatureGroup {
+  FeatureGroup._();
+  static const core = 'core';
+  static const design = 'design';
+  static const security = 'security';
+  static const money = 'money';
+  static const server = 'server';
+  static const connect = 'connect';
+
+  /// Regulated parts (payment hold, payouts, insurance, credit). Keys start with `legalGate` and are OFF in every mode.
+  static const legal = 'legal';
+  static const all = [core, design, security, money, server, connect, legal];
 }
 
 class FeatureKey {
@@ -89,40 +107,46 @@ class Features {
     // Task 70: numbered LR (bilty) with copy types, PDF and share links. ON for testing.
     FeatureSpec(FeatureKey.bilty, pilotOn: true),
     // F4: OFF until the owner has tried it on a real phone.
-    FeatureSpec(FeatureKey.secureScreens, pilotOn: false, normalOn: false),
-    FeatureSpec(FeatureKey.walletHub, pilotOn: false, normalOn: false),
-    FeatureSpec(FeatureKey.walletMakerChecker, pilotOn: false, normalOn: false),
-    FeatureSpec(FeatureKey.walletStepUp, pilotOn: false, normalOn: false),
-    FeatureSpec(FeatureKey.walletLimits, pilotOn: false, normalOn: false),
-    FeatureSpec(FeatureKey.appLock, pilotOn: false, normalOn: false),
-    FeatureSpec(FeatureKey.serverLimits, pilotOn: false, normalOn: false),
-    FeatureSpec(FeatureKey.serverChatScan, pilotOn: false, normalOn: false),
-    FeatureSpec(FeatureKey.serverCredits, pilotOn: false, normalOn: false),
-    FeatureSpec(FeatureKey.serverTrust, pilotOn: false, normalOn: false),
-    FeatureSpec(FeatureKey.serverJobs, pilotOn: false, normalOn: false),
-    FeatureSpec(FeatureKey.serverAdminActions, pilotOn: false, normalOn: false),
-    FeatureSpec(FeatureKey.serverDeletion, pilotOn: false, normalOn: false),
-    FeatureSpec(FeatureKey.serverWallet, pilotOn: false, normalOn: false),
-    FeatureSpec(FeatureKey.paymentGateway, pilotOn: false, normalOn: false),
-    FeatureSpec(FeatureKey.pushNotifications, pilotOn: false, normalOn: false),
-    FeatureSpec(FeatureKey.adminBroadcast, pilotOn: false, normalOn: false),
-    FeatureSpec(FeatureKey.photoUploads, pilotOn: false, normalOn: false),
-    FeatureSpec(FeatureKey.dispatchV2, pilotOn: false, normalOn: false),
-    FeatureSpec(FeatureKey.uiV2, pilotOn: true, normalOn: true),
+    FeatureSpec(FeatureKey.secureScreens, pilotOn: false, normalOn: false, group: FeatureGroup.security),
+    FeatureSpec(FeatureKey.walletHub, pilotOn: false, normalOn: false, group: FeatureGroup.money),
+    FeatureSpec(FeatureKey.walletMakerChecker, pilotOn: false, normalOn: false, group: FeatureGroup.money),
+    FeatureSpec(FeatureKey.walletStepUp, pilotOn: false, normalOn: false, group: FeatureGroup.money),
+    FeatureSpec(FeatureKey.walletLimits, pilotOn: false, normalOn: false, group: FeatureGroup.money),
+    FeatureSpec(FeatureKey.appLock, pilotOn: false, normalOn: false, group: FeatureGroup.security),
+    FeatureSpec(FeatureKey.serverLimits, pilotOn: false, normalOn: false, group: FeatureGroup.server),
+    FeatureSpec(FeatureKey.serverChatScan, pilotOn: false, normalOn: false, group: FeatureGroup.server),
+    FeatureSpec(FeatureKey.serverCredits, pilotOn: false, normalOn: false, group: FeatureGroup.server),
+    FeatureSpec(FeatureKey.serverTrust, pilotOn: false, normalOn: false, group: FeatureGroup.server),
+    FeatureSpec(FeatureKey.serverJobs, pilotOn: false, normalOn: false, group: FeatureGroup.server),
+    FeatureSpec(FeatureKey.serverAdminActions, pilotOn: false, normalOn: false, group: FeatureGroup.server),
+    FeatureSpec(FeatureKey.serverDeletion, pilotOn: false, normalOn: false, group: FeatureGroup.server),
+    FeatureSpec(FeatureKey.serverWallet, pilotOn: false, normalOn: false, group: FeatureGroup.server),
+    FeatureSpec(FeatureKey.paymentGateway, pilotOn: false, normalOn: false, group: FeatureGroup.money),
+    FeatureSpec(FeatureKey.pushNotifications, pilotOn: false, normalOn: false, group: FeatureGroup.connect),
+    FeatureSpec(FeatureKey.adminBroadcast, pilotOn: false, normalOn: false, group: FeatureGroup.server),
+    FeatureSpec(FeatureKey.photoUploads, pilotOn: false, normalOn: false, group: FeatureGroup.connect),
+    FeatureSpec(FeatureKey.dispatchV2, pilotOn: false, normalOn: false, group: FeatureGroup.server),
+    FeatureSpec(FeatureKey.uiV2, pilotOn: true, normalOn: true, group: FeatureGroup.design),
     FeatureSpec(FeatureKey.bizCard, pilotOn: false, normalOn: false),
     FeatureSpec(FeatureKey.khata, pilotOn: false, normalOn: false),
-    FeatureSpec(FeatureKey.safetyCheckin, pilotOn: false, normalOn: false),
-    FeatureSpec(FeatureKey.payHold, pilotOn: false, normalOn: false),
+    FeatureSpec(FeatureKey.safetyCheckin, pilotOn: false, normalOn: false, group: FeatureGroup.security),
+    FeatureSpec(FeatureKey.payHold, pilotOn: false, normalOn: false, group: FeatureGroup.money),
     FeatureSpec(FeatureKey.rateRange, pilotOn: false, normalOn: false),
     FeatureSpec(FeatureKey.tripTrustCard, pilotOn: false, normalOn: false),
-    FeatureSpec(FeatureKey.appCheckEnforce, pilotOn: false, normalOn: false),
-    FeatureSpec(FeatureKey.kycVerify, pilotOn: false, normalOn: false),
-    FeatureSpec(FeatureKey.smsGateway, pilotOn: false, normalOn: false),
-    FeatureSpec(FeatureKey.liveLocation, pilotOn: false, normalOn: false),
-    FeatureSpec(FeatureKey.maps, pilotOn: false, normalOn: false),
+    FeatureSpec(FeatureKey.appCheckEnforce, pilotOn: false, normalOn: false, group: FeatureGroup.security),
+    FeatureSpec(FeatureKey.kycVerify, pilotOn: false, normalOn: false, group: FeatureGroup.connect),
+    FeatureSpec(FeatureKey.smsGateway, pilotOn: false, normalOn: false, group: FeatureGroup.connect),
+    FeatureSpec(FeatureKey.liveLocation, pilotOn: false, normalOn: false, group: FeatureGroup.connect),
+    FeatureSpec(FeatureKey.maps, pilotOn: false, normalOn: false, group: FeatureGroup.connect),
   ];
 
   static final _byKey = {for (final s in registry) s.key: s};
+
+  /// E3: the registry entries under one Admin > Features heading, in registry order.
+  static List<FeatureSpec> inGroup(String group) => [
+    for (final s in registry)
+      if (s.group == group) s,
+  ];
 
   static const pilotDefault = Features();
 
@@ -143,7 +167,12 @@ class Features {
     final raw = m['flags'];
     return Features(
       pilotMode: m['pilotMode'] is bool ? m['pilotMode'] as bool : true,
-      flags: raw is Map ? {for (final e in raw.entries) if (e.key is String && _byKey.containsKey(e.key) && e.value is bool) e.key as String: e.value as bool} : const {},
+      flags: raw is Map
+          ? {
+              for (final e in raw.entries)
+                if (e.key is String && _byKey.containsKey(e.key) && e.value is bool) e.key as String: e.value as bool,
+            }
+          : const {},
     );
   }
 

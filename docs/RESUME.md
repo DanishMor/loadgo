@@ -2,8 +2,8 @@
 
 Plan: docs/MASTER_PLAN_PART5.md. Read it, then continue from NEXT. Part 4 is complete (git log, tags ux-v2-phase4..6).
 
-LAST_DONE: Elite E0 (baseline, tag pre-elite), E1 skipped (no OWNER_BUGS.md), E2 (rules 243 KB -> 200 KB, size test). Plan: docs/MASTER_PLAN_ELITE.md.
-NEXT: E3 flag registry (docs/FLAGS.md, admin Features groups, guard test), then E4, E5. Free RAM was 2.7 GB: wait for over 3 GB before big test batches.
+LAST_DONE: Elite E3 (flag groups on Admin > Features, docs/FLAGS.md, test/flag_registry_test.dart). Before: E0, E2; E1 skipped. Plan: docs/MASTER_PLAN_ELITE.md.
+NEXT: E4 connect-ready adapter kit (lib/core/adapters has some already: reuse), then E5 LICENSES.md, tag elite-phase0.
 
 Unfinished / to remember:
 - Never edit hosting/*.html by hand: edit tool/templates/hosting/ and run `dart run tool/apply_app_info.dart`. Scripts and styles live in hosting/assets/.

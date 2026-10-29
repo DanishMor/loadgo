@@ -1,4 +1,5 @@
 import '../core/errors/error_text.dart';
+
 import 'package:flutter/material.dart';
 
 import '../core/features/features.dart';
@@ -76,61 +77,82 @@ class _AdminFeaturesScreenState extends State<AdminFeaturesScreen> {
       appBar: AppBar(title: Text(tr(context, 'adminFeatures'))),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
-          : ListView(padding: const EdgeInsets.all(16), children: [
-              SwitchListTile(
-                key: const ValueKey('featPilot'),
-                contentPadding: EdgeInsets.zero,
-                title: Text(tr(context, 'featPilotMode'), style: DsStyle.w700),
-                subtitle: Text(tr(context, 'featPilotNote')),
-                value: _f.pilotMode,
-                onChanged: _saving ? null : (v) => _save(_f.withPilot(v)),
-              ),
-              const Divider(),
-              Text(tr(context, 'killTitle'), style: DsStyle.w700),
-              const SizedBox(height: 4),
-              Text(tr(context, 'killHelp'), style: DsStyle.t12w400.copyWith(color: AppColors.muted)),
-              const SizedBox(height: 8),
-              for (final g in KillSwitches.groups)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: OutlinedButton(
-                    key: ValueKey('kill_${g.id}'),
-                    onPressed: _saving ? null : () => _kill(g),
-                    child: Text(tr(context, 'killGroup_${g.id}'), textAlign: TextAlign.center),
+          : ListView(
+              padding: const EdgeInsets.all(16),
+              children: [
+                SwitchListTile(
+                  key: const ValueKey('featPilot'),
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(tr(context, 'featPilotMode'), style: DsStyle.w700),
+                  subtitle: Text(tr(context, 'featPilotNote')),
+                  value: _f.pilotMode,
+                  onChanged: _saving ? null : (v) => _save(_f.withPilot(v)),
+                ),
+                const Divider(),
+                Text(tr(context, 'killTitle'), style: DsStyle.w700),
+                const SizedBox(height: 4),
+                Text(tr(context, 'killHelp'), style: DsStyle.t12w400.copyWith(color: AppColors.muted)),
+                const SizedBox(height: 8),
+                for (final g in KillSwitches.groups)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: OutlinedButton(
+                      key: ValueKey('kill_${g.id}'),
+                      onPressed: _saving ? null : () => _kill(g),
+                      child: Text(tr(context, 'killGroup_${g.id}'), textAlign: TextAlign.center),
+                    ),
                   ),
-                ),
-              const Divider(),
-              for (final spec in Features.registry)
-                Padding(
-                  key: ValueKey('feat_${spec.key}'),
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Row(children: [
-                      Expanded(child: Text(tr(context, 'feat_${spec.key}'), style: DsStyle.w700)),
-                      StatusChip(
-                        label: _f.isOn(spec.key) ? tr(context, 'featOn') : tr(context, 'featOff'),
-                        color: _f.isOn(spec.key) ? AppColors.success : AppColors.muted,
+                for (final group in FeatureGroup.all)
+                  if (Features.inGroup(group).isNotEmpty) ...[
+                    const Divider(),
+                    Semantics(
+                      header: true,
+                      child: Text(
+                        tr(context, 'featGroup_$group'),
+                        key: ValueKey('featGroup_$group'),
+                        style: DsStyle.w700.copyWith(color: AppColors.primary),
                       ),
-                    ]),
-                    Padding(
-                      padding: const EdgeInsets.only(top: 2),
-                      child: Text(tr(context, 'featHelp_${spec.key}'), key: ValueKey('featHelp_${spec.key}'), style: DsStyle.t12w400.copyWith(color: AppColors.muted)),
                     ),
-                    const SizedBox(height: 6),
-                    SegmentedButton<int>(
-                      key: ValueKey('featMode_${spec.key}'),
-                      showSelectedIcon: false,
-                      segments: [
-                        ButtonSegment(value: 0, label: Text(tr(context, 'featDefault'))),
-                        ButtonSegment(value: 1, label: Text(tr(context, 'featOn'))),
-                        ButtonSegment(value: 2, label: Text(tr(context, 'featOff'))),
-                      ],
-                      selected: {_f.explicit(spec.key) == null ? 0 : (_f.explicit(spec.key)! ? 1 : 2)},
-                      onSelectionChanged: _saving ? null : (s) => _save(_f.withFlag(spec.key, s.first == 0 ? null : s.first == 1)),
-                    ),
-                  ]),
-                ),
-            ]),
+                    for (final spec in Features.inGroup(group)) _featureRow(spec),
+                  ],
+              ],
+            ),
     );
   }
+
+  Widget _featureRow(FeatureSpec spec) => Padding(
+    key: ValueKey('feat_${spec.key}'),
+    padding: const EdgeInsets.symmetric(vertical: 8),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(child: Text(tr(context, 'feat_${spec.key}'), style: DsStyle.w700)),
+            StatusChip(label: _f.isOn(spec.key) ? tr(context, 'featOn') : tr(context, 'featOff'), color: _f.isOn(spec.key) ? AppColors.success : AppColors.muted),
+          ],
+        ),
+        Padding(
+          padding: const EdgeInsets.only(top: 2),
+          child: Text(
+            tr(context, 'featHelp_${spec.key}'),
+            key: ValueKey('featHelp_${spec.key}'),
+            style: DsStyle.t12w400.copyWith(color: AppColors.muted),
+          ),
+        ),
+        const SizedBox(height: 6),
+        SegmentedButton<int>(
+          key: ValueKey('featMode_${spec.key}'),
+          showSelectedIcon: false,
+          segments: [
+            ButtonSegment(value: 0, label: Text(tr(context, 'featDefault'))),
+            ButtonSegment(value: 1, label: Text(tr(context, 'featOn'))),
+            ButtonSegment(value: 2, label: Text(tr(context, 'featOff'))),
+          ],
+          selected: {_f.explicit(spec.key) == null ? 0 : (_f.explicit(spec.key)! ? 1 : 2)},
+          onSelectionChanged: _saving ? null : (s) => _save(_f.withFlag(spec.key, s.first == 0 ? null : s.first == 1)),
+        ),
+      ],
+    ),
+  );
 }
