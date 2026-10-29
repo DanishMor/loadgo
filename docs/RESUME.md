@@ -1,9 +1,9 @@
-# RESUME (Part 5: security, stability, performance hardening)
+# RESUME (Elite plan: docs/MASTER_PLAN_ELITE.md)
 
 Plan: docs/MASTER_PLAN_PART5.md. Read it, then continue from NEXT. Part 4 is complete (git log, tags ux-v2-phase4..6).
 
-LAST_DONE: Elite E4 (connect kit: 12 new adapters, ConnectKit registry, CostGuard, 18 docs/CONNECT_*.md, test/connect_kit_test.dart). Before: E0, E2, E3; E1 skipped. Plan: docs/MASTER_PLAN_ELITE.md.
-NEXT: E5 docs/LICENSES.md + dependency policy test, then tag elite-phase0 and the phase 0 critic pass.
+LAST_DONE: Phase 0 done (E0, E2, E3, E4, E5; E1 skipped, no OWNER_BUGS.md). Tag elite-phase0.
+NEXT: Phase 1, E6 docs/BRAND_GUIDE.md and a WCAG AA contrast test for the Navy/Ink/Gold/Ivory palette, then E7 themes (flag designV3).
 
 Unfinished / to remember:
 - Never edit hosting/*.html by hand: edit tool/templates/hosting/ and run `dart run tool/apply_app_info.dart`. Scripts and styles live in hosting/assets/.
