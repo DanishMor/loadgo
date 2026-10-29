@@ -35,7 +35,11 @@ function decode(v, live) {
   if ('$geo' in v) return new GeoPoint(v.$geo[0], v.$geo[1]);
   return Object.fromEntries(Object.entries(v).map(([k, x]) => [k, decode(x, live)]));
 }
-const ref = (db, path) => doc(db, ...path.split('/'));
+// Some document ids carry the day (payout_counters/{uid}_{YYYYMMDD}, the rules build it from request.time in UTC):
+// move that day to today as well, or the flow only passes on the day it was recorded.
+const TODAY = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+const shiftPath = (path) => path.replace(/^(payout_counters\/[^/]+_)\d{8}$/, `$1${TODAY}`);
+const ref = (db, path) => doc(db, ...shiftPath(path).split('/'));
 
 describe('what the app really sends is allowed by the rules', () => {
   for (const s of scenarios) {
