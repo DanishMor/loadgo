@@ -142,6 +142,9 @@ class FeatureKey {
 
   /// E35: loads on a favourite route driven back rank higher ("way back on your route").
   static const goingTo = 'goingTo';
+
+  /// E36: open-load counts near the driver (demand_cells, written by the counting function).
+  static const demandFeed = 'demandFeed';
 }
 
 /// `config/features`: {pilotMode: bool, flags: {key: bool}}. A missing
@@ -218,6 +221,7 @@ class Features {
     FeatureSpec(FeatureKey.cityNotes, pilotOn: false, normalOn: false, group: FeatureGroup.core),
     FeatureSpec(FeatureKey.reliabilityBadges, pilotOn: false, normalOn: false, group: FeatureGroup.core),
     FeatureSpec(FeatureKey.goingTo, pilotOn: false, normalOn: false, group: FeatureGroup.core),
+    FeatureSpec(FeatureKey.demandFeed, pilotOn: false, normalOn: false, group: FeatureGroup.server),
   ];
 
   static final _byKey = {for (final s in registry) s.key: s};

@@ -2,9 +2,9 @@
 
 Plan: docs/MASTER_PLAN_ELITE.md. Read it, then continue from NEXT. Phase 0 done (tag elite-phase0). Phase 1 done (tag elite-phase1).
 
-LAST_DONE: E35 way back on your route (flag goingTo live, core, OFF): FavouriteRoute.matchesBack, DriverContext.homeward (set from the flag in MatchService), +20 and MatchReason.homeward ('Way back on your route') in LoadRanker; the planned route ('I am going to'), stops on the way and return loads near the drop were already ranked (L5); FLAGS, ADDON_PILOT, WHERE_IS_WHAT, COST_WATCH; test/going_to_test.dart 3/3, matching/driver_today green.
-Before: E34 reliabilityBadges (6db7e4e). Phase 4 done (tag elite-phase4).
-NEXT: E36 priority dispatch for Black customers (ring bonus config); demand cells read from an aggregated collection written only by functions (skeleton, flag OFF), client read-only. Check dispatch_config, Black tier (E-later?) existing pieces, and the DemandFeed adapter from E22 before adding.
+LAST_DONE: E36 demand cells and priority dispatch skeleton (flag demandFeed live, server group, OFF): functions/src/demand.js countCells/writeDemandCells + jobDemandCells (every 10 min, switch demandFeed) writing demand_cells/{gh4}; dispatch.js headStartSeconds (Black tier, config blackHeadStartSeconds 0-120, default 0) in currentWave/runWave; JS unit 50/50, lint clean; firestore.rules demand_cells (get signed-in, list limit<=20, no writes) + demandcells.test.mjs, emulator 511/511; lib/core/adapters/demand_cells_feed.dart FirestoreDemandFeed (9 cells, 30-min freshness, nearest-city names) wired into the driver home v3; docs FLAGS, ADDON_PILOT, WHERE_IS_WHAT, RULES_CHANGES_NEEDED, CONNECT_DEMAND, COST_WATCH; test/demand_cells_feed_test.dart 2/2.
+Before: E35 goingTo (3c40d8e). E34 reliabilityBadges. Phase 4 done (tag elite-phase4).
+NEXT: E37 ETA, geofence arrival and route-deviation alerts (client logic, tests, MapsAdapter fake): check lib/core/trip (arrival_eta, trip_watcher) for what exists first.
 Unfinished / to remember:
 - Gallery: powershell -File tool/render_gallery.ps1 (needs 3 GB free); review images in build/gallery.
 - Never edit hosting/*.html by hand: edit tool/templates/hosting/ and run `dart run tool/apply_app_info.dart`. Scripts and styles live in hosting/assets/.

@@ -12,6 +12,9 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'v2/driver_home_v2.dart';
 import 'v3/driver_home_v3.dart';
+import '../core/adapters/maps_adapter.dart' show GeoPoint2;
+import '../core/adapters/connect_adapters.dart' show DemandCell;
+import '../core/adapters/demand_cells_feed.dart';
 import 'return_loads_section.dart';
 import 'v2/incoming_load_host.dart';
 import '../core/dispatch/load_radar.dart';
@@ -456,7 +459,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
       );
 
   /// E22: the arrangeable driver home (switch driverHomeV3, needs designV3). Same banners, trips and tools as the v2 home.
-  /// No demand strip yet: there is no real DemandFeed until its counting function is deployed (docs/CONNECT_DEMAND.md).
+  /// The demand strip reads demand_cells (flag demandFeed), which the counting function writes (docs/CONNECT_DEMAND.md).
   Widget _homeV3() {
     final v2 = _homeV2();
     return DriverHomeV3(
@@ -478,6 +481,13 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
       more: v2.more,
       returnLoads: (trip) => ReturnLoadsSection(booking: trip, onAccepted: (id) => openDriverTrip(context, id)),
       recentBids: OfferService.watchMineRecent,
+      // E36: open-load counts near the driver from demand_cells (flag demandFeed; the counting function writes them).
+      demand: FeaturesService.isOn(FeatureKey.demandFeed)
+          ? () async {
+              final p = UserService.lastLocationOf(await UserService.getUser());
+              return p == null ? const <DemandCell>[] : FirestoreDemandFeed().near(GeoPoint2(p.lat, p.lng));
+            }
+          : null,
     );
   }
 

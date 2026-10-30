@@ -2592,6 +2592,11 @@ service cloud.firestore {
           && request.resource.data.createdAt == request.time;
       allow delete: if false;
     }
+    match /demand_cells/{cell} {
+      allow get: if signedIn();
+      allow list: if signedIn() && request.query.limit <= 20;
+      allow write: if false;
+    }
     match /lane_rfqs/{rfqId} {
       function rfqOk(d) {
         return d.keys().hasOnly(['ownerId', 'ownerName', 'fromCity', 'toCity', 'vehicleType', 'tripsPerMonth', 'months', 'note', 'closesAt', 'status', 'createdAt'])

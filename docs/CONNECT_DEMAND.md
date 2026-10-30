@@ -16,3 +16,7 @@
 1. Deploy the counting function and its schedule (Blaze plan, docs/NOT_FREE.md).
 2. Check one summary document in the console.
 3. Set config/providers.demand.configured = true, then switch on demandFeed.
+
+## Built (E36)
+- Counting job: `functions/src/demand.js` (`jobDemandCells` in functions/index.js, every 10 minutes, switch demandFeed), writes `demand_cells/{4-char geohash}` = { openLoads, updatedAt }.
+- App reader: `lib/core/adapters/demand_cells_feed.dart` (FirestoreDemandFeed), used by the driver home when demandFeed is ON. It is our own data, so no provider key is needed.

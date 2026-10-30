@@ -104,7 +104,7 @@ Status `planned` = not registered and not reachable. `live` = registered, entry 
 | `whatsappGateway` | E58 | planned | connect | off | - | high | - |
 | `trackingV2` | E59 | planned | connect | off | liveLocation, maps | medium | - |
 | `deviceIngest` | E60 | planned | server | off | functions deployed | medium | - |
-| `demandFeed` | E22 | planned | server | off | functions deployed | low | - |
+| `demandFeed` | E22, E36 | live | server | off | functions deployed, rules published | low | `lib/driver/driver_home_screen.dart` |
 | `loyaltyTiers` | E61 | planned | core | off | - | medium | - |
 | `referralV2` | E62 | planned | core | off | serverCredits | medium | - |
 | `blackTier` | E63 | planned | core | off | trustPassport, loyaltyTiers | medium | - |

@@ -76,11 +76,20 @@ async function autoAccept(db, loadId, FieldValue) {
   return result;
 }
 
+// E36: a head start in seconds for loads of Black-tier customers (config dispatch.blackHeadStartSeconds, 0 to 120,
+// default 0 = no difference). Their wider rings open that much sooner; nothing else changes.
+function headStartSeconds(tier, cfg = {}) {
+  const s = cfg.blackHeadStartSeconds;
+  if (tier !== 'black' || !Number.isSafeInteger(s)) return 0;
+  return Math.max(0, Math.min(120, s));
+}
+
 // Which wave is open for a load posted at createdMs, given the settings. -1 before the first, stalled after the last.
-function currentWave(createdMs, nowMs, cfg = {}) {
+function currentWave(createdMs, nowMs, cfg = {}, headStartS = 0) {
   const delays = Array.isArray(cfg.ringDelaySeconds) ? cfg.ringDelaySeconds : RING_DELAY_S;
   const accept = Number.isSafeInteger(cfg.acceptSeconds) ? cfg.acceptSeconds : ACCEPT_S;
-  const elapsed = Math.max(0, Math.floor((nowMs - createdMs) / 1000));
+  const head = Number.isSafeInteger(headStartS) && headStartS > 0 ? headStartS : 0;
+  const elapsed = Math.max(0, Math.floor((nowMs - createdMs) / 1000) + head);
   if (elapsed >= delays[delays.length - 1] + accept) return { wave: delays.length - 1, stalled: true };
   let wave = 0;
   for (let i = 0; i < delays.length; i++) if (elapsed >= delays[i]) wave = i;
@@ -92,10 +101,17 @@ async function runWave(db, nowMs, cfg = {}) {
   const since = new Date(nowMs - 10 * 60 * 1000);
   const snap = await db.collection('loads').where('status', '==', 'open').where('createdAt', '>=', since).get();
   let updated = 0;
+  // E36: the shipper's tier, read once per run and only when a head start is configured.
+  const tiers = new Map();
+  const tierOf = async (uid) => {
+    if (!cfg.blackHeadStartSeconds || typeof uid !== 'string' || !uid) return null;
+    if (!tiers.has(uid)) tiers.set(uid, (await db.collection('users').doc(uid).get()).get('tier') || null);
+    return tiers.get(uid);
+  };
   for (const d of snap.docs) {
     const l = d.data();
     if (l.mode === 'bid' || l.mode === 'scheduled' || !l.createdAt) continue;
-    const { wave, stalled } = currentWave(l.createdAt.toMillis(), nowMs, cfg);
+    const { wave, stalled } = currentWave(l.createdAt.toMillis(), nowMs, cfg, headStartSeconds(await tierOf(l.shipperId), cfg));
     if (l.dispatchWave === wave && l.dispatchStalled === stalled) continue;
     await d.ref.update({ dispatchWave: wave, dispatchStalled: stalled });
     // TODO(functions): send the "new load near you" push to the drivers of ring `wave` (push.js, switch pushNotifications).
@@ -104,4 +120,4 @@ async function runWave(db, nowMs, cfg = {}) {
   return { updated };
 }
 
-module.exports = { RING_KM, RING_DELAY_S, ACCEPT_S, isRule, ruleAccepts, pickBid, autoAccept, currentWave, runWave };
+module.exports = { RING_KM, RING_DELAY_S, ACCEPT_S, isRule, ruleAccepts, pickBid, autoAccept, currentWave, runWave, headStartSeconds };

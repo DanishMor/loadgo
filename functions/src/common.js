@@ -27,6 +27,7 @@ const FLAGS = Object.freeze([
   'rateRange',
   'payHold',
   'dispatchV2',
+  'demandFeed',
 ]);
 
 const FLAG_TTL_MS = 30 * 1000;

@@ -245,3 +245,4 @@ Changes in this round that cut reads:
 - E33 `tollEstimate`: one toll adapter call when the customer opens the full price card (ConnectKit caps 1000 a day, 30 per user), none without a provider. `cityNotes`: 1 read of config/city_notes per app session, only while booking.
 - E34 `reliabilityBadges`: 0 extra app reads (the tier rides on the public_trust document the offer card already reads). Server: refreshing a summary now also reads the driver's newest 100 finished bookings, once per delivered trip (index bookings driverId + status + createdAt).
 - E35 `goingTo`: 0 extra reads (uses the favourites the ranker already reads).
+- E36 `demandFeed`: app: 1 query of at most 9 cells when the driver home opens online. Server: every 10 minutes, 1 query of at most 500 open loads + 1 of at most 400 cells + 1 batch write (Blaze). Black head start: 1 user read per shipper per wave run, only when configured.

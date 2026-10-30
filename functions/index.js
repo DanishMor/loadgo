@@ -145,6 +145,14 @@ exports.dispatchWave = onSchedule({ schedule: 'every 1 minutes', timeZone: IST }
   await dispatch.runWave(db, Date.now());
 });
 
+// E36 (switch: demandFeed, OFF): open loads counted by pickup area for the drivers' demand strip.
+const demand = require('./src/demand');
+exports.jobDemandCells = onSchedule({ schedule: 'every 10 minutes', timeZone: IST }, async () => {
+  const db = getFirestore();
+  if (!(await flagOn(db, 'demandFeed'))) return;
+  await demand.writeDemandCells(db, Date.now());
+});
+
 // G11: a finished trip does not keep the driver's last position for more than a day (docs/LIVE_LOCATION.md).
 exports.jobClearLocations = onSchedule({ schedule: 'every day 04:30', timeZone: IST }, async () => {
   const db = getFirestore();

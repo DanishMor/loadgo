@@ -3325,6 +3325,13 @@ service cloud.firestore {
     // E30 lane tenders (records only, no money): a business posts a lane for a few months; transporters and
     // drivers send one rate each (bid id = their uid) while it is open; the owner awards one bid or closes it.
     // Open tenders are readable by signed-in people; bids only by their bidder, the owner and admins.
+    // E36 demand cells: open-load counts per pickup area, written only by the counting function; drivers read
+    // one cell at a time or a few by id (list limited to 20). No ids, places or people in them.
+    match /demand_cells/{cell} {
+      allow get: if signedIn();
+      allow list: if signedIn() && request.query.limit <= 20;
+      allow write: if false;
+    }
     match /lane_rfqs/{rfqId} {
       function rfqOk(d) {
         return d.keys().hasOnly(['ownerId', 'ownerName', 'fromCity', 'toCity', 'vehicleType', 'tripsPerMonth', 'months', 'note', 'closesAt', 'status', 'createdAt'])
