@@ -20,7 +20,7 @@ double ratio(Color a, Color b) {
 }
 
 void main() {
-  final sets = {'light': DsColors.light, 'dark': DsColors.dark};
+  final sets = {'light': DsColors.light, 'dark': DsColors.dark, 'signature': DsColors.signature, 'midnight': DsColors.midnight};
 
   for (final e in sets.entries) {
     final c = e.value;
@@ -85,11 +85,35 @@ void main() {
   });
 
   test('every colour is opaque (no hidden alpha lowering contrast)', () {
-    for (final c in [DsColors.light, DsColors.dark]) {
+    for (final c in sets.values) {
       for (final v in [c.bg, c.surface, c.chip, c.tint, c.text, c.textStrong, c.textMuted, c.textHint, c.border, c.inputBorder, c.focus, c.primary, c.onPrimary, c.accent, c.onAccent, c.accentStrong, c.success, c.successBg, c.warning, c.warningBg, c.error, c.errorBg, c.roleCustomer, c.roleDriver, c.roleTransporter, c.adminBanner, c.onAdminBanner]) {
         expect((v.a * 255).round(), 255);
       }
     }
+  });
+
+  test('E6 brand palette: Navy, Ink, Gold on Ivory meet WCAG AA', () {
+    final text = <String, (Color, Color)>{
+      'ink on ivory': (DsLuxe.ink, DsLuxe.ivory),
+      'navy on ivory': (DsLuxe.navy, DsLuxe.ivory),
+      'ivory on navy': (DsLuxe.ivory, DsLuxe.navy),
+      'ivory on ink': (DsLuxe.ivory, DsLuxe.ink),
+      'ink on gold': (DsLuxe.ink, DsLuxe.gold),
+      'goldDeep on ivory': (DsLuxe.goldDeep, DsLuxe.ivory),
+      'gold on ink': (DsLuxe.gold, DsLuxe.ink),
+      'gold on navy': (DsLuxe.gold, DsLuxe.navy),
+      'goldLight on black': (DsLuxe.goldLight, const Color(0xFF000000)),
+    };
+    final low = {for (final p in text.entries) p.key: ratio(p.value.$1, p.value.$2)}..removeWhere((_, r) => r >= 4.5);
+    expect(low, isEmpty, reason: 'brand pairs below 4.5:1');
+    // Gold on Ivory is decoration only (hairlines, the logo dot), never text.
+    expect(ratio(DsLuxe.gold, DsLuxe.ivory), lessThan(4.5));
+  });
+
+  test('Midnight is true black; Signature sits on Ivory', () {
+    expect(DsColors.midnight.bg.toARGB32(), 0xFF000000);
+    expect(DsColors.signature.bg, DsLuxe.ivory);
+    expect(DsColors.signature.accent, DsLuxe.gold);
   });
 
   test('spacing is on the 4/8 grid and the radius, elevation and motion scales rise', () {

@@ -118,7 +118,83 @@ class DsColors {
     onAdminBanner: Color(0xFF1E1040),
   );
 
+  /// Signature (E6, docs/BRAND_GUIDE.md): Ink text on Ivory, Navy for trust,
+  /// one Gold accent. Status colours stay the classic ones so meaning never moves.
+  static const signature = DsColors(
+    bg: DsLuxe.ivory,
+    surface: Color(0xFFFFFDF8),
+    chip: Color(0xFFF1ECE1),
+    tint: Color(0xFFE8ECF4),
+    text: DsLuxe.ink,
+    textStrong: Color(0xFF23304A),
+    textMuted: Color(0xFF4A5468),
+    textHint: Color(0xFF576173),
+    border: Color(0xFFE4DDCE),
+    inputBorder: Color(0xFF7D8494),
+    focus: DsLuxe.navy,
+    primary: DsLuxe.navy,
+    onPrimary: DsLuxe.ivory,
+    accent: DsLuxe.gold,
+    onAccent: DsLuxe.ink,
+    accentStrong: DsLuxe.goldDeep,
+    success: Color(0xFF146C3C),
+    successBg: Color(0xFFE5F3E8),
+    warning: Color(0xFF8F5400),
+    warningBg: Color(0xFFFBEFD5),
+    error: Color(0xFFB42318),
+    errorBg: Color(0xFFFBE6E1),
+    roleCustomer: Color(0xFF0E7490),
+    roleDriver: Color(0xFF4338CA),
+    roleTransporter: Color(0xFF9D2F6B),
+    adminBanner: Color(0xFF3B1D6E),
+    onAdminBanner: Color(0xFFFFFFFF),
+  );
+
+  /// Midnight (E6): true black for OLED screens, Ivory text, Gold accents.
+  static const midnight = DsColors(
+    bg: Color(0xFF000000),
+    surface: Color(0xFF0E0E11),
+    chip: Color(0xFF1A1A1F),
+    tint: Color(0xFF141B2B),
+    text: Color(0xFFF5F1E8),
+    textStrong: Color(0xFFD9D3C7),
+    textMuted: Color(0xFFADA79C),
+    textHint: Color(0xFF9E988D),
+    border: Color(0xFF2A2A30),
+    inputBorder: Color(0xFF75716A),
+    focus: DsLuxe.goldLight,
+    primary: DsLuxe.goldLight,
+    onPrimary: DsLuxe.ink,
+    accent: DsLuxe.goldLight,
+    onAccent: DsLuxe.ink,
+    accentStrong: DsLuxe.goldLight,
+    success: Color(0xFF4BD68A),
+    successBg: Color(0xFF0F2418),
+    warning: Color(0xFFF7C14A),
+    warningBg: Color(0xFF2A210B),
+    error: Color(0xFFFF9188),
+    errorBg: Color(0xFF2E1414),
+    roleCustomer: Color(0xFF67D4E8),
+    roleDriver: Color(0xFFA5A8FF),
+    roleTransporter: Color(0xFFE9A3CE),
+    adminBanner: Color(0xFFD6C2FF),
+    onAdminBanner: Color(0xFF1E1040),
+  );
+
   static DsColors of(Brightness b) => b == Brightness.dark ? dark : light;
+}
+
+/// The luxury palette (E6, docs/BRAND_GUIDE.md): Navy and Ink with one Gold
+/// accent on Ivory. [goldDeep] is Gold dark enough to be read on Ivory;
+/// [goldLight] is the Gold used on black.
+class DsLuxe {
+  DsLuxe._();
+  static const Color navy = Color(0xFF14284B);
+  static const Color ink = Color(0xFF0B1220);
+  static const Color gold = Color(0xFFC9A24A);
+  static const Color goldDeep = Color(0xFF7E5F17);
+  static const Color goldLight = Color(0xFFE0BE6A);
+  static const Color ivory = Color(0xFFFAF7F0);
 }
 
 /// The two brand colours as constants (a few places need a `const`).
