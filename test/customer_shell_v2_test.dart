@@ -75,6 +75,21 @@ void main() {
     expect(find.text('Bid'), findsNothing);
   });
 
+  testWidgets('E21: homeV3 ON shows the arrangeable home; it needs designV3', (t) async {
+    t.view.physicalSize = const Size(360 * 2, 640 * 2);
+    t.view.devicePixelRatio = 2;
+    addTearDown(t.view.reset);
+    FeaturesService.notifier.value = const Features(flags: {FeatureKey.homeV3: true});
+    await t.pumpWidget(host());
+    await settle(t);
+    expect(find.byKey(const ValueKey('h3Hero')), findsOneWidget);
+    expect(find.byKey(const ValueKey('homeHero')), findsNothing);
+    FeaturesService.notifier.value = const Features(flags: {FeatureKey.homeV3: true, FeatureKey.designV3: false});
+    await settle(t);
+    expect(find.byKey(const ValueKey('homeHero')), findsOneWidget);
+    expect(find.byKey(const ValueKey('h3Hero')), findsNothing);
+  });
+
   testWidgets('uiV2 OFF: the older home is still there', (t) async {
     FeaturesService.notifier.value = const Features(flags: {FeatureKey.uiV2: false});
     await t.pumpWidget(host());

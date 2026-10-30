@@ -94,6 +94,9 @@ class FeatureKey {
 
   /// E19: goods photos on a load (customer), seal and damage photos in the trip steps (driver); needs photoUploads.
   static const cargoPhotos = 'cargoPhotos';
+
+  /// E21: customer home built from sections the person can reorder and hide (needs designV3).
+  static const homeV3 = 'homeV3';
 }
 
 /// `config/features`: {pilotMode: bool, flags: {key: bool}}. A missing
@@ -154,6 +157,7 @@ class Features {
     FeatureSpec(FeatureKey.vehicleCatalog, pilotOn: false, normalOn: false, group: FeatureGroup.core),
     FeatureSpec(FeatureKey.vehiclePhotos, pilotOn: false, normalOn: false, group: FeatureGroup.connect),
     FeatureSpec(FeatureKey.cargoPhotos, pilotOn: false, normalOn: false, group: FeatureGroup.connect),
+    FeatureSpec(FeatureKey.homeV3, pilotOn: false, normalOn: false, group: FeatureGroup.design),
   ];
 
   static final _byKey = {for (final s in registry) s.key: s};

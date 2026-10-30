@@ -9,13 +9,17 @@ import '../../core/navigation/deep_links.dart';
 import '../../core/services/features_service.dart';
 import '../../core/settings/help_screen.dart';
 import '../../core/theme/design_tokens.dart';
+import '../../core/vehicles/vehicle_catalog.dart';
+import '../../core/vehicles/vehicle_screens.dart';
 import '../../core/widgets/common.dart';
 import '../booking_tracking_screen.dart';
 import '../business_hub_screen.dart';
 import '../customer_home_screen.dart' show customerProfileView;
+import '../offers_screen.dart';
 import '../spending_screen.dart';
 import '../templates_screen.dart';
 import '../truck_board_screen.dart';
+import '../v3/customer_home_v3.dart';
 import 'bid_room_screen.dart';
 import 'booking_wizard_model.dart';
 import 'booking_wizard_screen.dart';
@@ -97,22 +101,43 @@ class _CustomerShellV2State extends State<CustomerShellV2> {
     final pages = <Widget>[
       ValueListenableBuilder<Features>(
         valueListenable: FeaturesService.notifier,
-        builder: (context, f, _) => CustomerHomeV2(
-          onBook: _book,
-          onBookFrom: _bookFrom,
-          onOpenBooking: _openBooking,
-          onOpenLoad: _openLoad,
-          onOpenTrips: () => setState(() => _index = _tripsTab),
-          sahayak: _sahayak,
-          more: [
+        builder: (context, f, _) {
+          final more = [
             _tile(Icons.folder_copy_outlined, tr(context, 'documentsCenter'), () => _push(const DocumentsCenterScreen(asDriver: false)), key: const ValueKey('moreDocs')),
             if (f.isOn(FeatureKey.emptyTrucks)) _tile(Icons.local_shipping_outlined, tr(context, 'emptyTrucks'), () => _push(const TruckBoardScreen()), key: const ValueKey('moreTrucks')),
             _tile(Icons.two_wheeler_rounded, tr(context, 'bookBike'), () => _bookFrom(const WizardDraft(vehicleType: 'Bike')), key: const ValueKey('moreBike')),
             if (f.isOn(FeatureKey.businessTools)) _tile(Icons.business_center_outlined, tr(context, 'businessTools'), () => _push(const BusinessHubScreen()), key: const ValueKey('moreBusiness')),
             _tile(Icons.bookmarks_outlined, tr(context, 'templatesTitle'), () => _push(const TemplatesScreen()), key: const ValueKey('moreTemplates')),
             _tile(Icons.savings_outlined, tr(context, 'ehSpendTitle'), () => _push(const SpendingScreen()), key: const ValueKey('moreSpending')),
-          ],
-        ),
+          ];
+          // E21: the arrangeable home (homeV3 needs the Signature look, designV3).
+          if (f.isOn(FeatureKey.homeV3) && f.isOn(FeatureKey.designV3)) {
+            return CustomerHomeV3(
+              onBook: _book,
+              onBookFrom: _bookFrom,
+              onOpenBooking: _openBooking,
+              onOpenLoad: _openLoad,
+              onOpenTrips: () => setState(() => _index = _tripsTab),
+              onOpenOffers: () => _push(const OffersScreen()),
+              onOpenCatalog: () => _push(VehicleCatalogScreen(onPick: (VehicleSpec spec) {
+                Navigator.of(context).pop();
+                _bookFrom(WizardDraft(vehicleType: spec.legacyId));
+              })),
+              onOpenTemplates: () => _push(const TemplatesScreen()),
+              sahayak: _sahayak,
+              more: more,
+            );
+          }
+          return CustomerHomeV2(
+            onBook: _book,
+            onBookFrom: _bookFrom,
+            onOpenBooking: _openBooking,
+            onOpenLoad: _openLoad,
+            onOpenTrips: () => setState(() => _index = _tripsTab),
+            sahayak: _sahayak,
+            more: more,
+          );
+        },
       ),
       TripsTabV2(onOpenBooking: _openBooking, onOpenLoad: _openLoad, onBookAgain: (item) => _bookFrom(item.toDraft()), onBook: _book),
       const HelpScreen(role: 'customer'),

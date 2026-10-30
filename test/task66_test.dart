@@ -48,6 +48,7 @@ void main() {
       FeatureKey.vehicleCatalog: 'Vehicle catalog',
       FeatureKey.vehiclePhotos: 'Vehicle photos and badge',
       FeatureKey.cargoPhotos: 'Goods and seal photos',
+      FeatureKey.homeV3: 'Arrangeable home',
       FeatureKey.bizCard: 'Business card to share',
       FeatureKey.khata: 'Party khata',
       FeatureKey.safetyCheckin: 'Safety check-in on a long stop',

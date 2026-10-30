@@ -111,7 +111,7 @@ Totals: 126 screen files; ready: 107, flag-off: checked in code: 12, flag-off: h
 | customer | lib/customer/truck_board_screen.dart | flag-off: checked in code | vehicleCatalog |
 | customer | lib/customer/v2/bid_room_screen.dart | flag-off: checked in code | cargoPhotos, dispatchV2, photoUploads, vehicleCatalog, vehiclePhotos |
 | customer | lib/customer/v2/booking_wizard_screen.dart | flag-off: checked in code | dispatchV2, rateRange, vehicleCatalog |
-| customer | lib/customer/v2/customer_shell_v2.dart | flag-off: checked in code | businessTools, emptyTrucks |
+| customer | lib/customer/v2/customer_shell_v2.dart | flag-off: checked in code | businessTools, designV3, emptyTrucks, homeV3 |
 | customer | lib/customer/v2/tracking_v2_screen.dart | ready |  |
 | driver | lib/driver/add_vehicle_screen.dart | ready |  |
 | driver | lib/driver/city_demand_screen.dart | ready |  |
