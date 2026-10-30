@@ -39,6 +39,7 @@ Goal: put LoadGo in front of a small, known group (one or two corridors, tens of
 | Transporter command center | OFF | Features > Transporter command center |
 | Admin ops home | OFF | Features > Admin ops home |
 | Search in bilty | OFF | Features > Search in bilty |
+| First-run tour v3 (needs Signature look) | OFF | Features > First-run tour v3 |
 | Business card to share | OFF | Features > Business card to share |
 | Party khata | OFF | Features > Party khata |
 | Safety check-in on a long stop | OFF | Features > Safety check-in on a long stop |

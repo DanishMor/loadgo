@@ -53,6 +53,7 @@ void main() {
       FeatureKey.fleetCommand: 'Transporter command center',
       FeatureKey.adminOpsHome: 'Admin ops home',
       FeatureKey.navV3: 'Search in bilty',
+      FeatureKey.onboardingV3: 'First-run tour v3',
       FeatureKey.bizCard: 'Business card to share',
       FeatureKey.khata: 'Party khata',
       FeatureKey.safetyCheckin: 'Safety check-in on a long stop',

@@ -2,9 +2,9 @@
 
 Plan: docs/MASTER_PLAN_ELITE.md. Read it, then continue from NEXT. Phase 0 done (tag elite-phase0). Phase 1 done (tag elite-phase1).
 
-LAST_DONE: E25 navigation (flag navV3 live, core, default OFF): SearchKind.lr + GlobalSearch.fromLr (number, places, goods, vehicle, parties; opens its booking), GlobalSearchScreen listens to LrService.watchMine only with navV3, search button on CustomerHomeV3; tabs already keep state (IndexedStack), deep links and notification bell already present (WHERE_IS_WHAT says so); gsLrs word; FLAGS, ADDON_PILOT, WHERE_IS_WHAT, COST_WATCH; test/nav_v3_test.dart 3/3, 107/107 related.
-Before: E24 admin ops home (flag adminOpsHome). E23 command center (fleetCommand). E21-E22 homes v3. Phase 2 done (tag elite-phase2).
-NEXT: E26 onboarding v3 (flag onboardingV3 planned in FLAGS): 3-slide tour, role pick, value-first permission primers (location, notifications), documents right after OTP, customer and driver identity separation preserved. Then phase 3 critic pass and tag elite-phase3, tag elite-wave1 (phases 0-3), then Phase 4 E27.
+LAST_DONE: E26 onboarding v3 (flag onboardingV3 live, design, default OFF, needs designV3): lib/core/settings/onboarding_v3_screen.dart (navy hero, logo + wordmark, language chips that switch at once, trust slide, location/notification primers told up front, skip, page dots, reduced motion jumps), splash picks it when on; driver papers right after profile and identity separation unchanged; ob3 words (12 languages); FLAGS, ADDON_PILOT, WHERE_IS_WHAT; test/onboarding_v3_test.dart 5/5.
+Before: E25 navV3 (bilty search). E24 adminOpsHome. E23 fleetCommand. E21-E22 homes v3. Phase 2 done (tag elite-phase2).
+NEXT: Phase 3 critic pass and regression subsets (run_regression -Only layout / home / splash), then tags elite-phase3 and elite-wave1 (phases 0-3) and push; then Phase 4 E27 price transparency card and fair-price meter (guard test: no hidden fee).
 Unfinished / to remember:
 - Gallery: powershell -File tool/render_gallery.ps1 (needs 3 GB free); review images in build/gallery.
 - Never edit hosting/*.html by hand: edit tool/templates/hosting/ and run `dart run tool/apply_app_info.dart`. Scripts and styles live in hosting/assets/.

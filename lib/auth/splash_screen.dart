@@ -3,6 +3,9 @@ import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import '../core/services/features_service.dart';
+import '../core/features/features.dart';
+import '../core/settings/onboarding_v3_screen.dart';
 
 import '../core/l10n/l10n.dart';
 import '../core/services/device_service.dart';
@@ -44,11 +47,10 @@ class _SplashScreenState extends State<SplashScreen> {
       if (!mounted) return;
       // Take the navigator now: this splash is gone after the replace, so its own context cannot be used later.
       final nav = Navigator.of(context);
-      nav.pushReplacement(MaterialPageRoute(
-        builder: (_) => OnboardingScreen(
-          onDone: () => nav.pushReplacement(MaterialPageRoute(builder: (_) => const RoleSelectionScreen())),
-        ),
-      ));
+      void toRoles() => nav.pushReplacement(MaterialPageRoute(builder: (_) => const RoleSelectionScreen()));
+      // E26: the premium tour with the language pick and the permission primers (onboardingV3, needs designV3).
+      final v3 = FeaturesService.isOn(FeatureKey.onboardingV3) && FeaturesService.isOn(FeatureKey.designV3);
+      nav.pushReplacement(MaterialPageRoute(builder: (_) => v3 ? OnboardingV3Screen(onDone: toRoles) : OnboardingScreen(onDone: toRoles)));
       return;
     }
 
