@@ -113,11 +113,14 @@ class VehicleCatalog {
     }
   }
 
-  /// The catalog from the app bundle, read once. Empty (never a throw) if the asset cannot be read.
+  /// The catalog from the app bundle, kept once it has read well. Empty (never a throw) if the asset cannot be
+  /// read; an empty result is not kept, so a retry reads again.
   static Future<List<VehicleSpec>> load({AssetBundle? bundle}) async {
     if (_cache != null) return _cache!;
     try {
-      return _cache = parse(await (bundle ?? rootBundle).loadString(asset));
+      final list = parse(await (bundle ?? rootBundle).loadString(asset));
+      if (list.isNotEmpty) _cache = list;
+      return list;
     } catch (_) {
       return const [];
     }

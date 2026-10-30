@@ -156,6 +156,7 @@ import 'simple_mode_strings.dart';
 import 'surge_strings.dart';
 import 'trip_cost_strings.dart';
 import 'vehicle_catalog_strings.dart';
+import 'vehicle_ui_strings.dart';
 
 const List<Map<String, List<String>>> stringTables = [
   authStrings,
@@ -309,6 +310,7 @@ const List<Map<String, List<String>>> stringTables = [
   ux2FeedStrings,
   hardeningStrings,
   vehicleCatalogStrings,
+  vehicleUiStrings,
 ];
 
 final Map<String, List<String>> extraStrings = {

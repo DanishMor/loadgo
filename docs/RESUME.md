@@ -2,8 +2,8 @@
 
 Plan: docs/MASTER_PLAN_ELITE.md. Read it, then continue from NEXT. Phase 0 done (tag elite-phase0). Phase 1 done (tag elite-phase1).
 
-LAST_DONE: E16 parametric vehicle painter (lib/core/vehicles/vehicle_painter.dart, VehicleArt), light/dark/gold ink, contact sheets in docs/gallery/vehicles (tool/render_vehicles_test.dart), silhouette masks in test/goldens/vehicles.
-NEXT: E17 vehicle UI behind a new flag (vehicleCatalog, default OFF): catalog screen, cards, spec sheet, size comparison, compare 2-3, what-fits calculator; wire into booking wizard, bid cards, truck board only when the flag is ON. Split E17a (screens) and E17b (wiring).
+LAST_DONE: E17a vehicle screens (lib/core/vehicles/vehicle_screens.dart: catalog, card, spec sheet, size comparison, compare, what fits) and what_fits.dart logic, 42 UI strings in 12 languages, tests. Not reachable yet (nothing imports them).
+NEXT: E17b register flag vehicleCatalog (default OFF): FeatureKey + registry + feat_/featHelp_ strings, docs/FLAGS.md live row with entry points, ADDON_PILOT row + task66 label, WHERE_IS_WHAT row, SCREEN_INVENTORY; entry points: booking wizard truck step (See all vehicles / What fits link, art on rows), truck board, bid card art - each reads FeatureKey.vehicleCatalog.
 Unfinished / to remember:
 - Gallery: powershell -File tool/render_gallery.ps1 (needs 3 GB free); review images in build/gallery.
 - Never edit hosting/*.html by hand: edit tool/templates/hosting/ and run `dart run tool/apply_app_info.dart`. Scripts and styles live in hosting/assets/.
