@@ -141,7 +141,7 @@ class InspectionOwnerPanel extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                 child: Row(mainAxisSize: MainAxisSize.min, children: [
                   Flexible(child: Text(tr(context, 'inPreHours'), style: DsStyle.w600.copyWith(color: AppColors.primary))),
-                  const Icon(Icons.arrow_drop_down, color: AppColors.primary),
+                  Icon(Icons.arrow_drop_down, color: AppColors.primary),
                 ]),
               ),
             ),

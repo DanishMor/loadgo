@@ -85,7 +85,7 @@ Totals: 124 screen files; ready: 107, flag-off: checked in code: 10, flag-off: h
 | core | lib/core/settings/feedback_screen.dart | ready |  |
 | core | lib/core/settings/help_screen.dart | flag-off: hidden | problemReport |
 | core | lib/core/settings/onboarding_screen.dart | ready |  |
-| core | lib/core/settings/settings_screen.dart | flag-off: hidden | appLock |
+| core | lib/core/settings/settings_screen.dart | flag-off: hidden | appLock, designV3 |
 | core | lib/core/trip/trip_history_screen.dart | ready |  |
 | core | lib/core/vehicles/vehicle_expenses_screen.dart | ready |  |
 | core | lib/core/wallet/txn_history_screen.dart | ready |  |

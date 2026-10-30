@@ -119,7 +119,7 @@ class _CallScreenState extends State<CallScreen> {
                 constraints: BoxConstraints(minHeight: box.maxHeight - 48),
                 child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
                   const SizedBox(height: 24),
-                  const CircleAvatar(radius: 44, backgroundColor: AppColors.primary, child: Icon(Icons.person_rounded, size: 52, color: Colors.white)),
+                  CircleAvatar(radius: 44, backgroundColor: AppColors.primary, child: Icon(Icons.person_rounded, size: 52, color: AppColors.onPrimary)),
                   const SizedBox(height: 20),
                   Text(name, key: const ValueKey('callName'), style: DsStyle.t24w700.copyWith(color: Colors.white), textAlign: TextAlign.center),
                   if (incoming != null && incoming.vehicleNumber.isNotEmpty)

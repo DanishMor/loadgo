@@ -28,7 +28,7 @@ class SimpleDriverHome extends StatelessWidget {
 
   void _push(BuildContext context, Widget screen) => Navigator.of(context).push(MaterialPageRoute(builder: (_) => screen));
 
-  Widget _big(BuildContext context, {required Key key, required IconData icon, required String label, required Color color, required VoidCallback onTap}) => Expanded(
+  Widget _big(BuildContext context, {required Key key, required IconData icon, required String label, required Color color, Color? on, required VoidCallback onTap}) => Expanded(
         child: Padding(
           padding: const EdgeInsets.all(6),
           child: Material(
@@ -43,9 +43,9 @@ class SimpleDriverHome extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(icon, size: 56, color: Colors.white),
+                    Icon(icon, size: 56, color: on ?? Colors.white),
                     const SizedBox(height: 12),
-                    Text(label, textAlign: TextAlign.center, style: DsStyle.t20w700.copyWith(color: Colors.white)),
+                    Text(label, textAlign: TextAlign.center, style: DsStyle.t20w700.copyWith(color: on ?? Colors.white)),
                   ],
                 ),
               ),
@@ -86,6 +86,7 @@ class SimpleDriverHome extends StatelessWidget {
                       icon: Icons.search_rounded,
                       label: tr(context, 'simpleFindLoads'),
                       color: AppColors.primary,
+                      on: AppColors.onPrimary,
                       onTap: () => _push(context, const SimpleLoadsScreen())),
                   _big(context,
                       key: const ValueKey('simpleMyTrips'),

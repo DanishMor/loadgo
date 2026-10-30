@@ -41,7 +41,7 @@ class _RecurringDueCardState extends State<RecurringDueCard> {
                 key: ValueKey('recurringDue_${r.id}'),
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   Row(children: [
-                    const Icon(Icons.repeat_rounded, color: AppColors.primary),
+                    Icon(Icons.repeat_rounded, color: AppColors.primary),
                     const SizedBox(width: 8),
                     Expanded(child: Text(tr(context, 'repeatDueTitle'), style: DsStyle.w700)),
                   ]),

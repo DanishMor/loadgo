@@ -3,11 +3,23 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:transport_app/core/features/features.dart';
 import 'package:transport_app/core/theme/app_theme.dart';
+import 'package:transport_app/core/theme/contrast.dart';
 import 'package:transport_app/core/theme/design_tokens.dart';
+import 'package:transport_app/core/widgets/common.dart';
 import 'package:transport_app/core/widgets/ds/status_badge.dart';
 
 /// E7: Signature (Ivory), Midnight (true black, Gold) and Classic themes.
 void main() {
+  test('E13b: AppColors.primary keeps the old blue in Classic and follows Signature and Midnight, with readable text on it', () {
+    addTearDown(() => AppPalette.currentColors = DsColors.light);
+    for (final c in [DsColors.light, DsColors.dark, DsColors.signature, DsColors.midnight]) {
+      AppPalette.currentColors = c;
+      final classic = identical(c, DsColors.light) || identical(c, DsColors.dark);
+      expect(AppColors.primary, classic ? DsLegacy.primary : c.primary);
+      expect(contrastRatio(AppColors.onPrimary, AppColors.primary), greaterThanOrEqualTo(4.5));
+    }
+  });
+
   test('each look maps light and dark to its own colour set', () {
     expect(ThemeStyle.signature.colors(Brightness.light), same(DsColors.signature));
     expect(ThemeStyle.signature.colors(Brightness.dark), same(DsColors.midnight));

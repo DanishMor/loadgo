@@ -394,7 +394,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                         ),
                       ),
                       if (!n.read)
-                        const Padding(
+                        Padding(
                           padding: EdgeInsets.only(top: 6),
                           child: CircleAvatar(
                             radius: 5,

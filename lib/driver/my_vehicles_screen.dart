@@ -41,7 +41,7 @@ class MyVehiclesScreen extends StatelessWidget {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => openAddVehicle(context),
         backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
+        foregroundColor: AppColors.onPrimary,
         icon: const Icon(Icons.add_rounded),
         label: Text(tr(context, 'addVehicle')),
       ),
@@ -111,7 +111,7 @@ class _VehicleCardState extends State<_VehicleCard> {
             width: 50,
             height: 50,
             decoration: BoxDecoration(color: AppColors.primaryLight, borderRadius: BorderRadius.circular(14)),
-            child: const Icon(Icons.local_shipping_rounded, color: AppColors.primary),
+            child: Icon(Icons.local_shipping_rounded, color: AppColors.primary),
           ),
           const SizedBox(width: 14),
           Expanded(

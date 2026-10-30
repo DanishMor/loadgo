@@ -22,3 +22,14 @@ Each image was checked for spacing rhythm (4/8 grid), alignment, cut or overlapp
 | R8 | Hindi settings, small phone 1.3x | Two-line subtitles wrap cleanly, switches stay aligned on the right | - | clean |
 
 Layout errors in the 56 images: none (problems.txt).
+
+## Round 2 (2026-10-30, after E13b)
+
+| # | Before | After | State |
+|---|---|---|---|
+| R4 | `AppColors.primary` was the fixed Classic blue on 102 spots | A getter: Classic light/dark keep the old blue (identical look), Signature uses Navy, Midnight uses Gold; text and icons on a primary fill use `AppColors.onPrimary` (Ink on Gold). Test: themes_test, 4.5:1 in every look | fixed |
+| R9 | Accept button, distance line and price on the driver feed mixed blue into Midnight | Gold with Ink text in Midnight; Classic unchanged (images driver_feed_midnight / driver_feed_classic) | fixed |
+
+Layout errors in the 56 images: none. Full regression after E13b: 337 files, all green after fixing four stale checks
+from E7 (designV3 missing from SCREEN_INVENTORY, ADDON_PILOT, WHERE_IS_WHAT; the online-chip contrast test switched only
+half of the palette).

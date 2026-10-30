@@ -91,7 +91,7 @@ class UpcomingTripsCard extends StatelessWidget {
             onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => UpcomingTripsScreen(onOpen: onOpen, bookings: bookings, now: now))),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Row(children: [
-                const Icon(Icons.event_available_rounded, color: AppColors.primary),
+                Icon(Icons.event_available_rounded, color: AppColors.primary),
                 const SizedBox(width: 8),
                 Expanded(child: Text(trf(context, 'upcomingCount', {'n': list.length}), style: DsStyle.w700)),
                 Icon(Icons.chevron_right_rounded, color: AppColors.faint),

@@ -99,7 +99,7 @@ class _DriverPendingScreenState extends State<DriverPendingScreen> {
                     onPressed: _checking ? null : _checkStatus,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary,
-                      foregroundColor: Colors.white,
+                      foregroundColor: AppColors.onPrimary,
                       elevation: 0,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                     ),

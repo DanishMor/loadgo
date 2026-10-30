@@ -59,7 +59,7 @@ class EarningsView extends StatelessWidget {
                 child: ListTile(
                   key: const ValueKey('openRewards'),
                   contentPadding: EdgeInsets.zero,
-                  leading: const Icon(Icons.card_giftcard_rounded, color: AppColors.primary),
+                  leading: Icon(Icons.card_giftcard_rounded, color: AppColors.primary),
                   title: Text(tr(context, 'tipsBonusesPlan'), style: DsStyle.w700),
                   trailing: const Icon(Icons.chevron_right_rounded),
                   onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const DriverRewardsScreen())),
@@ -113,7 +113,7 @@ class EarningsView extends StatelessWidget {
               ListTile(
                 key: const ValueKey('openHistory'),
                 contentPadding: EdgeInsets.zero,
-                leading: const Icon(Icons.history_rounded, color: AppColors.primary),
+                leading: Icon(Icons.history_rounded, color: AppColors.primary),
                 title: Text(tr(context, 'ehHistoryTitle'), style: DsStyle.w700),
                 trailing: const Icon(Icons.chevron_right_rounded),
                 onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => TripHistoryScreen(bookings: bookings, onOpen: onOpenTrip))),

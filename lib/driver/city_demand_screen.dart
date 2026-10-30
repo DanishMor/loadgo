@@ -69,7 +69,7 @@ class _CityDemandScreenState extends State<CityDemandScreen> {
                           Expanded(child: LinearProgressIndicator(value: e.value / maxType, minHeight: 10, borderRadius: BorderRadius.circular(8))),
                           const SizedBox(width: 8),
                           Text('${e.value}', style: DsStyle.w700),
-                          if (mine.contains(e.key)) const Padding(padding: EdgeInsets.only(left: 4), child: Icon(Icons.local_shipping_rounded, size: 16, color: AppColors.primary)),
+                          if (mine.contains(e.key)) Padding(padding: EdgeInsets.only(left: 4), child: Icon(Icons.local_shipping_rounded, size: 16, color: AppColors.primary)),
                         ]),
                       ),
                     const SizedBox(height: 16),

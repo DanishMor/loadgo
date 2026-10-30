@@ -41,7 +41,7 @@ Future<Vehicle?> _chooseVehicle(BuildContext context, Load load, List<Vehicle> v
                   for (final v in vehicles)
                     ListTile(
                       contentPadding: EdgeInsets.zero,
-                      leading: const Icon(Icons.local_shipping_rounded, color: AppColors.primary),
+                      leading: Icon(Icons.local_shipping_rounded, color: AppColors.primary),
                       title: Text(v.number, style: DsStyle.w700),
                       subtitle: Text(
                         '${vehicleTypeLabel(context, v.type)} • ${formatNum(v.capacity)} T'

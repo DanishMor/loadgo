@@ -59,7 +59,7 @@ void showLanguageSelector(BuildContext context) {
                           ),
                           subtitle: Text(languageInfo[lang]!.englishName),
                           trailing: isSelected
-                              ? const Icon(Icons.check_circle_rounded, color: AppColors.primary)
+                              ? Icon(Icons.check_circle_rounded, color: AppColors.primary)
                               : null,
                           onTap: () {
                             setAppLanguage(lang);

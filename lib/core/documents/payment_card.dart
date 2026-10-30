@@ -123,7 +123,7 @@ class _PaymentCardState extends State<PaymentCard> {
         children: [
           Row(
             children: [
-              const Icon(Icons.payments_outlined, color: AppColors.primary),
+              Icon(Icons.payments_outlined, color: AppColors.primary),
               const SizedBox(width: 8),
               Expanded(
                 child: Text('${tr(context, 'paymentLabel')} • ${paymentModeLabel(context, b.paymentMode)}',

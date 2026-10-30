@@ -145,7 +145,7 @@ class _SahayakScreenState extends State<SahayakScreen> {
           margin: const EdgeInsets.only(bottom: 10, left: 48),
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
           decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.circular(16)),
-          child: Text(m.text!, style: DsStyle.inherit.copyWith(color: Colors.white)),
+          child: Text(m.text!, style: DsStyle.inherit.copyWith(color: AppColors.onPrimary)),
         ),
       );
     }

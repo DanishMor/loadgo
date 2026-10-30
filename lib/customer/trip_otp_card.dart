@@ -66,7 +66,7 @@ class _TripOtpCardState extends State<TripOtpCard> {
             children: [
               Row(
                 children: [
-                  const Icon(Icons.password_rounded, color: AppColors.primary),
+                  Icon(Icons.password_rounded, color: AppColors.primary),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(

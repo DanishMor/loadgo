@@ -122,7 +122,7 @@ class SupportHomeScreen extends StatelessWidget {
                   key: const ValueKey('callSupport'),
                   onTap: () => callNumber(context, c.phone),
                   child: Row(children: [
-                    const Icon(Icons.call_rounded, color: AppColors.primary),
+                    Icon(Icons.call_rounded, color: AppColors.primary),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [

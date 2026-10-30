@@ -67,7 +67,7 @@ class _RecommendedLoadsState extends State<RecommendedLoads> {
             Padding(
               padding: const EdgeInsets.only(bottom: 8),
               child: Row(children: [
-                const Icon(Icons.auto_awesome_rounded, size: 18, color: AppColors.primary),
+                Icon(Icons.auto_awesome_rounded, size: 18, color: AppColors.primary),
                 const SizedBox(width: 6),
                 Text(tr(context, 'recommendedLoads'),
                     style: DsStyle.t16w700.copyWith(color: AppColors.title)),

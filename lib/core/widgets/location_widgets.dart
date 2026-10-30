@@ -135,7 +135,7 @@ class DriverLocationCard extends StatelessWidget {
     return AppCard(
       child: Row(
         children: [
-          const Icon(Icons.location_on_rounded, color: AppColors.primary),
+          Icon(Icons.location_on_rounded, color: AppColors.primary),
           const SizedBox(width: 12),
           Expanded(
             child: Column(

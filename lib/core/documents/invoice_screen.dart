@@ -64,7 +64,7 @@ class InvoiceScreen extends StatelessWidget {
                       children: [
                         Row(
                           children: [
-                            const Icon(Icons.local_shipping_rounded, color: AppColors.primary),
+                            Icon(Icons.local_shipping_rounded, color: AppColors.primary),
                             const SizedBox(width: 8),
                             Text(AppInfo.name,
                                 style: DsStyle.t18w700.copyWith(color: AppColors.primary)),

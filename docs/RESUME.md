@@ -2,8 +2,8 @@
 
 Plan: docs/MASTER_PLAN_ELITE.md. Read it, then continue from NEXT. Phase 0 done (tag elite-phase0).
 
-LAST_DONE: E13 render pipeline (tool/render_gallery.ps1 + tool/render_gallery_test.dart, 56 images in build/gallery), hero text fix (DsHero.on), docs/DESIGN_REVIEW.md round 1.
-NEXT: E13b theme-following AppColors.primary for Signature/Midnight (DESIGN_REVIEW R4; Classic must stay identical), re-render, round 2 in DESIGN_REVIEW.md. Then E14.
+LAST_DONE: E13b AppColors.primary/onPrimary follow the look (Classic identical), designV3 docs rows, a11y test fix, design review round 2. Full regression green.
+NEXT: E14 splash (dark = true black), monochrome icon, docs/STORE_ASSETS.md (drafted), landing page (draft in scratchpad: hosting template index.html + hosting/assets/landing.css), routes test. tool/make_brand_assets_test.dart already extended (uncommitted).
 Unfinished / to remember:
 - Gallery: powershell -File tool/render_gallery.ps1 (needs 3 GB free); review images in build/gallery.
 - Never edit hosting/*.html by hand: edit tool/templates/hosting/ and run `dart run tool/apply_app_info.dart`. Scripts and styles live in hosting/assets/.

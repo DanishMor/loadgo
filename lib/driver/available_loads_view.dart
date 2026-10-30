@@ -97,7 +97,7 @@ class _AcceptLoadButtonState extends State<AcceptLoadButton> {
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
         icon: _busy
-            ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+            ? SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.onPrimary))
             : const Icon(Icons.check_circle_outline_rounded),
         label: Text(tr(context, 'accept'), style: DsStyle.w700),
       ),
@@ -223,7 +223,7 @@ class _AvailableLoadsViewState extends State<AvailableLoadsView> {
     return Padding(
       padding: const EdgeInsets.only(bottom: 4),
       child: Row(children: [
-        const Icon(Icons.near_me_rounded, size: 15, color: AppColors.primary),
+        Icon(Icons.near_me_rounded, size: 15, color: AppColors.primary),
         const SizedBox(width: 4),
         Text(trf(context, 'kmAway', {'n': km}),
             key: ValueKey('kmAway_$km'),
@@ -335,7 +335,7 @@ class _AvailableLoadsViewState extends State<AvailableLoadsView> {
               IconButton(
                 key: const ValueKey('plannedRoute'),
                 tooltip: tr(context, 'plannedRoute'),
-                icon: const Icon(Icons.alt_route_rounded, color: AppColors.primary),
+                icon: Icon(Icons.alt_route_rounded, color: AppColors.primary),
                 onPressed: _planRoute,
               ),
               IconButton(

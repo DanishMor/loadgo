@@ -11,7 +11,11 @@ import 'ds/status_badge.dart';
 /// Colors follow the palette already used across the app.
 class AppColors {
   AppColors._();
-  static const primary = DsLegacy.primary;
+  /// E13b: the brand colour of the look being shown, with [onPrimary] for text on it. Classic keeps the
+  /// old blue and white, so it looks exactly as before; Signature is Navy, Midnight is Gold with Ink text.
+  static Color get primary => _classic ? DsLegacy.primary : AppPalette.currentColors.primary;
+  static Color get onPrimary => _classic ? DsLegacy.onPrimary : AppPalette.currentColors.onPrimary;
+  static bool get _classic => identical(AppPalette.currentColors, DsColors.light) || identical(AppPalette.currentColors, DsColors.dark);
   static Color get primaryLight => AppPalette.current.tint;
   static Color get background => AppPalette.current.bg;
   static Color get border => AppPalette.current.border;

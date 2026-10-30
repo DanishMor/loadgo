@@ -213,6 +213,7 @@ class DsBrand {
 class DsLegacy {
   DsLegacy._();
   static const Color primary = Color(0xFF1565C0);
+  static const Color onPrimary = Color(0xFFFFFFFF);
   static const Color success = Color(0xFF12B76A);
   static const Color warning = Color(0xFFF79009);
   static const Color star = Color(0xFFFDB022);

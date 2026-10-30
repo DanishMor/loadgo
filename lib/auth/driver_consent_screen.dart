@@ -76,7 +76,7 @@ class _DriverConsentScreenState extends State<DriverConsentScreen> {
                           width: 96,
                           height: 96,
                           decoration: BoxDecoration(color: AppColors.primaryLight, borderRadius: BorderRadius.circular(28)),
-                          child: const Icon(Icons.my_location_rounded, size: 50, color: AppColors.primary),
+                          child: Icon(Icons.my_location_rounded, size: 50, color: AppColors.primary),
                         ),
                         const SizedBox(height: 24),
                         Text(tr(context, 'locConsentTitle'), textAlign: TextAlign.center, style: DsStyle.t28w700.copyWith(color: AppColors.title)),

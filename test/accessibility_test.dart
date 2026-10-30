@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:transport_app/core/theme/app_theme.dart';
+import 'package:transport_app/core/theme/design_tokens.dart';
 import 'package:transport_app/core/widgets/common.dart';
 
 /// MASTER-5 Task 23: spoken labels, tap size, contrast.
@@ -19,10 +20,15 @@ double contrast(Color a, Color b) {
 
 void main() {
   test('the soft green of the online chip is readable in both themes', () {
-    for (final entry in {'light': AppPalette.light, 'dark': AppPalette.dark}.entries) {
-      AppPalette.current = entry.value;
-      addTearDown(() => AppPalette.current = AppPalette.light);
-      expect(contrast(entry.value.text, AppColors.successBg), greaterThanOrEqualTo(7), reason: entry.key);
+    // successBg reads the colour set (AppPalette.currentColors), so both are switched together, as main.dart does.
+    for (final entry in {'light': (AppPalette.light, DsColors.light), 'dark': (AppPalette.dark, DsColors.dark)}.entries) {
+      AppPalette.current = entry.value.$1;
+      AppPalette.currentColors = entry.value.$2;
+      addTearDown(() {
+        AppPalette.current = AppPalette.light;
+        AppPalette.currentColors = DsColors.light;
+      });
+      expect(contrast(entry.value.$1.text, AppColors.successBg), greaterThanOrEqualTo(7), reason: entry.key);
     }
   });
 

@@ -204,7 +204,7 @@ class _CustomerHomeContent extends StatelessWidget {
                   width: 48,
                   height: 48,
                   decoration: BoxDecoration(color: AppColors.primaryLight, borderRadius: BorderRadius.circular(15)),
-                  child: const Icon(Icons.person_rounded, color: AppColors.primary, size: 27),
+                  child: Icon(Icons.person_rounded, color: AppColors.primary, size: 27),
                 ),
                 const SizedBox(width: 12),
                 Expanded(

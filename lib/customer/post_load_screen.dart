@@ -1149,7 +1149,7 @@ class _StepHeader extends StatelessWidget {
       key: ValueKey('postStep$step'),
       padding: const EdgeInsets.only(top: 6, bottom: 12),
       child: Row(children: [
-        CircleAvatar(radius: 14, backgroundColor: AppColors.primary, child: Text('$step', style: DsStyle.t14w700.copyWith(color: Colors.white))),
+        CircleAvatar(radius: 14, backgroundColor: AppColors.primary, child: Text('$step', style: DsStyle.t14w700.copyWith(color: AppColors.onPrimary))),
         const SizedBox(width: 10),
         Expanded(
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [

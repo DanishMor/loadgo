@@ -83,7 +83,7 @@ class _EmergencyContactsScreenState extends State<EmergencyContactsScreen> {
                   for (final (i, c) in contacts.indexed)
                     Card(
                       child: ListTile(
-                        leading: const Icon(Icons.contact_phone_rounded, color: AppColors.primary),
+                        leading: Icon(Icons.contact_phone_rounded, color: AppColors.primary),
                         title: Text(c.name),
                         subtitle: Text(c.phone),
                         trailing: Row(

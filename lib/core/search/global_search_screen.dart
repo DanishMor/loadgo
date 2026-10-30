@@ -236,7 +236,7 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
                     },
                     child: ListTile(
                       contentPadding: EdgeInsets.zero,
-                      leading: const Icon(Icons.link_rounded, color: AppColors.primary),
+                      leading: Icon(Icons.link_rounded, color: AppColors.primary),
                       title: Text(tr(context, 'gsOpenShared')),
                       subtitle: Text(sharedId, maxLines: 1, overflow: TextOverflow.ellipsis),
                       trailing: const Icon(Icons.chevron_right_rounded),
