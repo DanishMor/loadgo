@@ -110,8 +110,9 @@ class AppCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final radius = DsRadius.all(DsRadius.lg);
+    final c = context.ds;
     return Material(
-      color: AppColors.card,
+      color: c.surface,
       borderRadius: radius,
       child: InkWell(
         onTap: onTap,
@@ -121,7 +122,7 @@ class AppCard extends StatelessWidget {
           padding: padding,
           decoration: BoxDecoration(
             borderRadius: radius,
-            border: Border.all(color: AppColors.border),
+            border: Border.all(color: c.border),
           ),
           child: child,
         ),

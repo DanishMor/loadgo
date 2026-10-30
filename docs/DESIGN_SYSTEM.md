@@ -18,6 +18,8 @@ Mukta (SIL OFL, 400 and 700) carries Latin and Devanagari (English, Hindi, Hingl
 | `DsHero` | the blue gradient of the hero cards |
 
 ## Components (core/widgets/ds)
+E10 added `AppAvatar` (initials or photo, Verified tick only when checked), `RatingStars` (read-only, halves, "4.5 out of 5") and `PriceDisplay` (label, large tabular amount, fair range, tax note) in `person_kit.dart`; `AppCard` and every ds component read `context.ds`. `test/ds_gallery_test.dart` lays every core component out in every look at 320, 360 and 600 wide, 2.0x text, in English, Hindi, Tamil, Kannada and Urdu (RTL).
+
 AppCard, AppButton (primary, secondary, tertiary, danger; `big` for drivers), StatusBadge (tone and icon, never colour alone), RouteRibbon, FareMeter, CountdownRing, SlideToConfirm, BidCard, DriverMiniCard, StatusTimelineV2, QuickChipRow, showAppSheet, showConfirmDialog, AppTopBar, SkeletonList, FeedbackKit (sound and vibration, quiet hours, Low-end mode).
 
 ## Rules

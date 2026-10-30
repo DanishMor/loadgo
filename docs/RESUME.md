@@ -2,8 +2,8 @@
 
 Plan: docs/MASTER_PLAN_ELITE.md. Read it, then continue from NEXT. Phase 0 done (tag elite-phase0).
 
-LAST_DONE: E9 motion and feedback (spring curve, route draw-in, shimmer, success moment, hero tag, haptic map, budget test, docs/MOTION.md).
-NEXT: E10 component upgrade: buttons, cards, sheets, nav bar, chips, inputs, price display, badges, avatar, rating, timeline; 12-language overflow safe; widget tests across sizes.
+LAST_DONE: E10 components (AppAvatar, RatingStars, PriceDisplay, AppCard on theme colours, gallery test across looks, widths, languages).
+NEXT: E11 illustrations: onboarding x3 + no notifications added in illustrations.dart (uncommitted), needs test + docs.
 
 Unfinished / to remember:
 - Never edit hosting/*.html by hand: edit tool/templates/hosting/ and run `dart run tool/apply_app_info.dart`. Scripts and styles live in hosting/assets/.

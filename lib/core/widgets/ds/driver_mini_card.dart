@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../l10n/l10n.dart';
 import '../../theme/design_tokens.dart';
+import 'person_kit.dart';
 import 'status_badge.dart';
 
 /// A driver in one row: a round initial, the name, the rating, finished trips and a
@@ -20,7 +21,6 @@ class DriverMiniCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.ds;
-    final initial = name.trim().isEmpty ? '?' : String.fromCharCode(name.trim().runes.first).toUpperCase();
     final facts = <String>[
       if (rating != null) rating!.toStringAsFixed(1),
       trips > 0 ? trf(context, 'uxTripsN', {'n': trips}) : tr(context, 'uxNewDriver'),
@@ -32,7 +32,7 @@ class DriverMiniCard extends StatelessWidget {
       excludeSemantics: true,
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
         Row(children: [
-          CircleAvatar(radius: 22, backgroundColor: c.tint, child: Text(initial, style: DsType.title.copyWith(color: c.primary))),
+          AppAvatar(name: name, size: 44),
           const SizedBox(width: DsSpace.s3),
           Expanded(
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
