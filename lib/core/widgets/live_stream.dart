@@ -201,14 +201,16 @@ class ErrorRetry extends StatelessWidget {
           children: [
             Icon(Icons.cloud_off_rounded, color: AppColors.faint),
             const SizedBox(width: 12),
+            // E21: the buttons go under the words so a narrow screen or large text never overflows.
             Expanded(
-              child: Text(
-                tr(context, messageKey),
-                style: DsStyle.inherit.copyWith(color: AppColors.muted),
-              ),
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text(
+                  tr(context, messageKey),
+                  style: DsStyle.inherit.copyWith(color: AppColors.muted),
+                ),
+                Wrap(spacing: 4, crossAxisAlignment: WrapCrossAlignment.center, children: [retry, diagnose]),
+              ]),
             ),
-            retry,
-            diagnose,
           ],
         ),
       );

@@ -251,6 +251,20 @@
           "order": "ASCENDING"
         }
       ]
+    },
+    {
+      "collectionGroup": "lrs",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "issuerId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ]
     }
   ],
   "fieldOverrides": [

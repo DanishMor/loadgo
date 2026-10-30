@@ -176,6 +176,19 @@ class LrService {
     return _lrs.where('issuerId', isEqualTo: uid).limit(200).snapshots().map((s) => [for (final d in s.docs) LrPublic.fromDoc(d.id, d.data())]);
   }
 
+  /// E21: the newest LRs the signed-in person issued, for the home: one read of at most [max] (index lrs issuerId +
+  /// createdAt desc in firestore.indexes.json). Empty on any error, including the index not yet deployed.
+  static Future<List<LrPublic>> recentMine({int max = 3}) async {
+    final uid = Backend.uid;
+    if (uid == null) return const [];
+    try {
+      final s = await _lrs.where('issuerId', isEqualTo: uid).orderBy('createdAt', descending: true).limit(max).get();
+      return [for (final d in s.docs) LrPublic.fromDoc(d.id, d.data())];
+    } catch (_) {
+      return const [];
+    }
+  }
+
   static Stream<List<LrShare>> watchMyShares() {
     final uid = Backend.uid;
     if (uid == null) return Stream.value(const []);
