@@ -3,6 +3,9 @@ import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:firebase_auth_mocks/firebase_auth_mocks.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:transport_app/core/services/features_service.dart';
+import 'package:transport_app/core/features/features.dart';
+import 'package:transport_app/fleet/command_center_view.dart';
 import 'package:transport_app/core/l10n/l10n.dart';
 import 'package:transport_app/core/models/booking.dart';
 import 'package:transport_app/core/models/fleet.dart';
@@ -149,6 +152,37 @@ void main() {
     expect(tester.widget<Text>(find.byKey(const ValueKey('statDrivers'))).data, '1');
     expect(find.byKey(const ValueKey('fleetRow_1')), findsOneWidget);
     expect(find.textContaining('Ramesh'), findsWidgets);
+  });
+
+  testWidgets('E23: the command center shows only with fleetCommand on', (tester) async {
+    tester.view.physicalSize = const Size(800, 4000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    addTearDown(FeaturesService.reset);
+    Widget app() => LanguageScope(
+          notifier: languageNotifier,
+          child: MaterialApp(
+            home: Scaffold(
+              body: FleetDashboard(
+                now: () => DateTime(2026, 10, 4, 18),
+                vehicles: Stream.value([veh('1', driver: 'd1'), veh('2')]),
+                bookings: Stream.value([book('1', 'in_transit')]),
+                members: Stream.value(const []),
+                accounts: Stream.value(const []),
+                bids: Stream.value(const []),
+              ),
+            ),
+          ),
+        );
+    await tester.pumpWidget(app());
+    await settle(tester);
+    expect(find.byType(FleetCommandCenter), findsNothing);
+    FeaturesService.notifier.value = const Features(flags: {FeatureKey.fleetCommand: true});
+    await tester.pumpWidget(const SizedBox());
+    await tester.pumpWidget(app());
+    await settle(tester);
+    expect(find.byKey(const ValueKey('ccBody')), findsOneWidget);
+    expect(find.byKey(const ValueKey('ccVehicle_1')), findsOneWidget);
   });
 
   testWidgets('driver card: join an invite', (tester) async {

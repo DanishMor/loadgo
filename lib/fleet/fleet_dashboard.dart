@@ -1,6 +1,11 @@
 import '../core/services/transporter_service.dart';
 import '../core/transporter/transporter_logic.dart';
+import 'command_center_view.dart';
 import 'transporter_board_card.dart';
+import 'transporter_books_screen.dart';
+import '../core/features/features.dart';
+import '../core/services/features_service.dart';
+import '../core/services/offer_service.dart';
 import 'package:flutter/material.dart';
 
 import '../core/l10n/l10n.dart';
@@ -8,6 +13,7 @@ import '../core/models/booking.dart';
 import '../core/fleet/fleet_logic.dart';
 import '../core/models/fleet.dart';
 import '../core/models/load.dart';
+import '../core/models/offer.dart';
 import '../core/services/load_service.dart';
 import '../core/models/vehicle.dart';
 import '../core/services/fleet_service.dart';
@@ -28,12 +34,15 @@ class FleetDashboard extends StatefulWidget {
 
   /// The party books (for the money still owed); injectable for tests.
   final Stream<List<TripAccount>>? accounts;
+
+  /// E23: the newest bids for the command center; injectable for tests.
+  final Stream<List<Offer>>? bids;
   final DateTime Function() now;
 
   /// Shown at the top of the scrolling page (the transporter shortcuts), also when there are no vehicles yet.
   final Widget? header;
 
-  const FleetDashboard({super.key, this.vehicles, this.bookings, this.members, this.openLoads, this.accounts, this.now = DateTime.now, this.header});
+  const FleetDashboard({super.key, this.vehicles, this.bookings, this.members, this.openLoads, this.accounts, this.bids, this.now = DateTime.now, this.header});
 
   @override
   State<FleetDashboard> createState() => _FleetDashboardState();
@@ -45,6 +54,8 @@ class _FleetDashboardState extends State<FleetDashboard> {
   late final Stream<List<Load>> _loads = (widget.openLoads ?? LoadService.watchOpen()).asBroadcastStream();
   late final Stream<List<FleetMember>> _members = (widget.members ?? FleetService.watchMembers()).asBroadcastStream();
   late final Stream<List<TripAccount>> _accounts = (widget.accounts ?? TransporterService.watchBooks()).asBroadcastStream();
+  // E23: only listened to while the command center is shown.
+  late final Stream<List<Offer>> _bids = (widget.bids ?? OfferService.watchMineRecent(max: 20)).asBroadcastStream();
 
   Widget _stat(String label, String value, {Key? key}) => Expanded(
         child: AppCard(
@@ -167,6 +178,20 @@ class _FleetDashboardState extends State<FleetDashboard> {
               ]),
               const SizedBox(height: 6),
               Text(tr(context, 'fleetEarningsNote'), style: DsStyle.t12w400.copyWith(color: AppColors.faint)),
+              if (FeaturesService.isOn(FeatureKey.fleetCommand)) ...[
+                const SizedBox(height: 14),
+                AppCard(
+                  child: FleetCommandCenter(
+                    vehicles: vehicles,
+                    bookings: bookings,
+                    members: members,
+                    accounts: _accounts,
+                    bids: _bids,
+                    onOpenBooks: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const TransporterBooksScreen())),
+                    now: widget.now,
+                  ),
+                ),
+              ],
               _breakdowns(context, vehicles, bookings),
               _suggestions(context, vehicles),
               const SizedBox(height: 14),

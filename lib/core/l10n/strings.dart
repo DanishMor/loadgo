@@ -159,6 +159,7 @@ import 'vehicle_catalog_strings.dart';
 import 'vehicle_photo_strings.dart';
 import 'cargo_photo_strings.dart';
 import 'home_v3_strings.dart';
+import 'command_center_strings.dart';
 import 'vehicle_ui_strings.dart';
 
 const List<Map<String, List<String>>> stringTables = [
@@ -317,6 +318,7 @@ const List<Map<String, List<String>>> stringTables = [
   vehiclePhotoStrings,
   cargoPhotoStrings,
   homeV3Strings,
+  commandCenterStrings,
 ];
 
 final Map<String, List<String>> extraStrings = {

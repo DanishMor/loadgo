@@ -100,6 +100,9 @@ class FeatureKey {
 
   /// E22: driver home built from sections (radar pulse, earnings ring, papers, level, bids); needs designV3.
   static const driverHomeV3 = 'driverHomeV3';
+
+  /// E23: transporter command center on the fleet dashboard (truck board, alerts, open bids, dues, use).
+  static const fleetCommand = 'fleetCommand';
 }
 
 /// `config/features`: {pilotMode: bool, flags: {key: bool}}. A missing
@@ -162,6 +165,7 @@ class Features {
     FeatureSpec(FeatureKey.cargoPhotos, pilotOn: false, normalOn: false, group: FeatureGroup.connect),
     FeatureSpec(FeatureKey.homeV3, pilotOn: false, normalOn: false, group: FeatureGroup.design),
     FeatureSpec(FeatureKey.driverHomeV3, pilotOn: false, normalOn: false, group: FeatureGroup.design),
+    FeatureSpec(FeatureKey.fleetCommand, pilotOn: false, normalOn: false, group: FeatureGroup.core),
   ];
 
   static final _byKey = {for (final s in registry) s.key: s};
