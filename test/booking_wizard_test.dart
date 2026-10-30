@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:transport_app/core/dispatch/dispatch_models.dart';
+import 'package:transport_app/core/features/features.dart';
 import 'package:transport_app/core/l10n/l10n.dart';
 import 'package:transport_app/core/pricing/route_rates.dart';
 import 'package:transport_app/core/scheduling/schedule.dart';
@@ -305,4 +306,79 @@ void main() {
       }
     }
   }
+
+  group('E28 round trip', () {
+    test('the way back swaps the places, is scheduled and keeps goods, truck and price', () {
+      final at = DateTime(2030, 1, 2, 9);
+      final back = full.copyWith(pricePaise: () => 2500000).returnTrip(at);
+      expect((back.pickup, back.drop, back.mode, back.scheduledAt, back.vehicleType, back.pricePaise), ('Jaipur', 'Delhi', LoadMode.scheduled, at, '14ft', 2500000));
+      final now = DateTime(2030, 1, 1, 10);
+      expect(WizardDraft.defaultReturn(null, now), DateTime(2030, 1, 2, 10));
+      expect(WizardDraft.returnOk(DateTime(2030, 1, 1, 9), null, now), isFalse);
+      expect(WizardDraft.returnOk(DateTime(2030, 1, 3), DateTime(2030, 1, 4), now), isFalse, reason: 'before the outbound pickup');
+      expect(WizardDraft.returnOk(DateTime(2030, 1, 5), DateTime(2030, 1, 4), now), isTrue);
+    });
+
+    testWidgets('with roundTrip on: the switch posts the outbound load, then the way back; off: one post', (t) async {
+      t.view.physicalSize = const Size(800, 2400);
+      t.view.devicePixelRatio = 1;
+      addTearDown(t.view.reset);
+      final posted = <WizardDraft>[];
+      Future<String> poster(WizardDraft d) async {
+        posted.add(d);
+        return 'L${posted.length}';
+      }
+
+      await open(t, BookWizardScreen(initial: full.copyWith(step: 4), poster: poster));
+      expect(find.byKey(const ValueKey('wzReturn')), findsNothing);
+      await t.drag(find.byKey(const ValueKey('slideThumb')), const Offset(1200, 0));
+      await t.pumpAndSettle();
+      expect(posted.length, 1);
+
+      posted.clear();
+      FeaturesService.notifier.value = const Features(flags: {FeatureKey.roundTrip: true});
+      await open(t, BookWizardScreen(initial: full.copyWith(step: 4), poster: poster));
+      await t.tap(find.byKey(const ValueKey('wzReturn')));
+      await t.pumpAndSettle();
+      expect(find.byKey(const ValueKey('wzReturnWhen')), findsOneWidget);
+      await t.drag(find.byKey(const ValueKey('slideThumb')), const Offset(1200, 0));
+      await t.pumpAndSettle();
+      expect(posted.map((d) => '${d.pickup}>${d.drop}'), ['Delhi>Jaipur', 'Jaipur>Delhi']);
+      expect(posted.last.mode, LoadMode.scheduled);
+    });
+
+    testWidgets('a failed way back keeps the outbound load and says so', (t) async {
+      t.view.physicalSize = const Size(800, 2400);
+      t.view.devicePixelRatio = 1;
+      addTearDown(t.view.reset);
+      FeaturesService.notifier.value = const Features(flags: {FeatureKey.roundTrip: true});
+      var calls = 0;
+      await open(t, BookWizardScreen(initial: full.copyWith(step: 4), poster: (d) async {
+        calls++;
+        if (calls == 2) throw StateError('network');
+        return 'L1';
+      }));
+      await t.tap(find.byKey(const ValueKey('wzReturn')));
+      await t.pumpAndSettle();
+      await t.drag(find.byKey(const ValueKey('slideThumb')), const Offset(1200, 0));
+      await t.pump();
+      await t.pump(const Duration(milliseconds: 100));
+      expect(calls, 2);
+      expect(find.text(T.get('wzReturnFailed', AppLanguage.english)), findsOneWidget);
+    });
+  });
+
+  testWidgets('E27: See the full price only with priceCard on; it opens every line and the promise', (t) async {
+    t.view.physicalSize = const Size(800, 2400);
+    t.view.devicePixelRatio = 1;
+    addTearDown(t.view.reset);
+    await open(t, BookWizardScreen(initial: full.copyWith(step: 3)));
+    expect(find.byKey(const ValueKey('wzSeeFullPrice')), findsNothing);
+    FeaturesService.notifier.value = const Features(flags: {FeatureKey.priceCard: true});
+    await t.pumpWidget(const SizedBox());
+    await open(t, BookWizardScreen(initial: full.copyWith(step: 3)));
+    await t.tap(find.byKey(const ValueKey('wzSeeFullPrice')).last);
+    await t.pumpAndSettle();
+    expect(find.byKey(const ValueKey('ptPromise')), findsOneWidget);
+  });
 }

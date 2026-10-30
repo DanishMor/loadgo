@@ -69,9 +69,10 @@ Status `planned` = not registered and not reachable. `live` = registered, entry 
 | `adminOpsHome` | E24 | live | core | off | - | low | `lib/admin/admin_dashboard_screen.dart` |
 | `navV3` | E25 | live | core | off | - | low | `lib/core/search/global_search_screen.dart`, `lib/customer/v3/customer_home_v3.dart` |
 | `onboardingV3` | E26 | live | design | off | designV3 | low | `lib/auth/splash_screen.dart` |
-| `priceCard` | E27 | planned | core | off | - | low | - |
+| `priceCard` | E27 | live | core | off | - | low | `lib/customer/v2/booking_wizard_screen.dart` |
+| `roundTrip` | E28 | live | core | off | - | low | `lib/customer/v2/booking_wizard_screen.dart` |
 | `partLoad` | E28 | planned | core | off | rules published | medium | - |
-| `bulkUpload` | E29 | planned | core | off | businessTools | medium | - |
+| `bulkUpload` | E29 | live | core | off | businessTools | medium | `lib/customer/bulk_post_screen.dart` |
 | `laneRfq` | E30 | planned | core | off | businessTools | medium | - |
 | `quoteShare` | E31 | planned | core | off | - | low | - |
 | `legalGateInsurance` | E32 | planned | legal | off | owner legal check, insurer partner | high | - |

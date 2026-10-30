@@ -8,6 +8,7 @@ import '../../core/dispatch/dispatch_models.dart';
 import '../../core/drafts/smart_defaults.dart';
 import '../../core/errors/error_text.dart';
 import '../../core/features/features.dart';
+import '../../core/widgets/price_transparency_sheet.dart';
 import '../../core/l10n/l10n.dart';
 import '../../core/maps/road_distance.dart';
 import '../../core/models/risk.dart';
@@ -161,6 +162,27 @@ class _BookWizardScreenState extends State<BookWizardScreen> {
     );
   }
 
+  /// E28 (flag roundTrip): post the way back too, scheduled for [_returnAt].
+  bool _alsoReturn = false;
+  DateTime? _returnAt;
+
+  DateTime? get _outboundAt => _d.mode == LoadMode.scheduled ? _d.scheduledAt : null;
+
+  Future<void> _pickReturn() async {
+    final now = DateTime.now();
+    final start = WizardDraft.defaultReturn(_outboundAt, now);
+    final date = await showDatePicker(context: context, initialDate: _returnAt ?? start, firstDate: DateTime(start.year, start.month, start.day), lastDate: now.add(const Duration(days: 120)));
+    if (date == null || !mounted) return;
+    final time = await showTimePicker(context: context, initialTime: TimeOfDay.fromDateTime(_returnAt ?? start));
+    if (time == null || !mounted) return;
+    final at = DateTime(date.year, date.month, date.day, time.hour, time.minute);
+    if (!WizardDraft.returnOk(at, _outboundAt, DateTime.now())) {
+      showSnack(context, tr(context, 'wzReturnTooEarly'));
+      return;
+    }
+    setState(() => _returnAt = at);
+  }
+
   Future<void> _submit() async {
     final bad = _d.firstIncomplete();
     if (bad != null) {
@@ -184,6 +206,16 @@ class _BookWizardScreenState extends State<BookWizardScreen> {
     setState(() => _saving = true);
     try {
       final id = await (widget.poster ?? _defaultPost)(_d);
+      if (_alsoReturn && FeaturesService.isOn(FeatureKey.roundTrip)) {
+        final at = _returnAt ?? WizardDraft.defaultReturn(_outboundAt, DateTime.now());
+        try {
+          await (widget.poster ?? _defaultPost)(_d.returnTrip(at));
+          if (mounted) showSnack(context, tr(context, 'wzReturnBooked'));
+        } catch (_) {
+          // The outbound load is posted; the way back can be booked again from Home.
+          if (mounted) showSnack(context, tr(context, 'wzReturnFailed'));
+        }
+      }
       _saveTimer?.cancel();
       await WizardDraftStore.clear();
       unawaited(SmartDefaults.record(pickup: _d.pickup, drop: _d.drop, cargo: _d.cargo, weight: _d.weightTons!, vehicleType: _d.vehicleType!));
@@ -433,6 +465,22 @@ class _BookWizardScreenState extends State<BookWizardScreen> {
             usualHighPaise: snap.data?.high,
             onChanged: (p) => _change(_d.copyWith(pricePaise: () => p)),
           ),
+        ),
+      // E27: every line of the estimate, the fee and GST, no hidden fee, the usual range (flag priceCard).
+      if (est != null && value != null && _d.quote != null && FeaturesService.isOn(FeatureKey.priceCard))
+        Align(
+          alignment: AlignmentDirectional.centerStart,
+          child: TextButton.icon(
+            key: const ValueKey('wzSeeFullPrice'),
+            icon: const Icon(Icons.receipt_long_outlined),
+            label: Text(tr(context, 'wzSeeFullPrice')),
+            onPressed: () async {
+              final fare = _d.quote!;
+              final range = await _rateFor();
+              if (!mounted) return;
+              await showPriceTransparency(context, fare, range: range, yourPricePaise: value);
+            },
+          ),
         )
       else ...[
         Text(tr(context, 'wzNoQuote'), style: DsType.bodySmall.copyWith(color: c.textMuted)),
@@ -494,6 +542,29 @@ class _BookWizardScreenState extends State<BookWizardScreen> {
       const SizedBox(height: DsSpace.s4),
       Text(tr(context, 'wzYourPrice'), style: DsType.label.copyWith(color: c.textMuted)),
       if (price != null) MoneyText(price, size: MoneySize.display, key: const ValueKey('wzReviewPrice')),
+      const SizedBox(height: DsSpace.s2),
+      if (FeaturesService.isOn(FeatureKey.roundTrip)) ...[
+        const SizedBox(height: DsSpace.s3),
+        SwitchListTile(
+          key: const ValueKey('wzReturn'),
+          contentPadding: EdgeInsets.zero,
+          title: Text(tr(context, 'wzReturnTitle'), style: DsType.body.copyWith(color: c.textStrong)),
+          subtitle: Text(trf(context, 'wzReturnHint', {'from': _d.drop.trim(), 'to': _d.pickup.trim()}), style: DsType.bodySmall.copyWith(color: c.textMuted)),
+          value: _alsoReturn,
+          onChanged: (v) => setState(() {
+            _alsoReturn = v;
+            _returnAt ??= WizardDraft.defaultReturn(_outboundAt, DateTime.now());
+          }),
+        ),
+        if (_alsoReturn)
+          AppButton(
+            key: const ValueKey('wzReturnWhen'),
+            label: trf(context, 'wzReturnWhen', {'date': formatDateTime(_returnAt ?? WizardDraft.defaultReturn(_outboundAt, DateTime.now()))}),
+            kind: AppButtonKind.secondary,
+            icon: Icons.event_repeat_rounded,
+            onPressed: _pickReturn,
+          ),
+      ],
       const SizedBox(height: DsSpace.s2),
       Text(trf(context, 'wzTerms', {'app': AppInfo.name}), style: DsType.caption.copyWith(color: c.textMuted)),
     ]);

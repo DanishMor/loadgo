@@ -48,7 +48,8 @@ class _FareBreakdownViewState extends State<FareBreakdownView> {
                     child: Icon(Icons.help_outline_rounded, size: 18, semanticLabel: tr(context, 'fexWhat'), color: AppColors.faint),
                   ),
                 ),
-              MoneyText(paise, size: bold ? MoneySize.body : MoneySize.small, color: AppColors.title),
+              // E27: at large text the amount scales down rather than pushing the row off the screen.
+              Flexible(child: FittedBox(fit: BoxFit.scaleDown, alignment: AlignmentDirectional.centerEnd, child: MoneyText(paise, size: bold ? MoneySize.body : MoneySize.small, color: AppColors.title))),
             ],
           ),
           if (widget.explain && why != null && _open.contains(why))

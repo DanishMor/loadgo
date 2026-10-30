@@ -32,3 +32,9 @@ Every feature is OFF until you switch it on in Admin > Features. Nothing here ne
 **Skipped**: driver loans (licence issue), lost item (the Report a problem button already covers it).
 
 Your changes: _(write here)_
+
+## E28b part loads (defaults to review before `partLoad` is switched on)
+- Smallest share sold: 10% of the truck's load space (`minShare` 0.1).
+- Largest part load: 70% (`maxShare` 0.7); above it the customer is told to book the whole truck.
+- Handling margin: 15% over the plain share of a full-truck price (`handling` 0.15), capped at the full-truck price.
+These are guesses for a first pilot, not market rates (UNVERIFIED). They live in code defaults and can be overridden by a config document once the flag is live.

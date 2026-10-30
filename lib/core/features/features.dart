@@ -112,6 +112,15 @@ class FeatureKey {
 
   /// E26: first-run tour with a language pick and permission primers (needs designV3).
   static const onboardingV3 = 'onboardingV3';
+
+  /// E27: the full-price sheet in booking (every line, platform fee and GST, no hidden fee, usual range).
+  static const priceCard = 'priceCard';
+
+  /// E28: "also book the way back" in the booking wizard (a second, scheduled load).
+  static const roundTrip = 'roundTrip';
+
+  /// E29: bulk post from Excel or CSV (header row, quotes, template, paste, preview, reasons).
+  static const bulkUpload = 'bulkUpload';
 }
 
 /// `config/features`: {pilotMode: bool, flags: {key: bool}}. A missing
@@ -178,6 +187,9 @@ class Features {
     FeatureSpec(FeatureKey.adminOpsHome, pilotOn: false, normalOn: false, group: FeatureGroup.core),
     FeatureSpec(FeatureKey.navV3, pilotOn: false, normalOn: false, group: FeatureGroup.core),
     FeatureSpec(FeatureKey.onboardingV3, pilotOn: false, normalOn: false, group: FeatureGroup.design),
+    FeatureSpec(FeatureKey.priceCard, pilotOn: false, normalOn: false, group: FeatureGroup.core),
+    FeatureSpec(FeatureKey.roundTrip, pilotOn: false, normalOn: false, group: FeatureGroup.core),
+    FeatureSpec(FeatureKey.bulkUpload, pilotOn: false, normalOn: false, group: FeatureGroup.core),
   ];
 
   static final _byKey = {for (final s in registry) s.key: s};

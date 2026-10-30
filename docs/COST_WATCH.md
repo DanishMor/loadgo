@@ -238,3 +238,4 @@ Changes in this round that cut reads:
 - E23 `fleetCommand`: reuses the dashboard listeners (vehicles, fleet bookings, members, books) + 1 listener of the newest 20 bids (index offers driverId + createdAt). Everything else is worked out on the phone.
 - E24 `adminOpsHome`: per open (and per Refresh) the pilot control counts it already had + 3 count() aggregates (pending drivers, pending vehicle photos at most 50, open claims). No listener.
 - E25 `navV3`: while the search screen is open, the bilty register listener (issuer, newest 200) the LR register already uses. Nothing when closed.
+- E27 `priceCard`: 0 extra reads (the usual range is the route_rates read the price step already makes, cached). E28 `roundTrip`: the way back is one more load post (the same writes and rate-limit bump as any load). E29 `bulkUpload`: no change; still at most 10 load posts per bulk.

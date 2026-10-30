@@ -86,6 +86,16 @@ class WizardDraft {
   int? get estimatePaise => quote?.total;
 
   /// The price that is used: the chosen one, else the estimate rounded to whole ten rupees.
+  /// E28 (flag roundTrip): the way back as its own scheduled load: the same goods, truck and price, from the drop to
+  /// the pickup, on [at]. Posted after the outbound load, so it gets its own offers.
+  WizardDraft returnTrip(DateTime at) => copyWith(pickup: drop, drop: pickup, mode: LoadMode.scheduled, scheduledAt: () => at, step: 0);
+
+  /// The default return time: a day after the outbound pickup (or after [now] for a load that starts now).
+  static DateTime defaultReturn(DateTime? outbound, DateTime now) => (outbound ?? now).add(const Duration(days: 1));
+
+  /// A return must start after the outbound pickup and not in the past.
+  static bool returnOk(DateTime at, DateTime? outbound, DateTime now) => at.isAfter(outbound ?? now) && at.isAfter(now);
+
   int? get effectivePricePaise => pricePaise ?? roundTo10Rupees(estimatePaise);
 
   static int? roundTo10Rupees(int? paise) => paise == null ? null : ((paise + 500) ~/ 1000) * 1000;
