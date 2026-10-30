@@ -2,9 +2,9 @@
 
 Plan: docs/MASTER_PLAN_ELITE.md. Read it, then continue from NEXT. Phase 0 done (tag elite-phase0). Phase 1 done (tag elite-phase1).
 
-LAST_DONE: E30 lane tenders (flag laneRfq live, core, default OFF; needs businessTools and the rules published): firestore.rules lane_rfqs + bids (owner creates, one bid per bidder uid while open, award an existing bid at its own rate or close, once; no deletes), emulator lanerfq 5 cases, redteam +2, contract +3 scenarios (344/344); lib/core/enterprise/lane_rfq.dart (model, rankBids, service with bounded lists), lane_rfq_screens.dart (owner: my tenders, new tender sheet, bids lowest first, award/close with confirmation; bidder: open tenders of others, one rate dialog), tender_strings (12 languages, tdr prefix), entries: Business hub tile, transporter shortcut chip; FLAGS, ADDON_PILOT, WHERE_IS_WHAT, RULES_CHANGES_NEEDED, RULES_CONTRACT, COST_WATCH; test/lane_rfq_test.dart 8/8.
-Before: E27-E29 (12f9716): priceCard, roundTrip, partLoad logic (flag planned), bulkUpload. Tags elite-phase3 and elite-wave1 at 7166b02.
-NEXT: E31 share a booking or quote summary as image or PDF (Hindi-capable) and via the share sheet (flag quoteShare planned). Check existing share helpers (lib/core/share, printing package for PDF) before adding anything.
+LAST_DONE: E31 share a quote (flag quoteShare live, core, default OFF): lib/core/share/quote_summary.dart (summary, text, A5 PDF with the LR Indian-script fonts, short reference, no phone/code/ids), quote_share_sheet.dart (card preview, picture / PDF / text, quoteLineLabel maps every fare line to the price-card words), wizard last step Share this quote (fare lines only when the price is the estimate); qs words (12 languages); FLAGS, ADDON_PILOT, WHERE_IS_WHAT, COST_WATCH; test/quote_share_test.dart 6/6, booking_wizard +1, 70/70 related.
+Before: E30 laneRfq (1d25923). E27-E29 (12f9716). Tags elite-phase3 and elite-wave1 at 7166b02.
+NEXT: E32 cargo insurance request flow (InsuranceQuotes adapter fake exists, legalGateInsurance planned): quote request only, no sale, disclaimers, never promise insurance; then E33 toll and route estimate (TollEstimator fake, flag tollEstimate), then Phase 4 critic pass and tag elite-phase4.
 Unfinished / to remember:
 - Gallery: powershell -File tool/render_gallery.ps1 (needs 3 GB free); review images in build/gallery.
 - Never edit hosting/*.html by hand: edit tool/templates/hosting/ and run `dart run tool/apply_app_info.dart`. Scripts and styles live in hosting/assets/.

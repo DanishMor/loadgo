@@ -381,4 +381,19 @@ void main() {
     await t.pumpAndSettle();
     expect(find.byKey(const ValueKey('ptPromise')), findsOneWidget);
   });
+
+  testWidgets('E31: Share this quote only with quoteShare on; it opens the quote card', (t) async {
+    t.view.physicalSize = const Size(800, 2400);
+    t.view.devicePixelRatio = 1;
+    addTearDown(t.view.reset);
+    await open(t, BookWizardScreen(initial: full.copyWith(step: 4)));
+    expect(find.byKey(const ValueKey('wzShareQuote')), findsNothing);
+    FeaturesService.notifier.value = const Features(flags: {FeatureKey.quoteShare: true});
+    await t.pumpWidget(const SizedBox());
+    await open(t, BookWizardScreen(initial: full.copyWith(step: 4)));
+    await t.tap(find.byKey(const ValueKey('wzShareQuote')));
+    await t.pumpAndSettle();
+    expect(find.byKey(const ValueKey('qsCard')), findsOneWidget);
+    expect(find.text('Delhi'), findsWidgets);
+  });
 }

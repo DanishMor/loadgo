@@ -9,6 +9,8 @@ import '../../core/drafts/smart_defaults.dart';
 import '../../core/errors/error_text.dart';
 import '../../core/features/features.dart';
 import '../../core/widgets/price_transparency_sheet.dart';
+import '../../core/share/quote_share_sheet.dart';
+import '../../core/share/quote_summary.dart';
 import '../../core/l10n/l10n.dart';
 import '../../core/maps/road_distance.dart';
 import '../../core/models/risk.dart';
@@ -565,6 +567,34 @@ class _BookWizardScreenState extends State<BookWizardScreen> {
             onPressed: _pickReturn,
           ),
       ],
+      if (price != null && FeaturesService.isOn(FeatureKey.quoteShare))
+        Align(
+          alignment: AlignmentDirectional.centerStart,
+          child: TextButton.icon(
+            key: const ValueKey('wzShareQuote'),
+            icon: const Icon(Icons.ios_share_rounded),
+            label: Text(tr(context, 'qsShare')),
+            onPressed: () {
+              final q = _d.quote;
+              // The fare lines only when the price is the estimate; a price the customer set is shown as it is.
+              final lines = q != null && q.total == price ? QuoteSummary.linesOf(q, (k) => quoteLineLabel(context, q, k)) : const <(String, int)>[];
+              showQuoteShare(
+                context,
+                QuoteSummary(
+                  title: tr(context, 'qsQuoteTitle'),
+                  pickup: _d.pickup.trim(),
+                  drop: _d.drop.trim(),
+                  goods: _d.cargo,
+                  weightTons: _d.weightTons,
+                  vehicle: _d.vehicleType == null ? '-' : vehicleTypeLabel(context, _d.vehicleType!),
+                  when: _d.mode == LoadMode.scheduled && _d.scheduledAt != null ? formatDateTime(_d.scheduledAt!) : '',
+                  lines: lines,
+                  pricePaise: price,
+                ),
+              );
+            },
+          ),
+        ),
       const SizedBox(height: DsSpace.s2),
       Text(trf(context, 'wzTerms', {'app': AppInfo.name}), style: DsType.caption.copyWith(color: c.textMuted)),
     ]);

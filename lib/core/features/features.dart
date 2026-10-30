@@ -124,6 +124,9 @@ class FeatureKey {
 
   /// E30: lane tenders (records only): a business asks a rate per trip on a lane, transporters answer, one is awarded.
   static const laneRfq = 'laneRfq';
+
+  /// E31: share a quote as a picture, a PDF or text (no phone numbers or ids in it).
+  static const quoteShare = 'quoteShare';
 }
 
 /// `config/features`: {pilotMode: bool, flags: {key: bool}}. A missing
@@ -194,6 +197,7 @@ class Features {
     FeatureSpec(FeatureKey.roundTrip, pilotOn: false, normalOn: false, group: FeatureGroup.core),
     FeatureSpec(FeatureKey.bulkUpload, pilotOn: false, normalOn: false, group: FeatureGroup.core),
     FeatureSpec(FeatureKey.laneRfq, pilotOn: false, normalOn: false, group: FeatureGroup.core),
+    FeatureSpec(FeatureKey.quoteShare, pilotOn: false, normalOn: false, group: FeatureGroup.core),
   ];
 
   static final _byKey = {for (final s in registry) s.key: s};

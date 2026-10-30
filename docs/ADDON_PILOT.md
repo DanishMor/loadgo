@@ -44,6 +44,7 @@ Goal: put LoadGo in front of a small, known group (one or two corridors, tens of
 | Book the way back | OFF | Features > Book the way back |
 | Bulk loads from Excel (needs Business tools) | OFF | Features > Bulk loads from Excel |
 | Lane tenders (needs Business tools and the E30 rules) | OFF | Features > Lane tenders |
+| Share a quote | OFF | Features > Share a quote |
 | Business card to share | OFF | Features > Business card to share |
 | Party khata | OFF | Features > Party khata |
 | Safety check-in on a long stop | OFF | Features > Safety check-in on a long stop |

@@ -74,7 +74,7 @@ Status `planned` = not registered and not reachable. `live` = registered, entry 
 | `partLoad` | E28 | planned | core | off | rules published | medium | - |
 | `bulkUpload` | E29 | live | core | off | businessTools | medium | `lib/customer/bulk_post_screen.dart` |
 | `laneRfq` | E30 | live | core | off | businessTools, rules published | medium | `lib/customer/business_hub_screen.dart`, `lib/fleet/transporter_shortcuts.dart` |
-| `quoteShare` | E31 | planned | core | off | - | low | - |
+| `quoteShare` | E31 | live | core | off | - | low | `lib/customer/v2/booking_wizard_screen.dart` |
 | `legalGateInsurance` | E32 | planned | legal | off | owner legal check, insurer partner | high | - |
 | `tollEstimate` | E33 | planned | connect | off | maps | low | - |
 | `reliabilityBadges` | E34 | planned | core | off | - | low | - |
