@@ -831,6 +831,13 @@ service cloud.firestore {
       }
     }
 
+    // E18c photo review queue: a collection-group list of photos where status == 'pending'
+    // (single-field collection-group index in firestore.indexes.json). Only super and
+    // verifier admins, at most 50 per query. No other collection is called 'photos'.
+    match /{p=**}/photos/{slot} {
+      allow list: if adminIn(['super', 'verifier']) && request.query.limit <= 50;
+    }
+
     // transporter_accounts/{bookingId}: the transporter's private books for a
     // trip they hold (Task 67): what the party pays, what the driver is owed,
     // other costs and what has come in. Integer paise, a record only; no money

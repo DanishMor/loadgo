@@ -90,6 +90,18 @@ bool readyForBadge(Iterable<VehiclePhotoRecord> records) {
   return VehiclePhotoSlot.required.every(approved.contains);
 }
 
+/// Groups queue rows (vehicle id, record) by vehicle, dropping rows that do not parse, oldest vehicle first.
+Map<String, List<VehiclePhotoRecord>> groupPending(Iterable<(String?, VehiclePhotoRecord?)> rows) {
+  final out = <String, List<VehiclePhotoRecord>>{};
+  for (final (id, r) in rows) {
+    if (id == null || r == null || r.status != VehiclePhotoStatus.pending) continue;
+    out.putIfAbsent(id, () => []).add(r);
+  }
+  DateTime first(List<VehiclePhotoRecord> l) => l.map((r) => r.at ?? DateTime(9999)).reduce((a, b) => a.isBefore(b) ? a : b);
+  final keys = out.keys.toList()..sort((a, b) => first(out[a]!).compareTo(first(out[b]!)));
+  return {for (final k in keys) k: out[k]!..sort((a, b) => a.slot.index.compareTo(b.slot.index))};
+}
+
 enum PlateCheck { match, mismatch, unread }
 
 /// Compares the plate text read from the photo (OcrAdapter) with the vehicle number the driver typed, ignoring
@@ -139,6 +151,45 @@ class VehiclePhotoService {
   /// The owner's records of one vehicle (at most 8 documents).
   static Stream<List<VehiclePhotoRecord>> watch(String vehicleId) =>
       _photos(vehicleId).limit(9).snapshots().map((s) => [for (final d in s.docs) if (d.id != 'badge') ?VehiclePhotoRecord.fromMap(d.data())]);
+
+  /// Admin queue: up to 50 pending records across all vehicles (collection group, firestore.indexes.json),
+  /// grouped by vehicle id, oldest first.
+  static Stream<Map<String, List<VehiclePhotoRecord>>> pendingQueue() => Backend.db
+      .collectionGroup('photos')
+      .where('status', isEqualTo: 'pending')
+      .limit(50)
+      .snapshots()
+      .map((s) => groupPending([for (final d in s.docs) (d.reference.parent.parent?.id, VehiclePhotoRecord.fromMap(d.data()))]));
+
+  /// A verifier approves a photo, or rejects it with one of [vehiclePhotoReasons].
+  static Future<void> review(String vehicleId, VehiclePhotoSlot slot, {required bool approve, String? reason}) {
+    final uid = Backend.uid;
+    if (uid == null) throw StateError('signed out');
+    if (!approve && !vehiclePhotoReasons.contains(reason)) throw ArgumentError.value(reason, 'reason');
+    return _photos(vehicleId).doc(slot.name).update({
+      'status': approve ? 'approved' : 'rejected',
+      'reviewedAt': FieldValue.serverTimestamp(),
+      'reviewedBy': uid,
+      if (!approve) 'reason': reason,
+    });
+  }
+
+  /// A verifier grants the Photo-verified badge for [PhotoBadge.validFor] from [now].
+  static Future<void> grantBadge(String vehicleId, DateTime now) {
+    final uid = Backend.uid;
+    if (uid == null) throw StateError('signed out');
+    return _photos(vehicleId).doc('badge').set({'until': Timestamp.fromDate(now.add(PhotoBadge.validFor)), 'by': uid, 'at': FieldValue.serverTimestamp()});
+  }
+
+  /// One read: the number the owner typed for the vehicle (the verifier compares it with the plate photo).
+  static Future<String?> vehicleNumber(String vehicleId) async {
+    try {
+      final n = (await Backend.db.collection('vehicles').doc(vehicleId).get()).data()?['number'];
+      return n is String && n.isNotEmpty ? n : null;
+    } catch (_) {
+      return null;
+    }
+  }
 
   /// One read: the badge of a vehicle, or null.
   static Future<PhotoBadge?> badge(String vehicleId) async {

@@ -128,6 +128,7 @@ describe('A. reading other people', () => {
   deny('read another user subcollection', 'cust2', (db) => getDoc(D(db, 'users/cust1/saved_places/p1')));
   deny('collection group messages', 'cust1', (db) => getDocs(collectionGroup(db, 'messages')));
   deny('collection group secrets (OTP)', 'drv1', (db) => getDocs(collectionGroup(db, 'secrets')));
+  deny('collection group vehicle photos (plates, RC papers)', 'drv1', (db) => getDocs(query(collectionGroup(db, 'photos'), limit(50))));
   deny('list bookings without filter', 'cust1', (db) => getDocs(collection(db, 'bookings')));
   deny('list bookings of someone else', 'cust2', (db) => getDocs(query(collection(db, 'bookings'), where('customerId', '==', 'cust1'))));
   deny('read a booking as a stranger', 'cust2', (db) => getDoc(D(db, 'bookings/LM')));

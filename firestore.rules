@@ -632,6 +632,9 @@ service cloud.firestore {
         allow delete: if signedIn() && slot != 'badge' && vOwner();
       }
     }
+    match /{p=**}/photos/{slot} {
+      allow list: if adminIn(['super', 'verifier']) && request.query.limit <= 50;
+    }
     function accountLineOk(a) {
       return a.revenuePaise is int && a.revenuePaise >= 0 && a.revenuePaise <= 100000000
           && a.driverPayPaise is int && a.driverPayPaise >= 0 && a.driverPayPaise <= 100000000

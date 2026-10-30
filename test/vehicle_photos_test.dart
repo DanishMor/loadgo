@@ -96,6 +96,60 @@ void main() {
     expect(checkPlate(null, 'MH12AB1234'), PlateCheck.unread);
   });
 
+  group('E18c review', () {
+    Map<String, dynamic> rec(String slot, String status, int day, [String vid = 'v1']) =>
+        {'slot': slot, 'path': 'users/d/vphotos/$vid/$slot', 'status': status, 'at': Timestamp.fromDate(DateTime(2027, 1, day))};
+
+    test('groupPending keeps pending rows that parse, oldest vehicle first, slots in screen order', () {
+      final g = groupPending([
+        ('v2', VehiclePhotoRecord.fromMap(rec('rear', 'pending', 5, 'v2'))),
+        ('v1', VehiclePhotoRecord.fromMap(rec('rc', 'pending', 3))),
+        ('v1', VehiclePhotoRecord.fromMap(rec('front', 'pending', 4))),
+        ('v3', VehiclePhotoRecord.fromMap(rec('front', 'approved', 1, 'v3'))),
+        ('v4', VehiclePhotoRecord.fromMap({'slot': 'roof'})),
+        (null, VehiclePhotoRecord.fromMap(rec('left', 'pending', 1))),
+      ]);
+      expect(g.keys, ['v1', 'v2']);
+      expect(g['v1']!.map((r) => r.slot), [VehiclePhotoSlot.front, VehiclePhotoSlot.rc]);
+    });
+
+    test('the queue reads pending records across vehicles, skipping the badge and reviewed ones', () async {
+      await db.doc('vehicles/v1/photos/front').set(rec('front', 'pending', 2));
+      await db.doc('vehicles/v1/photos/rear').set(rec('rear', 'approved', 1));
+      await db.doc('vehicles/v2/photos/plate').set(rec('plate', 'pending', 1, 'v2'));
+      await db.doc('vehicles/v2/photos/badge').set({'until': Timestamp.now(), 'by': 'a', 'at': Timestamp.now()});
+      final g = await VehiclePhotoService.pendingQueue().first;
+      expect(g.keys, ['v2', 'v1']);
+      expect(g['v1']!.single.slot, VehiclePhotoSlot.front);
+    });
+
+    test('review writes exactly the fields the rules allow; a rejection needs a known reason', () async {
+      uid = 'verifier1';
+      await db.doc('vehicles/v1/photos/front').set(rec('front', 'pending', 2));
+      await db.doc('vehicles/v1/photos/rc').set(rec('rc', 'pending', 2));
+      await VehiclePhotoService.review('v1', VehiclePhotoSlot.front, approve: true);
+      await VehiclePhotoService.review('v1', VehiclePhotoSlot.rc, approve: false, reason: 'blurry');
+      final f = (await db.doc('vehicles/v1/photos/front').get()).data()!;
+      final r = (await db.doc('vehicles/v1/photos/rc').get()).data()!;
+      expect([f['status'], f['reviewedBy'], f.containsKey('reason')], ['approved', 'verifier1', false]);
+      expect([r['status'], r['reason']], ['rejected', 'blurry']);
+      expect(() => VehiclePhotoService.review('v1', VehiclePhotoSlot.rc, approve: false, reason: 'ugly'), throwsArgumentError);
+    });
+
+    test('grantBadge sets until about six months ahead, inside the 190-day rule limit; vehicleNumber reads the typed number', () async {
+      uid = 'verifier1';
+      final now = DateTime(2027, 1, 1);
+      await VehiclePhotoService.grantBadge('v1', now);
+      final b = (await db.doc('vehicles/v1/photos/badge').get()).data()!;
+      expect(b.keys.toSet(), {'until', 'by', 'at'});
+      final days = (b['until'] as Timestamp).toDate().difference(now).inDays;
+      expect(days, inInclusiveRange(180, 190));
+      await db.doc('vehicles/v1').set({'number': 'MH12AB1234'});
+      expect(await VehiclePhotoService.vehicleNumber('v1'), 'MH12AB1234');
+      expect(await VehiclePhotoService.vehicleNumber('nope'), isNull);
+    });
+  });
+
   test('plate and RC are private slots; the rest are seen from the road', () {
     expect(VehiclePhotoSlot.values.where((s) => !s.exterior), [VehiclePhotoSlot.plate, VehiclePhotoSlot.rc]);
     expect(VehiclePhotoSlot.required, isNot(contains(VehiclePhotoSlot.cab)));

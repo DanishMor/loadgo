@@ -3,7 +3,7 @@
 import { readFileSync } from 'node:fs';
 import { after, before, beforeEach, test } from 'node:test';
 import { assertFails, assertSucceeds, initializeTestEnvironment } from '@firebase/rules-unit-testing';
-import { deleteDoc, doc, getDoc, serverTimestamp, setDoc, Timestamp, updateDoc } from 'firebase/firestore';
+import { collectionGroup, deleteDoc, doc, getDoc, getDocs, limit, query, serverTimestamp, setDoc, Timestamp, updateDoc, where } from 'firebase/firestore';
 
 let env;
 before(async () => {
@@ -21,6 +21,7 @@ beforeEach(async () => {
     const db = ctx.firestore();
     await setDoc(doc(db, 'admins', 'verifier1'), { role: 'verifier' });
     await setDoc(doc(db, 'admins', 'support1'), { role: 'support' });
+    await setDoc(doc(db, 'admins', 'super1'), { role: 'super' });
     await setDoc(doc(db, 'vehicles', 'v1'), { ownerId: 'driver1', number: 'MH12AB1234' });
     await setDoc(doc(db, 'vehicles', 'v1', 'photos', 'front'), { slot: 'front', path: 'users/driver1/vphotos/v1/front', status: 'pending', at: Timestamp.now() });
     await setDoc(doc(db, 'vehicles', 'v1', 'photos', 'plate'), { slot: 'plate', path: 'users/driver1/vphotos/v1/plate', status: 'pending', at: Timestamp.now() });
@@ -78,6 +79,17 @@ test('only a verifier sets the Photo-verified badge, for at most about six month
   await assertFails(setDoc(photo('verifier1', 'badge'), { until: until(400), by: 'verifier1', at: serverTimestamp() }));
   await assertFails(setDoc(photo('verifier1', 'badge'), { until: until(180), by: 'someone', at: serverTimestamp() }));
   await assertFails(setDoc(photo('support1', 'badge'), { until: until(180), by: 'support1', at: serverTimestamp() }));
+});
+
+test('the review queue: super and verifier admins list pending photos across vehicles (at most 50); nobody else', async () => {
+  const queue = (uid, n = 50) => getDocs(query(collectionGroup(db(uid), 'photos'), where('status', '==', 'pending'), limit(n)));
+  await assertSucceeds(queue('verifier1'));
+  await assertSucceeds(queue('super1'));
+  await assertFails(queue('verifier1', 51));
+  await assertFails(getDocs(query(collectionGroup(db('verifier1'), 'photos'), where('status', '==', 'pending'))));
+  await assertFails(queue('support1'));
+  await assertFails(queue('driver1'));
+  await assertFails(queue('cust1'));
 });
 
 // ---- Storage ----
