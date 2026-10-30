@@ -88,6 +88,9 @@ class FeatureKey {
 
   /// E17: vehicle pictures, approximate sizes, compare and what fits (catalog asset, no reads).
   static const vehicleCatalog = 'vehicleCatalog';
+
+  /// E18: driver vehicle photos, admin photo review and the Photo-verified badge on bid cards (needs photoUploads).
+  static const vehiclePhotos = 'vehiclePhotos';
 }
 
 /// `config/features`: {pilotMode: bool, flags: {key: bool}}. A missing
@@ -146,6 +149,7 @@ class Features {
     FeatureSpec(FeatureKey.maps, pilotOn: false, normalOn: false, group: FeatureGroup.connect),
     FeatureSpec(FeatureKey.designV3, pilotOn: true, normalOn: true, group: FeatureGroup.design),
     FeatureSpec(FeatureKey.vehicleCatalog, pilotOn: false, normalOn: false, group: FeatureGroup.core),
+    FeatureSpec(FeatureKey.vehiclePhotos, pilotOn: false, normalOn: false, group: FeatureGroup.connect),
   ];
 
   static final _byKey = {for (final s in registry) s.key: s};

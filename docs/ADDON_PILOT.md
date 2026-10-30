@@ -32,6 +32,7 @@ Goal: put LoadGo in front of a small, known group (one or two corridors, tens of
 | New look and booking steps | ON | Features > New look and booking steps |
 | Signature look | ON | Features > Signature look (OFF shows Classic to everyone) |
 | Vehicle catalog | OFF | Features > Vehicle catalog |
+| Vehicle photos and badge (needs Photo uploads) | OFF | Features > Vehicle photos and badge |
 | Business card to share | OFF | Features > Business card to share |
 | Party khata | OFF | Features > Party khata |
 | Safety check-in on a long stop | OFF | Features > Safety check-in on a long stop |

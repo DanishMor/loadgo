@@ -47,6 +47,7 @@ import 'route_hooks.dart';
 import 'admin/admin_web_shell.dart';
 import 'core/app_mode.dart';
 import 'core/photos/photo_widgets.dart' show PhotoImage, PhotoSync;
+import 'core/photos/vehicle_photo_badge.dart' show PhotoBadgeCache;
 
 /// Lets code outside a screen (the session watcher) reach the navigator.
 final GlobalKey<NavigatorState> appNavigatorKey = GlobalKey<NavigatorState>();
@@ -128,6 +129,7 @@ Future<void> main() async {
       LiveLocationSharer.stop().ignore();
       // Pictures of papers kept in memory must not outlive the sign-in.
       PhotoImage.clearCache();
+      PhotoBadgeCache.clear();
     }
   });
   // An expired or revoked session takes the person back to the first screen.

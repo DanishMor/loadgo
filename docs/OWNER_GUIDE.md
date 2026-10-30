@@ -28,6 +28,7 @@ Kaun dekh sakta hai (role): super = owner, ops, support, verifier, finance. Jo r
 - **Users**: kisi ko dhundhna, profile dekhna, hold ya suspend karna. Ek saath kai users par action karein to 30 second ka Undo milta hai. Sab roles.
 - **Driver verification**: documents dekhkar approve ya reject. Reject karte waqt wajah chunein; driver ko wajah dikhti hai aur wo dobara bhej sakta hai. super, verifier.
 - **Vehicles**: gaadi ke papers dekhna, suspend karna. super, verifier.
+- **Vehicle photo review**: (flag vehiclePhotos aur photoUploads ON hone par) driver ki gaadi ki photo approve ya wajah ke saath reject; saari zaroori photo approve hone par 6 mahine ka Photo-verified badge dena. super, verifier.
 - **Loads**, **Bookings**: sab dekhna; booking ko trip shuru hone se pehle doosre driver ko dena. Sab roles.
 - **Tickets**: help requests ka jawab. super, support.
 - **SOS**: emergency alerts (section 4 dekhein). super, support, ops.

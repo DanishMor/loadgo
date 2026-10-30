@@ -3,6 +3,10 @@ import 'package:flutter/material.dart';
 
 import '../core/services/backend.dart';
 import '../core/vehicles/vehicle_expenses_screen.dart';
+import '../core/features/features.dart';
+import '../core/photos/vehicle_photo_badge.dart';
+import '../core/photos/vehicle_photos_screen.dart';
+import '../core/services/features_service.dart';
 
 import '../core/models/vehicle.dart';
 import '../core/services/vehicle_service.dart';
@@ -103,6 +107,8 @@ class _VehicleCardState extends State<_VehicleCard> {
   Widget build(BuildContext context) {
     final v = widget.vehicle;
     final now = DateTime.now();
+    // E18: photos need the vehicle owner and uploads ON as well (docs/FLAGS.md).
+    final photos = v.ownerId == Backend.uid && FeaturesService.isOn(FeatureKey.vehiclePhotos) && FeaturesService.isOn(FeatureKey.photoUploads);
     return AppCard(
       onTap: () => openEditVehicle(context, v),
       child: Row(
@@ -144,8 +150,18 @@ class _VehicleCardState extends State<_VehicleCard> {
                       StatusChip(label: trf(context, 'docsExpiringBanner', {'n': v.docsExpiringWithin(now).length}), color: AppColors.warning),
                     if (v.serviceDue(now)) StatusChip(label: tr(context, 'serviceDue'), color: AppColors.warning),
                     if (v.tyreDue(now)) StatusChip(label: tr(context, 'tyreDue'), color: AppColors.warning),
+                    if (photos) VehiclePhotoRenewChip(v.id),
                   ],
                 ),
+                if (photos)
+                  TextButton.icon(
+                    key: ValueKey('vphotos_${v.id}'),
+                    style: TextButton.styleFrom(padding: EdgeInsets.zero),
+                    onPressed: () => Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => VehiclePhotosScreen(vehicleId: v.id, vehicleNumber: v.number, vehicleType: v.type))),
+                    icon: const Icon(Icons.photo_camera_outlined, size: 18),
+                    label: Text(tr(context, 'vpTitle')),
+                  ),
                 TextButton.icon(
                   key: ValueKey('docs_${v.id}'),
                   style: TextButton.styleFrom(padding: EdgeInsets.zero),

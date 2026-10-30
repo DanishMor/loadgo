@@ -15,6 +15,7 @@ import 'admin_claims_screen.dart';
 import 'admin_feedback_screen.dart';
 import 'admin_demo_screen.dart';
 import 'admin_features_screen.dart';
+import 'admin_vehicle_photos_screen.dart';
 import 'admin_unit_economics_screen.dart';
 import 'admin_pilot_funnel_screen.dart';
 import 'admin_invites_screen.dart';
@@ -61,7 +62,7 @@ const adminGroups = ['adGroupPeople', 'adGroupOps', 'adGroupSafety', 'adGroupMon
 
 /// Which group an admin screen sits in; a screen not listed here goes to the last one.
 String adminGroupOf(String key) {
-  const people = {'adminUsers', 'driverVerification', 'adminVehicles', 'flaggedUsers', 'adminDeletionRequests', 'adminWaitlist', 'adminInvites', 'adminSearch', 'adminDriverRewards'};
+  const people = {'adminUsers', 'driverVerification', 'adminVehicles', 'adminVehiclePhotos', 'flaggedUsers', 'adminDeletionRequests', 'adminWaitlist', 'adminInvites', 'adminSearch', 'adminDriverRewards'};
   const ops = {'adminAnalytics', 'adminLoads', 'adminBookings', 'adminDispatch', 'adminDispatchMonitor', 'adminSupplyDemand'};
   const safety = {'adminSos', 'adminReports', 'pcAdminViolations', 'adminSignals', 'adminFraudCases', 'adminDisputes', 'adminRatingFlags', 'adminRatingBurst', 'adminAppeals', 'adminAlerts', 'adminHealth'};
   const money = {'adminPayAging', 'adminPayouts', 'adminFinance', 'adminOffers', 'adminUnitEconomics'};
@@ -130,6 +131,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       ('adminUsers', 'adminUsers', Icons.people_alt_outlined, const AdminUsersScreen()),
       ('driverVerification', 'driverVerification', Icons.verified_user_outlined, const AdminVerificationScreen()),
       ('adminVehicles', 'adminVehicles', Icons.local_shipping_outlined, const AdminVehiclesScreen()),
+      if (FeaturesService.isOn(FeatureKey.vehiclePhotos) && FeaturesService.isOn(FeatureKey.photoUploads))
+        ('adminVehiclePhotos', 'vpaTitle', Icons.photo_library_outlined, const AdminVehiclePhotosScreen()),
       ('adminLoads', 'adminLoads', Icons.inventory_2_outlined, const AdminLoadsScreen()),
       ('adminBookings', 'adminBookings', Icons.receipt_long_outlined, const AdminBookingsScreen()),
       ('adminTickets', 'adminTickets', Icons.support_agent_rounded, const AdminTicketsScreen()),

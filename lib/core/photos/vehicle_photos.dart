@@ -181,6 +181,14 @@ class VehiclePhotoService {
     return _photos(vehicleId).doc('badge').set({'until': Timestamp.fromDate(now.add(PhotoBadge.validFor)), 'by': uid, 'at': FieldValue.serverTimestamp()});
   }
 
+  /// For a customer: the approved outside views of a vehicle. One get per slot (the rules allow get, not list,
+  /// on these records), only when the customer opens the photos.
+  static Future<List<VehiclePhotoRecord>> approvedExterior(String vehicleId) async {
+    final slots = VehiclePhotoSlot.values.where((s) => s.exterior);
+    final docs = await Future.wait(slots.map((s) => _photos(vehicleId).doc(s.name).get().then((d) => d.data(), onError: (_) => null)));
+    return [for (final m in docs) if (VehiclePhotoRecord.fromMap(m) case final r? when r.status == VehiclePhotoStatus.approved) r];
+  }
+
   /// One read: the number the owner typed for the vehicle (the verifier compares it with the plate photo).
   static Future<String?> vehicleNumber(String vehicleId) async {
     try {

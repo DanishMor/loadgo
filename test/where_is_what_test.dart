@@ -29,6 +29,7 @@ void main() {
       'adminUsers': 'Users',
       'driverVerification': 'Driver verification',
       'adminVehicles': 'Vehicles',
+      'adminVehiclePhotos': 'Vehicle photo review',
       'adminLoads': 'Loads',
       'adminBookings': 'Bookings',
       'adminTickets': 'Tickets',

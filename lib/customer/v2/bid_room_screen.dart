@@ -11,6 +11,7 @@ import '../../core/features/features.dart';
 import '../../core/l10n/l10n.dart';
 import '../../core/models/load.dart';
 import '../../core/models/offer.dart';
+import '../../core/photos/vehicle_photo_badge.dart';
 import '../../core/services/features_service.dart';
 import '../../core/vehicles/vehicle_painter.dart';
 import '../../core/services/load_service.dart';
@@ -233,6 +234,18 @@ class _BidRoomScreenState extends State<BidRoomScreen> {
           }
       ];
 
+  /// Under the driver: the vehicle drawing (vehicleCatalog) and the Photo-verified badge (vehiclePhotos, one cached
+  /// read per vehicle); null when both are off.
+  Widget? _vehicleOf(Offer o) {
+    final art = FeaturesService.isOn(FeatureKey.vehicleCatalog);
+    final photos = FeaturesService.isOn(FeatureKey.vehiclePhotos) && FeaturesService.isOn(FeatureKey.photoUploads) && o.vehicleId.isNotEmpty;
+    if (!art && !photos) return null;
+    return Wrap(spacing: DsSpace.s2, runSpacing: DsSpace.s1, crossAxisAlignment: WrapCrossAlignment.center, children: [
+      if (art) VehicleTypeArt(o.vehicleType, width: 120),
+      if (photos) VehiclePhotoBadge(o.vehicleId),
+    ]);
+  }
+
   Widget _bids(Load load) {
     final c = context.ds;
     final views = _views;
@@ -259,7 +272,7 @@ class _BidRoomScreenState extends State<BidRoomScreen> {
             note: note,
             trust: PublicTrustCard(driverId: o.driverId),
             counterPaise: o.counterPaise,
-            vehicle: FeaturesService.isOn(FeatureKey.vehicleCatalog) ? VehicleTypeArt(o.vehicleType, width: 120) : null,
+            vehicle: _vehicleOf(o),
             onAccept: actions && open && !_busy ? () => _accept(v) : null,
             onCounter: actions && open && o.canCounter && !_busy ? () => _counter(v) : null,
           ),

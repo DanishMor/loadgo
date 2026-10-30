@@ -38,6 +38,7 @@ force any flag On or Off; a forced value always wins. A flag that is OFF hides i
 | `dispatchV2` | Loads go to the nearest drivers first, then wider rings. Customers can pick Instant, Bid or Schedule. Turn on only after the new Firestore rules are published. Off: the old open load and offers work as before. | OFF | OFF | Customer > book a truck; Driver > incoming load card; Admin > dispatch monitor |
 | `designV3` | Signature (Ivory) and Midnight (true black, Gold) looks with the Look picker in Settings; OFF shows Classic, the look from before the Elite plan, to everyone. | ON | ON | Settings > Look; Admin > Features > Signature look |
 | `vehicleCatalog` | Vehicle pictures, approximate sizes, compare and "what fits" (lib/core/vehicles, catalog asset assets/vehicles/catalog.json, no reads). Shows "See all vehicles" and drawings in the booking truck step, a drawing on each offer in the bid room and on the truck board. | OFF | OFF | Admin > Features > Vehicle catalog; Book > truck step |
+| `vehiclePhotos` | Drivers add photos of each truck (lib/core/photos/vehicle_photos_screen.dart from My vehicles), verifier and super admins review them (Admin > People > Vehicle photo review) and grant a six-month Photo-verified badge; customers see the badge on bid room offers (1 cached read per vehicle) and can tap it for the outside views. Needs photoUploads ON and the E18 rules published. | OFF | OFF | Admin > Features > Vehicle photos and badge; My vehicles > Vehicle photos |
 | `uiV2` | The new home, 5-step booking, bid room, incoming-load card and trip screens. Turn it off to go back to the old screens. Works with or without the new dispatch switch. | ON | ON | Every role > home, booking, bids and trip screens |
 | `bizCard` | Transporters and drivers can make a card (name, city, trucks, routes, verified mark) from their profile and send it as a picture on WhatsApp. The phone number is only on the card if the person turns it on each time. | OFF | OFF | Transporter and Driver > Profile > My business card |
 | `khata` | A private notebook in Profile: add the people you do business with, write what they owe you or what you owe them, see the balance and send a statement on WhatsApp. Records only, no money moves. | OFF | OFF | Profile > Party khata |
@@ -154,6 +155,7 @@ Admin Panel: **Profile > Admin** (only for accounts in `admins/{uid}`). The pane
 | Users | search, risk tier, licence override, export | all |
 | Driver verification | approve or reject drivers and transporters | super, verifier |
 | Vehicles, Loads, Bookings (reassign, export) | lists and fixes | all (vehicles: super, verifier) |
+| Vehicle photo review | (flag vehiclePhotos + photoUploads) drivers' truck photos grouped by vehicle; approve, or reject with a reason; grant the six-month Photo-verified badge once every required photo is approved | super, verifier |
 | Tickets, SOS | support work | super, support (SOS also ops) |
 | Reports | user reports, open a case, **open the chat for review** | super, support, ops |
 | Chat violations | strikes, suspensions, phone numbers (logged) | super, support, ops |
