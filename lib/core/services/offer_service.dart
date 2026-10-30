@@ -219,4 +219,11 @@ class OfferService {
       return list;
     });
   }
+
+  /// E22: the signed-in driver's newest [max] offers for the home (index offers driverId + createdAt).
+  static Stream<List<Offer>> watchMineRecent({int max = 3}) {
+    final uid = Backend.uid;
+    if (uid == null) return Stream.value(const []);
+    return _col.where('driverId', isEqualTo: uid).orderBy('createdAt', descending: true).limit(max).snapshots().map((s) => s.docs.parse(Offer.fromDoc));
+  }
 }
