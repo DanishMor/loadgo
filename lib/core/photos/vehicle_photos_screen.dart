@@ -98,19 +98,7 @@ class _VehiclePhotosScreenState extends State<VehiclePhotosScreen> {
     } on PhotoNotClear catch (e) {
       if (!mounted) return;
       setState(() => _busy.remove(slot));
-      final choice = await showDialog<bool>(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text(tr(context, 'vpNotClearTitle')),
-          content: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-            for (final i in e.issues) Padding(padding: const EdgeInsets.only(bottom: DsSpace.s1), child: Text(tr(context, 'vpIssue_${i.name}'))),
-          ]),
-          actions: [
-            TextButton(key: const ValueKey('vpSendAnyway'), onPressed: () => Navigator.pop(context, false), child: Text(tr(context, 'vpSendAnyway'))),
-            FilledButton(key: const ValueKey('vpRetake'), onPressed: () => Navigator.pop(context, true), child: Text(tr(context, 'vpRetake'))),
-          ],
-        ),
-      );
+      final choice = await askRetakeOrSend(context, e.issues);
       if (!mounted || choice == null) return;
       if (choice) {
         await _capture(slot);

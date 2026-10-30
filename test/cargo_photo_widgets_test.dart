@@ -120,7 +120,7 @@ void main() {
       await t.tap(find.byKey(const ValueKey('cgCamera')));
       await t.pumpAndSettle();
       expect(find.text(en('vpIssue_blurry')), findsOneWidget);
-      await t.tap(find.byKey(const ValueKey('cgSendAnyway')));
+      await t.tap(find.byKey(const ValueKey('vpSendAnyway')));
       await t.pumpAndSettle();
       expect(calls, [false, true]);
     });
@@ -186,7 +186,7 @@ void main() {
       await t.pumpWidget(host(CargoPhotosButton(loadId: 'L1', list: (_) async => const [])));
       await t.tap(find.byKey(const ValueKey('cgView_L1')));
       await t.pumpAndSettle();
-      expect(find.byKey(const ValueKey('cgSheetEmpty')), findsOneWidget);
+      expect(find.byKey(const ValueKey('photoSheetEmpty')), findsOneWidget);
     });
   });
 }

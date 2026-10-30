@@ -15,6 +15,7 @@ import '../theme/design_tokens.dart';
 import '../widgets/common.dart';
 import '../widgets/ds/app_button.dart';
 import '../widgets/feature_gate.dart';
+import 'photo_quality.dart';
 import 'photo_service.dart';
 
 /// Takes a photo from the camera or the gallery (already made smaller).
@@ -292,5 +293,69 @@ Future<Uint8List?> _readFile(String path) async {
     return await XFile(path).readAsBytes();
   } catch (_) {
     return null;
+  }
+}
+
+/// The photo did not pass the on-phone check (E18, E19): says why and asks. True = take it again, false = send
+/// anyway, null = dismissed.
+Future<bool?> askRetakeOrSend(BuildContext context, List<PhotoIssue> issues) => showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(tr(context, 'vpNotClearTitle')),
+        content: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+          for (final i in issues) Padding(padding: const EdgeInsets.only(bottom: DsSpace.s1), child: Text(tr(context, 'vpIssue_${i.name}'))),
+        ]),
+        actions: [
+          TextButton(key: const ValueKey('vpSendAnyway'), onPressed: () => Navigator.pop(context, false), child: Text(tr(context, 'vpSendAnyway'))),
+          FilledButton(key: const ValueKey('vpRetake'), onPressed: () => Navigator.pop(context, true), child: Text(tr(context, 'vpRetake'))),
+        ],
+      ),
+    );
+
+/// One labelled picture of a [PhotoGridSheet].
+typedef PhotoTile = ({Key key, String path, String label});
+
+/// A bottom sheet of pictures read once (E18 approved vehicle views, E19 goods photos): loading, then the labelled
+/// pictures, or [emptyKey]'s words when there are none.
+class PhotoGridSheet<I> extends StatelessWidget {
+  final String titleKey;
+  final String emptyKey;
+  final Future<List<I>> future;
+  final PhotoTile Function(BuildContext context, I item) tile;
+  const PhotoGridSheet({super.key, required this.titleKey, required this.emptyKey, required this.future, required this.tile});
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.ds;
+    return SafeArea(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(DsSpace.gutter, 0, DsSpace.gutter, DsSpace.gutter),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, mainAxisSize: MainAxisSize.min, children: [
+          Semantics(header: true, child: Text(tr(context, titleKey), style: DsType.title.copyWith(color: c.textStrong))),
+          const SizedBox(height: DsSpace.s3),
+          FutureBuilder<List<I>>(
+            future: future,
+            builder: (context, snap) {
+              if (snap.connectionState != ConnectionState.done) return const Center(child: Padding(padding: EdgeInsets.all(DsSpace.s4), child: CircularProgressIndicator()));
+              final list = [for (final item in snap.data ?? <I>[]) tile(context, item)];
+              if (list.isEmpty) return Text(tr(context, emptyKey), key: const ValueKey('photoSheetEmpty'), style: DsType.body.copyWith(color: c.textMuted));
+              return Wrap(spacing: DsSpace.s3, runSpacing: DsSpace.s3, children: [
+                for (final p in list)
+                  Semantics(
+                    key: p.key,
+                    label: p.label,
+                    image: true,
+                    child: Column(mainAxisSize: MainAxisSize.min, children: [
+                      PhotoImage(p.path, size: 132),
+                      const SizedBox(height: DsSpace.s1),
+                      ExcludeSemantics(child: Text(p.label, style: DsType.bodySmall.copyWith(color: c.text))),
+                    ]),
+                  ),
+              ]);
+            },
+          ),
+        ]),
+      ),
+    );
   }
 }

@@ -2,9 +2,9 @@
 
 Plan: docs/MASTER_PLAN_ELITE.md. Read it, then continue from NEXT. Phase 0 done (tag elite-phase0). Phase 1 done (tag elite-phase1).
 
-LAST_DONE: E20 turntable skipped and logged (docs/BLOCKED.md Elite section, DECISIONS): painter has one 3/4-side view, true-scale sizes already shown by E17, LowEndMode animation budget needs a phone run.
-Before: E19a-c cargo photos (flag cargoPhotos live, default OFF; rules loads/{id}/cargo + proofs seal waiting in RULES_CHANGES_NEEDED). E18a-d vehicle photos (flag vehiclePhotos live, default OFF).
-NEXT: Phase 2 critic pass (re-read E15-E20 diffs from tag elite-phase1: dead code, duplication, naming, rule 1; render_gallery if 3 GB free), then tag elite-phase2 and push, then Phase 3: E21 customer home v3 (sections registry, reorder and hide persisted, skeleton and first-run variants).
+LAST_DONE: Phase 2 critic pass: one askRetakeOrSend dialog and one PhotoGridSheet<I> in photo_widgets.dart replace the copies in the vehicle photo screen, goods photo card, badge sheet and goods photo sheet (-23 lines); scan of E15-E20 lib changes found no TODO, print, raw Color or TextStyle; vehiclePhotos and cargoPhotos default OFF; analyze 0; photo regression batch (run_regression -Only photo) green; tag elite-phase2.
+Before: E20 turntable skipped and logged. E19a-c cargo photos (flag cargoPhotos live, default OFF). E18a-d vehicle photos (flag vehiclePhotos live, default OFF). Rules waiting to publish: docs/RULES_CHANGES_NEEDED.md (E18, E18c, E19).
+NEXT: Phase 3: E21 customer home v3 (sections registry: booking hero, live trip card with route ribbon and ETA, vehicle carousel, repeat and saved routes, offers, Load 20 Promise trust strip, Sahayak entry, recent LRs, referral; reorder and hide persisted; skeleton and first-run variants), behind a planned flag in docs/FLAGS.md; split a/b if larger than 20 minutes.
 Unfinished / to remember:
 - Gallery: powershell -File tool/render_gallery.ps1 (needs 3 GB free); review images in build/gallery.
 - Never edit hosting/*.html by hand: edit tool/templates/hosting/ and run `dart run tool/apply_app_info.dart`. Scripts and styles live in hosting/assets/.

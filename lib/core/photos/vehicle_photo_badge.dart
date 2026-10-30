@@ -50,7 +50,12 @@ class _VehiclePhotoBadgeState extends State<VehiclePhotoBadge> {
         context: context,
         showDragHandle: true,
         isScrollControlled: true,
-        builder: (_) => _PhotosSheet(future: (widget.photos ?? VehiclePhotoService.approvedExterior)(widget.vehicleId)),
+        builder: (context) => PhotoGridSheet(
+          titleKey: 'vpBadge',
+          emptyKey: 'vcuLoadError',
+          future: (widget.photos ?? VehiclePhotoService.approvedExterior)(widget.vehicleId),
+          tile: (context, r) => (key: ValueKey('vpSheet_${r.slot.name}'), path: r.path, label: tr(context, 'vpSlot_${r.slot.name}')),
+        ),
       );
 
   @override
@@ -75,45 +80,6 @@ class _VehiclePhotoBadgeState extends State<VehiclePhotoBadge> {
           );
         },
       );
-}
-
-class _PhotosSheet extends StatelessWidget {
-  final Future<List<VehiclePhotoRecord>> future;
-  const _PhotosSheet({required this.future});
-
-  @override
-  Widget build(BuildContext context) {
-    final c = context.ds;
-    return SafeArea(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(DsSpace.gutter, 0, DsSpace.gutter, DsSpace.gutter),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, mainAxisSize: MainAxisSize.min, children: [
-          Text(tr(context, 'vpBadge'), style: DsType.title.copyWith(color: c.textStrong)),
-          const SizedBox(height: DsSpace.s3),
-          FutureBuilder<List<VehiclePhotoRecord>>(
-            future: future,
-            builder: (context, snap) {
-              if (snap.connectionState != ConnectionState.done) return const Center(child: Padding(padding: EdgeInsets.all(DsSpace.s4), child: CircularProgressIndicator()));
-              final list = snap.data ?? const [];
-              if (list.isEmpty) return Text(tr(context, 'vcuLoadError'), style: DsType.body.copyWith(color: c.textMuted));
-              return Wrap(spacing: DsSpace.s3, runSpacing: DsSpace.s3, children: [
-                for (final r in list)
-                  Semantics(
-                    label: tr(context, 'vpSlot_${r.slot.name}'),
-                    image: true,
-                    child: Column(key: ValueKey('vpSheet_${r.slot.name}'), mainAxisSize: MainAxisSize.min, children: [
-                      PhotoImage(r.path, size: 132),
-                      const SizedBox(height: DsSpace.s1),
-                      ExcludeSemantics(child: Text(tr(context, 'vpSlot_${r.slot.name}'), style: DsType.bodySmall.copyWith(color: c.text))),
-                    ]),
-                  ),
-              ]);
-            },
-          ),
-        ]),
-      ),
-    );
-  }
 }
 
 /// For the driver's vehicle list: "Take fresh photos" in the badge's last two weeks or after it ran out.

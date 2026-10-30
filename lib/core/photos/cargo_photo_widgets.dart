@@ -51,19 +51,7 @@ class _CargoPhotosCardState extends State<CargoPhotosCard> {
     } on PhotoNotClear catch (e) {
       if (!mounted) return;
       setState(() => _busy = false);
-      final retake = await showDialog<bool>(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text(tr(context, 'vpNotClearTitle')),
-          content: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-            for (final i in e.issues) Padding(padding: const EdgeInsets.only(bottom: DsSpace.s1), child: Text(tr(context, 'vpIssue_${i.name}'))),
-          ]),
-          actions: [
-            TextButton(key: const ValueKey('cgSendAnyway'), onPressed: () => Navigator.pop(context, false), child: Text(tr(context, 'vpSendAnyway'))),
-            FilledButton(key: const ValueKey('cgRetake'), onPressed: () => Navigator.pop(context, true), child: Text(tr(context, 'vpRetake'))),
-          ],
-        ),
-      );
+      final retake = await askRetakeOrSend(context, e.issues);
       if (!mounted || retake == null) return;
       if (retake) {
         await _add(slot, camera);
@@ -161,7 +149,12 @@ class CargoPhotosButton extends StatelessWidget {
         context: context,
         showDragHandle: true,
         isScrollControlled: true,
-        builder: (_) => _CargoSheet(future: (list ?? CargoPhotoService.list)(loadId)),
+        builder: (context) => PhotoGridSheet(
+          titleKey: 'cgTitle',
+          emptyKey: 'cgEmpty',
+          future: (list ?? CargoPhotoService.list)(loadId),
+          tile: (context, r) => (key: ValueKey('cgSheet_${r.slot.name}'), path: r.path, label: trf(context, 'cgPhoto', {'n': r.slot.index + 1})),
+        ),
       );
 
   @override
@@ -171,40 +164,4 @@ class CargoPhotosButton extends StatelessWidget {
         icon: const Icon(Icons.photo_library_outlined),
         onPressed: () => _open(context),
       );
-}
-
-class _CargoSheet extends StatelessWidget {
-  final Future<List<CargoPhotoRecord>> future;
-  const _CargoSheet({required this.future});
-
-  @override
-  Widget build(BuildContext context) {
-    final c = context.ds;
-    return SafeArea(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(DsSpace.gutter, 0, DsSpace.gutter, DsSpace.gutter),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, mainAxisSize: MainAxisSize.min, children: [
-          Semantics(header: true, child: Text(tr(context, 'cgTitle'), style: DsType.title.copyWith(color: c.textStrong))),
-          const SizedBox(height: DsSpace.s3),
-          FutureBuilder<List<CargoPhotoRecord>>(
-            future: future,
-            builder: (context, snap) {
-              if (snap.connectionState != ConnectionState.done) return const Center(child: Padding(padding: EdgeInsets.all(DsSpace.s4), child: CircularProgressIndicator()));
-              final list = snap.data ?? const <CargoPhotoRecord>[];
-              if (list.isEmpty) return Text(tr(context, 'cgEmpty'), key: const ValueKey('cgSheetEmpty'), style: DsType.body.copyWith(color: c.textMuted));
-              return Wrap(spacing: DsSpace.s3, runSpacing: DsSpace.s3, children: [
-                for (final r in list)
-                  Semantics(
-                    key: ValueKey('cgSheet_${r.slot.name}'),
-                    image: true,
-                    label: trf(context, 'cgPhoto', {'n': r.slot.index + 1}),
-                    child: PhotoImage(r.path, size: 140),
-                  ),
-              ]);
-            },
-          ),
-        ]),
-      ),
-    );
-  }
 }
