@@ -95,9 +95,9 @@ class EarningsV2 extends StatelessWidget {
           padding: const EdgeInsets.all(DsSpace.s5),
           decoration: BoxDecoration(gradient: const LinearGradient(colors: DsHero.colors), borderRadius: DsRadius.all(DsRadius.lg)),
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(tr(context, 'ehToday'), style: DsType.body.copyWith(color: c.onPrimary.withValues(alpha: 0.8))),
+            Text(tr(context, 'ehToday'), style: DsType.body.copyWith(color: DsHero.on.withValues(alpha: 0.8))),
             const SizedBox(height: DsSpace.s1),
-            Text(formatPaise(days.todayPaise), style: DsType.display.copyWith(color: c.onPrimary)),
+            Text(formatPaise(days.todayPaise), style: DsType.display.copyWith(color: DsHero.on)),
           ]),
         ),
         const SizedBox(height: DsSpace.s3),

@@ -226,6 +226,10 @@ class DsHero {
   static const Color start = Color(0xFF0B2A52);
   static const Color end = Color(0xFF1D5A9E);
   static const List<Color> colors = [start, end];
+
+  /// Text and icons on the hero gradient. The gradient is navy in every look, so this
+  /// stays white even where the theme's onPrimary is dark (Midnight, Classic dark).
+  static const Color on = Color(0xFFFFFFFF);
 }
 
 /// E7: the colour set of a theme (Classic, Signature, Midnight), carried on

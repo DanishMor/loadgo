@@ -71,7 +71,7 @@ class DriverHomeV2 extends StatelessWidget {
       };
 
   Widget _radarRow(BuildContext context, List<Vehicle> vs) {
-    final c = context.ds;
+    final on = online ? DsHero.on : context.ds.onPrimary;
     return StreamBuilder<RadarState>(
       stream: radar,
       builder: (context, snap) {
@@ -82,9 +82,9 @@ class DriverHomeV2 extends StatelessWidget {
           container: true,
           liveRegion: true,
           child: Row(key: const ValueKey('dhRadar'), children: [
-            Icon(active ? Icons.radar_rounded : Icons.wifi_off_rounded, size: 22, color: active ? c.onPrimary : c.onPrimary.withValues(alpha: 0.7)),
+            Icon(active ? Icons.radar_rounded : Icons.wifi_off_rounded, size: 22, color: active ? on : on.withValues(alpha: 0.7)),
             const SizedBox(width: DsSpace.s2),
-            Expanded(child: Text(_radarText(context, line, waiting), style: DsType.bodySmall.copyWith(color: c.onPrimary))),
+            Expanded(child: Text(_radarText(context, line, waiting), style: DsType.bodySmall.copyWith(color: on))),
           ]),
         );
       },
@@ -93,6 +93,8 @@ class DriverHomeV2 extends StatelessWidget {
 
   Widget _hero(BuildContext context, List<Vehicle> vs) {
     final c = context.ds;
+    // White on the navy gradient while online; the theme's onPrimary on the grey card while offline.
+    final on = online ? DsHero.on : c.onPrimary;
     return Container(
       key: const ValueKey('dhHero'),
       padding: const EdgeInsets.all(DsSpace.s5),
@@ -103,14 +105,14 @@ class DriverHomeV2 extends StatelessWidget {
       ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
         Row(children: [
-          Expanded(child: Text(tr(context, online ? 'dhOnlineOn' : 'dhOnlineOff'), style: DsType.headline.copyWith(color: c.onPrimary))),
+          Expanded(child: Text(tr(context, online ? 'dhOnlineOn' : 'dhOnlineOff'), style: DsType.headline.copyWith(color: on))),
           // a big target for a thumb: the switch is scaled up
           Transform.scale(scale: 1.35, child: Switch(key: const ValueKey('onlineSwitch'), value: online, onChanged: onOnline)),
         ]),
         const SizedBox(height: DsSpace.s3),
         _radarRow(context, vs),
         const SizedBox(height: DsSpace.s4),
-        Text(tr(context, 'todayEarnings'), style: DsType.bodySmall.copyWith(color: c.onPrimary.withValues(alpha: 0.85))),
+        Text(tr(context, 'todayEarnings'), style: DsType.bodySmall.copyWith(color: on.withValues(alpha: 0.85))),
         const SizedBox(height: DsSpace.s1),
         TodayEarningsText(bookings: todayTrips),
       ]),

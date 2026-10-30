@@ -75,16 +75,15 @@ class CustomerHomeV2 extends StatelessWidget {
   });
 
   Widget _modeLine(BuildContext context, IconData icon, String title, String hint) {
-    final c = context.ds;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: DsSpace.s1),
       child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Icon(icon, size: 20, color: c.onPrimary),
+        Icon(icon, size: 20, color: DsHero.on),
         const SizedBox(width: DsSpace.s3),
         Expanded(
           child: Text.rich(TextSpan(children: [
-            TextSpan(text: '$title  ', style: DsType.label.copyWith(color: c.onPrimary)),
-            TextSpan(text: hint, style: DsType.bodySmall.copyWith(color: c.onPrimary.withValues(alpha: 0.85))),
+            TextSpan(text: '$title  ', style: DsType.label.copyWith(color: DsHero.on)),
+            TextSpan(text: hint, style: DsType.bodySmall.copyWith(color: DsHero.on.withValues(alpha: 0.85))),
           ])),
         ),
       ]),
@@ -135,9 +134,9 @@ class CustomerHomeV2 extends StatelessWidget {
           padding: const EdgeInsets.all(DsSpace.s5),
           decoration: BoxDecoration(gradient: const LinearGradient(colors: DsHero.colors, begin: Alignment.topLeft, end: Alignment.bottomRight), borderRadius: DsRadius.all(DsRadius.xl)),
           child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-            Text(tr(context, 'hvBookBig'), style: DsType.headline.copyWith(color: c.onPrimary)),
+            Text(tr(context, 'hvBookBig'), style: DsType.headline.copyWith(color: DsHero.on)),
             const SizedBox(height: DsSpace.s1),
-            Text(tr(context, 'hvHeroSub'), style: DsType.bodySmall.copyWith(color: c.onPrimary.withValues(alpha: 0.85))),
+            Text(tr(context, 'hvHeroSub'), style: DsType.bodySmall.copyWith(color: DsHero.on.withValues(alpha: 0.85))),
             const SizedBox(height: DsSpace.s4),
             _modeLine(context, Icons.bolt_rounded, tr(context, 'wzModeInstant'), tr(context, 'wzModeInstantHint')),
             if (bidOn) _modeLine(context, Icons.gavel_rounded, tr(context, 'wzModeBid'), tr(context, 'wzModeBidHint')),

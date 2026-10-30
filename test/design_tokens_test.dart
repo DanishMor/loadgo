@@ -110,6 +110,14 @@ void main() {
     expect(ratio(DsLuxe.gold, DsLuxe.ivory), lessThan(4.5));
   });
 
+  test('E13: hero text is 4.5:1 or more on both ends of the navy gradient in every look', () {
+    // The gradient does not change with the look, so the text on it must not follow onPrimary (dark in Midnight).
+    for (final stop in DsHero.colors) {
+      expect(ratio(DsHero.on, stop), greaterThanOrEqualTo(4.5));
+    }
+    expect(ratio(DsColors.midnight.onPrimary, DsHero.start), lessThan(4.5), reason: 'why DsHero.on exists');
+  });
+
   test('Midnight is true black; Signature sits on Ivory', () {
     expect(DsColors.midnight.bg.toARGB32(), 0xFF000000);
     expect(DsColors.signature.bg, DsLuxe.ivory);
