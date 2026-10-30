@@ -389,6 +389,10 @@ class DsType {
   /// Same as [body] with equal-width digits, for money and distances.
   static TextStyle get number => body.copyWith(fontFeatures: const [FontFeature.tabularFigures()]);
 
+  /// E8: a headline-sized amount (fare, quote total) and a small count, both with equal-width digits.
+  static TextStyle get price => headline.copyWith(fontFeatures: const [FontFeature.tabularFigures()]);
+  static TextStyle get numberSmall => bodySmall.copyWith(fontFeatures: const [FontFeature.tabularFigures()]);
+
   /// The Material text theme built from the scale, coloured for [c].
   static TextTheme textTheme(DsColors c) => TextTheme(
         displayLarge: display.copyWith(color: c.text),

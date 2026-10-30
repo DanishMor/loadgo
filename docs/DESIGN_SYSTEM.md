@@ -5,6 +5,9 @@ Everything lives in `lib/core/theme/design_tokens.dart` (tokens) and `lib/core/w
 ## Themes (E7)
 Three colour sets with the same 27 roles: Classic light and dark (`DsColors.light`, `DsColors.dark`), Signature (`DsColors.signature`, Ivory) and Midnight (`DsColors.midnight`, true black with Gold). `ThemeStyle` (signature, classic) picks the pair; Settings > Look and Settings > Appearance (system, light, dark) choose, both kept on the device (`ThemeStore`). The `designV3` switch (default ON) shows Classic to everyone when OFF. `AppTheme.build` puts the set on ThemeData as `DsTheme`, so `context.ds` and every component follow the theme. Palette rules: `docs/BRAND_GUIDE.md`.
 
+## Typography (E8)
+Mukta (SIL OFL, 400 and 700) carries Latin and Devanagari (English, Hindi, Hinglish, Marathi); the bundled Noto chain (`DsType.fallback`) carries Kannada, Tamil, Telugu, Gujarati, Bengali, Gurmukhi and Arabic script (Urdu, Kashmiri), then the system font. Scale: display 32, headline 24, title 20, subtitle and body 16, bodySmall and label 14, caption 12. Money and counts use equal-width digits: `DsType.number`, `DsType.price`, `DsType.numberSmall` and `MoneyText`. Weight 600 renders with the nearest bundled weight. Tests: `typography_test.dart` (every letter of every string is in a bundled font, read from the font files) and `typography_render_test.dart` (each language renders with the real fonts in every look at 2.0x, in its own direction).
+
 ## Tokens
 | Token | Use |
 |---|---|

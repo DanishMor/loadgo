@@ -2,8 +2,8 @@
 
 Plan: docs/MASTER_PLAN_ELITE.md. Read it, then continue from NEXT. Phase 0 done (tag elite-phase0).
 
-LAST_DONE: E7 themes (Signature, Midnight, Classic; flag designV3 live, default ON). E6 brand guide + palette before it.
-NEXT: E8 typography: tabular price style, render test for all 12 languages (fonts and glyph test already exist from L6), then E9 motion.
+LAST_DONE: E8 typography (price styles, render test for all 12 languages with the real fonts).
+NEXT: E9 motion and feedback: spring curves, hero transitions, route-line draw, shimmer skeletons, success moment, haptic map, sound rules, reduce-motion, animation budget per screen.
 
 Unfinished / to remember:
 - Never edit hosting/*.html by hand: edit tool/templates/hosting/ and run `dart run tool/apply_app_info.dart`. Scripts and styles live in hosting/assets/.
