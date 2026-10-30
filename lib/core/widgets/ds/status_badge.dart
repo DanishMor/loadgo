@@ -46,9 +46,10 @@ StatusTone statusToneFor(String? status) {
   return StatusTone.neutral;
 }
 
-/// Text colour, soft background and icon of a [tone] in the theme's mode.
-({Color fg, Color bg, IconData icon}) statusStyle(StatusTone tone, Brightness b) {
-  final c = DsColors.of(b);
+/// Text colour, soft background and icon of a [tone] in the theme's mode
+/// ([colors] is the theme's own set, `context.ds`, when there is one).
+({Color fg, Color bg, IconData icon}) statusStyle(StatusTone tone, Brightness b, [DsColors? colors]) {
+  final c = colors ?? DsColors.of(b);
   return switch (tone) {
     StatusTone.success => (fg: c.success, bg: c.successBg, icon: Icons.check_circle_outline_rounded),
     StatusTone.attention => (fg: c.warning, bg: c.warningBg, icon: Icons.schedule_rounded),
@@ -76,7 +77,7 @@ class StatusBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final s = statusStyle(tone, Theme.of(context).brightness);
+    final s = statusStyle(tone, Theme.of(context).brightness, context.ds);
     return Semantics(
       label: label,
       child: Container(
@@ -104,8 +105,7 @@ class ColorBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final b = Theme.of(context).brightness;
-    final surface = DsColors.of(b).surface;
+    final surface = context.ds.surface;
     final bg = Color.alphaBlend(color.withValues(alpha: 0.14), surface);
     final fg = ensureContrast(color, bg);
     return Container(

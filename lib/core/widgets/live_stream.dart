@@ -267,7 +267,7 @@ class OfflineBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = DsColors.of(Theme.of(context).brightness);
+    final c = context.ds;
     return ValueListenableBuilder<bool>(
       valueListenable: ConnectivityService.online,
       builder: (context, online, _) {

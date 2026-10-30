@@ -1,9 +1,9 @@
 # RESUME (Elite plan: docs/MASTER_PLAN_ELITE.md)
 
-Plan: docs/MASTER_PLAN_PART5.md. Read it, then continue from NEXT. Part 4 is complete (git log, tags ux-v2-phase4..6).
+Plan: docs/MASTER_PLAN_ELITE.md. Read it, then continue from NEXT. Phase 0 done (tag elite-phase0).
 
-LAST_DONE: Phase 0 done (E0, E2, E3, E4, E5; E1 skipped, no OWNER_BUGS.md). Tag elite-phase0.
-NEXT: Phase 1, E6 docs/BRAND_GUIDE.md and a WCAG AA contrast test for the Navy/Ink/Gold/Ivory palette, then E7 themes (flag designV3).
+LAST_DONE: E7 themes (Signature, Midnight, Classic; flag designV3 live, default ON). E6 brand guide + palette before it.
+NEXT: E8 typography: tabular price style, render test for all 12 languages (fonts and glyph test already exist from L6), then E9 motion.
 
 Unfinished / to remember:
 - Never edit hosting/*.html by hand: edit tool/templates/hosting/ and run `dart run tool/apply_app_info.dart`. Scripts and styles live in hosting/assets/.

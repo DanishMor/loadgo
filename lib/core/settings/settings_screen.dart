@@ -19,6 +19,7 @@ import '../l10n/language_widgets.dart';
 import '../models/user_settings.dart';
 import '../permissions/permission_rationale.dart';
 import '../services/push_service.dart';
+import '../services/features_service.dart';
 import '../services/settings_service.dart';
 import '../widgets/common.dart';
 import 'simple_mode.dart';
@@ -93,7 +94,35 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _save(() => SettingsService.saveConsents(c));
   }
 
-  String _themeLabel(ThemeMode m) => tr(context, switch (m) { ThemeMode.system => 'themeSystem', ThemeMode.light => 'themeLight', ThemeMode.dark => 'themeDark' });
+  /// E7: with the Signature look, light is Ivory and dark is Midnight.
+  bool get _signature => ThemeStore.effective(designV3: FeaturesService.current.isOn(FeatureKey.designV3)) == ThemeStyle.signature;
+
+  String _themeLabel(ThemeMode m) => tr(context, switch (m) {
+        ThemeMode.system => 'themeSystem',
+        ThemeMode.light => _signature ? 'themeIvory' : 'themeLight',
+        ThemeMode.dark => _signature ? 'themeMidnight' : 'themeDark',
+      });
+
+  String _styleLabel(ThemeStyle s) => tr(context, s == ThemeStyle.signature ? 'themeLookSignature' : 'themeLookClassic');
+
+  Future<void> _pickStyle() async {
+    final picked = await showDialog<ThemeStyle>(
+      context: context,
+      builder: (ctx) => SimpleDialog(
+        title: Text(tr(ctx, 'themeLook')),
+        children: [
+          for (final s in ThemeStyle.values)
+            ListTile(
+              key: ValueKey('themeStyle_${s.name}'),
+              leading: Icon(ThemeStore.style.value == s ? Icons.radio_button_checked : Icons.radio_button_off),
+              title: Text(_styleLabel(s)),
+              onTap: () => Navigator.pop(ctx, s),
+            ),
+        ],
+      ),
+    );
+    if (picked != null) await ThemeStore.setStyle(picked);
+  }
 
   Future<void> _pickTheme() async {
     final picked = await showDialog<ThemeMode>(
@@ -144,13 +173,26 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 trailing: Text(trLanguageName(LanguageScope.of(context))),
                 onTap: () => showLanguageSelector(context),
               ),
-              ValueListenableBuilder<ThemeMode>(
-                valueListenable: ThemeStore.mode,
-                builder: (context, mode, _) => ListTile(
+              FeatureGate(
+                featureKey: FeatureKey.designV3,
+                child: ValueListenableBuilder<ThemeStyle>(
+                  valueListenable: ThemeStore.style,
+                  builder: (context, style, _) => ListTile(
+                    key: const ValueKey('settingsLook'),
+                    leading: const Icon(Icons.palette_outlined),
+                    title: Text(tr(context, 'themeLook')),
+                    subtitle: Text(_styleLabel(style)),
+                    onTap: _pickStyle,
+                  ),
+                ),
+              ),
+              ListenableBuilder(
+                listenable: Listenable.merge([ThemeStore.mode, ThemeStore.style, FeaturesService.notifier]),
+                builder: (context, _) => ListTile(
                   key: const ValueKey('settingsTheme'),
                   leading: const Icon(Icons.dark_mode_outlined),
                   title: Text(tr(context, 'themeMode')),
-                  trailing: Text(_themeLabel(mode)),
+                  subtitle: Text(_themeLabel(ThemeStore.mode.value)),
                   onTap: _pickTheme,
                 ),
               ),

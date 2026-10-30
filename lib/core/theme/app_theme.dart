@@ -22,9 +22,23 @@ class AppPalette extends ThemeExtension<AppPalette> {
         hint: c.textHint, border: c.border, tint: c.tint, chip: c.chip, warnBg: c.warningBg,
       );
 
+  /// The colour set behind [current] (AppColors reads the status backgrounds from it).
+  static DsColors currentColors = DsColors.light;
+
   /// Built from the design tokens (design_tokens.dart); the values live there.
   static final light = _from(DsColors.light);
   static final dark = _from(DsColors.dark);
+  static final signature = _from(DsColors.signature);
+  static final midnight = _from(DsColors.midnight);
+
+  /// The cached palette of a token set (one instance per theme).
+  static AppPalette forColors(DsColors c) => identical(c, DsColors.dark)
+      ? dark
+      : identical(c, DsColors.signature)
+          ? signature
+          : identical(c, DsColors.midnight)
+              ? midnight
+              : light;
 
   @override
   AppPalette copyWith({Color? bg, Color? card, Color? text, Color? strong, Color? muted, Color? hint, Color? border, Color? tint, Color? chip, Color? warnBg}) =>
@@ -74,6 +88,18 @@ class RoleAccents extends ThemeExtension<RoleAccents> {
   }
 }
 
+/// E7: the look. Signature is Ivory by day and Midnight (true black, Gold
+/// accents) at night; Classic is the look from before the Elite plan.
+enum ThemeStyle {
+  signature,
+  classic;
+
+  DsColors colors(Brightness b) => switch (this) {
+        ThemeStyle.signature => b == Brightness.dark ? DsColors.midnight : DsColors.signature,
+        ThemeStyle.classic => DsColors.of(b),
+      };
+}
+
 class AppTheme {
   AppTheme._();
 
@@ -82,10 +108,10 @@ class AppTheme {
 
   /// Material 3 theme for [brightness], every colour, text style, radius and
   /// size taken from the design tokens. Dark mode is navy-tinted, not black.
-  static ThemeData build(Brightness brightness, {bool lowEnd = false}) {
+  static ThemeData build(Brightness brightness, {bool lowEnd = false, ThemeStyle style = ThemeStyle.classic}) {
     DsMotion.lowEnd = lowEnd;
-    final c = DsColors.of(brightness);
-    final p = brightness == Brightness.dark ? AppPalette.dark : AppPalette.light;
+    final c = style.colors(brightness);
+    final p = AppPalette.forColors(c);
     final scheme = ColorScheme(
       brightness: brightness,
       primary: c.primary,
@@ -138,7 +164,7 @@ class AppTheme {
       canvasColor: c.bg,
       dividerColor: c.border,
       dividerTheme: DividerThemeData(color: c.border, thickness: 1, space: 1),
-      extensions: [p, RoleAccents(customer: c.roleCustomer, driver: c.roleDriver, transporter: c.roleTransporter)],
+      extensions: [p, DsTheme(c), RoleAccents(customer: c.roleCustomer, driver: c.roleDriver, transporter: c.roleTransporter)],
       cardTheme: CardThemeData(
         color: c.surface,
         elevation: DsElevation.none,
@@ -293,17 +319,32 @@ class LowEndMode {
   }
 }
 
-/// system | light | dark, kept on the device.
+/// system | light | dark and the look (E7), kept on the device.
 class ThemeStore {
   ThemeStore._();
 
   static const _key = 'theme_mode';
+  static const _styleKey = 'theme_style';
   static final ValueNotifier<ThemeMode> mode = ValueNotifier(ThemeMode.system);
+  static final ValueNotifier<ThemeStyle> style = ValueNotifier(ThemeStyle.signature);
+
+  /// The look being shown: Classic for everyone while the designV3 switch is OFF.
+  static ThemeStyle effective({required bool designV3}) => designV3 ? style.value : ThemeStyle.classic;
 
   static Future<void> load() async {
     try {
-      final v = (await SharedPreferences.getInstance()).getString(_key);
+      final prefs = await SharedPreferences.getInstance();
+      final v = prefs.getString(_key);
       mode.value = ThemeMode.values.where((m) => m.name == v).firstOrNull ?? ThemeMode.system;
+      final st = prefs.getString(_styleKey);
+      style.value = ThemeStyle.values.where((x) => x.name == st).firstOrNull ?? ThemeStyle.signature;
+    } catch (_) {}
+  }
+
+  static Future<void> setStyle(ThemeStyle s) async {
+    style.value = s;
+    try {
+      await (await SharedPreferences.getInstance()).setString(_styleKey, s.name);
     } catch (_) {}
   }
 

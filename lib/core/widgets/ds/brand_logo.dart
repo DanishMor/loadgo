@@ -36,7 +36,7 @@ class LogoMark extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = DsColors.of(Theme.of(context).brightness);
+    final c = context.ds;
     return Semantics(
       image: true,
       label: AppInfo.name,
@@ -119,7 +119,7 @@ class Wordmark extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = DsColors.of(Theme.of(context).brightness);
+    final c = context.ds;
     final text = onDark ? DsBrand.white : c.text;
     final accent = onDark ? DsBrand.saffron : c.accentStrong;
     final name = AppInfo.name;

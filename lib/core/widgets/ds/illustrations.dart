@@ -39,7 +39,7 @@ class IllustrationView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = DsColors.of(Theme.of(context).brightness);
+    final c = context.ds;
     return ExcludeSemantics(
       child: SizedBox(
         width: width,

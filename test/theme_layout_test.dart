@@ -9,7 +9,9 @@ import 'package:transport_app/auth/customer_login_screen.dart';
 import 'package:transport_app/auth/driver_login_screen.dart';
 import 'package:transport_app/auth/role_selection_screen.dart';
 import 'package:transport_app/core/notifications/notifications_screen.dart';
+import 'package:transport_app/core/features/features.dart';
 import 'package:transport_app/core/services/backend.dart';
+import 'package:transport_app/core/services/features_service.dart';
 import 'package:transport_app/core/settings/account_deletion_screen.dart';
 import 'package:transport_app/core/settings/help_screen.dart';
 import 'package:transport_app/core/settings/legal_screens.dart';
@@ -94,6 +96,25 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('theme_dark')));
     await settle(tester);
     expect(ThemeStore.mode.value, ThemeMode.dark);
+  });
+
+  testWidgets('settings (E7): the look picker stores Classic, and hides while designV3 is OFF', (tester) async {
+    tester.view.physicalSize = const Size(800, 2400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    addTearDown(() => FeaturesService.notifier.value = Features.pilotDefault);
+    ThemeStore.style.value = ThemeStyle.signature;
+    await tester.pumpWidget(MaterialApp(home: SettingsScreen(onLogout: () async {})));
+    await settle(tester);
+    await tester.tap(find.byKey(const ValueKey('settingsLook')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('themeStyle_classic')));
+    await settle(tester);
+    expect(ThemeStore.style.value, ThemeStyle.classic);
+    FeaturesService.notifier.value = const Features(flags: {FeatureKey.designV3: false});
+    await settle(tester);
+    expect(find.byKey(const ValueKey('settingsLook')), findsNothing);
+    expect(find.byKey(const ValueKey('settingsTheme')), findsOneWidget);
   });
 
   final screens = <String, Widget Function()>{

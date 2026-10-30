@@ -59,7 +59,7 @@ Status `planned` = not registered and not reachable. `live` = registered, entry 
 
 | Flag | Phase | Status | Group | Default | Depends on | Risk | Entry points |
 |---|---|---|---|---|---|---|---|
-| `designV3` | E7 | planned | design | ON | - | low | - |
+| `designV3` | E7 | live | design | ON | - | low | `lib/main.dart`, `lib/core/settings/settings_screen.dart` |
 | `vehicleCatalog` | E17 | planned | core | off | - | low | - |
 | `vehiclePhotos` | E18 | planned | connect | off | photoUploads, storage rules | medium | - |
 | `cargoPhotos` | E19 | planned | connect | off | vehiclePhotos | medium | - |

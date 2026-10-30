@@ -82,6 +82,9 @@ class FeatureKey {
   static const smsGateway = 'smsGateway';
   static const liveLocation = 'liveLocation';
   static const maps = 'maps';
+
+  /// E7: the Signature / Midnight look (default ON; Classic stays selectable in Settings).
+  static const designV3 = 'designV3';
 }
 
 /// `config/features`: {pilotMode: bool, flags: {key: bool}}. A missing
@@ -138,6 +141,7 @@ class Features {
     FeatureSpec(FeatureKey.smsGateway, pilotOn: false, normalOn: false, group: FeatureGroup.connect),
     FeatureSpec(FeatureKey.liveLocation, pilotOn: false, normalOn: false, group: FeatureGroup.connect),
     FeatureSpec(FeatureKey.maps, pilotOn: false, normalOn: false, group: FeatureGroup.connect),
+    FeatureSpec(FeatureKey.designV3, pilotOn: true, normalOn: true, group: FeatureGroup.design),
   ];
 
   static final _byKey = {for (final s in registry) s.key: s};

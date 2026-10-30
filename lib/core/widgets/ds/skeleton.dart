@@ -55,7 +55,7 @@ class SkeletonBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = DsColors.of(Theme.of(context).brightness);
+    final c = context.ds;
     return Container(
       width: width,
       height: height,
@@ -70,7 +70,7 @@ class SkeletonCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = DsColors.of(Theme.of(context).brightness);
+    final c = context.ds;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(DsSpace.s4),

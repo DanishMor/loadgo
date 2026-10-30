@@ -30,7 +30,10 @@ import 'core/services/session_watcher.dart';
 import 'core/services/settings_service.dart';
 import 'core/services/analytics_events.dart';
 import 'core/settings/simple_mode.dart';
+import 'core/features/features.dart';
+import 'core/services/features_service.dart';
 import 'core/theme/app_theme.dart';
+import 'core/theme/design_tokens.dart';
 import 'core/widgets/app_control_gate.dart';
 import 'core/notifications/push_router.dart';
 import 'core/location/live_location_sharer.dart';
@@ -160,18 +163,22 @@ class LoadGoApp extends StatelessWidget {
       notifier: languageNotifier,
       child: ValueListenableBuilder<bool>(
         valueListenable: LowEndMode.notifier,
-        builder: (context, lowEnd, _) => ValueListenableBuilder<ThemeMode>(
-        valueListenable: ThemeStore.mode,
-        builder: (context, mode, _) => MaterialApp(
+        builder: (context, lowEnd, _) => ListenableBuilder(
+        // E7: the look follows the designV3 switch; Classic while it is OFF.
+        listenable: Listenable.merge([ThemeStore.mode, ThemeStore.style, FeaturesService.notifier]),
+        builder: (context, _) {
+        final style = ThemeStore.effective(designV3: FeaturesService.current.isOn(FeatureKey.designV3));
+        return MaterialApp(
         navigatorKey: appNavigatorKey,
         navigatorObservers: [BreadcrumbObserver()],
         title: AppInfo.name,
         debugShowCheckedModeBanner: false,
         builder: (context, child) {
-          final isDark = Theme.of(context).brightness == Brightness.dark;
-          final palette = isDark ? AppPalette.dark : AppPalette.light;
+          final colors = context.ds;
+          final palette = AppPalette.forColors(colors);
           if (!identical(AppPalette.current, palette)) {
             AppPalette.current = palette;
+            AppPalette.currentColors = colors;
             // Screens that read AppColors without watching the theme must repaint.
             WidgetsBinding.instance.addPostFrameCallback((_) => repaintAll());
           }
@@ -190,13 +197,14 @@ class LoadGoApp extends StatelessWidget {
             ),
           );
         },
-        theme: AppTheme.build(Brightness.light, lowEnd: lowEnd),
-        darkTheme: AppTheme.build(Brightness.dark, lowEnd: lowEnd),
-        themeMode: mode,
+        theme: AppTheme.build(Brightness.light, lowEnd: lowEnd, style: style),
+        darkTheme: AppTheme.build(Brightness.dark, lowEnd: lowEnd, style: style),
+        themeMode: ThemeStore.mode.value,
         // The launch link is read by DeepLinks, not by the navigator.
         initialRoute: '/',
         home: const SplashScreen(),
-        ),
+        );
+        },
         ),
       ),
     );

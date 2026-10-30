@@ -24,7 +24,7 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = DsColors.of(Theme.of(context).brightness);
+    final c = context.ds;
     final canPop = Navigator.maybeOf(context)?.canPop() ?? false;
     final accent = role == null ? null : RoleAccents.of(context).forRole(role, c.primary);
     return AppBar(

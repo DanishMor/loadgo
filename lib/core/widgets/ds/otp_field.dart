@@ -78,7 +78,7 @@ class _OtpFieldState extends State<OtpField> {
 
   @override
   Widget build(BuildContext context) {
-    final c = DsColors.of(Theme.of(context).brightness);
+    final c = context.ds;
     final text = _c.text;
     final active = _focus.hasFocus ? text.length.clamp(0, widget.length - 1) : -1;
     final label = trf(context, 'dsOtpLabel', {'n': text.length, 'm': widget.length});

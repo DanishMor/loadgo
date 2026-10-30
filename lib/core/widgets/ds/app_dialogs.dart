@@ -76,7 +76,7 @@ Future<R?> showAppSheet<R>(
             if (title != null)
               Padding(
                 padding: const EdgeInsets.only(bottom: DsSpace.s3),
-                child: Semantics(header: true, child: Text(title, style: DsType.title.copyWith(color: DsColors.of(Theme.of(ctx).brightness).text))),
+                child: Semantics(header: true, child: Text(title, style: DsType.title.copyWith(color: ctx.ds.text))),
               ),
             builder(ctx),
           ],
@@ -93,7 +93,7 @@ enum SnackKind { info, success, error }
 void showAppSnack(BuildContext context, String message, {SnackKind kind = SnackKind.info, String? actionLabel, VoidCallback? onAction}) {
   final b = Theme.of(context).brightness;
   final tone = switch (kind) { SnackKind.success => StatusTone.success, SnackKind.error => StatusTone.danger, SnackKind.info => StatusTone.progress };
-  final s = statusStyle(tone, b);
+  final s = statusStyle(tone, b, context.ds);
   ScaffoldMessenger.of(context)
     ..hideCurrentSnackBar()
     ..showSnackBar(SnackBar(

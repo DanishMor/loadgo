@@ -45,7 +45,7 @@ class MoneyText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = DsColors.of(Theme.of(context).brightness);
+    final c = context.ds;
     var fg = color ?? c.text;
     if (signed && !hidden && color == null) {
       if (paise > 0) fg = ensureContrast(c.success, c.surface);

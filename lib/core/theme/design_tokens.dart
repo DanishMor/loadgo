@@ -228,9 +228,27 @@ class DsHero {
   static const List<Color> colors = [start, end];
 }
 
-/// context.ds is the colour set of the theme being shown (light or dark).
+/// E7: the colour set of a theme (Classic, Signature, Midnight), carried on
+/// ThemeData so every component reads the theme being shown.
+@immutable
+class DsTheme extends ThemeExtension<DsTheme> {
+  final DsColors colors;
+  const DsTheme(this.colors);
+
+  @override
+  DsTheme copyWith({DsColors? colors}) => DsTheme(colors ?? this.colors);
+
+  @override
+  DsTheme lerp(ThemeExtension<DsTheme>? other, double t) => other is DsTheme && t >= 0.5 ? other : this;
+}
+
+/// context.ds is the colour set of the theme being shown; a theme without a
+/// [DsTheme] (tests, the startup error screen) gets Classic light or dark.
 extension DsContext on BuildContext {
-  DsColors get ds => DsColors.of(Theme.of(this).brightness);
+  DsColors get ds {
+    final t = Theme.of(this);
+    return t.extension<DsTheme>()?.colors ?? DsColors.of(t.brightness);
+  }
 }
 
 /// Spacing on a 4 / 8 grid (logical pixels).

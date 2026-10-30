@@ -24,7 +24,7 @@ class AppColors {
   static Color get warnBg => AppPalette.current.warnBg;
   static const success = DsLegacy.success;
   /// Soft green behind "online" and other good states; dark in dark mode so the text stays readable.
-  static Color get successBg => identical(AppPalette.current, AppPalette.dark) ? DsColors.dark.successBg : DsColors.light.successBg;
+  static Color get successBg => AppPalette.currentColors.successBg;
   static const warning = DsLegacy.warning;
 }
 
@@ -191,7 +191,7 @@ class EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = DsColors.of(Theme.of(context).brightness);
+    final c = context.ds;
     return Center(
       child: SingleChildScrollView(
         child: Padding(

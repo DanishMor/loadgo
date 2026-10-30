@@ -64,7 +64,7 @@ class AppTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = DsColors.of(Theme.of(context).brightness);
+    final c = context.ds;
     final hasError = error != null && error!.isNotEmpty;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

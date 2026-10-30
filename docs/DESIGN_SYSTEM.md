@@ -2,6 +2,9 @@
 
 Everything lives in `lib/core/theme/design_tokens.dart` (tokens) and `lib/core/widgets/ds/` (components). Screens never hard-code a colour, a size or a style: they take them from `context.ds`, `DsType`, `DsSpace`, `DsRadius`. `test/theme_guard_test.dart` fails on a new hard-coded colour or style.
 
+## Themes (E7)
+Three colour sets with the same 27 roles: Classic light and dark (`DsColors.light`, `DsColors.dark`), Signature (`DsColors.signature`, Ivory) and Midnight (`DsColors.midnight`, true black with Gold). `ThemeStyle` (signature, classic) picks the pair; Settings > Look and Settings > Appearance (system, light, dark) choose, both kept on the device (`ThemeStore`). The `designV3` switch (default ON) shows Classic to everyone when OFF. `AppTheme.build` puts the set on ThemeData as `DsTheme`, so `context.ds` and every component follow the theme. Palette rules: `docs/BRAND_GUIDE.md`.
+
 ## Tokens
 | Token | Use |
 |---|---|
