@@ -164,6 +164,8 @@ flutter_launcher_icons:
   image_path: assets/branding/icon.png
   adaptive_icon_background: "#123A6B"
   adaptive_icon_foreground: assets/branding/icon_foreground.png
+  # E14: Android 13 themed icon (one colour, the launcher tints it).
+  adaptive_icon_monochrome: assets/branding/icon_monochrome.png
   remove_alpha_ios: true
   web:
     generate: true
@@ -173,9 +175,10 @@ flutter_launcher_icons:
 
 flutter_native_splash:
   color: "#123A6B"
-  color_dark: "#0D1526"
+  # E14: dark is true black, the first frame of Midnight (the Signature look at night).
+  color_dark: "#000000"
   image: assets/branding/splash_logo.png
   android_12:
     color: "#123A6B"
-    color_dark: "#0D1526"
+    color_dark: "#000000"
     image: assets/branding/splash_logo.png

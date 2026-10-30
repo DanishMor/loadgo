@@ -30,3 +30,7 @@ In short: about half of the 114 MB universal APK is code for ABIs that one phone
 
 ## What was applied in this task
 Nothing in code or Gradle. The safe things are already on; the big ones are build-time choices (bundle, split per ABI) that the owner makes when building. Listed in `docs/OWNER_TODO.md` section D.
+
+## E14 (2026-10-30)
+- Android themed-icon layer: 5 PNG files `ic_launcher_monochrome.png` (mdpi to xxxhdpi), 15 KB in all. The source `assets/branding/icon_monochrome.png` (10 KB) is not listed under `flutter: assets:`, so it is not bundled.
+- The feature graphic is written to `build/store`, never into the app.

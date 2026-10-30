@@ -7,6 +7,8 @@
 * **Icon files:** `assets/branding/icon.png` (navy square + mark), `icon_foreground.png` (sirf mark, adaptive icon, safe zone ke andar), `splash_logo.png`, `store_icon_512.png` (Play Store). Sab usi mark se bane hain.
 * **Config:** `pubspec.yaml` mein `flutter_launcher_icons` (Android, iOS, web; adaptive background navy `#123A6B`) aur `flutter_native_splash` (navy, dark mode `#0D1526`, Android 12).
 
+**E14:** Android 13 themed icon ke liye `icon_monochrome.png` (ek rang, launcher khud tint karta hai), dark splash ab true black (Midnight). Store sizes: `docs/STORE_ASSETS.md`; 1024x500 feature graphic `build/store` mein banta hai.
+
 ## Dobara banana (koi app build nahi hota)
 ```powershell
 flutter test tool/make_brand_assets_test.dart        # assets/branding ke 4 PNG likhta hai
