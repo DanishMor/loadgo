@@ -27,6 +27,18 @@ enum IllustrationKind {
 
   /// Safe and private: a shield with a tick.
   shield,
+
+  /// E11 onboarding 1: post a load from the phone.
+  onboardPost,
+
+  /// E11 onboarding 2: offers arrive, the best one ticked.
+  onboardOffers,
+
+  /// E11 onboarding 3: follow the trip from pickup to drop.
+  onboardTrack,
+
+  /// E11: no notifications yet, a quiet bell.
+  noNotifications,
 }
 
 /// One of the [IllustrationKind] pictures at [width] (height is 3/4 of it).
@@ -88,6 +100,14 @@ class IllustrationPainter extends CustomPainter {
         _noTrips(canvas);
       case IllustrationKind.shield:
         _shield(canvas);
+      case IllustrationKind.onboardPost:
+        _onboardPost(canvas);
+      case IllustrationKind.onboardOffers:
+        _onboardOffers(canvas);
+      case IllustrationKind.onboardTrack:
+        _onboardTrack(canvas);
+      case IllustrationKind.noNotifications:
+        _noNotifications(canvas);
     }
     canvas.restore();
   }
@@ -190,6 +210,79 @@ class IllustrationPainter extends CustomPainter {
       canvas.drawCircle(Offset(x, 84), 8, _fill(c.text));
       canvas.drawCircle(Offset(x, 84), 3, _fill(c.surface));
     }
+  }
+
+  void _onboardPost(Canvas canvas) {
+    // A phone with a parcel on its screen and a "+" to post it.
+    final phone = RRect.fromRectAndRadius(const Rect.fromLTWH(56, 18, 48, 86), const Radius.circular(8));
+    canvas.drawRRect(phone, _fill(c.surface));
+    canvas.drawRRect(phone, _line(c.primary, 3));
+    canvas.drawLine(const Offset(74, 26), const Offset(86, 26), _line(c.border, 3));
+    final box = RRect.fromRectAndRadius(const Rect.fromLTWH(66, 46, 28, 22), const Radius.circular(3));
+    canvas.drawRRect(box, _fill(c.chip));
+    canvas.drawRRect(box, _line(c.primary, 2.5));
+    canvas.drawLine(const Offset(80, 46), const Offset(80, 68), _line(c.primary, 2));
+    canvas.drawCircle(const Offset(80, 86), 8, _fill(c.accent));
+    canvas.drawLine(const Offset(76, 86), const Offset(84, 86), _line(c.onAccent, 2.5));
+    canvas.drawLine(const Offset(80, 82), const Offset(80, 90), _line(c.onAccent, 2.5));
+    _spark(canvas, const Offset(36, 34), 5);
+    _spark(canvas, const Offset(126, 28), 4);
+  }
+
+  void _onboardOffers(Canvas canvas) {
+    // Three offer cards; the front one is ticked.
+    for (var i = 2; i >= 0; i--) {
+      final r = RRect.fromRectAndRadius(Rect.fromLTWH(38.0 + i * 6, 30.0 + i * 18, 84 - i * 12.0, 30), const Radius.circular(6));
+      canvas.drawRRect(r, _fill(c.surface));
+      canvas.drawRRect(r, _line(i == 0 ? c.primary : c.inputBorder, i == 0 ? 3 : 2));
+    }
+    canvas.drawCircle(const Offset(54, 45), 7, _fill(c.accentStrong));
+    canvas.drawLine(const Offset(68, 41), const Offset(98, 41), _line(c.textMuted, 3));
+    canvas.drawLine(const Offset(68, 50), const Offset(88, 50), _line(c.border, 3));
+    canvas.drawCircle(const Offset(112, 34), 10, _fill(c.successBg));
+    canvas.drawPath(Path()..moveTo(107, 34)..lineTo(111, 38)..lineTo(118, 30), _line(c.success, 3));
+  }
+
+  void _onboardTrack(Canvas canvas) {
+    // A curved route from a dot to a pin, a small truck on it.
+    final route = Path()
+      ..moveTo(36, 88)
+      ..cubicTo(56, 40, 104, 96, 122, 40);
+    for (final m in route.computeMetrics()) {
+      for (double d = 0; d < m.length; d += 10) {
+        canvas.drawPath(m.extractPath(d, d + 5), _line(c.primary, 3));
+      }
+      final mid = m.getTangentForOffset(m.length * 0.5)!.position;
+      canvas.drawRRect(RRect.fromRectAndRadius(Rect.fromCenter(center: mid.translate(0, -6), width: 22, height: 12), const Radius.circular(2)), _fill(c.primary));
+      canvas.drawRect(Rect.fromLTWH(mid.dx + 11, mid.dy - 9, 6, 9), _fill(c.primary));
+    }
+    canvas.drawCircle(const Offset(36, 88), 7, _fill(c.primary));
+    final pin = Path()
+      ..moveTo(122, 46)
+      ..lineTo(114, 34)
+      ..arcToPoint(const Offset(130, 34), radius: const Radius.circular(8.5), clockwise: true)
+      ..close();
+    canvas.drawPath(pin, _fill(c.accentStrong));
+    canvas.drawCircle(const Offset(122, 31), 3, _fill(c.surface));
+  }
+
+  void _noNotifications(Canvas canvas) {
+    // A bell at rest, with a small "z z" beside it.
+    final bell = Path()
+      ..moveTo(60, 84)
+      ..lineTo(100, 84)
+      ..cubicTo(94, 78, 94, 72, 94, 60)
+      ..cubicTo(94, 46, 88, 36, 80, 36)
+      ..cubicTo(72, 36, 66, 46, 66, 60)
+      ..cubicTo(66, 72, 66, 78, 60, 84)
+      ..close();
+    canvas.drawPath(bell, _fill(c.surface));
+    canvas.drawPath(bell, _line(c.primary, 3));
+    canvas.drawCircle(const Offset(80, 90), 5, _fill(c.accentStrong));
+    canvas.drawLine(const Offset(80, 30), const Offset(80, 36), _line(c.primary, 3));
+    final z = _line(c.textMuted, 2.5);
+    canvas.drawPath(Path()..moveTo(108, 34)..lineTo(118, 34)..lineTo(108, 44)..lineTo(118, 44), z);
+    canvas.drawPath(Path()..moveTo(122, 20)..lineTo(129, 20)..lineTo(122, 27)..lineTo(129, 27), z);
   }
 
   @override

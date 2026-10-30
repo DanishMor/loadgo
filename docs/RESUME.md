@@ -2,8 +2,8 @@
 
 Plan: docs/MASTER_PLAN_ELITE.md. Read it, then continue from NEXT. Phase 0 done (tag elite-phase0).
 
-LAST_DONE: E10 components (AppAvatar, RatingStars, PriceDisplay, AppCard on theme colours, gallery test across looks, widths, languages).
-NEXT: E11 illustrations: onboarding x3 + no notifications added in illustrations.dart (uncommitted), needs test + docs.
+LAST_DONE: E11 illustrations (onboarding x3, no notifications; style doc docs/ILLUSTRATIONS.md; test).
+NEXT: E12 docs/COPY_DECK.md and a copy pass (respectful, short, Hindi-first) on screens and error messages.
 
 Unfinished / to remember:
 - Never edit hosting/*.html by hand: edit tool/templates/hosting/ and run `dart run tool/apply_app_info.dart`. Scripts and styles live in hosting/assets/.
