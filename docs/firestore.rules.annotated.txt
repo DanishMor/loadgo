@@ -837,6 +837,19 @@ service cloud.firestore {
     match /{p=**}/photos/{slot} {
       allow list: if adminIn(['super', 'verifier']) && request.query.limit <= 50;
     }
+    // E19 goods photos of a load: three fixed slots, written by the shipper while the load is open
+    // (slot, path, at; path must be the Storage path of that slot); readable where the load is.
+    match /loads/{loadId}/cargo/{slot} {
+      function cLoad() {
+        return get(docPath('loads', loadId)).data;
+      }
+      allow read: if signedIn() && (cLoad().status == 'open' || cLoad().shipperId == request.auth.uid || cLoad().get('driverId', null) == request.auth.uid || isAdmin());
+      allow create, update: if signedIn() && slot in ['goods1', 'goods2', 'goods3'] && cLoad().shipperId == request.auth.uid && cLoad().status == 'open'
+          && request.resource.data.keys().hasOnly(['slot', 'path', 'at'])
+          && request.resource.data.slot == slot && request.resource.data.at == request.time
+          && request.resource.data.path == 'loads/' + loadId + '/cargo/' + slot;
+      allow delete: if signedIn() && cLoad().shipperId == request.auth.uid;
+    }
 
     // transporter_accounts/{bookingId}: the transporter's private books for a
     // trip they hold (Task 67): what the party pays, what the driver is owed,
@@ -3993,7 +4006,7 @@ service cloud.firestore {
       allow create: if signedIn()
           && request.resource.data.keys().hasOnly(['kind', 'path', 'size', 'contentType', 'by', 'createdAt'])
           && request.resource.data.by == request.auth.uid
-          && request.resource.data.kind in ['pickup', 'delivery', 'pod', 'damage']
+          && request.resource.data.kind in ['pickup', 'delivery', 'pod', 'damage', 'seal']
           && validUploadMeta(request.resource.data, 'bookings/' + bookingId + '/' + request.resource.data.kind, proofId)
           && (request.resource.data.kind == 'damage'
               ? proofParty(get(docPath('bookings', bookingId)).data)

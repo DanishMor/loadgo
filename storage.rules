@@ -81,15 +81,29 @@ service firebase.storage {
       allow delete: if signedIn() && request.auth.uid == uid;
     }
 
+    // E19 goods photos of a load: loads/{loadId}/cargo/{slot}. The shipper writes while the load is open
+    // (three slots, images under 3 MB); readable where the load is: open loads, the shipper, its driver, admins.
+    function load(id) {
+      return firestore.get(/databases/(default)/documents/loads/$(id)).data;
+    }
+    match /loads/{loadId}/cargo/{slot} {
+      allow read: if signedIn() && (load(loadId).status == 'open' || load(loadId).shipperId == request.auth.uid
+          || load(loadId).get('driverId', '') == request.auth.uid || isAdmin());
+      allow create, update: if signedIn() && slot in ['goods1', 'goods2', 'goods3']
+          && load(loadId).shipperId == request.auth.uid && load(loadId).status == 'open'
+          && goodImage() && request.resource.size < 3 * 1024 * 1024;
+      allow delete: if signedIn() && load(loadId).shipperId == request.auth.uid;
+    }
+
     // Proof on a trip: bookings/{bookingId}/{kind}/{file}.
-    //   pickup, delivery, pod : the trip driver writes
+    //   pickup, delivery, pod, seal : the trip driver writes (seal: E19)
     //   damage                : the driver or the customer writes (evidence for a claim)
     // The two sides of the trip and admins read. Nothing is ever changed or deleted
     // by a person: evidence stays.
     match /bookings/{bookingId}/{kind}/{fileName} {
       allow read: if signedIn() && (tripDriver(bookingId) || tripCustomer(bookingId) || isAdmin());
       allow create: if resource == null && goodImage()
-          && ((kind in ['pickup', 'delivery', 'pod'] && tripDriver(bookingId))
+          && ((kind in ['pickup', 'delivery', 'pod', 'seal'] && tripDriver(bookingId))
               || (kind == 'damage' && (tripDriver(bookingId) || tripCustomer(bookingId))));
       allow update, delete: if false;
     }

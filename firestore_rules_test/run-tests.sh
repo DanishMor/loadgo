@@ -7,6 +7,8 @@ PARTS=${RULES_PARTS:-4}
 $EXEC "node --test storage.test.mjs"
 echo "== E18 vehicle photos =="
 $EXEC "node --test vphotos.test.mjs"
+echo "== E19 cargo photos =="
+$EXEC "node --test cargophotos.test.mjs"
 echo "== generated matrix =="
 $EXEC "node --test matrix.test.mjs"
 echo "== rules vs real app writes =="

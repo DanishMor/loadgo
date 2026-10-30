@@ -8,6 +8,7 @@
 // Regenerate the fixture:  flutter test test/rules_contract_capture_test.dart
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
@@ -18,6 +19,8 @@ import 'package:transport_app/core/models/load.dart';
 import 'package:transport_app/core/models/offer.dart';
 import 'package:transport_app/core/models/vehicle.dart';
 import 'package:transport_app/core/offers/offers_switch.dart';
+import 'package:transport_app/core/photos/cargo_photos.dart';
+import 'package:transport_app/core/photos/photo_service.dart';
 import 'package:transport_app/core/pricing/fare_calculator.dart';
 import 'package:transport_app/core/services/backend.dart';
 import 'package:transport_app/core/services/booking_service.dart';
@@ -629,6 +632,21 @@ void batch3() {
         await LoadService.cancel(load.id, reason: 'plan_changed');
       }, setup: () async => load = (await world()).load);
     });
+
+    test('E19 goods photo by the shipper and seal photo by the driver', () async {
+      PhotoService.gateway = _NoStorage();
+      late Load load;
+      await scenario('goods photo by the shipper', 'cust1', ['loads'], () async {
+        uid = 'cust1';
+        await CargoPhotoService.upload(load.id, CargoSlot.goods1, PickedPhoto(Uint8List.fromList([0xFF, 0xD8, 0xFF, 0xD9]), 'image/jpeg'), anyway: true);
+      }, setup: () async => load = (await world()).load);
+      late String id;
+      await scenario('seal photo by the driver', 'drv1', ['bookings'], () async {
+        uid = 'drv1';
+        await PhotoService.upload(PhotoTarget(PhotoKind.seal, bookingId: id), PickedPhoto(Uint8List.fromList([0xFF, 0xD8, 0xFF, 0xD9]), 'image/jpeg'));
+      }, setup: () async => id = await acceptedTrip());
+      PhotoService.gateway = const FirebaseStorageGateway();
+    });
   });
 }
 
@@ -647,4 +665,14 @@ Future<void> advanceToWithOtps(String bookingId, String target) async {
       delivery: const DeliveryProof(receiverName: 'Anil'),
     );
   }
+}
+
+/// E19 scenarios store no file; only the Firestore records are replayed.
+class _NoStorage implements StorageGateway {
+  @override
+  Future<void> put(String path, Uint8List bytes, String contentType, {void Function(double)? onProgress}) async {}
+  @override
+  Future<Uint8List?> get(String path, {int maxSize = 5 * 1024 * 1024}) async => null;
+  @override
+  Future<void> delete(String path) async {}
 }

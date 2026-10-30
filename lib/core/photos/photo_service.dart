@@ -10,8 +10,9 @@ import '../features/features.dart';
 import '../services/backend.dart';
 import '../services/features_service.dart';
 
-/// What a photo is for. The first six are papers; the others belong to a truck or a trip.
-enum PhotoKind { licence, rc, insurance, puc, permit, fitness, truck, pickup, delivery, pod, damage }
+/// What a photo is for. The first six are papers; the others belong to a truck or a trip (seal: E19, the seal on
+/// the loaded truck).
+enum PhotoKind { licence, rc, insurance, puc, permit, fitness, truck, pickup, delivery, pod, damage, seal }
 
 /// One image read from the camera or the gallery, already made smaller by the picker.
 class PickedPhoto {
@@ -36,7 +37,7 @@ class PhotoTarget {
   const PhotoTarget(this.kind, {this.bookingId, this.vehicleId, this.view});
 
   static const docKinds = [PhotoKind.licence, PhotoKind.rc, PhotoKind.insurance, PhotoKind.puc, PhotoKind.permit, PhotoKind.fitness];
-  static const tripKinds = [PhotoKind.pickup, PhotoKind.delivery, PhotoKind.pod, PhotoKind.damage];
+  static const tripKinds = [PhotoKind.pickup, PhotoKind.delivery, PhotoKind.pod, PhotoKind.damage, PhotoKind.seal];
   static const truckViews = ['front', 'side', 'rear', 'load'];
 
   bool get isDoc => docKinds.contains(kind);
