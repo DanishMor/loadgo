@@ -70,6 +70,17 @@ service firebase.storage {
       allow delete: if signedIn() && request.auth.uid == uid;
     }
 
+    // E18 vehicle photos: users/{uid}/vphotos/{vehicleId}/{slot}. The owner writes (images under 3 MB).
+    // Outside views can be read by any signed-in person (the truck is seen on the road anyway; the cheapest
+    // rule, docs/DECISIONS.md); the number plate and the RC only by the owner and admins.
+    match /users/{uid}/vphotos/{vehicleId}/{slot} {
+      allow read: if signedIn() && (request.auth.uid == uid || isAdmin() || slot in ['front', 'rear', 'left', 'right', 'load', 'cab']);
+      allow create, update: if signedIn() && request.auth.uid == uid
+          && slot in ['front', 'rear', 'left', 'right', 'load', 'cab', 'plate', 'rc']
+          && goodImage() && request.resource.size < 3 * 1024 * 1024;
+      allow delete: if signedIn() && request.auth.uid == uid;
+    }
+
     // Proof on a trip: bookings/{bookingId}/{kind}/{file}.
     //   pickup, delivery, pod : the trip driver writes
     //   damage                : the driver or the customer writes (evidence for a claim)

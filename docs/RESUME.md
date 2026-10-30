@@ -2,8 +2,8 @@
 
 Plan: docs/MASTER_PLAN_ELITE.md. Read it, then continue from NEXT. Phase 0 done (tag elite-phase0). Phase 1 done (tag elite-phase1).
 
-LAST_DONE: E17b flag vehicleCatalog (registry, OFF; FLAGS live, ADDON_PILOT, WHERE_IS_WHAT, COST_WATCH), entry points: booking wizard truck step (See all vehicles, drawings, pick comes back), bid room (BidCard.vehicle), truck board; VehicleTypeArt + VehicleCatalog.forType; tests.
-NEXT: E18 driver vehicle photos [flag vehiclePhotos, connect-ready]: slots + guide overlays, on-device quality checks, PhotoAdapter (fake), storage.rules owner-only, Firestore metadata rules, visibility trade-off in DECISIONS, admin review queue, Photo-verified badge (6 months), OCR plate cross-check. Split E18a (model, quality checks, adapter, rules + rules tests) and E18b (capture UI), E18c (admin queue, badge).
+LAST_DONE: E18a vehicle photos core: photo_quality.dart (brightness, blur, JPEG metadata strip), vehicle_photos.dart (slots, records, badge 6 months, plate check, upload service), firestore.rules vehicles/{id}/photos/{slot} + storage.rules users/{uid}/vphotos (emulator: vphotos 8/8, storage 13/13, redteam storage 31/31), RULES_CHANGES_NEEDED, decision on visibility. Flag vehiclePhotos still planned.
+NEXT: E18b capture UI (slots grid with guide overlays, camera/gallery via existing picker, quality message with retake or send anyway, plate OCR hint via OcrReader fake), E18c admin photo review queue + badge grant + reminders + customer badge on bid cards, then register flag vehiclePhotos (FLAGS live, ADDON_PILOT, WHERE_IS_WHAT, task66 label, feat strings).
 Unfinished / to remember:
 - Gallery: powershell -File tool/render_gallery.ps1 (needs 3 GB free); review images in build/gallery.
 - Never edit hosting/*.html by hand: edit tool/templates/hosting/ and run `dart run tool/apply_app_info.dart`. Scripts and styles live in hosting/assets/.

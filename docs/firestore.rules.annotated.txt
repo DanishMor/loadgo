@@ -803,6 +803,32 @@ service cloud.firestore {
               && (!('docOverrideUntil' in request.resource.data) || request.resource.data.docOverrideUntil is timestamp)
               && validVehicle(request.resource.data)));
       allow delete: if signedIn() && resource.data.ownerId == request.auth.uid;
+      // E18 vehicle photos: one record per slot written by the vehicle owner (always pending),
+      // reviewed by a verifier admin (approved, or rejected with a reason); the badge record
+      // (until, at most about six months) is written only by a verifier. Plate and RC records
+      // are read only by the owner and admins.
+      match /photos/{slot} {
+        function vOwner() {
+          return get(docPath('vehicles', vehicleId)).data.ownerId == request.auth.uid;
+        }
+        function vReview(d) {
+          return adminIn(['super', 'verifier'])
+              && changedKeys().hasOnly(['status', 'reviewedAt', 'reviewedBy', 'reason'])
+              && d.status in ['approved', 'rejected'] && d.reviewedAt == request.time && d.reviewedBy == request.auth.uid
+              && (d.status == 'approved' ? !('reason' in d) : d.get('reason', '') in ['blurry', 'dark', 'wrong_view', 'plate_mismatch', 'other']);
+        }
+        allow read: if signedIn() && (slot in ['front', 'rear', 'left', 'right', 'load', 'cab', 'badge'] || vOwner() || isAdmin());
+        allow create, update: if signedIn() && slot in ['front', 'rear', 'left', 'right', 'load', 'cab', 'plate', 'rc'] && vOwner()
+            && request.resource.data.keys().hasOnly(['slot', 'path', 'status', 'at'])
+            && request.resource.data.slot == slot && request.resource.data.status == 'pending' && request.resource.data.at == request.time
+            && request.resource.data.path == 'users/' + request.auth.uid + '/vphotos/' + vehicleId + '/' + slot;
+        allow update: if slot != 'badge' && vReview(request.resource.data);
+        allow write: if slot == 'badge' && adminIn(['super', 'verifier'])
+            && request.resource.data.keys().hasOnly(['until', 'by', 'at'])
+            && request.resource.data.by == request.auth.uid && request.resource.data.at == request.time
+            && request.resource.data.until is timestamp && request.resource.data.until <= request.time + duration.value(190, 'd');
+        allow delete: if signedIn() && slot != 'badge' && vOwner();
+      }
     }
 
     // transporter_accounts/{bookingId}: the transporter's private books for a
