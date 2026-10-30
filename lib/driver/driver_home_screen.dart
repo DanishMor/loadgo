@@ -11,6 +11,8 @@ import '../core/network/network_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'v2/driver_home_v2.dart';
+import 'v3/driver_home_v3.dart';
+import 'return_loads_section.dart';
 import 'v2/incoming_load_host.dart';
 import '../core/dispatch/load_radar.dart';
 
@@ -34,6 +36,7 @@ import '../core/widgets/kyc_check_widgets.dart';
 import '../core/l10n/l10n.dart';
 import '../core/widgets/feature_gate.dart';
 import '../core/services/features_service.dart';
+import '../core/services/offer_service.dart';
 import '../core/features/features.dart';
 import '../core/navigation/deep_links.dart';
 import '../core/l10n/language_widgets.dart';
@@ -73,6 +76,7 @@ class DriverHomeScreen extends StatefulWidget {
 class _DriverHomeScreenState extends State<DriverHomeScreen> {
   static const _loadsTab = 1;
   static const _tripsTab = 2;
+  static const _earningsTab = 3;
   static const _vehiclePref = 'driver_truck_today';
 
   int _index = 0;
@@ -412,7 +416,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
       );
 
   /// U27: the new driver home (switch uiV2). The older cards keep working; they are only arranged differently.
-  Widget _homeV2() => DriverHomeV2(
+  DriverHomeV2 _homeV2() => DriverHomeV2(
         online: _isOnline,
         onOnline: _setOnline,
         vehicles: _vehicles,
@@ -450,6 +454,32 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
         ],
         more: _toolRows(),
       );
+
+  /// E22: the arrangeable driver home (switch driverHomeV3, needs designV3). Same banners, trips and tools as the v2 home.
+  /// No demand strip yet: there is no real DemandFeed until its counting function is deployed (docs/CONNECT_DEMAND.md).
+  Widget _homeV3() {
+    final v2 = _homeV2();
+    return DriverHomeV3(
+      online: _isOnline,
+      onOnline: _setOnline,
+      vehicles: _vehicles,
+      bookings: _todayTrips,
+      vehicleId: _vehicleId,
+      radar: _radar?.states,
+      onVehicle: _pickVehicle,
+      onAddVehicle: () => openAddVehicle(context, prefillFromProfile: true),
+      onOpenLoads: () => _selectTab(_loadsTab),
+      onOpenBids: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => MyOffersScreen(onOpenBooking: (id) => openDriverTrip(context, id)))),
+      onOpenEarnings: () => _selectTab(_earningsTab),
+      onOpenVehicles: _openVehicles,
+      header: v2.header,
+      banners: v2.banners,
+      trips: v2.trips,
+      more: v2.more,
+      returnLoads: (trip) => ReturnLoadsSection(booking: trip, onAccepted: (id) => openDriverTrip(context, id)),
+      recentBids: OfferService.watchMineRecent,
+    );
+  }
 
   Widget _homeTab() {
     return SafeArea(
@@ -575,7 +605,11 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
     final pages = [
       ValueListenableBuilder<Features>(
         valueListenable: FeaturesService.notifier,
-        builder: (context, f, _) => f.isOn(FeatureKey.uiV2) ? _homeV2() : _homeTab(),
+        builder: (context, f, _) => !f.isOn(FeatureKey.uiV2)
+            ? _homeTab()
+            : f.isOn(FeatureKey.driverHomeV3) && f.isOn(FeatureKey.designV3)
+                ? _homeV3()
+                : _homeV2(),
       ),
       AvailableLoadsView(loads: LoadService.watchOpenPage, nearby: LoadService.watchNearby, onAccepted: _onAccepted),
       BookingListView(

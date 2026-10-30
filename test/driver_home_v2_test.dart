@@ -12,6 +12,7 @@ import 'package:transport_app/core/services/vehicle_service.dart';
 import 'package:transport_app/core/theme/app_theme.dart';
 import 'package:transport_app/driver/driver_home_screen.dart';
 import 'package:transport_app/driver/v2/driver_home_v2.dart';
+import 'package:transport_app/driver/v3/driver_home_v3.dart';
 
 /// U27: the new driver home (switch uiV2) and the older one with the switch off.
 void main() {
@@ -106,5 +107,18 @@ void main() {
     await settle(t);
     expect(find.byType(DriverHomeV2), findsNothing);
     expect(find.byKey(const ValueKey('onlineSwitch')), findsOneWidget);
+  });
+
+  testWidgets('E22: driverHomeV3 ON shows the arrangeable driver home; it needs designV3', (t) async {
+    FeaturesService.notifier.value = const Features(flags: {FeatureKey.driverHomeV3: true});
+    await t.pumpWidget(host());
+    await settle(t);
+    expect(find.byType(DriverHomeV3), findsOneWidget);
+    expect(find.byType(DriverHomeV2), findsNothing);
+    expect(find.byKey(const ValueKey('d3Hero')), findsOneWidget);
+    FeaturesService.notifier.value = const Features(flags: {FeatureKey.driverHomeV3: true, FeatureKey.designV3: false});
+    await settle(t);
+    expect(find.byType(DriverHomeV2), findsOneWidget);
+    expect(find.byType(DriverHomeV3), findsNothing);
   });
 }

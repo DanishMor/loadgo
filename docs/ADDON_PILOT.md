@@ -35,6 +35,7 @@ Goal: put LoadGo in front of a small, known group (one or two corridors, tens of
 | Vehicle photos and badge (needs Photo uploads) | OFF | Features > Vehicle photos and badge |
 | Goods and seal photos (needs Photo uploads) | OFF | Features > Goods and seal photos |
 | Arrangeable home (needs Signature look) | OFF | Features > Arrangeable home |
+| Arrangeable driver home (needs Signature look) | OFF | Features > Arrangeable driver home |
 | Business card to share | OFF | Features > Business card to share |
 | Party khata | OFF | Features > Party khata |
 | Safety check-in on a long stop | OFF | Features > Safety check-in on a long stop |

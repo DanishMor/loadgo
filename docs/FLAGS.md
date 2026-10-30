@@ -64,7 +64,7 @@ Status `planned` = not registered and not reachable. `live` = registered, entry 
 | `vehiclePhotos` | E18 | live | connect | off | photoUploads, storage rules | medium | `lib/driver/my_vehicles_screen.dart`, `lib/admin/admin_dashboard_screen.dart`, `lib/customer/v2/bid_room_screen.dart` |
 | `cargoPhotos` | E19 | live | connect | off | photoUploads, storage rules | medium | `lib/customer/v2/bid_room_screen.dart`, `lib/driver/available_loads_view.dart`, `lib/driver/trip_proof_dialogs.dart` |
 | `homeV3` | E21 | live | design | off | designV3 | low | `lib/customer/v2/customer_shell_v2.dart` |
-| `driverHomeV3` | E22 | planned | design | off | designV3 | low | - |
+| `driverHomeV3` | E22 | live | design | off | designV3 | low | `lib/driver/driver_home_screen.dart` |
 | `onboardingV3` | E26 | planned | design | off | designV3 | low | - |
 | `priceCard` | E27 | planned | core | off | - | low | - |
 | `partLoad` | E28 | planned | core | off | rules published | medium | - |

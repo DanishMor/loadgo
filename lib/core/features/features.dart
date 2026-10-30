@@ -97,6 +97,9 @@ class FeatureKey {
 
   /// E21: customer home built from sections the person can reorder and hide (needs designV3).
   static const homeV3 = 'homeV3';
+
+  /// E22: driver home built from sections (radar pulse, earnings ring, papers, level, bids); needs designV3.
+  static const driverHomeV3 = 'driverHomeV3';
 }
 
 /// `config/features`: {pilotMode: bool, flags: {key: bool}}. A missing
@@ -158,6 +161,7 @@ class Features {
     FeatureSpec(FeatureKey.vehiclePhotos, pilotOn: false, normalOn: false, group: FeatureGroup.connect),
     FeatureSpec(FeatureKey.cargoPhotos, pilotOn: false, normalOn: false, group: FeatureGroup.connect),
     FeatureSpec(FeatureKey.homeV3, pilotOn: false, normalOn: false, group: FeatureGroup.design),
+    FeatureSpec(FeatureKey.driverHomeV3, pilotOn: false, normalOn: false, group: FeatureGroup.design),
   ];
 
   static final _byKey = {for (final s in registry) s.key: s};

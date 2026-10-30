@@ -116,7 +116,7 @@ Totals: 126 screen files; ready: 107, flag-off: checked in code: 12, flag-off: h
 | driver | lib/driver/add_vehicle_screen.dart | ready |  |
 | driver | lib/driver/city_demand_screen.dart | ready |  |
 | driver | lib/driver/driver_analytics_screen.dart | ready |  |
-| driver | lib/driver/driver_home_screen.dart | flag-off: hidden | driverNetwork, emptyTrucks, uiV2 |
+| driver | lib/driver/driver_home_screen.dart | flag-off: hidden | designV3, driverHomeV3, driverNetwork, emptyTrucks, uiV2 |
 | driver | lib/driver/driver_rewards_screen.dart | ready |  |
 | driver | lib/driver/driver_trip_screen.dart | flag-off: checked in code | uiV2 |
 | driver | lib/driver/empty_trucks_screen.dart | ready |  |

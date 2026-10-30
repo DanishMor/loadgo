@@ -2,9 +2,9 @@
 
 Plan: docs/MASTER_PLAN_ELITE.md. Read it, then continue from NEXT. Phase 0 done (tag elite-phase0). Phase 1 done (tag elite-phase1).
 
-LAST_DONE: E22b DriverHomeV3 (lib/driver/v3/driver_home_v3.dart): sections hero (locked: big switch, RadarPulse radar line, EarningsRing with own goal, See earnings), truck chips / add truck, alerts (host banners), trip (host cards), return loads (goods on board only), papers health, level and streak, demand (online + feed only), quick actions, recent bids (OfferService.watchMineRecent 3 newest, existing index), more; HomeLayout role driver + Arrange; skeleton, error retry; test/driver_home_v3_test.dart 9/9; COST_WATCH. Not linked.
-Before: E22a driver home parts (logic, pulse, ring, papers, level, DemandFeed adapter). E21a-c customer home v3 (flag homeV3, default OFF).
-NEXT: E22c register driverHomeV3 (design group, default OFF, needs designV3) and wire it in lib/driver/driver_home_screen.dart (uiV2 builder: driverHomeV3 && designV3 -> DriverHomeV3 with the same banners/trips/more, returnLoads -> ReturnLoadsSection, recentBids -> OfferService.watchMineRecent, demand -> ConnectKit-picked DemandFeed near the driver's last location or null, onOpenBids/Earnings tabs, onOpenVehicles); feat strings, task66, FLAGS live, ADDON_PILOT, WHERE_IS_WHAT, SCREEN_INVENTORY; test. Then E23 transporter command center.
+LAST_DONE: E22c flag driverHomeV3 live (design, default OFF, needs designV3): driver_home_screen uiV2 home -> DriverHomeV3 when on (v2 banners/trips/more, ReturnLoadsSection, OfferService.watchMineRecent, MyOffersScreen, earnings tab; no demand until a real DemandFeed); feat strings, task66, FLAGS, ADDON_PILOT, WHERE_IS_WHAT, SCREEN_INVENTORY; driver_home_v2_test +1; 30/30 related tests. E22 done.
+Before: E22a-b driver home parts and DriverHomeV3. E21a-c customer home v3. Phase 2 done (tag elite-phase2). Waiting to publish: docs/RULES_CHANGES_NEEDED.md.
+NEXT: E23 transporter and business command center (fleet status board, pending bids, dues, alerts, utilisation): survey lib/fleet + lib/customer/business_*, planned flag in FLAGS, split a/b/c.
 Unfinished / to remember:
 - Gallery: powershell -File tool/render_gallery.ps1 (needs 3 GB free); review images in build/gallery.
 - Never edit hosting/*.html by hand: edit tool/templates/hosting/ and run `dart run tool/apply_app_info.dart`. Scripts and styles live in hosting/assets/.
