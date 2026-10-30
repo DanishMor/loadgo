@@ -27,6 +27,7 @@ void main() {
     'insurance': FakeInsuranceQuotes(),
     'credit': const FakeCreditPartnerLinks(),
     'erp': FakeErpWebhooks(),
+    'demand': const FakeDemandFeed(),
   };
   final flagsDoc = File('docs/FLAGS.md').readAsStringSync();
   final registered = Features.registry.map((s) => s.key).toSet();

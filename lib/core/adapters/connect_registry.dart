@@ -49,6 +49,7 @@ class ConnectKit {
     ConnectSpec('insurance', 'legalGateInsurance', 'docs/CONNECT_INSURANCE.md', CostCaps(daily: 100, perUser: 3)),
     ConnectSpec('credit', 'legalGateCredit', 'docs/CONNECT_CREDIT.md', CostCaps(daily: 500, perUser: 10), paid: false),
     ConnectSpec('erp', 'erpApi', 'docs/CONNECT_ERP.md', CostCaps(daily: 5000, perUser: 1000)),
+    ConnectSpec('demand', 'demandFeed', 'docs/CONNECT_DEMAND.md', CostCaps(daily: 2000, perUser: 48), paid: false),
   ];
 
   static ConnectSpec spec(String id) => specs.firstWhere((s) => s.id == id);

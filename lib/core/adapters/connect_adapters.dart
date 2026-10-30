@@ -40,6 +40,36 @@ class FakeTollEstimator implements TollEstimator {
   }
 }
 
+// ---- Demand ----
+/// E22: how many open loads start in an area near the driver right now (a server count, never the loads).
+class DemandCell {
+  final String area;
+  final int openLoads;
+  const DemandCell(this.area, this.openLoads);
+}
+
+abstract class DemandFeed {
+  /// The busiest areas near a point, busiest first, at most [max]. Empty when unknown.
+  Future<List<DemandCell>> near(GeoPoint2 at, {int max = 5});
+}
+
+class NoDemandFeed implements DemandFeed {
+  const NoDemandFeed();
+  @override
+  Future<List<DemandCell>> near(GeoPoint2 at, {int max = 5}) async => const [];
+}
+
+class FakeDemandFeed implements DemandFeed {
+  final List<DemandCell> cells;
+  const FakeDemandFeed([this.cells = const [DemandCell('Bhiwandi', 14), DemandCell('Vashi', 9), DemandCell('Taloja', 4)]]);
+  @override
+  Future<List<DemandCell>> near(GeoPoint2 at, {int max = 5}) async {
+    if (at.lat.abs() > 90 || at.lng.abs() > 180 || max < 1) return const [];
+    final sorted = [...cells]..sort((a, b) => b.openLoads.compareTo(a.openLoads));
+    return sorted.take(max).toList();
+  }
+}
+
 // ---- Places ----
 enum PlaceKind { fuel, dhaba, mechanic, tyre, weighbridge }
 
