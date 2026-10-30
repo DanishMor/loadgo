@@ -59,6 +59,7 @@ void main() {
       FeatureKey.bulkUpload: 'Bulk loads from Excel',
       FeatureKey.laneRfq: 'Lane tenders',
       FeatureKey.quoteShare: 'Share a quote',
+      FeatureKey.legalGateInsurance: 'Insurance quote requests (legal gate)',
       FeatureKey.bizCard: 'Business card to share',
       FeatureKey.khata: 'Party khata',
       FeatureKey.safetyCheckin: 'Safety check-in on a long stop',

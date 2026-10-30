@@ -45,6 +45,7 @@ Goal: put LoadGo in front of a small, known group (one or two corridors, tens of
 | Bulk loads from Excel (needs Business tools) | OFF | Features > Bulk loads from Excel |
 | Lane tenders (needs Business tools and the E30 rules) | OFF | Features > Lane tenders |
 | Share a quote | OFF | Features > Share a quote |
+| Insurance quote requests (legal gate) | OFF | Features > Legal > Insurance quote requests (owner legal check and an insurer partner first) |
 | Business card to share | OFF | Features > Business card to share |
 | Party khata | OFF | Features > Party khata |
 | Safety check-in on a long stop | OFF | Features > Safety check-in on a long stop |

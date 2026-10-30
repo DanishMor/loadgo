@@ -241,3 +241,4 @@ Changes in this round that cut reads:
 - E27 `priceCard`: 0 extra reads (the usual range is the route_rates read the price step already makes, cached). E28 `roundTrip`: the way back is one more load post (the same writes and rate-limit bump as any load). E29 `bulkUpload`: no change; still at most 10 load posts per bulk.
 - E30 `laneRfq`: business: 1 listener of at most 30 own tenders, 1 listener of at most 50 bids on the tender opened. Transporter: 1 listener of at most 30 open tenders while the screen is open; a rate is 1 write (one document per bidder, overwritten on change).
 - E31 `quoteShare`: 0 reads and 0 writes; the picture and the PDF are made on the phone (the PDF loads the LR fonts from the app once).
+- E32 `legalGateInsurance`: 0 reads and 0 writes; at most 3 partner calls per user a day and 100 in all (ConnectKit spec), and none until a partner is configured.

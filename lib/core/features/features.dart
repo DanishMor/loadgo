@@ -127,6 +127,9 @@ class FeatureKey {
 
   /// E31: share a quote as a picture, a PDF or text (no phone numbers or ids in it).
   static const quoteShare = 'quoteShare';
+
+  /// E32 legal gate: a cargo insurance QUOTE request to a partner (no sale, no cover, no money). OFF in every mode.
+  static const legalGateInsurance = 'legalGateInsurance';
 }
 
 /// `config/features`: {pilotMode: bool, flags: {key: bool}}. A missing
@@ -198,6 +201,7 @@ class Features {
     FeatureSpec(FeatureKey.bulkUpload, pilotOn: false, normalOn: false, group: FeatureGroup.core),
     FeatureSpec(FeatureKey.laneRfq, pilotOn: false, normalOn: false, group: FeatureGroup.core),
     FeatureSpec(FeatureKey.quoteShare, pilotOn: false, normalOn: false, group: FeatureGroup.core),
+    FeatureSpec(FeatureKey.legalGateInsurance, pilotOn: false, normalOn: false, group: FeatureGroup.legal),
   ];
 
   static final _byKey = {for (final s in registry) s.key: s};

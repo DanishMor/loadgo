@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/claims/claim_screens.dart';
+import '../../core/insurance/insurance_request.dart';
 import '../../core/constants/logistics.dart';
 import '../../core/documents/eway_status_line.dart';
 import '../../core/documents/payment_card.dart';
@@ -255,6 +256,8 @@ class _TrackingV2BodyState extends State<TrackingV2Body> {
         CargoDocsCard(booking: b),
         const SizedBox(height: DsSpace.s2),
         ClaimCard(booking: b),
+        // E32: a cargo insurance quote request, only behind the legal gate.
+        if (!delivered) InsuranceRequestCard(booking: b),
         if (!delivered) ...[const SizedBox(height: DsSpace.s3), TripDocumentButtons(booking: b)],
       ],
     );

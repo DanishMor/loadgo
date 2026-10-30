@@ -2,9 +2,9 @@
 
 Plan: docs/MASTER_PLAN_ELITE.md. Read it, then continue from NEXT. Phase 0 done (tag elite-phase0). Phase 1 done (tag elite-phase1).
 
-LAST_DONE: E31 share a quote (flag quoteShare live, core, default OFF): lib/core/share/quote_summary.dart (summary, text, A5 PDF with the LR Indian-script fonts, short reference, no phone/code/ids), quote_share_sheet.dart (card preview, picture / PDF / text, quoteLineLabel maps every fare line to the price-card words), wizard last step Share this quote (fare lines only when the price is the estimate); qs words (12 languages); FLAGS, ADDON_PILOT, WHERE_IS_WHAT, COST_WATCH; test/quote_share_test.dart 6/6, booking_wizard +1, 70/70 related.
-Before: E30 laneRfq (1d25923). E27-E29 (12f9716). Tags elite-phase3 and elite-wave1 at 7166b02.
-NEXT: E32 cargo insurance request flow (InsuranceQuotes adapter fake exists, legalGateInsurance planned): quote request only, no sale, disclaimers, never promise insurance; then E33 toll and route estimate (TollEstimator fake, flag tollEstimate), then Phase 4 critic pass and tag elite-phase4.
+LAST_DONE: E32 insurance quote request (legal gate legalGateInsurance live, Legal group, OFF in every mode, costs kill group): lib/core/insurance/insurance_request.dart (requestCargoQuote via ConnectKit guard 3/user/day, InsuranceQuotes adapter default NoInsuranceQuotes; card on the customer trip screen More; sheet with disclaimer, goods, value, required I-understand tick, outcomes told), ins words (12 languages), FLAGS, ADDON_PILOT, WHERE_IS_WHAT, INCIDENT_RESPONSE, COST_WATCH, DECISIONS; test/insurance_request_test.dart 7/7 (incl. copy guard), connect/kill/flag/doc tests green.
+Before: E31 quoteShare (4e0b847). E30 laneRfq. E27-E29. Tags elite-phase3 / elite-wave1 at 7166b02.
+NEXT: E33 toll and route estimate (TollEstimator fake exists, flag tollEstimate planned, depends on maps): include toll in the estimate when ON (as its own price line), admin-editable city entry-restriction notes (no unverified claims); then Phase 4 critic pass + regression subsets and tag elite-phase4.
 Unfinished / to remember:
 - Gallery: powershell -File tool/render_gallery.ps1 (needs 3 GB free); review images in build/gallery.
 - Never edit hosting/*.html by hand: edit tool/templates/hosting/ and run `dart run tool/apply_app_info.dart`. Scripts and styles live in hosting/assets/.
