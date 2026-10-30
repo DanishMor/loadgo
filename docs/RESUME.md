@@ -2,8 +2,8 @@
 
 Plan: docs/MASTER_PLAN_ELITE.md. Read it, then continue from NEXT. Phase 0 done (tag elite-phase0). Phase 1 done (tag elite-phase1).
 
-LAST_DONE: Phase 1 critic pass (one font loader for all render tools; no TODO, print or dead code in the phase diff), tag elite-phase1.
-NEXT: E15 vehicle catalog data (assets, not Firestore), schema, validator, tests, docs/VEHICLE_REVIEW.csv.
+LAST_DONE: E15 vehicle catalog (assets/vehicles/catalog.json, 27 types), lib/core/vehicles/vehicle_catalog.dart (model, parser, validator), 69 strings in 12 languages, tool/vehicle_review_csv.js -> docs/VEHICLE_REVIEW.csv.
+NEXT: E16 parametric vehicle painter (CustomPainter, 3/4-side style, body variants from VehicleSpec.bodies/group, axles from VehicleSpec.axles, light/dark/gold-outline), gallery to docs/gallery/vehicles, golden tests.
 Unfinished / to remember:
 - Gallery: powershell -File tool/render_gallery.ps1 (needs 3 GB free); review images in build/gallery.
 - Never edit hosting/*.html by hand: edit tool/templates/hosting/ and run `dart run tool/apply_app_info.dart`. Scripts and styles live in hosting/assets/.

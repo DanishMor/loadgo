@@ -65,3 +65,4 @@ The licence was read from each package's LICENSE file in the local pub cache on 
 | Path | Licence | Source |
 |---|---|---|
 | `assets/branding/` | owned by the app owner | made for this app (docs/LOGO_BRIEF.md) |
+| `assets/vehicles/` | owned by the app owner | E15 vehicle catalog data written for this app (numbers approximate, docs/VEHICLE_REVIEW.csv) |

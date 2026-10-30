@@ -91,6 +91,8 @@ flutter:
   assets:
     - assets/fonts/
     - assets/fonts/mukta/
+    # E15: vehicle catalog (sizes approximate, owner review in docs/VEHICLE_REVIEW.csv).
+    - assets/vehicles/
 
   # Load 20 brand font (Mukta, SIL OFL: assets/fonts/mukta/OFL.txt) for Latin and
   # Devanagari. Two weights only (assets stay under 3 MB, test/performance_guard_test.dart);
