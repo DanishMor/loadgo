@@ -18,20 +18,26 @@ import 'package:transport_app/core/theme/app_theme.dart';
 
 import '../test/ux2_kit_test.dart' as k;
 
+/// Every bundled font family (pubspec.yaml) and the Material icons, so each language draws with its real glyphs.
 Future<void> loadFonts() async {
-  Future<void> load(String family, List<String> files) async {
-    final l = FontLoader(family);
-    for (final f in files) {
-      l.addFont(rootBundle.load(f));
+  const families = <String, List<String>>{
+    'Mukta': ['assets/fonts/mukta/Mukta-Regular.ttf', 'assets/fonts/mukta/Mukta-Bold.ttf'],
+    'NotoSans': ['assets/fonts/NotoSans-Regular.ttf'],
+    'NotoSansKannada': ['assets/fonts/NotoSansKannada-Regular.ttf'],
+    'NotoSansTamil': ['assets/fonts/NotoSansTamil-Regular.ttf'],
+    'NotoSansTelugu': ['assets/fonts/NotoSansTelugu-Regular.ttf'],
+    'NotoSansGujarati': ['assets/fonts/NotoSansGujarati-Regular.ttf'],
+    'NotoSansBengali': ['assets/fonts/NotoSansBengali-Regular.ttf'],
+    'NotoSansGurmukhi': ['assets/fonts/NotoSansGurmukhi-Regular.ttf'],
+    'NotoNaskhArabic': ['assets/fonts/NotoNaskhArabic-Regular.ttf'],
+  };
+  for (final e in families.entries) {
+    final loader = FontLoader(e.key);
+    for (final path in e.value) {
+      loader.addFont(Future.value(ByteData.sublistView(File(path).readAsBytesSync())));
     }
-    await l.load();
+    await loader.load();
   }
-
-  await load('Mukta', ['assets/fonts/mukta/Mukta-Regular.ttf', 'assets/fonts/mukta/Mukta-Bold.ttf']);
-  await load('NotoSans', ['assets/fonts/NotoSans-Regular.ttf']);
-  await load('NotoSansDevanagari', ['assets/fonts/NotoSansDevanagari-Regular.ttf']);
-  await load('NotoSansTamil', ['assets/fonts/NotoSansTamil-Regular.ttf']);
-  await load('NotoNaskhArabic', ['assets/fonts/NotoNaskhArabic-Regular.ttf']);
   final icons = FontLoader('MaterialIcons')..addFont(Future.value(ByteData.sublistView(File('${Platform.environment['FLUTTER_ROOT'] ?? 'C:/src/flutter'}/bin/cache/artifacts/material_fonts/MaterialIcons-Regular.otf').readAsBytesSync())));
   await icons.load();
 }

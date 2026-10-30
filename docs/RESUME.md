@@ -1,9 +1,9 @@
 # RESUME (Elite plan: docs/MASTER_PLAN_ELITE.md)
 
-Plan: docs/MASTER_PLAN_ELITE.md. Read it, then continue from NEXT. Phase 0 done (tag elite-phase0).
+Plan: docs/MASTER_PLAN_ELITE.md. Read it, then continue from NEXT. Phase 0 done (tag elite-phase0). Phase 1 done (tag elite-phase1).
 
-LAST_DONE: E14 monochrome themed icon, true-black dark splash, docs/STORE_ASSETS.md, feature graphic generator, static landing page (hosting/assets/landing.css) with route/header snapshot test.
-NEXT: Phase 1 critic pass (rule 13) over E6-E14 diff, tag elite-phase1, then E15 vehicle catalog data.
+LAST_DONE: Phase 1 critic pass (one font loader for all render tools; no TODO, print or dead code in the phase diff), tag elite-phase1.
+NEXT: E15 vehicle catalog data (assets, not Firestore), schema, validator, tests, docs/VEHICLE_REVIEW.csv.
 Unfinished / to remember:
 - Gallery: powershell -File tool/render_gallery.ps1 (needs 3 GB free); review images in build/gallery.
 - Never edit hosting/*.html by hand: edit tool/templates/hosting/ and run `dart run tool/apply_app_info.dart`. Scripts and styles live in hosting/assets/.

@@ -14,7 +14,6 @@ import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:firebase_auth_mocks/firebase_auth_mocks.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:transport_app/admin/admin_dashboard_screen.dart';
@@ -40,6 +39,8 @@ import 'package:transport_app/driver/available_loads_view.dart';
 import 'package:transport_app/driver/driver_trip_screen.dart';
 import 'package:transport_app/driver/earnings_view.dart';
 
+import 'render_kit_test.dart' as r;
+
 const _out = String.fromEnvironment('OUT', defaultValue: 'build/gallery');
 const _full = bool.fromEnvironment('FULL');
 
@@ -62,31 +63,6 @@ enum Phone {
   final Size size;
   final double scale;
   const Phone(this.size, this.scale);
-}
-
-/// Every bundled font family (pubspec.yaml), so each language draws with its real glyphs.
-Future<void> _loadFonts() async {
-  final families = <String, List<String>>{
-    'Mukta': ['assets/fonts/mukta/Mukta-Regular.ttf', 'assets/fonts/mukta/Mukta-Bold.ttf'],
-    'NotoSans': ['assets/fonts/NotoSans-Regular.ttf'],
-    'NotoSansKannada': ['assets/fonts/NotoSansKannada-Regular.ttf'],
-    'NotoSansTamil': ['assets/fonts/NotoSansTamil-Regular.ttf'],
-    'NotoSansTelugu': ['assets/fonts/NotoSansTelugu-Regular.ttf'],
-    'NotoSansGujarati': ['assets/fonts/NotoSansGujarati-Regular.ttf'],
-    'NotoSansBengali': ['assets/fonts/NotoSansBengali-Regular.ttf'],
-    'NotoSansGurmukhi': ['assets/fonts/NotoSansGurmukhi-Regular.ttf'],
-    'NotoNaskhArabic': ['assets/fonts/NotoNaskhArabic-Regular.ttf'],
-  };
-  for (final e in families.entries) {
-    final loader = FontLoader(e.key);
-    for (final path in e.value) {
-      loader.addFont(Future.value(ByteData.sublistView(File(path).readAsBytesSync())));
-    }
-    await loader.load();
-  }
-  final icons = FontLoader('MaterialIcons')
-    ..addFont(Future.value(ByteData.sublistView(File('${Platform.environment['FLUTTER_ROOT'] ?? 'C:/src/flutter'}/bin/cache/artifacts/material_fonts/MaterialIcons-Regular.otf').readAsBytesSync())));
-  await icons.load();
 }
 
 /// The review set: every screen in every look (English, normal phone), every screen in Hindi, Tamil and Urdu
@@ -135,7 +111,7 @@ void main() {
   });
 
   testWidgets('draw the design gallery', (t) async {
-    await t.runAsync(_loadFonts);
+    await t.runAsync(r.loadFonts);
     Directory(_out).createSync(recursive: true);
     final problems = <String>[];
     var count = 0;
