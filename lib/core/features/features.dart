@@ -145,6 +145,9 @@ class FeatureKey {
 
   /// E36: open-load counts near the driver (demand_cells, written by the counting function).
   static const demandFeed = 'demandFeed';
+
+  /// E37: route-deviation alert on the driver's trip screen (with the near, arrived and long-halt alerts).
+  static const tripAlerts = 'tripAlerts';
 }
 
 /// `config/features`: {pilotMode: bool, flags: {key: bool}}. A missing
@@ -222,6 +225,7 @@ class Features {
     FeatureSpec(FeatureKey.reliabilityBadges, pilotOn: false, normalOn: false, group: FeatureGroup.core),
     FeatureSpec(FeatureKey.goingTo, pilotOn: false, normalOn: false, group: FeatureGroup.core),
     FeatureSpec(FeatureKey.demandFeed, pilotOn: false, normalOn: false, group: FeatureGroup.server),
+    FeatureSpec(FeatureKey.tripAlerts, pilotOn: false, normalOn: false, group: FeatureGroup.core),
   ];
 
   static final _byKey = {for (final s in registry) s.key: s};

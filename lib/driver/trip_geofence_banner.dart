@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import '../core/services/features_service.dart';
+import '../core/features/features.dart';
 
 import '../core/geo/trip_watcher.dart';
 import '../core/models/booking.dart';
@@ -29,7 +31,8 @@ class TripGeofenceBanner extends StatefulWidget {
 }
 
 class _TripGeofenceBannerState extends State<TripGeofenceBanner> {
-  late final TripWatcher _watcher = TripWatcher(dropPlace: widget.dropPlace);
+  // E37: the pickup turns on the route-deviation check (flag tripAlerts).
+  late final TripWatcher _watcher = TripWatcher(dropPlace: widget.dropPlace, pickupPlace: FeaturesService.isOn(FeatureKey.tripAlerts) ? widget.booking?.pickup : null);
   StreamSubscription<Coordinates>? _sub;
   Timer? _tick;
   TripSignals _signals = const TripSignals();
@@ -83,6 +86,8 @@ class _TripGeofenceBannerState extends State<TripGeofenceBanner> {
       if (s.destinationReached) _card(const ValueKey('geoReached'), Icons.flag_circle_outlined, AppColors.success, tr(context, 'geoReached')),
       if (s.nearDestination)
         _card(const ValueKey('geoNear'), Icons.near_me_rounded, AppColors.primary, trf(context, 'geoNear', {'km': (s.kmToDrop ?? 0).round()})),
+      if (s.offRoute)
+        _card(const ValueKey('geoOffRoute'), Icons.alt_route_rounded, AppColors.warning, trf(context, 'geoOffRoute', {'km': (s.kmOffRoute ?? 0).round()})),
       if (s.longHalt && SafetyCheckinCard.enabled)
         SafetyCheckinCard(key: const ValueKey('safetyCheckin'), booking: widget.booking)
       else if (s.longHalt)

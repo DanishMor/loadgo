@@ -2,9 +2,9 @@
 
 Plan: docs/MASTER_PLAN_ELITE.md. Read it, then continue from NEXT. Phase 0 done (tag elite-phase0). Phase 1 done (tag elite-phase1).
 
-LAST_DONE: E36 demand cells and priority dispatch skeleton (flag demandFeed live, server group, OFF): functions/src/demand.js countCells/writeDemandCells + jobDemandCells (every 10 min, switch demandFeed) writing demand_cells/{gh4}; dispatch.js headStartSeconds (Black tier, config blackHeadStartSeconds 0-120, default 0) in currentWave/runWave; JS unit 50/50, lint clean; firestore.rules demand_cells (get signed-in, list limit<=20, no writes) + demandcells.test.mjs, emulator 511/511; lib/core/adapters/demand_cells_feed.dart FirestoreDemandFeed (9 cells, 30-min freshness, nearest-city names) wired into the driver home v3; docs FLAGS, ADDON_PILOT, WHERE_IS_WHAT, RULES_CHANGES_NEEDED, CONNECT_DEMAND, COST_WATCH; test/demand_cells_feed_test.dart 2/2.
-Before: E35 goingTo (3c40d8e). E34 reliabilityBadges. Phase 4 done (tag elite-phase4).
-NEXT: E37 ETA, geofence arrival and route-deviation alerts (client logic, tests, MapsAdapter fake): check lib/core/trip (arrival_eta, trip_watcher) for what exists first.
+LAST_DONE: E37 off-route alert (flag tripAlerts live, core, OFF): TripWatcher pickup (opt-in), distToSegmentKm, offRouteKm = 50 + 15% of trip, offRoute needs two fixes beyond it and not near/at the drop; TripSignals.offRoute/kmOffRoute; TripGeofenceBanner passes the pickup only with the flag and shows geoOffRoute; ETA, near/arrived and long halt already existed; FLAGS, ADDON_PILOT, WHERE_IS_WHAT; test/trip_alerts_v3_test.dart 3/3, existing watcher tests 38/38.
+Before: E36 demandFeed (19bccbe). E35 goingTo. E34 reliabilityBadges. Phase 4 done (tag elite-phase4).
+NEXT: E38 auto-accept polish and 'why this bid is highlighted' explainers (check bid_ranking.dart and auto_accept_sheet first). Then Phase 5 critic + regression subsets, tag elite-phase5, then Phase 6 E39 Trust Passport.
 Unfinished / to remember:
 - Gallery: powershell -File tool/render_gallery.ps1 (needs 3 GB free); review images in build/gallery.
 - Never edit hosting/*.html by hand: edit tool/templates/hosting/ and run `dart run tool/apply_app_info.dart`. Scripts and styles live in hosting/assets/.

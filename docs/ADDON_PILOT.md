@@ -50,6 +50,7 @@ Goal: put LoadGo in front of a small, known group (one or two corridors, tens of
 | Reliability badges (needs the trust function deployed) | OFF | Features > Reliability badges |
 | Way back on your route | OFF | Features > Way back on your route |
 | Demand near drivers (needs functions deployed) | OFF | Features > Demand near drivers |
+| Off-route alert | OFF | Features > Off-route alert |
 | Insurance quote requests (legal gate) | OFF | Features > Legal > Insurance quote requests (owner legal check and an insurer partner first) |
 | Business card to share | OFF | Features > Business card to share |
 | Party khata | OFF | Features > Party khata |

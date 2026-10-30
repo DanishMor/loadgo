@@ -81,7 +81,7 @@ Status `planned` = not registered and not reachable. `live` = registered, entry 
 | `reliabilityBadges` | E34 | live | core | off | serverTrust, functions deployed | low | `lib/core/trust/public_trust_card.dart` |
 | `goingTo` | E35 | live | core | off | - | low | `lib/core/services/match_service.dart` |
 | `priorityDispatch` | E36 | planned | server | off | dispatchV2, blackTier | medium | - |
-| `tripAlerts` | E37 | planned | core | off | liveLocation | medium | - |
+| `tripAlerts` | E37 | live | core | off | liveLocation | medium | `lib/driver/trip_geofence_banner.dart` |
 | `trustPassport` | E39 | planned | security | off | - | low | - |
 | `safetySuite` | E40 | planned | security | off | safetyCheckin | medium | - |
 | `cargoCondition` | E41 | planned | core | off | cargoPhotos | low | - |

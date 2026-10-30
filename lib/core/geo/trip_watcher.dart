@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import '../pricing/cities.dart';
 
 /// A circle on the map (M14): a pickup, drop, warehouse or port boundary.
@@ -24,9 +26,15 @@ class TripSignals {
   /// Straight-line km to the drop, if known.
   final double? kmToDrop;
 
-  const TripSignals({this.nearDestination = false, this.destinationReached = false, this.longHalt = false, this.kmToDrop});
+  /// E37 (flag tripAlerts): far from the line between pickup and drop (see [TripWatcher.offRouteKm]).
+  final bool offRoute;
 
-  bool get any => nearDestination || destinationReached || longHalt;
+  /// How far off that line the truck is, when known.
+  final double? kmOffRoute;
+
+  const TripSignals({this.nearDestination = false, this.destinationReached = false, this.longHalt = false, this.kmToDrop, this.offRoute = false, this.kmOffRoute});
+
+  bool get any => nearDestination || destinationReached || longHalt || offRoute;
 }
 
 /// Pure geofence logic over position samples (no GPS plugin in here, so it
@@ -41,10 +49,35 @@ class TripWatcher {
   static const haltRadiusKm = 0.3;
 
   final ({double lat, double lng})? drop;
+
+  /// E37: the pickup, for the route-deviation check; null switches it off (the default).
+  final ({double lat, double lng})? pickup;
   final List<({DateTime at, double lat, double lng})> _samples = [];
 
-  TripWatcher({String? dropPlace, ({double lat, double lng})? dropPoint})
-      : drop = dropPoint ?? _cityPoint(dropPlace);
+  TripWatcher({String? dropPlace, ({double lat, double lng})? dropPoint, String? pickupPlace, ({double lat, double lng})? pickupPoint})
+      : drop = dropPoint ?? _cityPoint(dropPlace),
+        pickup = pickupPoint ?? _cityPoint(pickupPlace);
+
+  /// E37: off route when the straight-line distance to the pickup-drop line is over 50 km plus 15% of the trip
+  /// length (roads bend; the places are city centres). Two samples in a row must agree, so one bad GPS fix does
+  /// not raise it.
+  static double offRouteKm(double tripKm) => 50 + 0.15 * tripKm;
+
+  static double distToSegmentKm(({double lat, double lng}) p, ({double lat, double lng}) a, ({double lat, double lng}) b) {
+    // Flat projection around the segment; fine at these distances.
+    final k = 111.32 * cos(a.lat * pi / 180);
+    final ax = a.lng * k, ay = a.lat * 110.57, bx = b.lng * k, by = b.lat * 110.57, px = p.lng * k, py = p.lat * 110.57;
+    final dx = bx - ax, dy = by - ay;
+    final len2 = dx * dx + dy * dy;
+    final t = len2 == 0 ? 0.0 : (((px - ax) * dx + (py - ay) * dy) / len2).clamp(0.0, 1.0);
+    final cx = ax + t * dx, cy = ay + t * dy;
+    return sqrt((px - cx) * (px - cx) + (py - cy) * (py - cy));
+  }
+
+  double? _offBy(({DateTime at, double lat, double lng}) s) {
+    if (pickup == null || drop == null) return null;
+    return distToSegmentKm((lat: s.lat, lng: s.lng), pickup!, drop!);
+  }
 
   static ({double lat, double lng})? _cityPoint(String? place) {
     final c = place == null ? null : findCity(place);
@@ -77,6 +110,10 @@ class TripWatcher {
     final covers = anchor != null || (relevant.isNotEmpty && now.difference(_samples.first.at).inMinutes >= haltMinutes);
     final still = relevant.isNotEmpty && relevant.every((s) => haversineKm(s.lat, s.lng, last.lat, last.lng) <= haltRadiusKm);
     final halt = covers && still && !reached;
-    return TripSignals(nearDestination: near && !reached, destinationReached: reached, longHalt: halt, kmToDrop: km);
+    final off = _offBy(last);
+    final limit = pickup == null || drop == null ? null : offRouteKm(haversineKm(pickup!.lat, pickup!.lng, drop!.lat, drop!.lng));
+    final prev = _samples.length >= 2 ? _offBy(_samples[_samples.length - 2]) : null;
+    final offRoute = off != null && limit != null && prev != null && off > limit && prev > limit && !near && !reached;
+    return TripSignals(nearDestination: near && !reached, destinationReached: reached, longHalt: halt, kmToDrop: km, offRoute: offRoute, kmOffRoute: off);
   }
 }
