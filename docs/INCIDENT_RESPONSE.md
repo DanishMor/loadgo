@@ -8,7 +8,7 @@ Admin > Features (super admin) has a card at the top, "Emergency switches". One 
 | Group (`killGroup_...`) | Switches turned off | Use it for |
 |---|---|---|
 | `money` | `paymentGateway`, `serverWallet`, `payHold` | payout fraud, wrong ledger lines, a payment bug |
-| `costs` | `smsGateway`, `kycVerify`, `maps`, `adminBroadcast`, `photoUploads`, `vehiclePhotos`, `cargoPhotos`, `legalGateInsurance` | SMS pumping, a cost spike, an abused paid call |
+| `costs` | `smsGateway`, `kycVerify`, `maps`, `adminBroadcast`, `photoUploads`, `vehiclePhotos`, `cargoPhotos`, `legalGateInsurance`, `tollEstimate` | SMS pumping, a cost spike, an abused paid call |
 | `dispatch` | `dispatchV2` | wrong prices in bids, a flood of bids, a dispatch bug |
 | `push` | `pushNotifications` | notification spam or wrong text |
 | `server` | `serverLimits`, `serverChatScan`, `serverCredits`, `serverTrust`, `serverJobs`, `serverAdminActions`, `serverDeletion`, `serverWallet`, `paymentGateway`, `pushNotifications`, `dispatchV2` | anything unknown on the server side: the app keeps running on the Firestore rules alone |

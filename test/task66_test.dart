@@ -60,6 +60,8 @@ void main() {
       FeatureKey.laneRfq: 'Lane tenders',
       FeatureKey.quoteShare: 'Share a quote',
       FeatureKey.legalGateInsurance: 'Insurance quote requests (legal gate)',
+      FeatureKey.tollEstimate: 'Expected tolls',
+      FeatureKey.cityNotes: 'City notes',
       FeatureKey.bizCard: 'Business card to share',
       FeatureKey.khata: 'Party khata',
       FeatureKey.safetyCheckin: 'Safety check-in on a long stop',

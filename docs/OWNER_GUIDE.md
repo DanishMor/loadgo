@@ -25,6 +25,7 @@ Yeh guide aapke liye hai: pilot kaise chalana hai, roz kya dekhna hai, har admin
 ## 3. Har admin screen ka kaam
 Kaun dekh sakta hai (role): super = owner, ops, support, verifier, finance. Jo role ko screen nahi milti wo menu mein dikhti hi nahi.
 - **Ops home**: (flag adminOpsHome ON hone par) shift ka ek page: khule SOS, 30+ minute se intezaar karte load, verify karne wale driver, gaadi ki photo, claims aur tickets (sirf aapke role wali kataarein), khule load aur chalti trips, aur kill switch (jo role Features badal sakta hai). Sab roles.
+- **City notes**: (flag cityNotes ON hone par) har shahar ki chhoti soochna jo customer booking mein dekhta hai, jaise truck aane ka samay. Sirf jaanchi hui baat likhein. super.
 - **Analytics**: kitne users, loads, bookings. Sab roles.
 - **Users**: kisi ko dhundhna, profile dekhna, hold ya suspend karna. Ek saath kai users par action karein to 30 second ka Undo milta hai. Sab roles.
 - **Driver verification**: documents dekhkar approve ya reject. Reject karte waqt wajah chunein; driver ko wajah dikhti hai aur wo dobara bhej sakta hai. super, verifier.

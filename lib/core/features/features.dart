@@ -130,6 +130,12 @@ class FeatureKey {
 
   /// E32 legal gate: a cargo insurance QUOTE request to a partner (no sale, no cover, no money). OFF in every mode.
   static const legalGateInsurance = 'legalGateInsurance';
+
+  /// E33: expected tolls on the price card (TollEstimator adapter, maps needed for a real one).
+  static const tollEstimate = 'tollEstimate';
+
+  /// E33: admin-written city notes shown in the booking route step.
+  static const cityNotes = 'cityNotes';
 }
 
 /// `config/features`: {pilotMode: bool, flags: {key: bool}}. A missing
@@ -202,6 +208,8 @@ class Features {
     FeatureSpec(FeatureKey.laneRfq, pilotOn: false, normalOn: false, group: FeatureGroup.core),
     FeatureSpec(FeatureKey.quoteShare, pilotOn: false, normalOn: false, group: FeatureGroup.core),
     FeatureSpec(FeatureKey.legalGateInsurance, pilotOn: false, normalOn: false, group: FeatureGroup.legal),
+    FeatureSpec(FeatureKey.tollEstimate, pilotOn: false, normalOn: false, group: FeatureGroup.connect),
+    FeatureSpec(FeatureKey.cityNotes, pilotOn: false, normalOn: false, group: FeatureGroup.core),
   ];
 
   static final _byKey = {for (final s in registry) s.key: s};

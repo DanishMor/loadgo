@@ -12,18 +12,21 @@ import 'fare_breakdown.dart';
 /// E27 (flag priceCard): the full price before booking: every line with "why", the platform fee and GST shown as
 /// their own lines, the promise that nothing is added later, and where the customer's price sits against what was
 /// paid lately on the route (when enough trips are known).
-Future<void> showPriceTransparency(BuildContext context, FareBreakdown fare, {RateRange? range, int? yourPricePaise}) => showModalBottomSheet<void>(
+Future<void> showPriceTransparency(BuildContext context, FareBreakdown fare, {RateRange? range, int? yourPricePaise, int? tollPaise}) => showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
       isScrollControlled: true,
-      builder: (_) => PriceTransparencySheet(fare: fare, range: range, yourPricePaise: yourPricePaise),
+      builder: (_) => PriceTransparencySheet(fare: fare, range: range, yourPricePaise: yourPricePaise, tollPaise: tollPaise),
     );
 
 class PriceTransparencySheet extends StatelessWidget {
   final FareBreakdown fare;
   final RateRange? range;
   final int? yourPricePaise;
-  const PriceTransparencySheet({super.key, required this.fare, this.range, this.yourPricePaise});
+
+  /// E33 (flag tollEstimate): expected tolls, shown apart from the price (never added to it).
+  final int? tollPaise;
+  const PriceTransparencySheet({super.key, required this.fare, this.range, this.yourPricePaise, this.tollPaise});
 
   @override
   Widget build(BuildContext context) {
@@ -48,6 +51,10 @@ class PriceTransparencySheet extends StatelessWidget {
               Expanded(child: Text(tr(context, 'pxNoHidden'), style: DsType.bodySmall.copyWith(color: c.text))),
             ]),
           ),
+          if (tollPaise != null && tollPaise! > 0) ...[
+            const SizedBox(height: DsSpace.s3),
+            Text(trf(context, 'pxToll', {'amount': formatPaise(tollPaise!)}), key: const ValueKey('pxToll'), style: DsType.bodySmall.copyWith(color: c.text)),
+          ],
           if (yourPricePaise != null && yourPricePaise != fare.total) ...[
             const SizedBox(height: DsSpace.s3),
             Text(trf(context, 'pxYourPrice', {'amount': formatPaise(yourPricePaise!)}), key: const ValueKey('pxYourPrice'), style: DsType.body.copyWith(color: c.textStrong)),

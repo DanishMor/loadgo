@@ -17,6 +17,7 @@ import 'admin_demo_screen.dart';
 import 'admin_features_screen.dart';
 import 'admin_vehicle_photos_screen.dart';
 import 'admin_ops_home_screen.dart';
+import 'admin_city_notes_screen.dart';
 import 'admin_unit_economics_screen.dart';
 import 'admin_pilot_funnel_screen.dart';
 import 'admin_invites_screen.dart';
@@ -164,6 +165,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       ('adminInvites', 'adminInvites', Icons.vpn_key_outlined, const AdminInvitesScreen()),
       ('adminPilotFunnel', 'adminPilotFunnel', Icons.filter_alt_outlined, const AdminPilotFunnelScreen()),
       ('adminUnitEconomics', 'adminUnitEconomics', Icons.calculate_outlined, const AdminUnitEconomicsScreen()),
+      if (FeaturesService.isOn(FeatureKey.cityNotes)) ('adminCityNotes', 'cnTitle', Icons.location_city_rounded, const AdminCityNotesScreen()),
       ('adminFeatures', 'adminFeatures', Icons.toggle_on_outlined, const AdminFeaturesScreen()),
       ('adminDemo', 'adminDemo', Icons.science_outlined, const AdminDemoScreen()),
       ('flaggedUsers', 'flaggedUsers', Icons.warning_amber_rounded, const FlaggedUsersScreen()),

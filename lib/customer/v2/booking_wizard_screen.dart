@@ -11,6 +11,8 @@ import '../../core/features/features.dart';
 import '../../core/widgets/price_transparency_sheet.dart';
 import '../../core/share/quote_share_sheet.dart';
 import '../../core/share/quote_summary.dart';
+import '../../core/pricing/cities.dart';
+import '../../core/pricing/city_notes.dart';
 import '../../core/l10n/l10n.dart';
 import '../../core/maps/road_distance.dart';
 import '../../core/models/risk.dart';
@@ -49,6 +51,9 @@ class BookWizardScreen extends StatefulWidget {
   /// Tests replace the posting; it returns the id of the new load.
   final Future<String> Function(WizardDraft d)? poster;
 
+  /// E33 test hook: the city notes (default: config/city_notes, one read per session).
+  final Future<CityNotes> Function()? cityNotes;
+
   /// Tests give the truck list and the usual price instead of the services.
   final List<VehicleTypeInfo>? vehicleTypes;
   final Future<RateRange?> Function(String pickup, String drop, String vehicleType)? rateSource;
@@ -56,7 +61,7 @@ class BookWizardScreen extends StatefulWidget {
   /// Tests: whether bid mode is offered; by default it follows the `dispatchV2` switch.
   final bool? bidAvailable;
 
-  const BookWizardScreen({super.key, this.initial, this.poster, this.vehicleTypes, this.rateSource, this.bidAvailable});
+  const BookWizardScreen({super.key, this.initial, this.poster, this.cityNotes, this.vehicleTypes, this.rateSource, this.bidAvailable});
 
   @override
   State<BookWizardScreen> createState() => _BookWizardScreenState();
@@ -185,6 +190,8 @@ class _BookWizardScreenState extends State<BookWizardScreen> {
     setState(() => _returnAt = at);
   }
 
+  Future<CityNotes>? _cityNotes;
+
   Future<void> _submit() async {
     final bad = _d.firstIncomplete();
     if (bad != null) {
@@ -265,6 +272,40 @@ class _BookWizardScreenState extends State<BookWizardScreen> {
       PlaceField(key: const ValueKey('wzDropField'), controller: _drop, icon: const Icon(Icons.place_rounded)),
       const SizedBox(height: DsSpace.s4),
       if (ready) RouteRibbon(key: const ValueKey('wzRibbon'), from: _d.pickup.trim(), to: _d.drop.trim(), distanceKm: _d.km),
+      // E33: the admin's notes for the pickup and drop cities (flag cityNotes; one read per session).
+      if (ready && FeaturesService.isOn(FeatureKey.cityNotes))
+        FutureBuilder<CityNotes>(
+          future: _cityNotes ??= (widget.cityNotes ?? CityNotesService.load)(),
+          builder: (context, snap) {
+            final n = snap.data;
+            if (n == null) return const SizedBox.shrink();
+            final shown = <(String, String)>[
+              for (final (k, place) in [('pickup', _d.pickup), ('drop', _d.drop)])
+                if (n.noteFor(place) case final note?) (k, note),
+            ];
+            return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+              for (final (k, note) in shown)
+                Padding(
+                  key: ValueKey('wzCityNote_$k'),
+                  padding: const EdgeInsets.only(top: DsSpace.s3),
+                  child: Container(
+                    padding: const EdgeInsets.all(DsSpace.s3),
+                    decoration: BoxDecoration(color: c.warningBg, borderRadius: DsRadius.all(DsRadius.lg)),
+                    child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      Icon(Icons.info_outline_rounded, color: c.warning),
+                      const SizedBox(width: DsSpace.s2),
+                      Expanded(
+                        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                          Text(trf(context, 'cnFrom', {'city': findCity(k == 'pickup' ? _d.pickup : _d.drop)?.name ?? (k == 'pickup' ? _d.pickup : _d.drop).trim()}), style: DsType.label.copyWith(color: c.textStrong)),
+                          Text(note, style: DsType.bodySmall.copyWith(color: c.text)),
+                        ]),
+                      ),
+                    ]),
+                  ),
+                ),
+            ]);
+          },
+        ),
       if (_last != null && !ready) ...[
         Text(tr(context, 'wzRecent'), style: DsType.label.copyWith(color: c.textMuted)),
         const SizedBox(height: DsSpace.s2),
@@ -479,8 +520,9 @@ class _BookWizardScreenState extends State<BookWizardScreen> {
             onPressed: () async {
               final fare = _d.quote!;
               final range = await _rateFor();
+              final toll = FeaturesService.isOn(FeatureKey.tollEstimate) ? await TollLine.estimate(_d.pickup, _d.drop, _d.vehicleType ?? '') : null;
               if (!mounted) return;
-              await showPriceTransparency(context, fare, range: range, yourPricePaise: value);
+              await showPriceTransparency(context, fare, range: range, yourPricePaise: value, tollPaise: toll);
             },
           ),
         )

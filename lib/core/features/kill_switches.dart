@@ -18,7 +18,7 @@ class KillSwitches {
     // Money is wrong or being drained: no gateway payment, no server wallet work, no held payments.
     KillGroup('money', [FeatureKey.paymentGateway, FeatureKey.serverWallet, FeatureKey.payHold]),
     // Text messages and ID checks cost money per call (SMS pumping, a bill spike).
-    KillGroup('costs', [FeatureKey.smsGateway, FeatureKey.kycVerify, FeatureKey.maps, FeatureKey.adminBroadcast, FeatureKey.photoUploads, FeatureKey.vehiclePhotos, FeatureKey.cargoPhotos, FeatureKey.legalGateInsurance]),
+    KillGroup('costs', [FeatureKey.smsGateway, FeatureKey.kycVerify, FeatureKey.maps, FeatureKey.adminBroadcast, FeatureKey.photoUploads, FeatureKey.vehiclePhotos, FeatureKey.cargoPhotos, FeatureKey.legalGateInsurance, FeatureKey.tollEstimate]),
     // Loads go out in waves and bids are taken (a wrong price, a flood of bids).
     KillGroup('dispatch', [FeatureKey.dispatchV2]),
     // Push notifications (spam, wrong text).

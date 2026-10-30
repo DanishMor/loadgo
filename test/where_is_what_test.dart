@@ -31,6 +31,7 @@ void main() {
       'adminVehicles': 'Vehicles',
       'adminVehiclePhotos': 'Vehicle photo review',
       'adminOpsHome': 'Ops home',
+      'adminCityNotes': 'City notes',
       'adminLoads': 'Loads',
       'adminBookings': 'Bookings',
       'adminTickets': 'Tickets',
