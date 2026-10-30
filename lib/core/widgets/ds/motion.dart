@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/physics.dart';
 
 import '../../theme/design_tokens.dart';
+import 'haptics.dart';
 
 /// Fades its child in while it slides up a few pixels, once, when it first
 /// appears. Give each item of a list a growing [delay] (see [staggerDelay]) to
@@ -109,4 +111,83 @@ class _PopInState extends State<PopIn> with SingleTickerProviderStateMixin {
       ),
     );
   }
+}
+
+/// E9: a spring as a [Curve], for sheets, cards and hero flights. Soft: at most
+/// one small overshoot (damping ratio about 0.8), settled by the end.
+class SpringCurve extends Curve {
+  final SpringDescription spring;
+
+  /// Seconds of spring time mapped onto 0..1 of the animation.
+  final double span;
+  const SpringCurve({this.spring = const SpringDescription(mass: 1, stiffness: 380, damping: 30), this.span = 0.6});
+
+  static const gentle = SpringCurve();
+
+  @override
+  double transformInternal(double t) => SpringSimulation(spring, 0, 1, 0).x(t * span);
+}
+
+/// E9: the animation budget every screen keeps (docs/MOTION.md). Entrance
+/// motion is finished within [entrance]; at most [looping] repeating animation
+/// runs at a time (a skeleton or a radar pulse); a success moment stays under
+/// [success]. test/motion_budget_test.dart checks the code against it.
+class MotionBudget {
+  MotionBudget._();
+  static const entrance = Duration(milliseconds: 700);
+  static const success = Duration(milliseconds: 600);
+  static const looping = 1;
+}
+
+/// E9: the restrained "done" moment: a tick in a soft circle pops in once with
+/// one success haptic, and a screen reader hears [label]. With reduced motion
+/// it is simply there (the haptic still marks the moment).
+class SuccessMoment extends StatefulWidget {
+  final String label;
+  final double size;
+  const SuccessMoment({super.key, required this.label, this.size = 72});
+
+  /// Pop duration, inside [MotionBudget.success].
+  static const duration = Duration(milliseconds: 420);
+
+  @override
+  State<SuccessMoment> createState() => _SuccessMomentState();
+}
+
+class _SuccessMomentState extends State<SuccessMoment> {
+  @override
+  void initState() {
+    super.initState();
+    Haptics.on(HapticEvent.success);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.ds;
+    return Semantics(
+      liveRegion: true,
+      label: widget.label,
+      excludeSemantics: true,
+      child: PopIn(
+        duration: SuccessMoment.duration,
+        from: 0.8,
+        child: Container(
+          width: widget.size,
+          height: widget.size,
+          decoration: BoxDecoration(color: c.successBg, shape: BoxShape.circle),
+          child: Icon(Icons.check_rounded, size: widget.size * 0.55, color: c.success),
+        ),
+      ),
+    );
+  }
+}
+
+/// E9: a Hero that flies between two screens, or stays put when motion is reduced.
+class DsHeroTag extends StatelessWidget {
+  final Object tag;
+  final Widget child;
+  const DsHeroTag({super.key, required this.tag, required this.child});
+
+  @override
+  Widget build(BuildContext context) => DsMotion.reduced(context) ? child : Hero(tag: tag, child: Material(type: MaterialType.transparency, child: child));
 }

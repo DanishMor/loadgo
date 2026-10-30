@@ -2,8 +2,8 @@
 
 Plan: docs/MASTER_PLAN_ELITE.md. Read it, then continue from NEXT. Phase 0 done (tag elite-phase0).
 
-LAST_DONE: E8 typography (price styles, render test for all 12 languages with the real fonts).
-NEXT: E9 motion and feedback: spring curves, hero transitions, route-line draw, shimmer skeletons, success moment, haptic map, sound rules, reduce-motion, animation budget per screen.
+LAST_DONE: E9 motion and feedback (spring curve, route draw-in, shimmer, success moment, hero tag, haptic map, budget test, docs/MOTION.md).
+NEXT: E10 component upgrade: buttons, cards, sheets, nav bar, chips, inputs, price display, badges, avatar, rating, timeline; 12-language overflow safe; widget tests across sizes.
 
 Unfinished / to remember:
 - Never edit hosting/*.html by hand: edit tool/templates/hosting/ and run `dart run tool/apply_app_info.dart`. Scripts and styles live in hosting/assets/.

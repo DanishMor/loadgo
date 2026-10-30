@@ -3,9 +3,10 @@ import 'package:flutter/material.dart';
 import '../../l10n/l10n.dart';
 import '../../theme/design_tokens.dart';
 
-/// Wraps a tree of [SkeletonBox]es and makes it pulse gently. With "remove
-/// animations" or Low-end mode it stays still. One controller for the whole
-/// tree, so a long list of grey placeholders costs the same as one.
+/// Wraps a tree of [SkeletonBox]es and makes it pulse gently while a soft
+/// highlight drifts across each box (E9 shimmer). With "remove animations" or
+/// Low-end mode it stays still. One controller for the whole tree, so a long
+/// list of grey placeholders costs the same as one.
 class Skeleton extends StatefulWidget {
   final Widget child;
   const Skeleton({super.key, required this.child});
@@ -16,7 +17,7 @@ class Skeleton extends StatefulWidget {
 
 class _SkeletonState extends State<Skeleton> with SingleTickerProviderStateMixin {
   late final AnimationController _c = AnimationController(vsync: this, duration: const Duration(milliseconds: 900));
-  late final Animation<double> _opacity = Tween<double>(begin: 0.45, end: 1).animate(CurvedAnimation(parent: _c, curve: Curves.easeInOut));
+  late final Animation<double> _opacity = Tween<double>(begin: 0.7, end: 1).animate(CurvedAnimation(parent: _c, curve: Curves.easeInOut));
 
   /// Starts or stops the pulse to match "remove animations" / Low-end mode. Runs
   /// on every build, and a theme change (which Low-end mode causes) rebuilds us.
@@ -41,8 +42,19 @@ class _SkeletonState extends State<Skeleton> with SingleTickerProviderStateMixin
   @override
   Widget build(BuildContext context) {
     _sync(context);
-    return FadeTransition(opacity: _opacity, child: widget.child);
+    final still = DsMotion.reduced(context);
+    return _ShimmerScope(
+      notifier: still ? null : _c,
+      child: FadeTransition(opacity: _opacity, child: widget.child),
+    );
   }
+}
+
+/// Hands the skeleton's controller to its boxes; null while motion is reduced.
+class _ShimmerScope extends InheritedNotifier<Animation<double>> {
+  const _ShimmerScope({required super.notifier, required super.child});
+
+  static double? of(BuildContext context) => context.dependOnInheritedWidgetOfExactType<_ShimmerScope>()?.notifier?.value;
 }
 
 /// A grey block standing in for text, an image or a button while data loads.
@@ -56,10 +68,17 @@ class SkeletonBox extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.ds;
+    final v = _ShimmerScope.of(context);
+    final highlight = Color.lerp(c.chip, c.surface, 0.6)!;
     return Container(
       width: width,
       height: height,
-      decoration: BoxDecoration(color: c.chip, borderRadius: BorderRadius.circular(radius)),
+      decoration: BoxDecoration(
+        color: v == null ? c.chip : null,
+        // The highlight band moves from one edge to the other as the controller runs.
+        gradient: v == null ? null : LinearGradient(begin: Alignment(-3 + 4 * v, 0), end: Alignment(-1 + 4 * v, 0), colors: [c.chip, highlight, c.chip]),
+        borderRadius: BorderRadius.circular(radius),
+      ),
     );
   }
 }

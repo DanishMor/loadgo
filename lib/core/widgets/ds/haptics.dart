@@ -46,4 +46,17 @@ class Haptics {
 
   /// Something to stop and think about: delete, cancel, an error.
   static void warning() => _go(HapticFeedback.heavyImpact);
+
+  /// E9: the haptic map (docs/MOTION.md). Screens name the event, not the strength.
+  static void on(HapticEvent e) => switch (e) {
+        HapticEvent.select => tap(),
+        HapticEvent.press => press(),
+        HapticEvent.confirm || HapticEvent.success => success(),
+        HapticEvent.error => press(),
+        HapticEvent.sos => warning(),
+      };
 }
+
+/// E9: what happened, mapped to one strength by [Haptics.on]. Heavy is kept for SOS
+/// (and the existing delete / cancel prompts); an error is a light tap, never a jolt.
+enum HapticEvent { select, press, confirm, success, error, sos }

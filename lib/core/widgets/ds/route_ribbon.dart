@@ -14,7 +14,13 @@ class RouteRibbon extends StatelessWidget {
   /// 0..1: how far the truck is along the line (a trip in progress). Null puts it in the middle.
   final double? progress;
 
-  const RouteRibbon({super.key, required this.from, required this.to, this.distanceKm, this.progress});
+  /// E9: draw the line from pickup to drop once when it first appears (skipped when motion is reduced).
+  final bool drawIn;
+
+  const RouteRibbon({super.key, required this.from, required this.to, this.distanceKm, this.progress, this.drawIn = false});
+
+  /// How long the draw-in takes (inside the screen's entrance budget, MotionBudget.entrance).
+  static const drawDuration = Duration(milliseconds: 560);
 
   @override
   Widget build(BuildContext context) {
@@ -30,8 +36,13 @@ class RouteRibbon extends StatelessWidget {
           SizedBox(
             height: 36,
             width: double.infinity,
-            child: CustomPaint(
-              painter: RouteRibbonPainter(line: c.inputBorder, dot: c.primary, pin: c.accentStrong, truck: c.primary, progress: progress, rtl: Directionality.of(context) == TextDirection.rtl),
+            child: TweenAnimationBuilder<double>(
+              tween: Tween(begin: drawIn && !DsMotion.reduced(context) ? 0 : 1, end: 1),
+              duration: RouteRibbon.drawDuration,
+              curve: DsMotion.standard,
+              builder: (context, reveal, _) => CustomPaint(
+                painter: RouteRibbonPainter(line: c.inputBorder, dot: c.primary, pin: c.accentStrong, truck: c.primary, progress: progress, rtl: Directionality.of(context) == TextDirection.rtl, reveal: reveal),
+              ),
             ),
           ),
           const SizedBox(height: DsSpace.s1),
@@ -58,7 +69,10 @@ class RouteRibbonPainter extends CustomPainter {
   final double? progress;
   final bool rtl;
 
-  const RouteRibbonPainter({required this.line, required this.dot, required this.pin, required this.truck, this.progress, this.rtl = false});
+  /// 0..1: how much of the line is drawn (E9 draw-in). The pin and the truck appear at 1.
+  final double reveal;
+
+  const RouteRibbonPainter({required this.line, required this.dot, required this.pin, required this.truck, this.progress, this.rtl = false, this.reveal = 1});
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -73,10 +87,12 @@ class RouteRibbonPainter extends CustomPainter {
     final len = (endX - startX).abs();
     final dir = rtl ? -1.0 : 1.0;
     // Dashes between the two ends, leaving room for the dot and the pin.
-    for (double d = 14; d + 6 < len - 14; d += 12) {
+    final drawn = len * reveal.clamp(0.0, 1.0);
+    for (double d = 14; d + 6 < len - 14 && d < drawn; d += 12) {
       canvas.drawLine(Offset(startX + dir * d, y), Offset(startX + dir * (d + 6), y), dash);
     }
     canvas.drawCircle(Offset(startX, y), 7, Paint()..color = dot);
+    if (reveal < 1) return;
     // The pin: a rounded head with a point below it.
     final p = Offset(endX, y - 2);
     final path = Path()
@@ -99,5 +115,5 @@ class RouteRibbonPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(RouteRibbonPainter o) => o.line != line || o.dot != dot || o.pin != pin || o.truck != truck || o.progress != progress || o.rtl != rtl;
+  bool shouldRepaint(RouteRibbonPainter o) => o.line != line || o.dot != dot || o.pin != pin || o.truck != truck || o.progress != progress || o.rtl != rtl || o.reveal != reveal;
 }
