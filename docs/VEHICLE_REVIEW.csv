@@ -7,7 +7,7 @@ mini_truck,Mini truck,छोटा ट्रक,lcv,Mini,4,2+2,7,4.5,5,0.75,1.25
 pickup_8ft,Pickup (8 ft),पिकअप (8 फुट),lcv,,4,2+2,8,5,0,1.25,1.75,fmcg building produce,open,2,yes,,,,,,
 lcv_14ft,14 ft truck,14 फुट ट्रक,lcv,14ft,6,2+4,14,6,6,2.5,4,fmcg household furniture,open closed,2,yes,,,,,,
 lcv_17ft,17 ft truck,17 फुट ट्रक,lcv,17ft,6,2+4,17,6,6.5,4,5,fmcg furniture produce,open closed,3,yes,,,,,,
-icv_19ft,19 ft truck,19 फुट ट्रक,icv,19ft,6,2+4,19,7,7,5,7,fmcg furniture machinery,open closed container,3,yes,,,,,,
+icv_19ft,19 ft truck,19 फुट ट्रक,icv,19ft,6,2+4,19,7,7,5,7,fmcg furniture machinery,closed open container,3,yes,,,,,,
 icv_20ft,20 ft truck,20 फुट ट्रक,icv,20ft,6,2+4,20,7.5,7,6,8,fmcg machinery steel,open closed container,3,yes,,,,,,
 icv_22ft,22 ft truck,22 फुट ट्रक,icv,22ft,6,2+4,22,7.5,7.5,8,10,fmcg machinery steel,open closed container,3,yes,,,,,,
 icv_24ft,24 ft truck,24 फुट ट्रक,icv,24ft,6,2+4,24,8,8,9,12,fmcg furniture machinery,closed container,4,yes,,,,,,
