@@ -91,6 +91,9 @@ class FeatureKey {
 
   /// E18: driver vehicle photos, admin photo review and the Photo-verified badge on bid cards (needs photoUploads).
   static const vehiclePhotos = 'vehiclePhotos';
+
+  /// E19: goods photos on a load (customer), seal and damage photos in the trip steps (driver); needs photoUploads.
+  static const cargoPhotos = 'cargoPhotos';
 }
 
 /// `config/features`: {pilotMode: bool, flags: {key: bool}}. A missing
@@ -150,6 +153,7 @@ class Features {
     FeatureSpec(FeatureKey.designV3, pilotOn: true, normalOn: true, group: FeatureGroup.design),
     FeatureSpec(FeatureKey.vehicleCatalog, pilotOn: false, normalOn: false, group: FeatureGroup.core),
     FeatureSpec(FeatureKey.vehiclePhotos, pilotOn: false, normalOn: false, group: FeatureGroup.connect),
+    FeatureSpec(FeatureKey.cargoPhotos, pilotOn: false, normalOn: false, group: FeatureGroup.connect),
   ];
 
   static final _byKey = {for (final s in registry) s.key: s};

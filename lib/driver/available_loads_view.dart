@@ -18,6 +18,7 @@ import 'accept_load.dart';
 import '../core/widgets/load_card.dart';
 import 'favourite_routes_screen.dart';
 import 'make_offer.dart';
+import '../core/photos/cargo_photo_widgets.dart';
 import '../core/voice/voice_input.dart';
 import '../core/voice/voice_parser.dart';
 import 'recommended_loads.dart';
@@ -77,6 +78,8 @@ class _AcceptLoadButtonState extends State<AcceptLoadButton> {
         Expanded(flex: widget.v2 ? 3 : 1, child: _acceptButton()),
         const SizedBox(width: 8),
         if (widget.v2) Expanded(flex: 2, child: FeedBidButton(load: widget.load, pickupKm: widget.pickupKm)) else MakeOfferButton(load: widget.load),
+        // E19: goods photos of the load, read only when tapped.
+        if (FeaturesService.isOn(FeatureKey.cargoPhotos) && FeaturesService.isOn(FeatureKey.photoUploads)) CargoPhotosButton(loadId: widget.load.id),
         IconButton(
           key: ValueKey('saveRoute_${widget.load.id}'),
           tooltip: tr(context, 'saveRoute'),

@@ -253,6 +253,26 @@ void main() {
     expect((await t.runAsync(readLoad))!.autoAccept, isNull);
   });
 
+  testWidgets('E19: goods photos card only with cargoPhotos and photoUploads on; the shipper can add while open', (t) async {
+    bigView(t);
+    await t.runAsync(() async {
+      await post();
+    });
+    await t.pumpWidget(host());
+    await settle(t);
+    expect(find.byKey(ValueKey('brCargo_$loadId')), findsNothing);
+    FeaturesService.notifier.value = const Features(flags: {FeatureKey.cargoPhotos: true});
+    await t.pumpWidget(host());
+    await settle(t);
+    expect(find.byKey(ValueKey('brCargo_$loadId')), findsNothing);
+    FeaturesService.notifier.value = const Features(flags: {FeatureKey.cargoPhotos: true, FeatureKey.photoUploads: true});
+    await t.pumpWidget(const SizedBox());
+    await t.pumpWidget(host());
+    await settle(t);
+    expect(find.byKey(ValueKey('brCargo_$loadId')), findsOneWidget);
+    expect(find.byKey(const ValueKey('cgCamera')), findsOneWidget);
+  });
+
   testWidgets('a bad auto-accept price is refused in the sheet', (t) async {
     bigView(t);
     FeaturesService.notifier.value = const Features(flags: {FeatureKey.dispatchV2: true});

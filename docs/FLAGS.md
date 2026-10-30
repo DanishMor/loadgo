@@ -62,7 +62,7 @@ Status `planned` = not registered and not reachable. `live` = registered, entry 
 | `designV3` | E7 | live | design | ON | - | low | `lib/main.dart`, `lib/core/settings/settings_screen.dart` |
 | `vehicleCatalog` | E17 | live | core | off | - | low | `lib/customer/v2/booking_wizard_screen.dart`, `lib/customer/v2/bid_room_screen.dart`, `lib/customer/truck_board_screen.dart` |
 | `vehiclePhotos` | E18 | live | connect | off | photoUploads, storage rules | medium | `lib/driver/my_vehicles_screen.dart`, `lib/admin/admin_dashboard_screen.dart`, `lib/customer/v2/bid_room_screen.dart` |
-| `cargoPhotos` | E19 | planned | connect | off | vehiclePhotos | medium | - |
+| `cargoPhotos` | E19 | live | connect | off | photoUploads, storage rules | medium | `lib/customer/v2/bid_room_screen.dart`, `lib/driver/available_loads_view.dart`, `lib/driver/trip_proof_dialogs.dart` |
 | `homeV3` | E21 | planned | design | off | designV3 | low | - |
 | `onboardingV3` | E26 | planned | design | off | designV3 | low | - |
 | `priceCard` | E27 | planned | core | off | - | low | - |

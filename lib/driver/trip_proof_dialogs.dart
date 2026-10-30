@@ -5,6 +5,8 @@ import '../core/l10n/l10n.dart';
 import '../core/models/booking.dart';
 import '../core/photos/photo_service.dart';
 import '../core/photos/photo_widgets.dart';
+import '../core/features/features.dart';
+import '../core/services/features_service.dart';
 
 /// Pickup: customer's OTP plus what was loaded. Null when cancelled.
 Future<(String, PickupProof)?> askPickupProof(BuildContext context, {String? bookingId}) =>
@@ -85,6 +87,9 @@ class _ProofDialogState extends State<_ProofDialog> {
               // A photo of the load (shown only while the photoUploads switch is on).
               if (widget.bookingId != null)
                 PhotoAttach(target: PhotoTarget(pickup ? PhotoKind.pickup : PhotoKind.delivery, bookingId: widget.bookingId)),
+              // E19 (cargoPhotos): the seal on the loaded truck at pickup; any damage seen at delivery.
+              if (widget.bookingId != null && FeaturesService.isOn(FeatureKey.cargoPhotos))
+                PhotoAttach(target: PhotoTarget(pickup ? PhotoKind.seal : PhotoKind.damage, bookingId: widget.bookingId)),
               if (pickup) ...[
                 TextFormField(
                   key: const ValueKey('packagesField'),

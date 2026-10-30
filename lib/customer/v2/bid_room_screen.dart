@@ -11,7 +11,9 @@ import '../../core/features/features.dart';
 import '../../core/l10n/l10n.dart';
 import '../../core/models/load.dart';
 import '../../core/models/offer.dart';
+import '../../core/photos/cargo_photo_widgets.dart';
 import '../../core/photos/vehicle_photo_badge.dart';
+import '../../core/services/backend.dart';
 import '../../core/services/features_service.dart';
 import '../../core/vehicles/vehicle_painter.dart';
 import '../../core/services/load_service.dart';
@@ -319,6 +321,11 @@ class _BidRoomScreenState extends State<BidRoomScreen> {
                       child: Text(trf(context, 'uxPriceNow', {'amount': formatPaise((load.budget! * 100).round())}), key: const ValueKey('brPrice'), style: DsType.subtitle.copyWith(color: c.textStrong)),
                     ),
                   const SizedBox(height: DsSpace.s4),
+                  // E19: the shipper's goods photos (cargoPhotos needs photoUploads); added only while the load is open.
+                  if (FeaturesService.isOn(FeatureKey.cargoPhotos) && FeaturesService.isOn(FeatureKey.photoUploads)) ...[
+                    CargoPhotosCard(key: ValueKey('brCargo_${load.id}'), loadId: load.id, editable: load.isOpen && load.shipperId == Backend.uid),
+                    const SizedBox(height: DsSpace.s4),
+                  ],
                   _stateSection(load),
                   if (load.isOpen && FeaturesService.isOn(FeatureKey.dispatchV2))
                     Padding(
