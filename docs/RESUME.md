@@ -2,9 +2,9 @@
 
 Plan: docs/MASTER_PLAN_ELITE.md. Read it, then continue from NEXT. Phase 0 done (tag elite-phase0). Phase 1 done (tag elite-phase1).
 
-LAST_DONE: E19c flag cargoPhotos live (default OFF, needs photoUploads, costs kill group): bid room CargoPhotosCard (editable by the shipper while open), driver load card CargoPhotosButton (AcceptLoadButton row), seal PhotoAttach at pickup and damage at delivery in trip_proof_dialogs; FLAGS, ADDON_PILOT, WHERE_IS_WHAT, INCIDENT_RESPONSE, SCREEN_INVENTORY, feat strings, task66; test/cargo_photos_entry_test.dart 2/2, bid_room +1, flag/doc/translation tests green. E19 done.
-Before: E19b cargo photo widgets (cargo_photo_widgets.dart, cargo_photo_strings.dart, 10/10). E19a cargo core + rules (loads/{id}/cargo/{slot}, proofs kind seal; emulator green). E18a-d vehicle photos (flag vehiclePhotos live, default OFF).
-NEXT: E20 optional turntable view of the vehicle painter: ship only if it meets the animation budget on LowEndMode, otherwise skip and log. Then the phase 2 critic pass (re-read E15-E20 diffs, dead code, duplication, naming, rule 1) and tag elite-phase2, then Phase 3 (E21 customer home v3).
+LAST_DONE: E20 turntable skipped and logged (docs/BLOCKED.md Elite section, DECISIONS): painter has one 3/4-side view, true-scale sizes already shown by E17, LowEndMode animation budget needs a phone run.
+Before: E19a-c cargo photos (flag cargoPhotos live, default OFF; rules loads/{id}/cargo + proofs seal waiting in RULES_CHANGES_NEEDED). E18a-d vehicle photos (flag vehiclePhotos live, default OFF).
+NEXT: Phase 2 critic pass (re-read E15-E20 diffs from tag elite-phase1: dead code, duplication, naming, rule 1; render_gallery if 3 GB free), then tag elite-phase2 and push, then Phase 3: E21 customer home v3 (sections registry, reorder and hide persisted, skeleton and first-run variants).
 Unfinished / to remember:
 - Gallery: powershell -File tool/render_gallery.ps1 (needs 3 GB free); review images in build/gallery.
 - Never edit hosting/*.html by hand: edit tool/templates/hosting/ and run `dart run tool/apply_app_info.dart`. Scripts and styles live in hosting/assets/.
