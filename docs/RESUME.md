@@ -2,9 +2,9 @@
 
 Plan: docs/MASTER_PLAN_ELITE.md. Read it, then continue from NEXT. Phase 0 done (tag elite-phase0). Phase 1 done (tag elite-phase1).
 
-LAST_DONE: E34 reliability tier (flag reliabilityBadges live, core, OFF; needs serverTrust + functions deployed): functions/src/trust.js reliabilityTier/reliabilityCounts/onTimeOf (newest 100 finished trips, writes public_trust.reliability top/good), functions/test/unit/trust.test.js 4 (47/47 unit, lint clean), index bookings driverId+status+createdAt desc + function_indexes_test; lib/core/trust/reliability.dart mirror (same cases in test/reliability_test.dart), PublicTrust.reliability, PublicTrustCard word-only badge; docs/RELIABILITY.md formula, OWNER_REVIEW, RULES_CHANGES_NEEDED (index + deploy), FLAGS, ADDON_PILOT, WHERE_IS_WHAT, COST_WATCH; relTier words. Acceptance of rings is not scored: ring answers are not stored (BLOCKED: skip reason storage).
-Before: Phase 4 done (tag elite-phase4 at 1b8b19f; regression subsets 279/279). E33 tolls and city notes. E32 insurance gate.
-NEXT: E35 I am going to mode and return-load suggestions from favourite routes; matching function with tests (check MatchService favourites, returnLoadsFor, load_ranker before adding).
+LAST_DONE: E35 way back on your route (flag goingTo live, core, OFF): FavouriteRoute.matchesBack, DriverContext.homeward (set from the flag in MatchService), +20 and MatchReason.homeward ('Way back on your route') in LoadRanker; the planned route ('I am going to'), stops on the way and return loads near the drop were already ranked (L5); FLAGS, ADDON_PILOT, WHERE_IS_WHAT, COST_WATCH; test/going_to_test.dart 3/3, matching/driver_today green.
+Before: E34 reliabilityBadges (6db7e4e). Phase 4 done (tag elite-phase4).
+NEXT: E36 priority dispatch for Black customers (ring bonus config); demand cells read from an aggregated collection written only by functions (skeleton, flag OFF), client read-only. Check dispatch_config, Black tier (E-later?) existing pieces, and the DemandFeed adapter from E22 before adding.
 Unfinished / to remember:
 - Gallery: powershell -File tool/render_gallery.ps1 (needs 3 GB free); review images in build/gallery.
 - Never edit hosting/*.html by hand: edit tool/templates/hosting/ and run `dart run tool/apply_app_info.dart`. Scripts and styles live in hosting/assets/.

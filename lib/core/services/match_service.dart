@@ -1,4 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'features_service.dart';
+import '../features/features.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../constants/logistics.dart';
@@ -88,6 +90,7 @@ class MatchService {
       anchorPlace: active.isNotEmpty ? active.first.drop : (delivered.isNotEmpty ? delivered.first.drop : null),
       anchorIsActiveTrip: active.isNotEmpty,
       favourites: favourites,
+      homeward: FeaturesService.isOn(FeatureKey.goingTo),
       now: now ?? DateTime.now(),
     );
   }

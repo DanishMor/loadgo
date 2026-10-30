@@ -9,7 +9,9 @@ import '../pricing/cities.dart';
 import 'nearest.dart';
 
 /// Why a load was recommended. Shown as chips on the driver's card.
-enum MatchReason { nearPickup, returnLoad, favouriteRoute, bestFit, onYourRoute, stopsOnRoute }
+/// [homeward] (E35, flag goingTo): a load on one of the driver's favourite routes driven back, while the driver is at
+/// its far end.
+enum MatchReason { nearPickup, returnLoad, favouriteRoute, bestFit, onYourRoute, stopsOnRoute, homeward }
 
 /// A route the driver saved (city names as typed).
 class FavouriteRoute {
@@ -27,6 +29,9 @@ class FavouriteRoute {
   }
 
   bool matches(Load load) => _sameCity(pickup, load.pickup) && _sameCity(drop, load.drop);
+
+  /// E35: the same route driven back (the load goes from this route's drop to its pickup).
+  bool matchesBack(Load load) => _sameCity(drop, load.pickup) && _sameCity(pickup, load.drop);
 }
 
 bool _sameCity(String a, String b) {
@@ -128,6 +133,9 @@ class DriverContext {
   /// that start near its start and end near its end rank higher.
   final PlannedRoute? plannedRoute;
 
+  /// E35 (flag goingTo): count favourite routes driven back as a reason to show a load.
+  final bool homeward;
+
   const DriverContext({
     required this.vehicles,
     this.verified = true,
@@ -138,6 +146,7 @@ class DriverContext {
     this.riskTier = 'normal',
     this.origin,
     this.plannedRoute,
+    this.homeward = false,
   });
 }
 
@@ -248,6 +257,10 @@ class LoadRanker {
     if (ctx.favourites.any((f) => f.matches(load))) {
       score += 25;
       reasons.add(MatchReason.favouriteRoute);
+    } else if (ctx.homeward && ctx.favourites.any((f) => f.matchesBack(load))) {
+      // E35: the way back of a route the driver likes: no empty run home.
+      score += 20;
+      reasons.add(MatchReason.homeward);
     }
 
     // Filling the vehicle (60%+) earns more per trip than a near-empty run.

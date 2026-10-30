@@ -79,7 +79,7 @@ Status `planned` = not registered and not reachable. `live` = registered, entry 
 | `tollEstimate` | E33 | live | connect | off | maps, toll provider | low | `lib/customer/v2/booking_wizard_screen.dart` |
 | `cityNotes` | E33 | live | core | off | - | low | `lib/customer/v2/booking_wizard_screen.dart`, `lib/admin/admin_dashboard_screen.dart` |
 | `reliabilityBadges` | E34 | live | core | off | serverTrust, functions deployed | low | `lib/core/trust/public_trust_card.dart` |
-| `goingTo` | E35 | planned | core | off | - | low | - |
+| `goingTo` | E35 | live | core | off | - | low | `lib/core/services/match_service.dart` |
 | `priorityDispatch` | E36 | planned | server | off | dispatchV2, blackTier | medium | - |
 | `tripAlerts` | E37 | planned | core | off | liveLocation | medium | - |
 | `trustPassport` | E39 | planned | security | off | - | low | - |
