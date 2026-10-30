@@ -38,3 +38,6 @@ Your changes: _(write here)_
 - Largest part load: 70% (`maxShare` 0.7); above it the customer is told to book the whole truck.
 - Handling margin: 15% over the plain share of a full-truck price (`handling` 0.15), capped at the full-truck price.
 These are guesses for a first pilot, not market rates (UNVERIFIED). They live in code defaults and can be overridden by a config document once the flag is live.
+
+## E34 reliability tier (check after the first weeks of trips)
+- Weights 60 / 25 / 15 (completion, on time, stars), tiers at 92 and 82, at least 10 finished trips (docs/RELIABILITY.md). First guesses, UNVERIFIED.

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../services/features_service.dart';
 
 import '../app_info.dart';
 import '../features/features.dart';
@@ -38,6 +39,15 @@ class PublicTrustCard extends StatelessWidget {
           final chips = <Widget>[];
           if (t.verified) {
             chips.add(StatusBadge(key: const ValueKey('ptVerified'), label: tr(context, 'ptVerified'), tone: StatusTone.success, icon: Icons.verified_rounded));
+          }
+          // E34: the reliability tier as a word only (flag reliabilityBadges); the numbers are never shown.
+          if (t.reliability != null && FeaturesService.isOn(FeatureKey.reliabilityBadges)) {
+            chips.add(StatusBadge(
+              key: ValueKey('ptRel_${t.reliability!.name}'),
+              label: tr(context, 'relTier_${t.reliability!.name}'),
+              tone: StatusTone.success,
+              icon: Icons.workspace_premium_rounded,
+            ));
           }
           if (t.hasRating) {
             chips.add(StatusBadge(

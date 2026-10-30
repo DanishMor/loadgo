@@ -1,5 +1,6 @@
 
 import '../money/money.dart';
+import 'reliability.dart';
 import '../services/backend.dart';
 
 /// The safe numbers other people may see about a driver (F19): written by the
@@ -16,7 +17,10 @@ class PublicTrust {
   /// `2026-03` (month the person joined) or null.
   final String? since;
 
-  const PublicTrust({required this.uid, this.trips = 0, this.rating, this.ratingCount = 0, this.verified = false, this.since});
+  /// E34: the reliability tier the server worked out ('top' or 'good'), or null.
+  final ReliabilityTier? reliability;
+
+  const PublicTrust({required this.uid, this.trips = 0, this.rating, this.ratingCount = 0, this.verified = false, this.since, this.reliability});
 
   bool get hasRating => rating != null && ratingCount > 0;
 
@@ -34,6 +38,7 @@ class PublicTrust {
       ratingCount: count(m['ratingCount']),
       verified: m['verified'] == true,
       since: since is String && RegExp(r'^\d{4}-\d{2}$').hasMatch(since) ? since : null,
+      reliability: Reliability.parse(m['reliability']),
     );
   }
 

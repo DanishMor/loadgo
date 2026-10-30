@@ -243,3 +243,4 @@ Changes in this round that cut reads:
 - E31 `quoteShare`: 0 reads and 0 writes; the picture and the PDF are made on the phone (the PDF loads the LR fonts from the app once).
 - E32 `legalGateInsurance`: 0 reads and 0 writes; at most 3 partner calls per user a day and 100 in all (ConnectKit spec), and none until a partner is configured.
 - E33 `tollEstimate`: one toll adapter call when the customer opens the full price card (ConnectKit caps 1000 a day, 30 per user), none without a provider. `cityNotes`: 1 read of config/city_notes per app session, only while booking.
+- E34 `reliabilityBadges`: 0 extra app reads (the tier rides on the public_trust document the offer card already reads). Server: refreshing a summary now also reads the driver's newest 100 finished bookings, once per delivered trip (index bookings driverId + status + createdAt).

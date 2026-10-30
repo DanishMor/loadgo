@@ -136,6 +136,9 @@ class FeatureKey {
 
   /// E33: admin-written city notes shown in the booking route step.
   static const cityNotes = 'cityNotes';
+
+  /// E34: a driver's reliability tier as a badge on offers (server-written public_trust.reliability).
+  static const reliabilityBadges = 'reliabilityBadges';
 }
 
 /// `config/features`: {pilotMode: bool, flags: {key: bool}}. A missing
@@ -210,6 +213,7 @@ class Features {
     FeatureSpec(FeatureKey.legalGateInsurance, pilotOn: false, normalOn: false, group: FeatureGroup.legal),
     FeatureSpec(FeatureKey.tollEstimate, pilotOn: false, normalOn: false, group: FeatureGroup.connect),
     FeatureSpec(FeatureKey.cityNotes, pilotOn: false, normalOn: false, group: FeatureGroup.core),
+    FeatureSpec(FeatureKey.reliabilityBadges, pilotOn: false, normalOn: false, group: FeatureGroup.core),
   ];
 
   static final _byKey = {for (final s in registry) s.key: s};

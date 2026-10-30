@@ -2,9 +2,9 @@
 
 Plan: docs/MASTER_PLAN_ELITE.md. Read it, then continue from NEXT. Phase 0 done (tag elite-phase0). Phase 1 done (tag elite-phase1).
 
-LAST_DONE: E33 tolls and city notes: tollEstimate live (connect, OFF; TollLine via ConnectKit guard and TollEstimator, axles from the catalog, shown as an approximate line apart from the price on the price card; costs kill group) and cityNotes live (core, OFF; config/city_notes via the existing config rule, AdminCityNotesScreen for super, notes for pickup/drop in the wizard route step, one read per session); cn/pxToll words; staff area adminCityNotes (super), WHERE_IS_WHAT admin table, OWNER_GUIDE, FLAGS, ADDON_PILOT, INCIDENT_RESPONSE, COST_WATCH; test/toll_city_notes_test.dart 10/10, 55/55 related.
-Before: E32 legalGateInsurance (25efb8f). E31 quoteShare. E30 laneRfq. E27-E29. Tags elite-phase3 / elite-wave1 at 7166b02.
-NEXT: Phase 4 critic pass and regression subsets (run_regression -Only booking, wizard, bid, enterprise, bulk, fare, price, share), then tag elite-phase4 and push; then Phase 5 E34 driver reliability and acceptance score (formula in docs, badges not raw numbers).
+LAST_DONE: E34 reliability tier (flag reliabilityBadges live, core, OFF; needs serverTrust + functions deployed): functions/src/trust.js reliabilityTier/reliabilityCounts/onTimeOf (newest 100 finished trips, writes public_trust.reliability top/good), functions/test/unit/trust.test.js 4 (47/47 unit, lint clean), index bookings driverId+status+createdAt desc + function_indexes_test; lib/core/trust/reliability.dart mirror (same cases in test/reliability_test.dart), PublicTrust.reliability, PublicTrustCard word-only badge; docs/RELIABILITY.md formula, OWNER_REVIEW, RULES_CHANGES_NEEDED (index + deploy), FLAGS, ADDON_PILOT, WHERE_IS_WHAT, COST_WATCH; relTier words. Acceptance of rings is not scored: ring answers are not stored (BLOCKED: skip reason storage).
+Before: Phase 4 done (tag elite-phase4 at 1b8b19f; regression subsets 279/279). E33 tolls and city notes. E32 insurance gate.
+NEXT: E35 I am going to mode and return-load suggestions from favourite routes; matching function with tests (check MatchService favourites, returnLoadsFor, load_ranker before adding).
 Unfinished / to remember:
 - Gallery: powershell -File tool/render_gallery.ps1 (needs 3 GB free); review images in build/gallery.
 - Never edit hosting/*.html by hand: edit tool/templates/hosting/ and run `dart run tool/apply_app_info.dart`. Scripts and styles live in hosting/assets/.

@@ -62,6 +62,7 @@ void main() {
       FeatureKey.legalGateInsurance: 'Insurance quote requests (legal gate)',
       FeatureKey.tollEstimate: 'Expected tolls',
       FeatureKey.cityNotes: 'City notes',
+      FeatureKey.reliabilityBadges: 'Reliability badges',
       FeatureKey.bizCard: 'Business card to share',
       FeatureKey.khata: 'Party khata',
       FeatureKey.safetyCheckin: 'Safety check-in on a long stop',

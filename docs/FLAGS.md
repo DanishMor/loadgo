@@ -78,7 +78,7 @@ Status `planned` = not registered and not reachable. `live` = registered, entry 
 | `legalGateInsurance` | E32 | live | legal | off | owner legal check, insurer partner | high | `lib/core/insurance/insurance_request.dart` |
 | `tollEstimate` | E33 | live | connect | off | maps, toll provider | low | `lib/customer/v2/booking_wizard_screen.dart` |
 | `cityNotes` | E33 | live | core | off | - | low | `lib/customer/v2/booking_wizard_screen.dart`, `lib/admin/admin_dashboard_screen.dart` |
-| `reliabilityBadges` | E34 | planned | core | off | - | low | - |
+| `reliabilityBadges` | E34 | live | core | off | serverTrust, functions deployed | low | `lib/core/trust/public_trust_card.dart` |
 | `goingTo` | E35 | planned | core | off | - | low | - |
 | `priorityDispatch` | E36 | planned | server | off | dispatchV2, blackTier | medium | - |
 | `tripAlerts` | E37 | planned | core | off | liveLocation | medium | - |

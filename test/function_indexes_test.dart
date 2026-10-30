@@ -22,6 +22,7 @@ void main() {
     ('messages', 'COLLECTION', 'senderId,createdAt', 'chatScan.js (the last texts of the sender in one chat)'),
     ('loads', 'COLLECTION', 'status,pickupDate', 'jobs.js (expire old loads)'),
     ('loads', 'COLLECTION', 'status,createdAt', 'jobs.js and push.js (open loads by age)'),
+    ('bookings', 'COLLECTION', 'driverId,status,createdAt', 'trust.js (E34 reliability: the newest 100 finished trips of a driver)'),
     ('bookings', 'COLLECTION', 'status,scheduledAt', 'jobs.js (scheduled bookings)'),
     ('users', 'COLLECTION', 'role,lastLocation.geohash', 'push.js (drivers near a load)'),
   ];

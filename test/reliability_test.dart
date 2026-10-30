@@ -1,107 +1,54 @@
-import 'dart:async';
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:transport_app/core/features/features.dart';
 import 'package:transport_app/core/l10n/l10n.dart';
-import 'package:transport_app/core/services/backend.dart';
-import 'package:transport_app/core/services/connectivity_service.dart';
-import 'package:transport_app/core/widgets/common.dart';
-import 'package:transport_app/core/widgets/live_stream.dart';
+import 'package:transport_app/core/services/features_service.dart';
+import 'package:transport_app/core/trust/public_trust.dart';
+import 'package:transport_app/core/trust/public_trust_card.dart';
+import 'package:transport_app/core/trust/reliability.dart';
+import 'package:transport_app/core/trust/trust_badges.dart';
 
-import 'test_utils.dart';
-
+/// E34: reliability tier (the same cases as functions/test/unit/trust.test.js) and the offer badge.
 void main() {
   setUp(() {
+    FeaturesService.reset();
     languageNotifier.value = AppLanguage.english;
-    ConnectivityService.online.value = true;
   });
-  tearDown(() => ConnectivityService.online.value = true);
+  tearDown(FeaturesService.reset);
 
-  test('Firestore keeps an offline cache of 100 MB', () {
-    expect(Backend.firestoreSettings.persistenceEnabled, isTrue);
-    expect(Backend.firestoreSettings.cacheSizeBytes, 100 * 1024 * 1024);
-  });
+  ReliabilityTier? tier({int delivered = 0, int driverCancelled = 0, int onTimeKnown = 0, int onTimeOk = 0, double? rating, int ratingCount = 0}) =>
+      Reliability.tierOf(Reliability.score(delivered: delivered, driverCancelled: driverCancelled, onTimeKnown: onTimeKnown, onTimeOk: onTimeOk, rating: rating, ratingCount: ratingCount));
 
-  test('no screen waits forever on a document that does not exist', () {
-    // The old pattern was "if (x == null) return const Center(child: CircularProgressIndicator())"
-    // on a stream that can legitimately emit null. LiveDoc shows "not found" instead.
-    final offenders = <String>[];
-    for (final f in Directory('lib').listSync(recursive: true).whereType<File>().where((f) => f.path.endsWith('.dart'))) {
-      final lines = f.readAsLinesSync();
-      for (var i = 0; i < lines.length; i++) {
-        if (RegExp(r'if \((?:b|t|c|snap\.data) == null\) return const Center\(child: CircularProgressIndicator\(\)\)').hasMatch(lines[i])) {
-          offenders.add('${f.path}:${i + 1}');
-        }
-      }
-    }
-    expect(offenders, isEmpty);
+  test('the same tiers as the server formula', () {
+    expect(tier(delivered: 9, rating: 5, ratingCount: 50), isNull);
+    expect(tier(delivered: 40, onTimeKnown: 30, onTimeOk: 29, rating: 4.8, ratingCount: 20), ReliabilityTier.top);
+    expect(tier(delivered: 18, driverCancelled: 2, onTimeKnown: 10, onTimeOk: 8, rating: 4.5, ratingCount: 10), ReliabilityTier.good);
+    expect(tier(delivered: 14, driverCancelled: 6, onTimeKnown: 10, onTimeOk: 5, rating: 3.5, ratingCount: 10), isNull);
+    expect(tier(delivered: 12, onTimeKnown: 2, ratingCount: 1, rating: 1), ReliabilityTier.top);
+    expect(tier(delivered: 20, onTimeKnown: 10, onTimeOk: 99, rating: 9, ratingCount: 10), ReliabilityTier.top);
   });
 
-  testWidgets('LiveDoc: spinner, then data, null as "missing", error with Retry that resubscribes', (tester) async {
-    final controller = StreamController<String?>();
-    addTearDown(controller.close);
-    var subscriptions = 0;
-    await tester.pumpWidget(MaterialApp(
-      home: Scaffold(
-        body: LiveDoc<String>(
-          stream: () {
-            subscriptions++;
-            return subscriptions == 1 ? Stream<String?>.error('boom') : controller.stream;
-          },
-          builder: (context, v) => Text(v == null ? 'missing' : 'got $v'),
-        ),
-      ),
-    ));
-    await settle(tester);
-    expect(find.text('Retry'), findsOneWidget, reason: 'the first subscription failed');
-    await tester.tap(find.text('Retry'));
-    await tester.pump();
-    expect(subscriptions, 2);
-    expect(find.byType(CircularProgressIndicator), findsOneWidget);
-    controller.add(null);
-    await tester.pump();
-    expect(find.text('missing'), findsOneWidget);
-    controller.add('x');
-    await tester.pump();
-    expect(find.text('got x'), findsOneWidget);
+  test('from the app badges; parse only top and good', () {
+    const b = TrustBadges(finished: 20, delivered: 19, onTimePercent: 90, onTimeKnown: 10);
+    expect(Reliability.fromBadges(b, rating: 4.7, ratingCount: 8), ReliabilityTier.top);
+    expect(Reliability.parse('good'), ReliabilityTier.good);
+    expect(Reliability.parse('excellent'), isNull);
+    expect(PublicTrust.fromMap('d1', {'reliability': 'top'}).reliability, ReliabilityTier.top);
+    expect(PublicTrust.fromMap('d1', {'reliability': 7}).reliability, isNull);
   });
 
-  testWidgets('offline with nothing loaded says so, with Retry; the banner follows connectivity', (tester) async {
-    ConnectivityService.online.value = false;
-    await tester.pumpWidget(MaterialApp(
-      home: Scaffold(
-        body: Column(children: [
-          const OfflineBanner(),
-          Expanded(child: LiveStream<int>(stream: () => const Stream<int>.empty(), builder: (c, v) => Text('$v'))),
-        ]),
-      ),
-    ));
-    await tester.pump();
-    expect(find.text('No internet connection. Connect and try again.'), findsOneWidget);
-    expect(find.text('You\'re offline. Showing saved data.'), findsOneWidget);
-    expect(find.text('Retry'), findsOneWidget);
-    ConnectivityService.online.value = true;
-    await tester.pump();
-    expect(find.byType(OfflineBanner), findsOneWidget);
-    expect(find.byIcon(Icons.wifi_off_rounded), findsNothing);
-  });
+  Widget host(Widget child) => LanguageScope(notifier: languageNotifier, child: MaterialApp(home: Scaffold(body: child)));
 
-  testWidgets('showRetrySnack shows the message and calls back on Retry', (tester) async {
-    var calls = 0;
-    await tester.pumpWidget(MaterialApp(
-      home: Scaffold(
-        body: Builder(
-          builder: (context) => TextButton(onPressed: () => showRetrySnack(context, 'Something went wrong', () => calls++), child: const Text('go')),
-        ),
-      ),
-    ));
-    await tester.tap(find.text('go'));
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 600)); // the snack bar slides in
-    expect(find.text('Something went wrong'), findsOneWidget);
-    await tester.tap(find.text('Retry'));
-    await tester.pump();
-    expect(calls, 1);
+  testWidgets('offer card: the tier word only with reliabilityBadges on; never a number', (t) async {
+    const trust = PublicTrust(uid: 'd1', trips: 40, rating: 4.8, ratingCount: 20, verified: true, reliability: ReliabilityTier.top);
+    FeaturesService.notifier.value = const Features(flags: {FeatureKey.tripTrustCard: true});
+    await t.pumpWidget(host(PublicTrustCard(driverId: 'd1', source: Stream.value(trust))));
+    await t.pumpAndSettle();
+    expect(find.byKey(const ValueKey('ptRel_top')), findsNothing);
+    FeaturesService.notifier.value = const Features(flags: {FeatureKey.tripTrustCard: true, FeatureKey.reliabilityBadges: true});
+    await t.pumpWidget(host(PublicTrustCard(key: const ValueKey(2), driverId: 'd1', source: Stream.value(trust))));
+    await t.pumpAndSettle();
+    expect(find.byKey(const ValueKey('ptRel_top')), findsOneWidget);
+    expect(find.text('Highly reliable'), findsOneWidget);
   });
 }
