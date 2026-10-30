@@ -103,6 +103,9 @@ class FeatureKey {
 
   /// E23: transporter command center on the fleet dashboard (truck board, alerts, open bids, dues, use).
   static const fleetCommand = 'fleetCommand';
+
+  /// E24: admin ops home (queue counts, dispatch picture, kill-switch shortcuts) at the top of the Admin Panel.
+  static const adminOpsHome = 'adminOpsHome';
 }
 
 /// `config/features`: {pilotMode: bool, flags: {key: bool}}. A missing
@@ -166,6 +169,7 @@ class Features {
     FeatureSpec(FeatureKey.homeV3, pilotOn: false, normalOn: false, group: FeatureGroup.design),
     FeatureSpec(FeatureKey.driverHomeV3, pilotOn: false, normalOn: false, group: FeatureGroup.design),
     FeatureSpec(FeatureKey.fleetCommand, pilotOn: false, normalOn: false, group: FeatureGroup.core),
+    FeatureSpec(FeatureKey.adminOpsHome, pilotOn: false, normalOn: false, group: FeatureGroup.core),
   ];
 
   static final _byKey = {for (final s in registry) s.key: s};

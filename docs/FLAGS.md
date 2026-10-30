@@ -66,6 +66,7 @@ Status `planned` = not registered and not reachable. `live` = registered, entry 
 | `homeV3` | E21 | live | design | off | designV3 | low | `lib/customer/v2/customer_shell_v2.dart` |
 | `driverHomeV3` | E22 | live | design | off | designV3 | low | `lib/driver/driver_home_screen.dart` |
 | `fleetCommand` | E23 | live | core | off | - | low | `lib/fleet/fleet_dashboard.dart` |
+| `adminOpsHome` | E24 | live | core | off | - | low | `lib/admin/admin_dashboard_screen.dart` |
 | `onboardingV3` | E26 | planned | design | off | designV3 | low | - |
 | `priceCard` | E27 | planned | core | off | - | low | - |
 | `partLoad` | E28 | planned | core | off | rules published | medium | - |

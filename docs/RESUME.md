@@ -2,9 +2,9 @@
 
 Plan: docs/MASTER_PLAN_ELITE.md. Read it, then continue from NEXT. Phase 0 done (tag elite-phase0). Phase 1 done (tag elite-phase1).
 
-LAST_DONE: E23 transporter command center (flag fleetCommand live, core, default OFF): lib/core/fleet/command_center.dart (VehicleState board, FleetAlert kinds sorted by urgency, open bids), lib/fleet/command_center_view.dart (counts + 30-day use, alerts, truck board, open bids, dues -> TransporterBooksScreen) on FleetDashboard (lists from the dashboard, + newest 20 bids listener), command_center_strings (12 languages), FLAGS, ADDON_PILOT, WHERE_IS_WHAT, COST_WATCH, SCREEN_INVENTORY; tests command_center 7/7, fleet_test +1, 43/43 related.
-Before: E22a-c driver home v3 (flag driverHomeV3). E21a-c customer home v3 (flag homeV3). Phase 2 done (tag elite-phase2). Waiting to publish: docs/RULES_CHANGES_NEEDED.md.
-NEXT: E24 admin ops home: live loads and dispatch monitor, queue counts (KYC, photos, claims, tickets), kill-switch shortcuts; check existing admin dashboard and AdminPilotControl for reuse; flag adminOpsHome planned? add row.
+LAST_DONE: E24 admin ops home (flag adminOpsHome live, core, default OFF): lib/core/admin/ops_queues.dart, AdminConsoleService.opsQueues (pilot control counts + 3 guarded count() aggregates, photos capped at 50, -1 when the role may not read), lib/admin/admin_ops_home_screen.dart (banner urgent/waiting/quiet, role-filtered queues that open the dashboard's screens, dispatch picture + monitor, kill-switch shortcuts with confirm for roles allowed Features), first item of the Admin Panel when on; staff area adminOpsHome (all), ops group; ops_home_strings (12 languages); FLAGS, ADDON_PILOT, WHERE_IS_WHAT (+admin table), OWNER_GUIDE, COST_WATCH; tests admin_ops_home 7/7 + staff/doc/flag tests.
+Before: E23 transporter command center (flag fleetCommand). E22a-c driver home v3. E21a-c customer home v3. Phase 2 done (tag elite-phase2).
+NEXT: E25 navigation shell: bottom nav with state kept per tab, deep links, notification center entry, global search across loads, bookings and LRs, TalkBack order. Survey what exists (IndexedStack shells, DeepLinkListener, GlobalSearchScreen, NotificationBell); only fill gaps.
 Unfinished / to remember:
 - Gallery: powershell -File tool/render_gallery.ps1 (needs 3 GB free); review images in build/gallery.
 - Never edit hosting/*.html by hand: edit tool/templates/hosting/ and run `dart run tool/apply_app_info.dart`. Scripts and styles live in hosting/assets/.

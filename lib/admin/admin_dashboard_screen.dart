@@ -16,6 +16,7 @@ import 'admin_feedback_screen.dart';
 import 'admin_demo_screen.dart';
 import 'admin_features_screen.dart';
 import 'admin_vehicle_photos_screen.dart';
+import 'admin_ops_home_screen.dart';
 import 'admin_unit_economics_screen.dart';
 import 'admin_pilot_funnel_screen.dart';
 import 'admin_invites_screen.dart';
@@ -63,7 +64,7 @@ const adminGroups = ['adGroupPeople', 'adGroupOps', 'adGroupSafety', 'adGroupMon
 /// Which group an admin screen sits in; a screen not listed here goes to the last one.
 String adminGroupOf(String key) {
   const people = {'adminUsers', 'driverVerification', 'adminVehicles', 'adminVehiclePhotos', 'flaggedUsers', 'adminDeletionRequests', 'adminWaitlist', 'adminInvites', 'adminSearch', 'adminDriverRewards'};
-  const ops = {'adminAnalytics', 'adminLoads', 'adminBookings', 'adminDispatch', 'adminDispatchMonitor', 'adminSupplyDemand'};
+  const ops = {'adminOpsHome', 'adminAnalytics', 'adminLoads', 'adminBookings', 'adminDispatch', 'adminDispatchMonitor', 'adminSupplyDemand'};
   const safety = {'adminSos', 'adminReports', 'pcAdminViolations', 'adminSignals', 'adminFraudCases', 'adminDisputes', 'adminRatingFlags', 'adminRatingBurst', 'adminAppeals', 'adminAlerts', 'adminHealth'};
   const money = {'adminPayAging', 'adminPayouts', 'adminFinance', 'adminOffers', 'adminUnitEconomics'};
   if (people.contains(key)) return 'adGroupPeople';
@@ -175,6 +176,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       ('adminOffers', 'adminOffers', Icons.local_offer_outlined, const AdminOffersScreen()),
       ('adminConfig', 'adminConfig', Icons.tune_rounded, const AdminConfigScreen()),
     ];
+    // E24: the shift's one page first (flag adminOpsHome); it opens the same screens as the list below.
+    if (FeaturesService.isOn(FeatureKey.adminOpsHome)) {
+      items.insert(0, ('adminOpsHome', 'opsTitle', Icons.space_dashboard_outlined, AdminOpsHomeScreen(screens: {for (final i in items) i.$1: i.$4})));
+    }
     return FutureBuilder<String>(
       future: _role,
       builder: (context, snap) {

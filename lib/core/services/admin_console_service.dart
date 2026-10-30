@@ -10,6 +10,8 @@ import '../admin/admin_search.dart';
 import '../admin/config_schema.dart';
 import '../admin/dispatch.dart';
 import '../admin/pilot_control.dart';
+import '../admin/ops_queues.dart';
+import '../models/claim.dart';
 import '../admin/payment_aging.dart';
 import '../admin/pilot_cohorts.dart';
 import '../pilot/reuse_survey.dart';
@@ -426,6 +428,36 @@ class AdminConsoleService {
 
   /// Today's pilot picture: counts (cheap aggregate reads) plus up to 300 open
   /// loads to find the unfilled ones. About 10 reads per press.
+  /// E24: the staff queues and the dispatch picture, counted once (count() aggregates, the photo queue at most
+  /// [OpsQueues.photoLimit]). A queue this staff role may not read is -1, never an error for the whole page.
+  static Future<OpsQueues> opsQueues() async {
+    Future<int> safe(Future<int> Function() f) async {
+      try {
+        return await f();
+      } catch (_) {
+        return -1;
+      }
+    }
+
+    final pc = await pilotControl().then<PilotControl?>((p) => p, onError: (_) => null);
+    final r = await Future.wait([
+      safe(() => _count(_db.collection('users').where('verificationStatus', isEqualTo: 'pending'))),
+      safe(() => _count(_db.collectionGroup('photos').where('status', isEqualTo: 'pending').limit(OpsQueues.photoLimit))),
+      safe(() => _count(_db.collection('claims').where('status', whereIn: [ClaimStatus.open, ClaimStatus.underReview]))),
+    ]);
+    return OpsQueues(
+      kyc: r[0],
+      photos: r[1],
+      claims: r[2],
+      tickets: pc?.openTickets ?? -1,
+      sos: pc?.openSos ?? -1,
+      unfilledLoads: pc?.unfilledLoads ?? -1,
+      openLoads: pc?.openLoads ?? -1,
+      runningTrips: pc?.runningTrips ?? -1,
+      capped: {if (r[1] >= OpsQueues.photoLimit) 'photos'},
+    );
+  }
+
   static Future<PilotControl> pilotControl() => withRetry(() async {
         final now = ServerClock.now();
         final openLoads = await _db.collection('loads').where('status', isEqualTo: LoadStatus.open).limit(PilotControl.sampleLimit).get();
