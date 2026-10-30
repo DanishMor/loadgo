@@ -2592,6 +2592,44 @@ service cloud.firestore {
           && request.resource.data.createdAt == request.time;
       allow delete: if false;
     }
+    match /lane_rfqs/{rfqId} {
+      function rfqOk(d) {
+        return d.keys().hasOnly(['ownerId', 'ownerName', 'fromCity', 'toCity', 'vehicleType', 'tripsPerMonth', 'months', 'note', 'closesAt', 'status', 'createdAt'])
+            && d.ownerId == request.auth.uid && d.ownerName is string && d.ownerName.size() <= 80
+            && d.fromCity is string && d.fromCity.size() >= 2 && d.fromCity.size() <= 60
+            && d.toCity is string && d.toCity.size() >= 2 && d.toCity.size() <= 60
+            && d.vehicleType is string && d.vehicleType.size() >= 2 && d.vehicleType.size() <= 40
+            && d.tripsPerMonth is int && d.tripsPerMonth >= 1 && d.tripsPerMonth <= 500
+            && d.months is int && d.months >= 1 && d.months <= 12
+            && d.get('note', '') is string && d.get('note', '').size() <= 300
+            && d.closesAt is timestamp && d.closesAt > request.time && d.closesAt <= request.time + duration.value(31, 'd')
+            && d.status == 'open' && d.createdAt == request.time;
+      }
+      allow read: if signedIn() && (resource.data.status == 'open' || resource.data.ownerId == request.auth.uid || isAdmin());
+      allow create: if signedIn() && canTransact(request.auth.uid) && rfqOk(request.resource.data);
+      allow update: if signedIn() && resource.data.ownerId == request.auth.uid && resource.data.status == 'open'
+          && request.resource.data.decidedAt == request.time
+          && ((request.resource.data.status == 'closed' && changedKeys().hasOnly(['status', 'decidedAt']))
+            || (request.resource.data.status == 'awarded' && changedKeys().hasOnly(['status', 'decidedAt', 'awardedTo', 'awardedRatePaise'])
+              && request.resource.data.awardedRatePaise == get(/databases/$(database)/documents/lane_rfqs/$(rfqId)/bids/$(request.resource.data.awardedTo)).data.ratePaise));
+      allow delete: if false;
+      match /bids/{bidderId} {
+        function rfq() {
+          return get(docPath('lane_rfqs', rfqId)).data;
+        }
+        allow read: if signedIn() && (bidderId == request.auth.uid || rfq().ownerId == request.auth.uid || isAdmin());
+        allow create, update: if signedIn() && bidderId == request.auth.uid && canTransact(request.auth.uid)
+            && rfq().status == 'open' && rfq().closesAt > request.time && rfq().ownerId != request.auth.uid
+            && get(docPath('users', request.auth.uid)).data.get('role', '') in ['fleet', 'driver']
+            && request.resource.data.keys().hasOnly(['bidderId', 'bidderName', 'ratePaise', 'note', 'at'])
+            && request.resource.data.bidderId == request.auth.uid
+            && request.resource.data.bidderName is string && request.resource.data.bidderName.size() <= 80
+            && request.resource.data.ratePaise is int && request.resource.data.ratePaise >= 100 && request.resource.data.ratePaise <= 100000000
+            && request.resource.data.get('note', '') is string && request.resource.data.get('note', '').size() <= 200
+            && request.resource.data.at == request.time;
+        allow delete: if false;
+      }
+    }
     match /truck_posts/{postId} {
       allow read: if signedIn();
       allow create: if signedIn()

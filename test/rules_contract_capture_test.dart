@@ -19,6 +19,7 @@ import 'package:transport_app/core/models/load.dart';
 import 'package:transport_app/core/models/offer.dart';
 import 'package:transport_app/core/models/vehicle.dart';
 import 'package:transport_app/core/offers/offers_switch.dart';
+import 'package:transport_app/core/enterprise/lane_rfq.dart';
 import 'package:transport_app/core/photos/cargo_photos.dart';
 import 'package:transport_app/core/photos/photo_service.dart';
 import 'package:transport_app/core/pricing/fare_calculator.dart';
@@ -631,6 +632,37 @@ void batch3() {
         uid = 'cust1';
         await LoadService.cancel(load.id, reason: 'plan_changed');
       }, setup: () async => load = (await world()).load);
+    });
+
+    test('E30 lane tender: create, a rate, award', () async {
+      late String id;
+      Future<void> users() async {
+        await user('biz1', {'role': 'customer', 'selectedRole': 'customer'});
+        await user('flt1', {'role': 'fleet', 'selectedRole': 'fleet'});
+      }
+
+      Future<void> tender() async {
+        await users();
+        uid = 'biz1';
+        id = await LaneRfqService.create(ownerName: 'Shah', fromCity: 'Surat', toCity: 'Delhi', vehicleType: '32ft', tripsPerMonth: 20, months: 3, closesAt: DateTime.now().add(const Duration(days: 7)));
+      }
+
+      await scenario('lane tender by a business', 'biz1', ['lane_rfqs'], () async {
+        uid = 'biz1';
+        id = await LaneRfqService.create(ownerName: 'Shah', fromCity: 'Surat', toCity: 'Delhi', vehicleType: '32ft', tripsPerMonth: 20, months: 3, closesAt: DateTime.now().add(const Duration(days: 7)));
+      }, setup: users);
+      await scenario('lane tender rate by a transporter', 'flt1', ['lane_rfqs'], () async {
+        uid = 'flt1';
+        await LaneRfqService.placeBid(id, bidderName: 'Co', ratePaise: 6400000);
+      }, setup: tender);
+      await scenario('lane tender award by the business', 'biz1', ['lane_rfqs'], () async {
+        uid = 'biz1';
+        await LaneRfqService.award(id, (await LaneRfqService.watchBids(id).first).single);
+      }, setup: () async {
+        await tender();
+        uid = 'flt1';
+        await LaneRfqService.placeBid(id, bidderName: 'Co', ratePaise: 6400000);
+      });
     });
 
     test('E19 goods photo by the shipper and seal photo by the driver', () async {

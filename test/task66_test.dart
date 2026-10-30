@@ -57,6 +57,7 @@ void main() {
       FeatureKey.priceCard: 'Full price card',
       FeatureKey.roundTrip: 'Book the way back',
       FeatureKey.bulkUpload: 'Bulk loads from Excel',
+      FeatureKey.laneRfq: 'Lane tenders',
       FeatureKey.bizCard: 'Business card to share',
       FeatureKey.khata: 'Party khata',
       FeatureKey.safetyCheckin: 'Safety check-in on a long stop',

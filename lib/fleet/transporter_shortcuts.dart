@@ -1,4 +1,6 @@
 import '../core/features/features.dart';
+import '../core/services/features_service.dart';
+import '../core/enterprise/lane_rfq_screens.dart';
 import '../core/widgets/feature_gate.dart';
 import '../core/wallet/hub/hub_screens.dart';
 import '../core/bilty/lr_register_screen.dart';
@@ -155,6 +157,14 @@ class _TransporterShortcutsState extends State<TransporterShortcuts> {
         ),
         ),
         Wrap(spacing: 8, children: [
+          // E30: open lane tenders (flag laneRfq).
+          if (FeaturesService.isOn(FeatureKey.laneRfq))
+            ActionChip(
+              key: const ValueKey('trpOpenTenders'),
+              avatar: const Icon(Icons.gavel_rounded, size: 18),
+              label: Text(tr(context, 'tdrOpenTitle')),
+              onPressed: () => _open(OpenTendersScreen(bidderName: Backend.currentUser?.displayName ?? '', myUid: Backend.uid)),
+            ),
           ActionChip(
             key: const ValueKey('trpOpenProfile'),
             avatar: const Icon(Icons.business_outlined, size: 18),

@@ -34,6 +34,7 @@ Regenerate after changing a service: `flutter test test/rules_contract_capture_t
 | `bookings`, `loads`, `vehicles`, `users`, `audit_events`, `notifications` | the driver cancels before pickup (the load reopens and loses driver, booking and match time; cancel count +1) |
 | `loads`, `users`, `audit_events` | the customer cancels an open load (with a real fare estimate) |
 | `loads/*/cargo`, `bookings/*/proofs` | E19: the shipper adds a goods photo record (`CargoPhotoService.upload`); the driver adds a seal photo record (`PhotoService.upload`, kind `seal`) |
+| `lane_rfqs`, `lane_rfqs/*/bids` | E30: a business posts a lane tender, a transporter sends a rate, the business awards it |
 
 ## Not covered yet (planned, in this order)
 - `lrs`: new version, cancel, share links.

@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import '../core/services/backend.dart';
+import '../core/services/features_service.dart';
+import '../core/features/features.dart';
+import '../core/enterprise/lane_rfq_screens.dart';
 
 import '../core/enterprise/business_roles.dart';
 import '../core/l10n/l10n.dart';
@@ -55,6 +59,9 @@ class _BusinessHubScreenState extends State<BusinessHubScreen> {
             if (c != null) tile('hubContracts', Icons.local_shipping_outlined, tr(context, 'bizContracts'), () => ContractsScreen(context: c)),
             if (c != null && c.can(BizPerm.postLoads)) tile('hubPool', Icons.verified_user_outlined, tr(context, 'bizPool'), () => PoolScreen(context: c)),
             if (c != null && c.can(BizPerm.businessSupport)) tile('hubSupport', Icons.support_agent_rounded, tr(context, 'bizSupport'), () => BusinessSupportScreen(context: c)),
+            // E30: lane tenders (flag laneRfq).
+            if ((owner || can(BizPerm.postLoads)) && FeaturesService.isOn(FeatureKey.laneRfq))
+              tile('hubTenders', Icons.gavel_rounded, tr(context, 'tdrTitle'), () => LaneTendersScreen(ownerName: Backend.currentUser?.displayName ?? '')),
             if (owner || can(BizPerm.postLoads)) tile('hubBulk', Icons.playlist_add_rounded, tr(context, 'bulkPost'), () => const BulkPostScreen()),
             if (owner || can(BizPerm.viewBookings)) tile('hubReport', Icons.table_chart_outlined, tr(context, 'routeReport'), () => const RouteReportScreen()),
             if (owner) tile('hubShipments', Icons.sync_alt_rounded, tr(context, 'shipments'), () => const ShipmentsScreen()),

@@ -162,6 +162,7 @@ import 'home_v3_strings.dart';
 import 'command_center_strings.dart';
 import 'ops_home_strings.dart';
 import 'pricing_v3_strings.dart';
+import 'tender_strings.dart';
 import 'vehicle_ui_strings.dart';
 
 const List<Map<String, List<String>>> stringTables = [
@@ -323,6 +324,7 @@ const List<Map<String, List<String>>> stringTables = [
   commandCenterStrings,
   opsHomeStrings,
   pricingV3Strings,
+  tenderStrings,
 ];
 
 final Map<String, List<String>> extraStrings = {
