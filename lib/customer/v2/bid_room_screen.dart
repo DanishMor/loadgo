@@ -12,6 +12,7 @@ import '../../core/l10n/l10n.dart';
 import '../../core/models/load.dart';
 import '../../core/models/offer.dart';
 import '../../core/services/features_service.dart';
+import '../../core/vehicles/vehicle_painter.dart';
 import '../../core/services/load_service.dart';
 import '../../core/services/offer_service.dart';
 import '../../core/services/server_clock.dart';
@@ -258,6 +259,7 @@ class _BidRoomScreenState extends State<BidRoomScreen> {
             note: note,
             trust: PublicTrustCard(driverId: o.driverId),
             counterPaise: o.counterPaise,
+            vehicle: FeaturesService.isOn(FeatureKey.vehicleCatalog) ? VehicleTypeArt(o.vehicleType, width: 120) : null,
             onAccept: actions && open && !_busy ? () => _accept(v) : null,
             onCounter: actions && open && o.canCounter && !_busy ? () => _counter(v) : null,
           ),

@@ -13,6 +13,9 @@ import '../core/widgets/live_stream.dart';
 import '../core/widgets/logistics_labels.dart';
 import 'post_load_screen.dart';
 import '../core/theme/design_tokens.dart';
+import '../core/features/features.dart';
+import '../core/services/features_service.dart';
+import '../core/vehicles/vehicle_painter.dart';
 
 String truckBoardErrorKey(Object e) {
   if (e is AccountRestrictedException) return 'accountRestricted';
@@ -229,6 +232,7 @@ class _TruckBoardScreenState extends State<TruckBoardScreen> {
                       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                         RouteText(pickup: p.fromCity, drop: p.toCity),
                         const SizedBox(height: 6),
+                        if (FeaturesService.isOn(FeatureKey.vehicleCatalog)) VehicleTypeArt(p.vehicleType, width: 120),
                         Text('${vehicleTypeLabel(context, p.vehicleType)} • ${formatNum(p.capacity)} T • ${p.vehicleNumber} • ${formatDate(p.availableDate)}',
                             style: DsStyle.inherit.copyWith(color: AppColors.muted)),
                         if (p.driverName.isNotEmpty) Text(p.driverName, style: DsStyle.w700),

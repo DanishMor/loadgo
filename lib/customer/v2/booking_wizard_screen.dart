@@ -20,6 +20,9 @@ import '../../core/services/pricing_service.dart';
 import '../../core/services/rate_limit_service.dart';
 import '../../core/services/vehicle_type_service.dart';
 import '../../core/theme/design_tokens.dart';
+import '../../core/vehicles/vehicle_catalog.dart';
+import '../../core/vehicles/vehicle_painter.dart';
+import '../../core/vehicles/vehicle_screens.dart';
 import '../../core/widgets/common.dart';
 import '../../core/widgets/ds/app_button.dart';
 import '../../core/widgets/ds/app_top_bar.dart';
@@ -285,7 +288,18 @@ class _BookWizardScreenState extends State<BookWizardScreen> {
         if (suggested != null && (a.id == suggested.id) != (b.id == suggested.id)) return a.id == suggested.id ? -1 : 1;
         return a.maxTons.compareTo(b.maxTons);
       });
+    final catalogOn = FeaturesService.isOn(FeatureKey.vehicleCatalog);
     return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+      if (catalogOn)
+        Align(
+          alignment: AlignmentDirectional.centerStart,
+          child: TextButton.icon(
+            key: const ValueKey('wzSeeAllVehicles'),
+            onPressed: _openCatalog,
+            icon: const Icon(Icons.view_list_rounded),
+            label: Text(tr(context, 'vcuSeeAll')),
+          ),
+        ),
       for (final t in ordered)
         Builder(builder: (context) {
           final fits = w == null || t.fits(w);
@@ -308,7 +322,7 @@ class _BookWizardScreenState extends State<BookWizardScreen> {
                     padding: const EdgeInsets.all(DsSpace.s4),
                     decoration: BoxDecoration(borderRadius: DsRadius.all(DsRadius.lg), border: Border.all(color: selected ? c.primary : c.border, width: selected ? 2 : 1)),
                     child: Row(children: [
-                      Icon(Icons.local_shipping_rounded, color: fits ? c.primary : c.textHint),
+                      if (catalogOn) Opacity(opacity: fits ? 1 : 0.4, child: VehicleTypeArt(t.id, width: 72)) else Icon(Icons.local_shipping_rounded, color: fits ? c.primary : c.textHint),
                       const SizedBox(width: DsSpace.s3),
                       Expanded(
                         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -327,6 +341,24 @@ class _BookWizardScreenState extends State<BookWizardScreen> {
           );
         }),
     ]);
+  }
+
+  /// E17: the full catalog; choosing a vehicle there selects its type here and comes back to this step.
+  void _openCatalog() {
+    final here = ModalRoute.of(context);
+    Navigator.of(context).push(MaterialPageRoute(
+      builder: (_) => VehicleCatalogScreen(onPick: (VehicleSpec spec) {
+        final type = _types.where((t) => t.id == spec.legacyId).firstOrNull;
+        final w = _d.weightTons;
+        final messenger = ScaffoldMessenger.of(context);
+        if (type == null || (w != null && !type.fits(w))) {
+          messenger.showSnackBar(SnackBar(content: Text(tr(context, type == null ? 'vcuNotBookable' : 'wzTooSmall'))));
+          return;
+        }
+        _change(_d.copyWith(vehicleType: () => type.id, pricePaise: () => null));
+        Navigator.of(context).popUntil((r) => r == here);
+      }),
+    ));
   }
 
   Future<RateRange?>? _rateFor() {

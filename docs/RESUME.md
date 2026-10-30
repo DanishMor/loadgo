@@ -2,8 +2,8 @@
 
 Plan: docs/MASTER_PLAN_ELITE.md. Read it, then continue from NEXT. Phase 0 done (tag elite-phase0). Phase 1 done (tag elite-phase1).
 
-LAST_DONE: E17a vehicle screens (lib/core/vehicles/vehicle_screens.dart: catalog, card, spec sheet, size comparison, compare, what fits) and what_fits.dart logic, 42 UI strings in 12 languages, tests. Not reachable yet (nothing imports them).
-NEXT: E17b register flag vehicleCatalog (default OFF): FeatureKey + registry + feat_/featHelp_ strings, docs/FLAGS.md live row with entry points, ADDON_PILOT row + task66 label, WHERE_IS_WHAT row, SCREEN_INVENTORY; entry points: booking wizard truck step (See all vehicles / What fits link, art on rows), truck board, bid card art - each reads FeatureKey.vehicleCatalog.
+LAST_DONE: E17b flag vehicleCatalog (registry, OFF; FLAGS live, ADDON_PILOT, WHERE_IS_WHAT, COST_WATCH), entry points: booking wizard truck step (See all vehicles, drawings, pick comes back), bid room (BidCard.vehicle), truck board; VehicleTypeArt + VehicleCatalog.forType; tests.
+NEXT: E18 driver vehicle photos [flag vehiclePhotos, connect-ready]: slots + guide overlays, on-device quality checks, PhotoAdapter (fake), storage.rules owner-only, Firestore metadata rules, visibility trade-off in DECISIONS, admin review queue, Photo-verified badge (6 months), OCR plate cross-check. Split E18a (model, quality checks, adapter, rules + rules tests) and E18b (capture UI), E18c (admin queue, badge).
 Unfinished / to remember:
 - Gallery: powershell -File tool/render_gallery.ps1 (needs 3 GB free); review images in build/gallery.
 - Never edit hosting/*.html by hand: edit tool/templates/hosting/ and run `dart run tool/apply_app_info.dart`. Scripts and styles live in hosting/assets/.

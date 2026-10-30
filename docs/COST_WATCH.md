@@ -228,3 +228,6 @@ Changes in this round that cut reads:
 - A damaged document is skipped instead of failing the whole list (`SafeDocs.parse`), so a bad row no longer causes endless refresh retries.
 - The push router starts after the first frame; the picture cache is capped at 48 MB.
 - Guard: `test/query_cost_guard_test.dart` counts listeners with no limit (57 left, almost all per-owner lists of a few rows); the number may only go down.
+
+## Elite features
+- E17 `vehicleCatalog`: 0 Firestore reads and 0 writes. The catalog is an app asset (`assets/vehicles/catalog.json`, about 9 KB) read once per app start and kept in memory; drawings are painted in code (no images downloaded). Turning the flag on changes no read count in booking, bid room or truck board.

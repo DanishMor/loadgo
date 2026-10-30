@@ -35,6 +35,9 @@ class BidCard extends StatelessWidget {
   /// The customer already answered this bid with a price; shown instead of the counter button.
   final int? counterPaise;
 
+  /// E17: a drawing of the offered vehicle, shown under the driver when the vehicle catalog is on.
+  final Widget? vehicle;
+
   const BidCard({
     super.key,
     required this.driverName,
@@ -49,6 +52,7 @@ class BidCard extends StatelessWidget {
     this.onAccept,
     this.onCounter,
     this.counterPaise,
+    this.vehicle,
   });
 
   @override
@@ -59,6 +63,7 @@ class BidCard extends StatelessWidget {
       decoration: BoxDecoration(color: c.surface, borderRadius: DsRadius.all(DsRadius.lg), border: Border.all(color: c.border)),
       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, mainAxisSize: MainAxisSize.min, children: [
         DriverMiniCard(name: driverName, rating: rating, trips: trips, verified: verified, trust: trust),
+        if (vehicle != null) ...[const SizedBox(height: DsSpace.s2), Align(alignment: AlignmentDirectional.centerStart, child: vehicle!)],
         const SizedBox(height: DsSpace.s3),
         Wrap(alignment: WrapAlignment.spaceBetween, crossAxisAlignment: WrapCrossAlignment.end, spacing: DsSpace.s3, children: [
           Directionality(textDirection: TextDirection.ltr, child: Text(formatPaise(pricePaise), key: const ValueKey('bidPrice'), style: DsType.headline.copyWith(color: c.textStrong))),

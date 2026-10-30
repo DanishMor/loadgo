@@ -358,6 +358,36 @@ class VehiclePainter extends CustomPainter {
   bool shouldRepaint(VehiclePainter old) => old.spec.id != spec.id || old.ink != ink;
 }
 
+/// The drawing for a stored `vehicleType` ('14ft', 'Container', ...). Keeps its size while the catalog loads and
+/// stays an empty box when the type is not in the catalog, so lists never jump.
+class VehicleTypeArt extends StatefulWidget {
+  final String type;
+  final double width;
+  final CatalogFuture? catalog;
+  const VehicleTypeArt(this.type, {super.key, this.width = 96, this.catalog});
+
+  @override
+  State<VehicleTypeArt> createState() => _VehicleTypeArtState();
+}
+
+typedef CatalogFuture = Future<List<VehicleSpec>> Function();
+
+class _VehicleTypeArtState extends State<VehicleTypeArt> {
+  late final Future<List<VehicleSpec>> _all = (widget.catalog ?? VehicleCatalog.load)();
+
+  @override
+  Widget build(BuildContext context) {
+    final box = Size(widget.width, widget.width * VehiclePainter.h / VehiclePainter.w);
+    return FutureBuilder<List<VehicleSpec>>(
+      future: _all,
+      builder: (context, snap) {
+        final spec = snap.hasData ? VehicleCatalog.forType(snap.data!, widget.type) : null;
+        return spec == null ? SizedBox.fromSize(size: box) : VehicleArt(spec, width: widget.width);
+      },
+    );
+  }
+}
+
 /// A catalog vehicle drawn at [width] (height is 3/8 of it), named for screen readers.
 class VehicleArt extends StatelessWidget {
   final VehicleSpec spec;

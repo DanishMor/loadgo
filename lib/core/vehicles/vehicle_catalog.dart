@@ -126,6 +126,18 @@ class VehicleCatalog {
     }
   }
 
+  /// The catalog entry for a `vehicleType` stored on a load, offer or truck post: its own id, or the first
+  /// type that maps to that legacy id ('14ft' -> lcv_14ft).
+  static VehicleSpec? forType(List<VehicleSpec> all, String type) {
+    for (final v in all) {
+      if (v.id == type) return v;
+    }
+    for (final v in all) {
+      if (v.legacyId == type) return v;
+    }
+    return null;
+  }
+
   static VehicleSpec? byId(List<VehicleSpec> all, String id) {
     for (final v in all) {
       if (v.id == id) return v;

@@ -85,6 +85,9 @@ class FeatureKey {
 
   /// E7: the Signature / Midnight look (default ON; Classic stays selectable in Settings).
   static const designV3 = 'designV3';
+
+  /// E17: vehicle pictures, approximate sizes, compare and what fits (catalog asset, no reads).
+  static const vehicleCatalog = 'vehicleCatalog';
 }
 
 /// `config/features`: {pilotMode: bool, flags: {key: bool}}. A missing
@@ -142,6 +145,7 @@ class Features {
     FeatureSpec(FeatureKey.liveLocation, pilotOn: false, normalOn: false, group: FeatureGroup.connect),
     FeatureSpec(FeatureKey.maps, pilotOn: false, normalOn: false, group: FeatureGroup.connect),
     FeatureSpec(FeatureKey.designV3, pilotOn: true, normalOn: true, group: FeatureGroup.design),
+    FeatureSpec(FeatureKey.vehicleCatalog, pilotOn: false, normalOn: false, group: FeatureGroup.core),
   ];
 
   static final _byKey = {for (final s in registry) s.key: s};
