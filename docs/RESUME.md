@@ -2,8 +2,8 @@
 
 Plan: docs/MASTER_PLAN_ELITE.md. Read it, then continue from NEXT. Phase 0 done (tag elite-phase0).
 
-LAST_DONE: E11 illustrations (onboarding x3, no notifications; style doc docs/ILLUSTRATIONS.md; test).
-NEXT: E12 docs/COPY_DECK.md and a copy pass (respectful, short, Hindi-first) on screens and error messages.
+LAST_DONE: E12 copy deck (docs/COPY_DECK.md), copy pass, voice test.
+NEXT: E13 render pipeline: tool/render_gallery.ps1 using the existing PNG screen renderer (key screens x 3 looks x sizes x languages), review images, docs/DESIGN_REVIEW.md.
 
 Unfinished / to remember:
 - Never edit hosting/*.html by hand: edit tool/templates/hosting/ and run `dart run tool/apply_app_info.dart`. Scripts and styles live in hosting/assets/.

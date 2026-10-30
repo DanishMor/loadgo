@@ -60,7 +60,7 @@ void main() {
     await tester.pumpWidget(app(trip('delivered')));
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('deliveredSheet')), findsOneWidget);
-    expect(find.text('Delivered!'), findsOneWidget);
+    expect(find.text('Delivered.'), findsOneWidget);
     // Report a problem opens the new-ticket form for this booking
     await tester.tap(find.byKey(const ValueKey('deliveredIssue')));
     await tester.pumpAndSettle();

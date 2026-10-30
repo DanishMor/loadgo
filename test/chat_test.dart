@@ -118,7 +118,7 @@ void main() {
     await db.collection('users').doc('customer1').set({'name': 'Anil'});
     await tester.pumpWidget(LanguageScope(notifier: languageNotifier, child: MaterialApp(home: ChatScreen(booking: booking))));
     await settle(tester);
-    expect(find.text('No messages yet. Say hello!'), findsOneWidget);
+    expect(find.text('No messages yet. Say hello.'), findsOneWidget);
 
     await tester.enterText(find.byKey(const ValueKey('chatInput')), 'call me on 9876543210');
     await tester.tap(find.byKey(const ValueKey('chatSend')));
