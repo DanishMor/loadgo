@@ -13,6 +13,7 @@ import '../../core/l10n/language_widgets.dart';
 import '../../core/models/booking.dart';
 import '../../core/models/load.dart';
 import '../../core/notifications/notifications_screen.dart';
+import '../../core/search/global_search_screen.dart';
 import '../../core/pilot/payment_nudge_card.dart';
 import '../../core/services/auth_helpers.dart' show maskPhone;
 import '../../core/services/backend.dart';
@@ -168,6 +169,13 @@ class _CustomerHomeV3State extends State<CustomerHomeV3> {
                     Text(who, maxLines: 1, overflow: TextOverflow.ellipsis, style: DsType.title.copyWith(color: c.textStrong)),
                   ]),
                 ),
+                if (FeaturesService.isOn(FeatureKey.navV3))
+                  IconButton(
+                    key: const ValueKey('h3Search'),
+                    tooltip: tr(context, 'search'),
+                    onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const GlobalSearchScreen(isDriver: false))),
+                    icon: const Icon(Icons.search_rounded),
+                  ),
                 IconButton(key: const ValueKey('h3Arrange'), tooltip: tr(context, 'hlCustomize'), onPressed: layout == null ? null : _arrange, icon: const Icon(Icons.tune_rounded)),
                 IconButton(tooltip: tr(context, 'language'), onPressed: () => showLanguageSelector(context), icon: const Icon(Icons.language_rounded)),
                 NotificationBell(onOpenBooking: widget.onOpenBooking),

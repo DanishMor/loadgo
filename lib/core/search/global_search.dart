@@ -2,10 +2,12 @@ import '../models/booking.dart';
 import '../models/load.dart';
 import '../models/saved_place.dart';
 import '../models/support_ticket.dart';
+import '../bilty/lr_model.dart';
 import '../pricing/cities.dart';
 
 /// What a search result is. The order is the order of the sections.
-enum SearchKind { booking, load, ticket, place, city, help }
+/// [lr] (E25, flag navV3): bilty the person issued; it opens its booking.
+enum SearchKind { booking, load, ticket, place, city, help, lr }
 
 /// One thing that can be found: what to show and which words to match.
 class SearchEntry {
@@ -153,6 +155,14 @@ class GlobalSearch {
         title: p.name,
         subtitle: p.address,
         keywords: [p.label],
+      );
+
+  static SearchEntry fromLr(LrPublic l) => SearchEntry(
+        kind: SearchKind.lr,
+        id: l.bookingId,
+        title: l.lrNo,
+        subtitle: [l.route, l.consigneeName].where((s) => s.trim().isNotEmpty).join(' · '),
+        keywords: [l.pickup, l.drop, l.goods, l.vehicleNumber, l.consignorName, l.consigneeName, l.driverName],
       );
 
   /// The offline city table (names, aliases and states).

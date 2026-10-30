@@ -1,6 +1,14 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+
+import '../services/features_service.dart';
+
+import '../features/features.dart';
+
+import '../bilty/lr_service.dart';
+
+import '../bilty/lr_model.dart';
 import 'package:flutter/services.dart';
 
 import '../l10n/l10n.dart';
@@ -35,6 +43,9 @@ class GlobalSearchScreen extends StatefulWidget {
   final Stream<List<SupportTicket>>? tickets;
   final Stream<List<SavedPlace>>? places;
 
+  /// E25 (flag navV3): the bilty the person issued (newest 200, the register listener).
+  final Stream<List<LrPublic>>? lrs;
+
   const GlobalSearchScreen({
     super.key,
     required this.isDriver,
@@ -44,6 +55,7 @@ class GlobalSearchScreen extends StatefulWidget {
     this.loads,
     this.tickets,
     this.places,
+    this.lrs,
   });
 
   @override
@@ -65,6 +77,7 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
   List<Load> _loads = const [];
   List<SupportTicket> _tickets = const [];
   List<SavedPlace> _places = const [];
+  List<LrPublic> _lrs = const [];
 
   @override
   void initState() {
@@ -76,6 +89,7 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
     listen(widget.loads ?? (widget.isDriver ? LoadService.watchOpenPage(50).map((p) => p.items) : LoadService.watchMine()), (v) => _loads = v);
     listen(widget.tickets ?? SupportService.watchMine(), (v) => _tickets = v);
     if (!widget.isDriver) listen(widget.places ?? SavedPlaceService.watchMine(), (v) => _places = v);
+    if (FeaturesService.isOn(FeatureKey.navV3)) listen(widget.lrs ?? LrService.watchMine(), (v) => _lrs = v);
     RecentSearches.load().then((r) {
       if (mounted) setState(() => _recent = r);
     });
@@ -114,6 +128,8 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
         for (final l in _loads) GlobalSearch.fromLoad(l),
         for (final t in _tickets) GlobalSearch.fromTicket(t),
         if (!widget.isDriver) ...[for (final p in _places) GlobalSearch.fromPlace(p), ..._cities],
+        for (final l in _lrs)
+          if (l.bookingId.isNotEmpty) GlobalSearch.fromLr(l),
         ...GlobalSearch.helpTopics([for (final i in HelpFaq.forRole(widget.isDriver ? HelpFaq.driver : null)) (i, tr(context, 'faqQ$i'), tr(context, 'faqA$i'))]),
       ]);
 
@@ -137,6 +153,8 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
         AppRoutes.openPostLoad?.call(context, pickup: e.title);
       case SearchKind.help:
         nav.push(MaterialPageRoute(builder: (_) => HelpScreen(openFaq: int.tryParse(e.id))));
+      case SearchKind.lr:
+        AppRoutes.openBooking?.call(context, e.id, isDriver: widget.isDriver);
     }
   }
 
@@ -147,6 +165,7 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
         SearchKind.place => 'gsPlaces',
         SearchKind.city => 'gsCities',
         SearchKind.help => 'gsHelp',
+        SearchKind.lr => 'gsLrs',
       });
 
   IconData _icon(SearchKind k) => switch (k) {
@@ -156,6 +175,7 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
         SearchKind.place => Icons.place_outlined,
         SearchKind.city => Icons.location_city_rounded,
         SearchKind.help => Icons.help_outline_rounded,
+        SearchKind.lr => Icons.receipt_long_outlined,
       };
 
   Widget _hit(SearchEntry e) => AppCard(

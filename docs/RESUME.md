@@ -2,9 +2,9 @@
 
 Plan: docs/MASTER_PLAN_ELITE.md. Read it, then continue from NEXT. Phase 0 done (tag elite-phase0). Phase 1 done (tag elite-phase1).
 
-LAST_DONE: E24 admin ops home (flag adminOpsHome live, core, default OFF): lib/core/admin/ops_queues.dart, AdminConsoleService.opsQueues (pilot control counts + 3 guarded count() aggregates, photos capped at 50, -1 when the role may not read), lib/admin/admin_ops_home_screen.dart (banner urgent/waiting/quiet, role-filtered queues that open the dashboard's screens, dispatch picture + monitor, kill-switch shortcuts with confirm for roles allowed Features), first item of the Admin Panel when on; staff area adminOpsHome (all), ops group; ops_home_strings (12 languages); FLAGS, ADDON_PILOT, WHERE_IS_WHAT (+admin table), OWNER_GUIDE, COST_WATCH; tests admin_ops_home 7/7 + staff/doc/flag tests.
-Before: E23 transporter command center (flag fleetCommand). E22a-c driver home v3. E21a-c customer home v3. Phase 2 done (tag elite-phase2).
-NEXT: E25 navigation shell: bottom nav with state kept per tab, deep links, notification center entry, global search across loads, bookings and LRs, TalkBack order. Survey what exists (IndexedStack shells, DeepLinkListener, GlobalSearchScreen, NotificationBell); only fill gaps.
+LAST_DONE: E25 navigation (flag navV3 live, core, default OFF): SearchKind.lr + GlobalSearch.fromLr (number, places, goods, vehicle, parties; opens its booking), GlobalSearchScreen listens to LrService.watchMine only with navV3, search button on CustomerHomeV3; tabs already keep state (IndexedStack), deep links and notification bell already present (WHERE_IS_WHAT says so); gsLrs word; FLAGS, ADDON_PILOT, WHERE_IS_WHAT, COST_WATCH; test/nav_v3_test.dart 3/3, 107/107 related.
+Before: E24 admin ops home (flag adminOpsHome). E23 command center (fleetCommand). E21-E22 homes v3. Phase 2 done (tag elite-phase2).
+NEXT: E26 onboarding v3 (flag onboardingV3 planned in FLAGS): 3-slide tour, role pick, value-first permission primers (location, notifications), documents right after OTP, customer and driver identity separation preserved. Then phase 3 critic pass and tag elite-phase3, tag elite-wave1 (phases 0-3), then Phase 4 E27.
 Unfinished / to remember:
 - Gallery: powershell -File tool/render_gallery.ps1 (needs 3 GB free); review images in build/gallery.
 - Never edit hosting/*.html by hand: edit tool/templates/hosting/ and run `dart run tool/apply_app_info.dart`. Scripts and styles live in hosting/assets/.

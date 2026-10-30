@@ -106,6 +106,9 @@ class FeatureKey {
 
   /// E24: admin ops home (queue counts, dispatch picture, kill-switch shortcuts) at the top of the Admin Panel.
   static const adminOpsHome = 'adminOpsHome';
+
+  /// E25: bilty (LR) results in global search and a search button on the v3 customer home.
+  static const navV3 = 'navV3';
 }
 
 /// `config/features`: {pilotMode: bool, flags: {key: bool}}. A missing
@@ -170,6 +173,7 @@ class Features {
     FeatureSpec(FeatureKey.driverHomeV3, pilotOn: false, normalOn: false, group: FeatureGroup.design),
     FeatureSpec(FeatureKey.fleetCommand, pilotOn: false, normalOn: false, group: FeatureGroup.core),
     FeatureSpec(FeatureKey.adminOpsHome, pilotOn: false, normalOn: false, group: FeatureGroup.core),
+    FeatureSpec(FeatureKey.navV3, pilotOn: false, normalOn: false, group: FeatureGroup.core),
   ];
 
   static final _byKey = {for (final s in registry) s.key: s};
