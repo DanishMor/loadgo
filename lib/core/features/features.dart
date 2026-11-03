@@ -148,6 +148,9 @@ class FeatureKey {
 
   /// E37: route-deviation alert on the driver's trip screen (with the near, arrived and long-halt alerts).
   static const tripAlerts = 'tripAlerts';
+
+  /// E38: "why this bid is highlighted" and the bid the customer's auto-accept rule would take.
+  static const bidExplain = 'bidExplain';
 }
 
 /// `config/features`: {pilotMode: bool, flags: {key: bool}}. A missing
@@ -226,6 +229,7 @@ class Features {
     FeatureSpec(FeatureKey.goingTo, pilotOn: false, normalOn: false, group: FeatureGroup.core),
     FeatureSpec(FeatureKey.demandFeed, pilotOn: false, normalOn: false, group: FeatureGroup.server),
     FeatureSpec(FeatureKey.tripAlerts, pilotOn: false, normalOn: false, group: FeatureGroup.core),
+    FeatureSpec(FeatureKey.bidExplain, pilotOn: false, normalOn: false, group: FeatureGroup.core),
   ];
 
   static final _byKey = {for (final s in registry) s.key: s};

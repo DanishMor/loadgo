@@ -66,6 +66,7 @@ void main() {
       FeatureKey.goingTo: 'Way back on your route',
       FeatureKey.demandFeed: 'Demand near drivers',
       FeatureKey.tripAlerts: 'Off-route alert',
+      FeatureKey.bidExplain: 'Why this offer stands out',
       FeatureKey.bizCard: 'Business card to share',
       FeatureKey.khata: 'Party khata',
       FeatureKey.safetyCheckin: 'Safety check-in on a long stop',

@@ -13,6 +13,7 @@ import '../../core/models/load.dart';
 import '../../core/models/offer.dart';
 import '../../core/photos/cargo_photo_widgets.dart';
 import '../../core/photos/vehicle_photo_badge.dart';
+import '../../core/dispatch/bid_explain.dart';
 import '../../core/services/backend.dart';
 import '../../core/services/features_service.dart';
 import '../../core/vehicles/vehicle_painter.dart';
@@ -248,6 +249,32 @@ class _BidRoomScreenState extends State<BidRoomScreen> {
     ]);
   }
 
+  void _explain(BidView v, List<BidView> live, Set<BidTagKind> tags) {
+    final why = BidExplain.forBid(v, live, tags);
+    showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (context) {
+        final c = context.ds;
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(DsSpace.gutter, 0, DsSpace.gutter, DsSpace.gutter),
+            child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+              Semantics(header: true, child: Text(tr(context, 'bxWhy'), style: DsType.title.copyWith(color: c.textStrong))),
+              const SizedBox(height: DsSpace.s2),
+              for (final w in why)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: DsSpace.s2),
+                  child: Text(trf(context, w.key, {for (final e in w.args.entries) e.key: e.key == 'diff' ? formatPaise(e.value as int) : e.value}), style: DsType.body.copyWith(color: c.text)),
+                ),
+              Text(tr(context, 'bxNote'), style: DsType.caption.copyWith(color: c.textMuted)),
+            ]),
+          ),
+        );
+      },
+    );
+  }
+
   Widget _bids(Load load) {
     final c = context.ds;
     final views = _views;
@@ -255,6 +282,9 @@ class _BidRoomScreenState extends State<BidRoomScreen> {
     final sorted = BidRanking.sort(views.where((v) => v.offer.status == OfferStatus.pending), _sort);
     final others = views.where((v) => v.offer.status != OfferStatus.pending).toList();
     final open = load.isOpen;
+    // E38: the bid the customer's own auto-accept rule would take, and the reasons behind each highlight.
+    final explain = FeaturesService.isOn(FeatureKey.bidExplain);
+    final autoPick = explain ? BidRanking.autoAcceptPick(views, load.autoAccept) : null;
     if (views.isEmpty) return Padding(padding: const EdgeInsets.symmetric(vertical: DsSpace.s4), child: Text(tr(context, 'brNoBids'), key: const ValueKey('brNoBids'), style: DsType.body.copyWith(color: c.textMuted)));
     Widget card(BidView v, {bool actions = false}) {
       final o = v.offer;
@@ -278,6 +308,21 @@ class _BidRoomScreenState extends State<BidRoomScreen> {
             onAccept: actions && open && !_busy ? () => _accept(v) : null,
             onCounter: actions && open && o.canCounter && !_busy ? () => _counter(v) : null,
           ),
+          if (explain && actions && autoPick?.offer.id == o.id)
+            Padding(
+              padding: const EdgeInsets.only(top: DsSpace.s1),
+              child: StatusBadge(key: ValueKey('bxAuto_${o.id}'), label: tr(context, 'bxAutoPick'), tone: StatusTone.success, icon: Icons.bolt_rounded),
+            ),
+          if (explain && actions && (tags[o.id] ?? const {}).isNotEmpty)
+            Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: TextButton.icon(
+                key: ValueKey('bxWhy_${o.id}'),
+                icon: const Icon(Icons.info_outline_rounded, size: 18),
+                label: Text(tr(context, 'bxWhy')),
+                onPressed: () => _explain(v, BidRanking.live(views), tags[o.id] ?? const {}),
+              ),
+            ),
           if (o.status == OfferStatus.selected) Padding(padding: const EdgeInsets.only(top: DsSpace.s1), child: StatusBadge(label: tr(context, 'brSelectedWait'), tone: StatusTone.progress, icon: Icons.hourglass_top_rounded)),
           if (o.status == OfferStatus.countered) Padding(padding: const EdgeInsets.only(top: DsSpace.s1), child: StatusBadge(label: tr(context, 'brCountered'), tone: StatusTone.attention, icon: Icons.swap_horiz_rounded)),
         ]),

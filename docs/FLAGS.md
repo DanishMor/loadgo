@@ -82,6 +82,7 @@ Status `planned` = not registered and not reachable. `live` = registered, entry 
 | `goingTo` | E35 | live | core | off | - | low | `lib/core/services/match_service.dart` |
 | `priorityDispatch` | E36 | planned | server | off | dispatchV2, blackTier | medium | - |
 | `tripAlerts` | E37 | live | core | off | liveLocation | medium | `lib/driver/trip_geofence_banner.dart` |
+| `bidExplain` | E38 | live | core | off | dispatchV2 | low | `lib/customer/v2/bid_room_screen.dart` |
 | `trustPassport` | E39 | planned | security | off | - | low | - |
 | `safetySuite` | E40 | planned | security | off | safetyCheckin | medium | - |
 | `cargoCondition` | E41 | planned | core | off | cargoPhotos | low | - |
